@@ -25,6 +25,7 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
         }
         public override void DoPollData()
         {
+            
             if (SteamVR.active)
             {
                 result = SteamVR.instance.compositor.GetLastPoseForTrackedDeviceIndex(Device.deviceIndex, ref devicePose, ref deviceGamePose);
@@ -63,6 +64,14 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
                 {
                     BasisDebug.LogError("Error getting device pose: " + result);
                 }
+            }
+        }
+        public override void SendHaptic(float strength, float durationSeconds)
+        {
+            const float hapticsFrequency = 150;
+            if (HasInputSource)
+            {
+                SteamVR_Actions._default.Haptic.Execute(0, durationSeconds, hapticsFrequency, strength, inputSource);
             }
         }
     }

@@ -302,6 +302,7 @@ namespace Basis.Scripts.Device_Management.Devices
             DoPollData();
         }
         public abstract void DoPollData();
+        public abstract void SendHaptic(float strength, float durationSeconds);
         public void UpdatePlayerControl()
         {
             switch (trackedRole)

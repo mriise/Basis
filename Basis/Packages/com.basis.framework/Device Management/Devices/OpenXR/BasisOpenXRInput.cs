@@ -130,6 +130,10 @@ namespace Basis.Scripts.Device_Management.Devices.OpenXR
                 UpdatePlayerControl();
             }
         }
+        public override void SendHaptic(float strength, float duration)
+        {
+            Device.SendHapticImpulse(0, strength, duration);
+        }
 
         private void CalculateFingerCurls()
         {
