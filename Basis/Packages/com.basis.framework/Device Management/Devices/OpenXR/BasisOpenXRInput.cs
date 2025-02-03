@@ -130,9 +130,12 @@ namespace Basis.Scripts.Device_Management.Devices.OpenXR
                 UpdatePlayerControl();
             }
         }
-        public override void SendHaptic(float strength, float duration)
+        public override void SendHaptic(float strength, float duration, float frequency = 150)
         {
-            Device.SendHapticImpulse(0, strength, duration);
+            if (Device.isValid && Device.TryGetHapticCapabilities(out UnityEngine.XR.HapticCapabilities capabilities) && capabilities.supportsImpulse)
+            {
+                Device.SendHapticImpulse(0, strength, duration);
+            }
         }
 
         private void CalculateFingerCurls()

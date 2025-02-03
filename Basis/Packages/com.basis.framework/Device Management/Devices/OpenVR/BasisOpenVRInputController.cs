@@ -72,12 +72,11 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
                 UpdatePlayerControl();
             }
         }
-        public override void SendHaptic(float strength, float durationSeconds)
+        public override void SendHaptic(float strength, float durationSeconds, float frequency = 150)
         {
-            const float hapticsFrequency = 150;
             if (SteamVR.active)
             {
-                SteamVR_Actions._default.Haptic.Execute(0, durationSeconds, hapticsFrequency, strength, inputSource);
+                SteamVR_Actions._default.Haptic.Execute(0, durationSeconds, frequency, strength, inputSource);
             }
         }
         private void SteamVR_Behaviour_Pose_OnUpdate(SteamVR_Action_Pose fromAction, SteamVR_Input_Sources fromSource)
