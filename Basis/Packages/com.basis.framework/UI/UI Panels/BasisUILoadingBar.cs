@@ -1,5 +1,6 @@
 using Basis.Scripts.Addressable_Driver;
 using Basis.Scripts.Addressable_Driver.Enums;
+using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Device_Management;
 using Basis.Scripts.Drivers;
 using System;
@@ -31,21 +32,26 @@ namespace Basis.Scripts.UI.UI_Panels
         public static BasisUILoadingBar Instance;
         public const string LoadingBar = "Packages/com.basis.sdk/Prefabs/UI/Loading Bar.prefab";
 
-        public Vector3 Position = new Vector3(12,-1.6f,0);
+        public Vector3 Position = new Vector3(12, -1.6f, 0);
         public Quaternion Rotation;
-        public Vector3 Scale = new Vector3(4,4,4);
+        public Vector3 Scale = new Vector3(4, 4, 4);
 
         [SerializeField]
         private List<LoadingOperationData> loadingOperations = new List<LoadingOperationData>();
 
+        private Coroutine autoDestroyCoroutine;
+        private const float AutoDestroyTimeout = 5f;
+
         public static void Initalize()
         {
             BasisSceneLoadDriver.progressCallback.OnProgressReport += ProgressReport;
+            BasisLocalPlayer.Instance.ProgressReportAvatarLoad.OnProgressReport += ProgressReport;
         }
 
         public static void DeInitalize()
         {
             BasisSceneLoadDriver.progressCallback.OnProgressReport -= ProgressReport;
+            BasisLocalPlayer.Instance.ProgressReportAvatarLoad.OnProgressReport -= ProgressReport;
         }
 
         public static void ProgressReport(string UniqueID, float progress, string info)
@@ -93,6 +99,9 @@ namespace Basis.Scripts.UI.UI_Panels
                 loadingOperations.Add(new LoadingOperationData(key, percentage, display));
             }
             ProcessQueue();
+
+            // Reset the auto-destroy coroutine
+            ResetAutoDestroyCoroutine();
         }
 
         public void RemoveDisplay(string key)
@@ -160,9 +169,25 @@ namespace Basis.Scripts.UI.UI_Panels
         public override void DestroyEvent()
         {
         }
+
         public void OnDestroy()
         {
             BasisLocalCameraDriver.InstanceExists -= InstanceExists;
+        }
+
+        private void ResetAutoDestroyCoroutine()
+        {
+            if (autoDestroyCoroutine != null)
+            {
+                StopCoroutine(autoDestroyCoroutine);
+            }
+            autoDestroyCoroutine = StartCoroutine(AutoDestroyAfterTimeout());
+        }
+
+        private System.Collections.IEnumerator AutoDestroyAfterTimeout()
+        {
+            yield return new WaitForSeconds(AutoDestroyTimeout);
+            CloseLoadingBar();
         }
     }
 }

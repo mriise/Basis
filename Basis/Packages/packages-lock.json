@@ -42,6 +42,12 @@
       "source": "embedded",
       "dependencies": {}
     },
+    "com.basis.settings": {
+      "version": "file:com.basis.settings",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.basis.settingsmanager": {
       "version": "file:com.basis.settingsmanager",
       "depth": 0,
@@ -80,6 +86,13 @@
       "depth": 0,
       "source": "embedded",
       "dependencies": {}
+    },
+    "com.meta.xr.sdk.core": {
+      "version": "72.0.0",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://packages.unity.com"
     },
     "com.naelstrof.jigglephysics": {
       "version": "file:com.naelstrof.jigglephysics",
@@ -137,7 +150,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.burst": {
-      "version": "1.8.18",
+      "version": "1.8.19",
       "depth": 1,
       "source": "registry",
       "dependencies": {
@@ -400,18 +413,16 @@
       }
     },
     "com.xiph.opus": {
-      "version": "https://github.com/BasisVR/UnityOpus.git",
+      "version": "file:com.xiph.opus",
       "depth": 0,
-      "source": "git",
-      "dependencies": {},
-      "hash": "0723f26d8ede8ad74992049da2ee55a2382dc29d"
+      "source": "embedded",
+      "dependencies": {}
     },
     "com.xiph.rnnoise": {
-      "version": "https://github.com/BasisVR/RNNoise.Net.git",
+      "version": "file:com.xiph.rnnoise",
       "depth": 0,
-      "source": "git",
-      "dependencies": {},
-      "hash": "c70e762e2cdbad29afd7bccd0cf1a46dbcddd484"
+      "source": "embedded",
+      "dependencies": {}
     },
     "dev.hai-vr.basis.comms": {
       "version": "file:HVRBasisAvatarComms",

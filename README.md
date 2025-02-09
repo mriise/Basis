@@ -44,14 +44,14 @@ Please help shape the future of Basis and leave your mark on its foundation.
 
  ## Installation
  
-This project is currently using Unity 6 (6000.0.32f1)
+This project is currently using Unity 6 (6000.0.33f1)
 Other Unity versions may work but will require changes and adaptations.
 Currently, only OPENXR and SteamVR are supported.
 
 1. Make sure you have the correct Unity version installed.
 2. Clone the repository
    ```sh
-   git clone https://github.com/dooly123/Basis.git
+   git clone https://github.com/BasisVR/Basis.git
    ```
 3. Open the project and make sure to load the scene Initialization
 4. Enter play!
@@ -106,9 +106,9 @@ This project includes third-party code licensed under the BSD-3-Clause license:
 - [OpenVR](https://github.com/valvesoftware/openvr)
 The OpenVR API is (C) Valve Corporation under the BSD 3-clause license
 
-For more details, see `Basis/Assets/third_party/plugins/SteamAudio/LICENSE`.
-For more details, see `Basis/Assets/third_party/plugins/SteamVR/LICENSE`.
+For more details, see `Basis/Packages/com.steam.steamaudio/LICENSE.md`.
+For more details, see `Basis/Packages/com.steam.steamvr/LICENSE`.
 
-This project also includes third-party trademarks as described in `Basis/Assets/third_party/plugins/SteamAudio/TRADEMARK_RIGHTS.md`. For more details, see `Basis/Assets/third_party/plugins/SteamAudio/TRADEMARK_RIGHTS.md`.
+This project also includes third-party trademarks as described in `Basis/Packages/com.steam.steamaudio/TRADEMARK_RIGHTS.md`. For more details, see `Basis/Packages/com.steam.steamaudio/TRADEMARK_RIGHTS.md`.
 
-"Valve", "Steam", and the associated figurative images are trademarks and/or registered trademarks of Valve Corporation in the US and in various other jurisdictions. All rights reserved. Use of these trademarks must comply with the guidelines set forth in `Basis/Assets/third_party/plugins/SteamAudio/TRADEMARK_RIGHTS.md`.
+"Valve", "Steam", and the associated figurative images are trademarks and/or registered trademarks of Valve Corporation in the US and in various other jurisdictions. All rights reserved. Use of these trademarks must comply with the guidelines set forth in `Basis/Packages/com.steam.steamaudio/TRADEMARK_RIGHTS.md`.

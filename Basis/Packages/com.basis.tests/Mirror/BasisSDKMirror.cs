@@ -41,10 +41,29 @@ public class BasisSDKMirror : MonoBehaviour
 
     public bool allowXRRendering = true;
     public bool RenderPostProcessing = false;
+
+    [SerializeField]
+    private LayerMask ReflectingLayers;
     public void Awake()
     {
         IsActive = false;
         IsAbleToRender = false;
+        if (ReflectingLayers == 0)
+        {
+            int remotePlayerLayer = LayerMask.NameToLayer("RemotePlayerAvatar");
+            int localPlayerLayer = LayerMask.NameToLayer("LocalPlayerAvatar");
+            int defaultLayer = LayerMask.NameToLayer("Default");
+
+            if (remotePlayerLayer == -1 || localPlayerLayer == -1 || defaultLayer == -1)
+            {
+                Debug.LogError("One or more layers do not exist. Please verify the layer names.");
+            }
+            else
+            {
+                // Combine the layers into a single LayerMask
+                ReflectingLayers = (1 << remotePlayerLayer) | (1 << localPlayerLayer) | (1 << defaultLayer);
+            }
+        }
         BasisMeshRendererCheck = BasisHelpers.GetOrAddComponent<BasisMeshRendererCheck>(this.Renderer.gameObject);
         BasisMeshRendererCheck.Check += VisibilityFlag;
     }
@@ -240,6 +259,7 @@ public class BasisSDKMirror : MonoBehaviour
         newCamera.aspect = currentCamera.aspect;
         newCamera.orthographicSize = currentCamera.orthographicSize;
         newCamera.depth = 2;
+        newCamera.cullingMask = ReflectingLayers.value;
         if (newCamera.TryGetComponent(out UniversalAdditionalCameraData CameraData))
         {
             CameraData.allowXRRendering = allowXRRendering;
