@@ -701,11 +701,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   preLoadedBundles:
-  - UnlockPassword: password
+  - UnlockPassword: 709becbec5c69a75bdc1017f8bd81b8caefcbb2b49b3e87e10ff242824c5d28d
     BasisRemoteBundleEncrypted:
       IsLocal: 0
-      MetaURL: https://basisframework.b-cdn.net/Avatars/DX11/ThirdParty/1a0fe16e-1c5f-4134-a10e-07c6c436bc97_638650053689621810.BasisEncyptedMet
-      BundleURL: https://basisframework.b-cdn.net/Avatars/DX11/ThirdParty/1a0fe16e-1c5f-4134-a10e-07c6c436bc97_638650053689621810.BasisEncyptedBun
+      MetaURL: https://BasisFramework.b-cdn.net/Avatars/Vulkan/Yun/1c0c98bb-a507-4bff-a735-6b02b5d109c1_638749527547946109.BasisEncyptedMeta
+      BundleURL: https://BasisFramework.b-cdn.net/Avatars/Vulkan/Yun/1c0c98bb-a507-4bff-a735-6b02b5d109c1_638749527547946109.BasisEncyptedBundle
     BasisLocalEncryptedBundle:
       LocalMetaFile: 
       LocalBundleFile: 
@@ -719,11 +719,11 @@ MonoBehaviour:
         AssetMode: 
         AssetToLoadName: 
         AssetBundleCRC: 0
-  - UnlockPassword: Aurellia
+  - UnlockPassword: d34c500ad4422707c00eb3f5d5971e0f8d33806f94fad5b928e57189d3c48a96
     BasisRemoteBundleEncrypted:
       IsLocal: 0
-      MetaURL: https://BasisFramework.b-cdn.net/Avatars/DX11/ThirdParty/84df873f-4857-47da-88ea-c7b604793489_638661962010243564.BasisEncyptedMeta
-      BundleURL: https://BasisFramework.b-cdn.net/Avatars/DX11/ThirdParty/84df873f-4857-47da-88ea-c7b604793489_638661962010243564.BasisEncyptedBundle
+      MetaURL: https://BasisFramework.b-cdn.net/Avatars/Vulkan/Aurellia/a8e663d1-2324-450f-b7d6-1d82870c0b36_638749527891394169.BasisEncyptedMeta
+      BundleURL: https://BasisFramework.b-cdn.net/Avatars/Vulkan/Aurellia/a8e663d1-2324-450f-b7d6-1d82870c0b36_638749527891394169.BasisEncyptedBundle
     BasisLocalEncryptedBundle:
       LocalMetaFile: 
       LocalBundleFile: 
