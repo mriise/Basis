@@ -112,11 +112,7 @@ public class BasisSceneFactory : MonoBehaviour
     public void AttachMixerToAllSceneAudioSources()
     {
         // Check if mixerGroup is assigned
-        if (BasisScene.Group == null)
-        {
-            BasisScene.Group = WorldDefaultMixer;
-        }
-
+        BasisScene.Group = WorldDefaultMixer;
 
         // Get all active and inactive AudioSources in the scene
         AudioSource[] sources = FindObjectsByType<AudioSource>(FindObjectsInactive.Include, FindObjectsSortMode.None);

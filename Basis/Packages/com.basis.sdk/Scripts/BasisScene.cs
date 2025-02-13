@@ -9,11 +9,13 @@ namespace Basis.Scripts.BasisSdk
         public Transform SpawnPoint;
         public float RespawnHeight = -100;
         public float RespawnCheckTimer = 0.1f;
+        [HideInInspector]
         public UnityEngine.Audio.AudioMixerGroup Group;
         public static BasisScene Instance;
         public static Action<BasisScene> Ready;
         public static Action<BasisScene> Destroyed;
         public Camera MainCamera;
+        [HideInInspector]
         public bool IsReady;
         public void Awake()
         {
