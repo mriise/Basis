@@ -1,4 +1,4 @@
-﻿using BasisSerializer.OdinSerializer;
+using BasisSerializer.OdinSerializer;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -14,7 +14,7 @@ namespace Basis.Scripts.UI.UI_Panels
             public string Url;
             public string Pass;
         }
-        public static string FilePath = Path.Combine(Application.persistentDataPath, "VerySafePasswordStore.json");
+        public static string FilePath = Path.Combine(Application.persistentDataPath, "KeyStore.json");
 
         [SerializeField]
         private static List<AvatarKey> keys = new List<AvatarKey>();

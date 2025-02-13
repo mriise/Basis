@@ -1,4 +1,4 @@
-﻿//======= Copyright (c) Valve Corporation, All rights reserved. ===============
+//======= Copyright (c) Valve Corporation, All rights reserved. ===============
 
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -78,7 +78,7 @@ namespace Valve.VR
                 if (_instance == null)
                 {
                     _instance = SteamVR_Settings.CreateInstance<SteamVR_Settings>();
-
+/* disabled this 
 #if UNITY_EDITOR
                     string localFolderPath = SteamVR.GetSteamVRResourcesFolderPath(true);
                     string assetPath = System.IO.Path.Combine(localFolderPath, "SteamVR_Settings.asset");
@@ -86,6 +86,7 @@ namespace Valve.VR
                     UnityEditor.AssetDatabase.CreateAsset(_instance, assetPath);
                     UnityEditor.AssetDatabase.SaveAssets();
 #endif
+*/
                 }
 
                 SetDefaultsIfNeeded();

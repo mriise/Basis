@@ -60,8 +60,8 @@ public static class BasisHeightDriver
         }
         else
         {
-            BasisDebug.LogWarning("No attached input found for BasisLockToInput. Using default player eye height.", BasisDebug.LogTag.Avatar);
-            BasisLocalPlayer.Instance.PlayerEyeHeight = BasisLocalPlayer.DefaultPlayerEyeHeight; // Set a reasonable default
+            BasisDebug.LogWarning("No attached input found for BasisLockToInput. Using the avatars height.", BasisDebug.LogTag.Avatar);
+            BasisLocalPlayer.Instance.PlayerEyeHeight = BasisLocalPlayer.Instance.AvatarEyeHeight; // Set a reasonable default
         }
     }
 
