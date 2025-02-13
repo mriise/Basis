@@ -238,7 +238,58 @@ public partial class BasisAvatarSDKInspector : Editor
     }
     private async void EventCallbackAvatarBundle()
     {
-       await BasisBundleBuild.GameObjectBundleBuild(Avatar);
+        if (ValidateAvatar())
+        {
+            await BasisBundleBuild.GameObjectBundleBuild(Avatar);
+        }
+        else
+        {
+            EditorUtility.DisplayDialog("Avatar Error", "The Avatar has a issue check the console for a error", "will do");
+        }
+    }
+    public bool ValidateAvatar()
+    {
+        if(Avatar == null)
+        {
+            Debug.LogError("Missing Avatar");
+            return false;
+        }
+        if (Avatar.Animator == null)
+        {
+            Debug.LogError("Missing Animator");
+            return false;
+        }
+        if (Avatar.BlinkViseme == null || Avatar.BlinkViseme.Length == 0)
+        {
+            Debug.LogError("BlinkViseme Meta Data was null or empty this should never occur");
+            return false;
+        }
+        if (Avatar.FaceVisemeMovement == null || Avatar.FaceVisemeMovement.Length == 0)
+        {
+            Debug.LogError("FaceVisemeMovement Meta Data was null or empty this should never occur");
+            return false;
+        }
+        if (Avatar.FaceBlinkMesh == null)
+        {
+            Debug.LogError("FaceBlinkMesh was null, please assign a skinned mesh does not need to be the face blink mesh just a mesh");
+            return false;
+        }
+        if (Avatar.FaceVisemeMesh == null)
+        {
+            Debug.LogError("FaceVisemeMesh was null, please assign a skinned mesh does not need to be the face blink mesh just a mesh");
+            return false;
+        }
+        if (Avatar.AvatarEyePosition == Vector2.zero)
+        {
+            Debug.LogError("Avatar Eye Position was empty");
+            return false;
+        }
+        if (Avatar.AvatarMouthPosition == Vector2.zero)
+        {
+            Debug.LogError("Avatar Mouth Position was empty");
+            return false;
+        }
+        return true;
     }
     public void OnAssignTexture2D(ChangeEvent<UnityEngine.Object> Texture2D)
     {
