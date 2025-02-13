@@ -1,10 +1,8 @@
-using System;
 using System.Collections.Generic;
 using Basis.Scripts.BasisSdk.Helpers;
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Drivers;
 using Basis.Scripts.TransformBinders.BoneControl;
-using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 namespace Basis.Scripts.Device_Management.Devices.Desktop
@@ -99,10 +97,6 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
         }
         private void BasisLocalPlayer_OnPlayersHeightChanged()
         {
-            //   Vector3 Pos = new Vector3(0, BasisLocalPlayer.Instance.AvatarDriver.ActiveAvatarEyeHeight(), 0);
-            //  BasisLocalPlayer.Instance.AvatarDriver.GetWorldSpaceRotAndPos(() => Pos, out quaternion rot, out float3 position);
-            //  BasisLocalPlayer.Instance.PlayerEyeHeight = -position.y;
-          // float avatarHeight = BasisLocalPlayer.Instance.AvatarDriver?.ActiveAvatarEyeHeight() ?? 0;
             BasisLocalPlayer.Instance.PlayerEyeHeight = BasisLocalPlayer.Instance.AvatarEyeHeight;
         }
         public void PlayerInitialized()
