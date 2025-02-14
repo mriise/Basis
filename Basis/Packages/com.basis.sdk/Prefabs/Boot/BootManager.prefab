@@ -1796,7 +1796,7 @@ MonoBehaviour:
       DefaultPlatform: 0
       ExcludePlatform: 0
       ValueToggle: 0
-      EditorVisable: 0
+      EditorVisable: 1
     SupportedRenderPipeline: 030000000400000000000000
     Round: 1
     RoundTo: 1
@@ -2504,8 +2504,8 @@ MonoBehaviour:
     SelectedValue: 0.9523397
     Index: 26
     SelectableValueList: []
-    Min: 0
-    Max: 0
+    Min: 0.25
+    Max: 1.5
   - Name: Controller DeadZone
     DefaultValue: 0.05
     SelectedValue: 0.1

@@ -77,17 +77,14 @@ public class SMModuleRenderResolutionURP : SettingsManagerOption
                 XRSettings.useOcclusionMesh = true;
             }
             UniversalRenderPipelineAsset Asset = (UniversalRenderPipelineAsset)QualitySettings.renderPipeline;
-           // if (Asset.renderScale != 1)
-           // {
-            //    Asset.renderScale = 1;
-           // }
             if (XRSettings.eyeTextureResolutionScale != renderScale)
             {
                 XRSettings.eyeTextureResolutionScale = RenderScale;
             }
-            if (XRSettings.renderViewportScale != RenderScale)
+            /// the system allows us to scale the render resolution correctly, however gpu culling does not know about this
+            if (Asset.renderScale != 1)
             {
-                XRSettings.renderViewportScale = RenderScale;
+                Asset.renderScale = 1;
             }
         }
 #endif

@@ -127,7 +127,7 @@ namespace Basis.Scripts.Device_Management.Devices.OpenXR
         {
         }
 
-        public override void StartSDK()
+        public override async void StartSDK()
         {
           BasisDeviceManagement.Instance.SetCameraRenderState(true);
             BasisDebug.Log("Starting BasisOpenXRManagement");
@@ -137,7 +137,7 @@ namespace Basis.Scripts.Device_Management.Devices.OpenXR
                 InputDevices.deviceDisconnected += OnDeviceDisconnected;
                 HasEvents = true;
             }
-            UpdateDeviceList();
+          await UpdateDeviceList();
         }
 
         public override string Type()

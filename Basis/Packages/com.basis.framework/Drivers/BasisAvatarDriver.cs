@@ -453,7 +453,7 @@ namespace Basis.Scripts.Drivers
         }
         public void WriteUpWeights(BasisBoneControl Control, DampedTransform Constraint)
         {
-            Control.WeightsChanged.AddListener(delegate (float positionWeight, float rotationWeight)
+            Control.WeightsChanged += (delegate (float positionWeight, float rotationWeight)
             {
                 UpdateIKRig(positionWeight, rotationWeight, Constraint);
             });

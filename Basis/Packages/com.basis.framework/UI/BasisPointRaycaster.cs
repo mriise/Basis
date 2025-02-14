@@ -166,8 +166,10 @@ namespace Basis.Scripts.UI
         public override void Raycast(PointerEventData eventData, List<RaycastResult> resultAppendList)
         {
         }
-
-        private void OnDrawGizmos()
+        /// <summary>
+        /// dont just draw unless selected
+        /// </summary>
+        private void OnDrawGizmosSelected()
         {
             Gizmos.color = Color.cyan;
             Gizmos.DrawLine(ray.origin, ray.origin + ray.direction * MaxDistance);

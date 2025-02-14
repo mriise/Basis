@@ -80,8 +80,8 @@ namespace Basis.Scripts.Drivers
         {
             for (int Index = 0; Index < ControlsLength; Index++)
             {
-                Controls[Index].OnHasRigChanged.RemoveAllListeners();
-                Controls[Index].WeightsChanged.RemoveAllListeners();
+                Controls[Index].OnHasRigChanged = null;
+                Controls[Index].WeightsChanged = null;
             }
         }
         public void AddRange(BasisBoneControl[] newControls, BasisBoneTrackedRole[] newRoles)

@@ -1,4 +1,4 @@
-﻿using BattlePhaze.SettingsManager.DebugSystem;
+using BattlePhaze.SettingsManager.DebugSystem;
 using System.Linq;
 using UnityEngine;
 namespace BattlePhaze.SettingsManager
@@ -70,8 +70,8 @@ namespace BattlePhaze.SettingsManager
         }
         public static void Save(SettingsManager manager)
         {
-            manager.OnSettingsSaving.Invoke();
-            SettingsManager.OnSettingsSavingStatic.Invoke();
+            manager.OnSettingsSaving?.Invoke();
+            SettingsManager.OnSettingsSavingStatic?.Invoke();
 
             foreach (var option in manager.Options)
             {
@@ -99,8 +99,8 @@ namespace BattlePhaze.SettingsManager
             }
 
             manager.SaveSystem.Save();
-            manager.OnSettingsSaved.Invoke();
-            SettingsManager.OnSettingsSavedStatic.Invoke();
+            manager.OnSettingsSaved?.Invoke();
+            SettingsManager.OnSettingsSavedStatic?.Invoke();
         }
     }
 }

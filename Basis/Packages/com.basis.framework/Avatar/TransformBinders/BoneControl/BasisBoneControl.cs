@@ -205,9 +205,9 @@ namespace Basis.Scripts.TransformBinders.BoneControl
         [HideInInspector]
         public bool NotProcessing = false;
         // Events for property changes
-        public UnityEvent OnHasRigChanged = new UnityEvent();
+        public Action OnHasRigChanged;
 
-        public UnityEvent<float, float> WeightsChanged = new UnityEvent<float, float>();
+        public Action<float, float> WeightsChanged;
         // Backing fields for the properties
         [SerializeField]
         private BasisHasRigLayer hasRigLayer = BasisHasRigLayer.HasNoRigLayer;
@@ -220,7 +220,7 @@ namespace Basis.Scripts.TransformBinders.BoneControl
                 if (hasRigLayer != value)
                 {
                     hasRigLayer = value;
-                    OnHasRigChanged.Invoke();
+                    OnHasRigChanged?.Invoke();
                 }
             }
         }

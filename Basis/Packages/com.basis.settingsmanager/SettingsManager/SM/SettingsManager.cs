@@ -26,10 +26,10 @@ namespace BattlePhaze.SettingsManager
         public List<SMPlatFormDefaultSave> PlatformSaveDefault = new List<SMPlatFormDefaultSave>();
         public List<SMWorkAround> WorkArounds = new List<SMWorkAround>();
         public SMPlatFormDefaultSave DefaultSaveType;
-        public UnityEvent OnSettingsSaving = new UnityEvent();
-        public UnityEvent OnSettingsSaved = new UnityEvent();
-        public static UnityEvent OnSettingsSavingStatic = new UnityEvent();
-        public static UnityEvent OnSettingsSavedStatic = new UnityEvent();
+        public Action OnSettingsSaving;
+        public Action OnSettingsSaved;
+        public static Action OnSettingsSavingStatic;
+        public static Action OnSettingsSavedStatic;
         private void Awake()
         {
             if (Instance == null)
