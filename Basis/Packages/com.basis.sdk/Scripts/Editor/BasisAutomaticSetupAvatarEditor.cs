@@ -28,7 +28,7 @@ namespace Basis.Scripts.Editor
             }
             else
             {
-                Debug.LogError("Animator component not found on GameObject " + avatar.gameObject);
+                Debug.LogError("Animator component not found on GameObject " + avatar.gameObject.name);
             }
             UpdateAvatarRenders(avatar);
 

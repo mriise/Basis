@@ -1,5 +1,6 @@
 using UnityEditor;
 using UnityEngine;
+
 [CreateAssetMenu(fileName = "NewBasisAssetBundleObject", menuName = "Basis/ScriptableObjects/BasisAssetBundleObject", order = 1)]
 public class BasisAssetBundleObject : ScriptableObject
 {
@@ -8,11 +9,54 @@ public class BasisAssetBundleObject : ScriptableObject
     public string BundleExtension = ".bundle";
     public string hashExtension = ".hash";
     public string BasisMetaExtension = ".BasisMeta";
-    public string BasisBundleEncyptedExtension = ".BasisEncyptedBundle";
-    public string BasisMetaEncyptedExtension = ".BasisEncyptedMeta";
+    public string BasisBundleEncryptedExtension = ".BasisEncryptedBundle";
+    public string BasisBundleDecryptedExtension = ".BasisDecryptedBundle";
+    public string BasisMetaEncryptedExtension = ".BasisEncryptedMeta";
+    public string ProtectedPasswordFileName = "dontuploadmepassword";
     public bool useCompression = true;
     public bool GenerateImage = true;
     public BuildTarget BuildTarget = BuildTarget.StandaloneWindows;
     public BuildAssetBundleOptions BuildAssetBundleOptions;
     public string AssetBundleDirectory = "./AssetBundles";
+}
+
+[CustomEditor(typeof(BasisAssetBundleObject))]
+public class BasisAssetBundleObjectEditor : Editor
+{
+    public override void OnInspectorGUI()
+    {
+        // Draw the default inspector UI
+        DrawDefaultInspector();
+
+        // Reference to the target scriptable object
+        BasisAssetBundleObject assetBundleObject = (BasisAssetBundleObject)target;
+
+        // Add a button to restore default values
+        if (GUILayout.Button("Restore Defaults"))
+        {
+            RestoreDefaults(assetBundleObject);
+        }
+    }
+
+    private void RestoreDefaults(BasisAssetBundleObject assetBundleObject)
+    {
+        // Reset properties to their default values
+        assetBundleObject.TemporaryStorage = "Packages/com.basis.basisdk/TemporaryStorage";
+        assetBundleObject.BundleExtension = ".bundle";
+        assetBundleObject.hashExtension = ".hash";
+        assetBundleObject.BasisMetaExtension = ".BasisMeta";
+        assetBundleObject.BasisBundleEncryptedExtension = ".BasisEncryptedBundle";
+        assetBundleObject.BasisBundleDecryptedExtension = ".BasisDecryptedBundle";
+        assetBundleObject.BasisMetaEncryptedExtension = ".BasisEncryptedMeta";
+        assetBundleObject.useCompression = true;
+        assetBundleObject.GenerateImage = true;
+        assetBundleObject.BuildTarget = BuildTarget.StandaloneWindows;
+        assetBundleObject.BuildAssetBundleOptions = BuildAssetBundleOptions.None;
+        assetBundleObject.AssetBundleDirectory = "./AssetBundles";
+        assetBundleObject.ProtectedPasswordFileName = "dontuploadmepassword";
+
+        // Mark the object as dirty to save changes
+        EditorUtility.SetDirty(assetBundleObject);
+        AssetDatabase.SaveAssets();
+    }
 }

@@ -16,8 +16,10 @@ MonoBehaviour:
   BundleExtension: .bundle
   hashExtension: .hash
   BasisMetaExtension: .BasisMeta
-  BasisBundleEncyptedExtension: .BasisEncyptedBundle
-  BasisMetaEncyptedExtension: .BasisEncyptedMeta
+  BasisBundleEncryptedExtension: .BasisEncryptedBundle
+  BasisBundleDecryptedExtension: .BasisDecryptedBundle
+  BasisMetaEncryptedExtension: .BasisEncryptedMeta
+  ProtectedPasswordFileName: dontuploadmepassword
   useCompression: 1
   GenerateImage: 1
   BuildTarget: 19

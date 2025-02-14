@@ -14,8 +14,6 @@ public partial class BasisAvatarSDKInspector : Editor
     public static event Action<BasisAvatarSDKInspector> InspectorGuiCreated;
     public VisualTreeAsset visualTree;
     public BasisAvatar Avatar;
-
-    private const string MsgIL2CPPIsNotInstalled = "IL2CPP is not installed.";
     public VisualElement uiElementsRoot;
     public bool AvatarEyePositionState = false;
     public bool AvatarMouthPositionState = false;
@@ -25,11 +23,16 @@ public partial class BasisAvatarSDKInspector : Editor
     public Button EventCallbackAvatarBundleButton { get; private set; }
     private bool IsIL2CPPIsInstalled;
     public Texture2D Texture;
+    private Label resultLabel; // Store the result label for later clearing
+    private List<BuildTarget> selectedTargets = new List<BuildTarget>();
+    public string Error;
     private void OnEnable()
     {
-        visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(BasisPathConstants.AvataruxmlPath);
+        visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(BasisSDKConstants.AvataruxmlPath);
         Avatar = (BasisAvatar)target;
-        IsIL2CPPIsInstalled = BasisBundleBuild.CheckIfIL2CPPIsInstalled();
+        IsIL2CPPIsInstalled = BasisBundleBuild.CheckIfWeCanBuild(new List<BuildTarget>() { EditorUserBuildSettings.activeBuildTarget },out string Error);
+        // Initialize selectedTargets with all available targets
+        selectedTargets = new List<BuildTarget>(BasisSDKConstants.allowedTargets);
     }
 
     public override VisualElement CreateInspectorGUI()
@@ -161,29 +164,29 @@ public partial class BasisAvatarSDKInspector : Editor
     public void SetupItems()
     {
         // Initialize Buttons
-        Button avatarEyePositionClick = BasisHelpersGizmo.Button(uiElementsRoot, BasisPathConstants.avatarEyePositionButton);
-        Button avatarMouthPositionClick = BasisHelpersGizmo.Button(uiElementsRoot, BasisPathConstants.avatarMouthPositionButton);
-        Button avatarBundleButton = BasisHelpersGizmo.Button(uiElementsRoot, BasisPathConstants.AvatarBundleButton);
-        Button avatarAutomaticVisemeDetectionClick = BasisHelpersGizmo.Button(uiElementsRoot, BasisPathConstants.AvatarAutomaticVisemeDetection);
-        Button avatarAutomaticBlinkDetectionClick = BasisHelpersGizmo.Button(uiElementsRoot, BasisPathConstants.AvatarAutomaticBlinkDetection);
+        Button avatarEyePositionClick = BasisHelpersGizmo.Button(uiElementsRoot, BasisSDKConstants.avatarEyePositionButton);
+        Button avatarMouthPositionClick = BasisHelpersGizmo.Button(uiElementsRoot, BasisSDKConstants.avatarMouthPositionButton);
+        Button avatarBundleButton = BasisHelpersGizmo.Button(uiElementsRoot, BasisSDKConstants.AvatarBundleButton);
+        Button avatarAutomaticVisemeDetectionClick = BasisHelpersGizmo.Button(uiElementsRoot, BasisSDKConstants.AvatarAutomaticVisemeDetection);
+        Button avatarAutomaticBlinkDetectionClick = BasisHelpersGizmo.Button(uiElementsRoot, BasisSDKConstants.AvatarAutomaticBlinkDetection);
 
         // Initialize Event Callbacks for Vector2 fields (for Avatar Eye and Mouth Position)
-        EventCallback<ChangeEvent<Vector2>> eventCallbackAvatarEyePosition = BasisHelpersGizmo.CallBackVector2Field(uiElementsRoot, BasisPathConstants.avatarEyePositionField, Avatar.AvatarEyePosition);
-        EventCallback<ChangeEvent<Vector2>> eventCallbackAvatarMouthPosition = BasisHelpersGizmo.CallBackVector2Field(uiElementsRoot, BasisPathConstants.avatarMouthPositionField, Avatar.AvatarMouthPosition);
+        EventCallback<ChangeEvent<Vector2>> eventCallbackAvatarEyePosition = BasisHelpersGizmo.CallBackVector2Field(uiElementsRoot, BasisSDKConstants.avatarEyePositionField, Avatar.AvatarEyePosition);
+        EventCallback<ChangeEvent<Vector2>> eventCallbackAvatarMouthPosition = BasisHelpersGizmo.CallBackVector2Field(uiElementsRoot, BasisSDKConstants.avatarMouthPositionField, Avatar.AvatarMouthPosition);
 
         // Initialize ObjectFields and assign references
-        ObjectField animatorField = uiElementsRoot.Q<ObjectField>(BasisPathConstants.animatorField);
-        ObjectField faceBlinkMeshField = uiElementsRoot.Q<ObjectField>(BasisPathConstants.FaceBlinkMeshField);
-        ObjectField faceVisemeMeshField = uiElementsRoot.Q<ObjectField>(BasisPathConstants.FaceVisemeMeshField);
+        ObjectField animatorField = uiElementsRoot.Q<ObjectField>(BasisSDKConstants.animatorField);
+        ObjectField faceBlinkMeshField = uiElementsRoot.Q<ObjectField>(BasisSDKConstants.FaceBlinkMeshField);
+        ObjectField faceVisemeMeshField = uiElementsRoot.Q<ObjectField>(BasisSDKConstants.FaceVisemeMeshField);
 
-        TextField AvatarNameField = uiElementsRoot.Q<TextField>(BasisPathConstants.AvatarName);
-        TextField AvatarDescriptionField = uiElementsRoot.Q<TextField>(BasisPathConstants.AvatarDescription);
+        TextField AvatarNameField = uiElementsRoot.Q<TextField>(BasisSDKConstants.AvatarName);
+        TextField AvatarDescriptionField = uiElementsRoot.Q<TextField>(BasisSDKConstants.AvatarDescription);
 
-        TextField AvatarpasswordField = uiElementsRoot.Q<TextField>(BasisPathConstants.Avatarpassword);
+        TextField AvatarpasswordField = uiElementsRoot.Q<TextField>(BasisSDKConstants.Avatarpassword);
 
-        ObjectField AvatarIconField = uiElementsRoot.Q<ObjectField>(BasisPathConstants.AvatarIcon);
+        ObjectField AvatarIconField = uiElementsRoot.Q<ObjectField>(BasisSDKConstants.AvatarIcon);
 
-        Label ErrorMessage = uiElementsRoot.Q<Label>(BasisPathConstants.ErrorMessage);
+        Label ErrorMessage = uiElementsRoot.Q<Label>(BasisSDKConstants.ErrorMessage);
 
         animatorField.allowSceneObjects = true;
         faceBlinkMeshField.allowSceneObjects = true;
@@ -208,7 +211,29 @@ public partial class BasisAvatarSDKInspector : Editor
         avatarMouthPositionClick.clicked += () => ClickedAvatarMouthPositionButton(avatarMouthPositionClick);
         avatarAutomaticVisemeDetectionClick.clicked += AutomaticallyFindVisemes;
         avatarAutomaticBlinkDetectionClick.clicked += AutomaticallyFindBlinking;
-        avatarBundleButton.clicked += EventCallbackAvatarBundle;
+
+        // Multi-select dropdown (Foldout with Toggles)
+        Foldout buildTargetFoldout = new Foldout { text = "Select Build Targets", value = true }; // Expanded by default
+        uiElementsRoot.Add(buildTargetFoldout);
+
+        foreach (var target in BasisSDKConstants.allowedTargets)
+        {
+            Toggle toggle = new Toggle(BasisSDKConstants.targetDisplayNames[target])
+            {
+                value = true // Set all toggles to true by default
+            };
+
+            toggle.RegisterValueChangedCallback(evt =>
+            {
+                if (evt.newValue)
+                    selectedTargets.Add(target);
+                else
+                    selectedTargets.Remove(target);
+            });
+
+            buildTargetFoldout.Add(toggle);
+        }
+        avatarBundleButton.clicked += () => EventCallbackAvatarBundle(selectedTargets);
 
         // Register change events
         eventCallbackAvatarEyePosition += OnEyeHeightValueChanged;
@@ -228,7 +253,7 @@ public partial class BasisAvatarSDKInspector : Editor
         if (!IsIL2CPPIsInstalled)
         {
             ErrorMessage.visible = true;
-            ErrorMessage.text = MsgIL2CPPIsNotInstalled;
+            ErrorMessage.text = Error;
         }
         else
         {
@@ -236,15 +261,53 @@ public partial class BasisAvatarSDKInspector : Editor
             ErrorMessage.text = "";
         }
     }
-    private async void EventCallbackAvatarBundle()
+    private async void EventCallbackAvatarBundle(List<BuildTarget> targets)
     {
+        if (targets == null || targets.Count == 0)
+        {
+            Debug.LogError("No build targets selected.");
+            return;
+        }
         if (ValidateAvatar())
         {
-            await BasisBundleBuild.GameObjectBundleBuild(Avatar);
+            Debug.Log($"Building Gameobject Bundles for: {string.Join(", ", targets.ConvertAll(t => BasisSDKConstants.targetDisplayNames[t]))}");
+            (bool success, string message) = await BasisBundleBuild.GameObjectBundleBuild(Avatar, targets);
+            // Clear any previous result label
+            ClearResultLabel();
+
+            // Display new result in the UI
+            resultLabel = new Label
+            {
+                style = { fontSize = 14 }
+            };
+
+            if (success)
+            {
+                resultLabel.text = "Build successful";
+                resultLabel.style.backgroundColor = Color.green;
+                resultLabel.style.color = Color.black; // Success message color
+            }
+            else
+            {
+                resultLabel.text = $"Build failed: {message}";
+                resultLabel.style.backgroundColor = Color.red;
+                resultLabel.style.color = Color.black; // Error message color
+            }
+
+            // Add the result label to the UI
+            uiElementsRoot.Add(resultLabel);
         }
         else
         {
             EditorUtility.DisplayDialog("Avatar Error", "The Avatar has a issue check the console for a error", "will do");
+        }
+    }
+    private void ClearResultLabel()
+    {
+        if (resultLabel != null)
+        {
+            uiElementsRoot.Remove(resultLabel);  // Remove the label from the UI
+            resultLabel = null; // Optionally reset the reference to null
         }
     }
     public bool ValidateAvatar()

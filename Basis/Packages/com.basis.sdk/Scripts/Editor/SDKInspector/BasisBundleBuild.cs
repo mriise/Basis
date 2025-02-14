@@ -6,16 +6,25 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.IO;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 public static class BasisBundleBuild
 {
-    public static async Task GameObjectBundleBuild(BasisContentBase BasisContentBase)
+    public static async Task<(bool, string)> GameObjectBundleBuild(BasisContentBase BasisContentBase, List<BuildTarget> Targets)
     {
         Debug.Log("Starting GameObjectBundleBuild...");
 
-        if (ErrorChecking(BasisContentBase) == false)
+        // Store the initial active build target
+        BuildTarget originalActiveTarget = EditorUserBuildSettings.activeBuildTarget;
+
+        if (ErrorChecking(BasisContentBase, out string Error) == false)
         {
-            return;
+            return new(false, Error);
+        }
+
+        if (CheckIfWeCanBuild(Targets, out Error) == false)
+        {
+            return new(false, Error);
         }
 
         Debug.Log("Passed error checking for GameObjectBundleBuild...");
@@ -23,25 +32,56 @@ public static class BasisBundleBuild
         BasisBundleInformation(BasisContentBase, out BasisAssetBundleObject Objects, out BasisBundleInformation Information, out string hexString);
         Debug.Log($"Generated bundle information. Hex string: {hexString}");
 
-        if (CheckIfIL2CPPIsInstalled())
+        // Ensure active build target is first in the list
+        BuildTarget activeTarget = EditorUserBuildSettings.activeBuildTarget;
+        if (!Targets.Contains(activeTarget))
         {
-            Debug.Log("IL2CPP is installed. Proceeding to build asset bundle...");
-            await BasisAssetBundlePipeline.BuildAssetBundle(BasisContentBase.gameObject, Objects, Information, hexString);
-            Debug.Log("Successfully built GameObject asset bundle.");
+            Debug.LogWarning($"Active build target {activeTarget} not in list of targets.");
         }
         else
         {
-            Debug.LogError("Missing IL2CPP. Please install from Unity Hub!");
+            // Move active build target to the front
+            Targets.Remove(activeTarget);
+            Targets.Insert(0, activeTarget);
         }
+
+        Debug.Log("IL2CPP is installed. Proceeding to build asset bundle...");
+        foreach (BuildTarget Target in Targets)
+        {
+           bool Success = await BasisAssetBundlePipeline.BuildAssetBundle(BasisContentBase.gameObject, Objects, Information, hexString, Target);
+            if (Success == false)
+            {
+                return new(false, "Failure While Building for " + Target);
+            }
+        }
+
+        Debug.Log("Successfully built GameObject asset bundle.");
+
+        // If the original active target was not the current one, switch back
+        if (EditorUserBuildSettings.activeBuildTarget != originalActiveTarget)
+        {
+            EditorUserBuildSettings.SwitchActiveBuildTarget(BuildPipeline.GetBuildTargetGroup(originalActiveTarget), originalActiveTarget);
+            Debug.Log($"Switched back to original build target: {originalActiveTarget}");
+        }
+        OpenRelativePath(Objects.AssetBundleDirectory);
+        return new(true, "Success");
     }
 
-    public static async Task SceneBundleBuild(BasisContentBase BasisContentBase)
+    public static async Task<(bool, string)> SceneBundleBuild(BasisContentBase BasisContentBase, List<BuildTarget> Targets)
     {
         Debug.Log("Starting SceneBundleBuild...");
 
-        if (ErrorChecking(BasisContentBase) == false)
+        // Store the initial active build target
+        BuildTarget originalActiveTarget = EditorUserBuildSettings.activeBuildTarget;
+
+        if (ErrorChecking(BasisContentBase,out string Error) == false)
         {
-            return;
+            return new (false, Error);
+        }
+
+        if (CheckIfWeCanBuild(Targets, out Error) == false)
+        {
+            return new(false, Error);
         }
 
         Debug.Log("Passed error checking for SceneBundleBuild...");
@@ -49,19 +89,76 @@ public static class BasisBundleBuild
         BasisBundleInformation(BasisContentBase, out BasisAssetBundleObject Objects, out BasisBundleInformation Information, out string hexString);
         Debug.Log($"Generated bundle information. Hex string: {hexString}");
 
-        if (CheckIfIL2CPPIsInstalled())
+        // Ensure active build target is first in the list
+        BuildTarget activeTarget = EditorUserBuildSettings.activeBuildTarget;
+        if (!Targets.Contains(activeTarget))
         {
-            Debug.Log("IL2CPP is installed. Proceeding to build scene asset bundle...");
-            Scene activeScene = SceneManager.GetActiveScene();
-            await BasisAssetBundlePipeline.BuildAssetBundle(activeScene, Objects, Information, hexString);
-            Debug.Log("Successfully built Scene asset bundle.");
+            Debug.LogWarning($"Active build target {activeTarget} not in list of targets.");
         }
         else
         {
-            Debug.LogError("Missing IL2CPP. Please install from Unity Hub!");
+            // Move active build target to the front
+            Targets.Remove(activeTarget);
+            Targets.Insert(0, activeTarget);
+        }
+
+        Debug.Log("IL2CPP is installed. Proceeding to build scene asset bundle...");
+        Scene activeScene = BasisContentBase.gameObject.scene;
+        foreach (BuildTarget Target in Targets)
+        {
+            bool Success = await BasisAssetBundlePipeline.BuildAssetBundle(activeScene, Objects, Information, hexString, Target);
+            if (Success == false)
+            {
+                return new(false, "Failure While Building for " + Target);
+            }
+        }
+
+        Debug.Log("Successfully built Scene asset bundle.");
+
+        // If the original active target was not the current one, switch back
+        if (EditorUserBuildSettings.activeBuildTarget != originalActiveTarget)
+        {
+            EditorUserBuildSettings.SwitchActiveBuildTarget(BuildPipeline.GetBuildTargetGroup(originalActiveTarget), originalActiveTarget);
+            Debug.Log($"Switched back to original build target: {originalActiveTarget}");
+        }
+        OpenRelativePath(Objects.AssetBundleDirectory);
+        return new(true, "Success");
+    }
+    public static string OpenRelativePath(string relativePath)
+    {
+        // Get the root path of the project (up to the Assets folder)
+        string projectRoot = Application.dataPath.Replace("/Assets", "");
+
+        // If the relative path starts with './', remove it
+        if (relativePath.StartsWith("./"))
+        {
+            relativePath = relativePath.Substring(2); // Remove './'
+        }
+
+        // Combine the root with the relative path
+        string fullPath = Path.Combine(projectRoot, relativePath);
+
+        // Open the folder or file in explorer
+        OpenFolderInExplorer(fullPath);
+        return fullPath;
+    }
+    // Convert a Unity path to a Windows-compatible path and open it in File Explorer
+    public static void OpenFolderInExplorer(string folderPath)
+    {
+        // Convert Unity-style file path (forward slashes) to Windows-style (backslashes)
+        string windowsPath = folderPath.Replace("/", "\\");
+
+        // Check if the path exists
+        if (Directory.Exists(windowsPath) || File.Exists(windowsPath))
+        {
+            // On Windows, use 'explorer' to open the folder or highlight the file
+            System.Diagnostics.Process.Start("explorer.exe", windowsPath);
+        }
+        else
+        {
+            Debug.LogError("Path does not exist: " + windowsPath);
         }
     }
-
     public static void BasisBundleInformation(BasisContentBase BasisContentBase, out BasisAssetBundleObject BasisAssetBundleObject, out BasisBundleInformation basisBundleInformation, out string hexString)
     {
         Debug.Log("Fetching BasisBundleInformation...");
@@ -78,38 +175,70 @@ public static class BasisBundleBuild
         Debug.Log($"Generated hex string: {hexString}");
     }
 
-    public static bool ErrorChecking(BasisContentBase BasisContentBase)
+    public static bool ErrorChecking(BasisContentBase BasisContentBase, out string Error)
     {
-        Debug.Log("Performing error checking...");
+        Error = string.Empty; // Initialize the error variable
 
         if (string.IsNullOrEmpty(BasisContentBase.BasisBundleDescription.AssetBundleName))
         {
-            Debug.LogError("Name was empty!");
-            EditorUtility.DisplayDialog("Missing the name", "Please provide a name in the field", "OK");
-            return false;
-        }
-        if (string.IsNullOrEmpty(BasisContentBase.BasisBundleDescription.AssetBundleDescription))
-        {
-            Debug.LogError("Description was empty!");
-            EditorUtility.DisplayDialog("Missing the description", "Please provide a description in the field", "OK");
+            Error = "Name was empty! Please provide a name in the field.";
             return false;
         }
 
-        Debug.Log("Error checking passed.");
+        if (string.IsNullOrEmpty(BasisContentBase.BasisBundleDescription.AssetBundleDescription))
+        {
+            Error = "Description was empty! Please provide a description in the field.";
+            return false;
+        }
+
         return true;
     }
 
-    public static bool CheckIfIL2CPPIsInstalled()
+    public static bool CheckIfWeCanBuild(List<BuildTarget> Targets, out string Error)
     {
-        Debug.Log("Checking if IL2CPP is installed...");
+        for (int Index = 0; Index < Targets.Count; Index++)
+        {
+            BuildTarget item = Targets[Index];
 
-        var playbackEndingDirectory = BuildPipeline.GetPlaybackEngineDirectory(EditorUserBuildSettings.activeBuildTarget, BuildOptions.None, false);
-        bool isInstalled = !string.IsNullOrEmpty(playbackEndingDirectory) && Directory.Exists(Path.Combine(playbackEndingDirectory, "Variations", "il2cpp"));
+            //   if (IsPlatformInstalled(item) == false)
+            //  {
+            //   Error = "Missing Platform for " + item + " please install from the Unity Hub, make sure to include IL2CPP";
+            //    return false;
+            //  }
 
-        Debug.Log(isInstalled ? "IL2CPP is installed." : "IL2CPP is NOT installed.");
-        return isInstalled;
+            var playbackEndingDirectory = BuildPipeline.GetPlaybackEngineDirectory(item, BuildOptions.None, false);
+            bool isInstalled = !string.IsNullOrEmpty(playbackEndingDirectory) && Directory.Exists(Path.Combine(playbackEndingDirectory, "Variations", "il2cpp"));
+
+            if (isInstalled == false)
+            {
+                Error = "IL2CPP is NOT installed for platform " + item + " please add it from the unity hub!";
+                return false;
+            }
+        }
+        Error = string.Empty;
+        return true;
     }
 
+    static bool IsPlatformInstalled(BuildTarget target)
+    {
+        // Use Unity's method to check for the platform installation
+        string playbackEnginePath = BuildPipeline.GetPlaybackEngineDirectory(target, BuildOptions.None, false);
+
+        if (string.IsNullOrEmpty(playbackEnginePath))
+        {
+            return false; // If no path returned, platform isn't installed
+        }
+
+        // Special check for StandaloneWindows64 which might be named differently in the folder structure
+        if (target == BuildTarget.StandaloneWindows64)
+        {
+            // Check if the "windows64" folder exists in the PlaybackEngines directory
+            return Directory.Exists(Path.Combine(playbackEnginePath, "windows64"));
+        }
+
+        // For all other platforms, we rely on the normal method
+        return Directory.Exists(playbackEnginePath);
+    }
     // Generates a random byte array of specified length
     public static byte[] GenerateRandomBytes(int length)
     {

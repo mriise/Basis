@@ -7,14 +7,15 @@ using static AssetBundleBuilder;
 
 public static class BasisBasisBundleInformationHandler
 {
-    public static async Task<BasisBundleInformation> CreateInformation(BasisAssetBundleObject BuildSettings, BasisBundleInformation BasisBundleInformation, InformationHash InformationHash, string AssetMode, string AssetBundlePath, string ExportFilePath, string Password)
+    public static async Task<BasisBundleInformation> CreateInformation(BasisAssetBundleObject BuildSettings, BasisBundleInformation BasisBundleInformation, InformationHash InformationHash, string AssetMode, string AssetBundlePath, string ExportFilePath, string Password,bool IsEncrypted)
     {
         BasisBundleInformation.BasisBundleGenerated = new BasisBundleGenerated
         {
             AssetBundleHash = InformationHash.bundleHash.ToString(),
             AssetToLoadName = InformationHash.File, // Asset bundle name
             AssetMode = AssetMode, // Provided asset mode
-            AssetBundleCRC = InformationHash.CRC
+            AssetBundleCRC = InformationHash.CRC,
+             IsEncrypted = IsEncrypted
         };
         // Form the meta file path using the provided extension from build settings
         string hashFilePath = Path.ChangeExtension(AssetBundlePath, BuildSettings.BasisMetaExtension);
@@ -80,7 +81,7 @@ public static class BasisBasisBundleInformationHandler
             // Write JSON data to the file
            await File.WriteAllBytesAsync(filePath, Information);
             Debug.Log($"BasisBundleInformation saved to {filePath}");
-            string EncryptedPath = Path.ChangeExtension(filePath, BuildSettings.BasisMetaEncyptedExtension);
+            string EncryptedPath = Path.ChangeExtension(filePath, BuildSettings.BasisMetaEncryptedExtension);
             var BasisPassword = new BasisEncryptionWrapper.BasisPassword
             {
                 VP = password

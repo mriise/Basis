@@ -1,4 +1,7 @@
-public class BasisPathConstants
+using System.Collections.Generic;
+using UnityEditor;
+
+public class BasisSDKConstants
 {
     // Common base paths
     private const string BasePath = "Packages/com.basis.sdk/Scripts/Editor/StyleSheets/";
@@ -37,4 +40,19 @@ public class BasisPathConstants
     public static readonly string ErrorMessage = "ErrorMessage";
     public static readonly string BuildButton = "BuildButton";
     #endregion
+    public static List<BuildTarget> allowedTargets = new List<BuildTarget>
+    {
+        BuildTarget.StandaloneWindows64,
+        BuildTarget.StandaloneLinux64,
+        BuildTarget.Android,
+       //experimental BuildTarget.iOS,
+    };
+
+    public static Dictionary<BuildTarget, string> targetDisplayNames = new Dictionary<BuildTarget, string>
+    {
+        { BuildTarget.StandaloneWindows64, "Windows" },
+        { BuildTarget.StandaloneLinux64, "Linux" },
+        { BuildTarget.Android, "Android" },
+        //experimental { BuildTarget.iOS, "IOS" },
+    };
 }

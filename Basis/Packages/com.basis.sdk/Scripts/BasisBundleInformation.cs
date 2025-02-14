@@ -18,4 +18,5 @@ public class BasisBundleGenerated
     public string AssetMode;//Scene or Gameobject
     public string AssetToLoadName;// assets name we are using out of the box.
     public uint AssetBundleCRC;//CRC of the assetbundle
+    public bool IsEncrypted = true;
 }

@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
@@ -50,11 +51,16 @@ public static class BasisAssetBundlePipeline
 
         Debug.Log("All AssetBundle names cleared from Importer settings.");
     }
-    public static async Task BuildAssetBundle(GameObject originalPrefab, BasisAssetBundleObject settings, BasisBundleInformation BasisBundleInformation, string Password)
+    public static async Task<bool> BuildAssetBundle(GameObject originalPrefab, BasisAssetBundleObject settings, BasisBundleInformation BasisBundleInformation, string Password,BuildTarget Target)
     {
+        if (EditorUserBuildSettings.activeBuildTarget != Target)
+        {
+            EditorUserBuildSettings.SwitchActiveBuildTarget(BuildPipeline.GetBuildTargetGroup(Target), Target);
+        }
         ClearOutExistingSets();
-        TemporaryStorageHandler.ClearTemporaryStorage(settings.AssetBundleDirectory);
-        TemporaryStorageHandler.EnsureDirectoryExists(settings.AssetBundleDirectory);
+        string targetDirectory = Path.Combine(settings.AssetBundleDirectory, Target.ToString());
+        TemporaryStorageHandler.ClearTemporaryStorage(targetDirectory);
+        TemporaryStorageHandler.EnsureDirectoryExists(targetDirectory);
 
         bool wasModified = false;
 
@@ -66,16 +72,14 @@ public static class BasisAssetBundlePipeline
 
             string prefabPath = TemporaryStorageHandler.SavePrefabToTemporaryStorage(prefab, settings, ref wasModified, out string uniqueID);
             string assetBundleName = AssetBundleBuilder.SetAssetBundleName(prefabPath, uniqueID, settings);
-
-
-            await AssetBundleBuilder.BuildAssetBundle(settings, assetBundleName, BasisBundleInformation, "GameObject", Password);
+            await AssetBundleBuilder.BuildAssetBundle(targetDirectory,settings, assetBundleName, BasisBundleInformation, "GameObject", Password, Target);
             AssetBundleBuilder.ResetAssetBundleName(prefabPath);
             TemporaryStorageHandler.ClearTemporaryStorage(settings.TemporaryStorage);
             AssetDatabase.Refresh();
 
             // Invoke the delegate after building the asset bundle
             OnAfterBuildPrefab?.Invoke(assetBundleName);
-            EditorUtility.DisplayDialog("Completed Build", "successfully built asset bundles for assets, Will be found in ./AssetBundles", "ok");
+            return true;
         }
         catch (Exception ex)
         {
@@ -83,6 +87,7 @@ public static class BasisAssetBundlePipeline
             OnBuildErrorPrefab?.Invoke(ex, prefab, wasModified, settings.TemporaryStorage);
             BasisBundleErrorHandler.HandleBuildError(ex, prefab, wasModified, settings.TemporaryStorage);
             EditorUtility.DisplayDialog("Failed To Build", "please check the console for the full issue, " + ex, "will do");
+            return false;
         }
         finally
         {
@@ -90,39 +95,45 @@ public static class BasisAssetBundlePipeline
         }
     }
 
-    public static async Task BuildAssetBundle(Scene scene, BasisAssetBundleObject settings, BasisBundleInformation BasisBundleInformation, string Password)
+    public static async Task<bool> BuildAssetBundle(Scene scene, BasisAssetBundleObject settings, BasisBundleInformation BasisBundleInformation, string Password, BuildTarget Target)
     {
-        ClearOutExistingSets();
-        TemporaryStorageHandler.ClearTemporaryStorage(settings.AssetBundleDirectory);
-        TemporaryStorageHandler.EnsureDirectoryExists(settings.AssetBundleDirectory);
+        if (EditorUserBuildSettings.activeBuildTarget != Target)
+        {
+            EditorUserBuildSettings.SwitchActiveBuildTarget(BuildPipeline.GetBuildTargetGroup(Target), Target);
+        }
+        ClearOutExistingSets();//removes all bundle names
+        string targetDirectory = Path.Combine(settings.AssetBundleDirectory, Target.ToString());
+        TemporaryStorageHandler.ClearTemporaryStorage(targetDirectory);
+        TemporaryStorageHandler.EnsureDirectoryExists(targetDirectory);
 
         if (!BasisValidationHandler.IsSceneValid(scene))
         {
             Debug.LogError("Invalid scene. AssetBundle build aborted.");
-            return;
+            return false;
         }
 
         string tempScenePath = null;
 
         try
         {
-            // Invoke the delegate before building the asset bundle
+            // Invoke the delegate before building the asset bundles
             OnBeforeBuildScene?.Invoke(scene, settings);
 
             tempScenePath = TemporaryStorageHandler.SaveSceneToTemporaryStorage(scene, settings, out string uniqueID);
             string assetBundleName = AssetBundleBuilder.SetAssetBundleName(tempScenePath, uniqueID, settings);
-
-            await AssetBundleBuilder.BuildAssetBundle(settings, assetBundleName, BasisBundleInformation, "Scene", Password);
+            await AssetBundleBuilder.BuildAssetBundle(targetDirectory,settings, assetBundleName, BasisBundleInformation, "Scene", Password, Target);
             TemporaryStorageHandler.DeleteTemporaryStorageScene(uniqueID, settings);
 
             // Invoke the delegate after building the asset bundle
             OnAfterBuildScene?.Invoke(assetBundleName);
+            return true;
         }
         catch (Exception ex)
         {
             // Handle the build error
             OnBuildErrorScene?.Invoke(ex, null, false, settings.TemporaryStorage); // Pass `null` for prefab since this is a scene
             Debug.LogError($"Error while building AssetBundle from scene: {ex.Message}\n{ex.StackTrace}");
+            return false;
         }
     }
 }
