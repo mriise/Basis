@@ -18,7 +18,6 @@ public static class BasisEncryptionToData
 
         // Start the AssetBundle loading process from memory with CRC check
         AssetBundleCreateRequest assetBundleCreateRequest = AssetBundle.LoadFromMemoryAsync(LoadedBundleData, CRC);
-
         // Track the last reported progress
         int lastReportedProgress = -1;
 

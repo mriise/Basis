@@ -1,10 +1,13 @@
-﻿using UnityEngine;
+using UnityEngine;
 namespace BattlePhaze.SettingsManager.Intergrations
 {
     public class SMDMonitor : SettingsManagerOption
     {
         public override void ReceiveOption(SettingsMenuInput option, SettingsManager manager = null)
         {
+#if UNITY_ANDROID
+            return;
+#else
             if (NameReturn(0, option))
             {
                 SettingsManagerDropDown.Clear(manager, option.OptionIndex);
@@ -35,6 +38,7 @@ namespace BattlePhaze.SettingsManager.Intergrations
                     }
                 }
             }
+#endif
         }
     }
 }

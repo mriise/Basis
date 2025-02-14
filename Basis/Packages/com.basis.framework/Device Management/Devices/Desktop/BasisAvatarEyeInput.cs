@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Basis.Scripts.BasisSdk.Helpers;
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Drivers;
@@ -27,7 +28,7 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
         public bool HasEyeEvents = false;
         [SerializeField]
         private List<string> headPauseRequests = new();
-        public void Initalize(string ID = "Desktop Eye", string subSystems = "BasisDesktopManagement")
+        public async Task Initalize(string ID = "Desktop Eye", string subSystems = "BasisDesktopManagement")
         {
             BasisDebug.Log("Initalizing Avatar Eye", BasisDebug.LogTag.Input);
             if (BasisLocalPlayer.Instance.AvatarDriver != null)
@@ -44,7 +45,7 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
             }
             FinalPosition = LocalRawPosition;
             FinalRotation = LocalRawRotation;
-            InitalizeTracking(ID, ID, subSystems, true, BasisBoneTrackedRole.CenterEye);
+            await InitalizeTracking(ID, ID, subSystems, true, BasisBoneTrackedRole.CenterEye);
             if (BasisHelpers.CheckInstance(Instance))
             {
                 Instance = this;

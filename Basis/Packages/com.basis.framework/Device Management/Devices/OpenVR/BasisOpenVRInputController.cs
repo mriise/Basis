@@ -1,10 +1,10 @@
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Device_Management.Devices.OpenVR.Structs;
 using Basis.Scripts.TransformBinders.BoneControl;
+using System.Threading.Tasks;
 using Unity.Mathematics;
 using UnityEngine;
 using Valve.VR;
-using static UnityEngine.GraphicsBuffer;
 
 namespace Basis.Scripts.Device_Management.Devices.OpenVR
 {
@@ -16,7 +16,7 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
         public SteamVR_Action_Pose poseAction = SteamVR_Input.GetAction<SteamVR_Action_Pose>("Pose");
         public BasisOpenVRInputSkeleton SkeletonHandInput = null;
         public bool HasOnUpate = false;
-        public void Initialize(OpenVRDevice device, string UniqueID, string UnUniqueID, string subSystems, bool AssignTrackedRole, BasisBoneTrackedRole basisBoneTrackedRole, SteamVR_Input_Sources SteamVR_Input_Sources)
+        public async Task Initialize(OpenVRDevice device, string UniqueID, string UnUniqueID, string subSystems, bool AssignTrackedRole, BasisBoneTrackedRole basisBoneTrackedRole, SteamVR_Input_Sources SteamVR_Input_Sources)
         {
             if (HasOnUpate && poseAction != null)
             {
@@ -25,7 +25,7 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
             }
             inputSource = SteamVR_Input_Sources;
             Device = device;
-            InitalizeTracking(UniqueID, UnUniqueID, subSystems, AssignTrackedRole, basisBoneTrackedRole);
+          await  InitalizeTracking(UniqueID, UnUniqueID, subSystems, AssignTrackedRole, basisBoneTrackedRole);
             if (poseAction != null)
             {
                 if (HasOnUpate == false)

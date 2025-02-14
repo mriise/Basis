@@ -10,6 +10,7 @@ using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 using UnityEngine.XR;
 using Vector3 = UnityEngine.Vector3;
+using BattlePhaze.SettingsManager;
 
 namespace Basis.Scripts.Drivers
 {
@@ -60,7 +61,6 @@ namespace Basis.Scripts.Drivers
                 Instance = this;
                 HasInstance = true;
             }
-            LocalPlayer = BasisLocalPlayer.Instance;
             Camera.nearClipPlane = NearClip;
             Camera.farClipPlane = 1500;
             CameraInstanceID = Camera.GetInstanceID();
@@ -87,7 +87,8 @@ namespace Basis.Scripts.Drivers
             {
                 SteamAudioManager.NotifyAudioListenerChanged();
             }
-                            SpriteRendererIcon.gameObject.SetActive(true);
+            SpriteRendererIcon.gameObject.SetActive(true);
+            SettingsManager.Instance.Initalize(true);
         }
         public void MicrophoneTransmitting()
         {

@@ -1,4 +1,4 @@
-﻿namespace BattlePhaze.SettingsManager
+namespace BattlePhaze.SettingsManager
 {
     using BattlePhaze.SaveSystem;
     using BattlePhaze.SettingsManager.DebugSystem;
@@ -40,7 +40,7 @@
                     DontDestroyOnLoad(gameObject);
                 }
                 CheckSupportedPlatforms();
-                Initalize(true);
+               // Initalize(true);
                 SceneManager.sceneLoaded += SettingsManagerSceneSystem.OnSceneLoaded;
             }
             else

@@ -1,5 +1,6 @@
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.TransformBinders.BoneControl;
+using System.Threading.Tasks;
 using Unity.Mathematics;
 using UnityEngine;
 using static BasisBaseMuscleDriver;
@@ -12,11 +13,11 @@ namespace Basis.Scripts.Device_Management.Devices.OpenXR
         public UnityEngine.XR.InputDevice Device;
         public FingerPose FingerCurls;
         public BasisOpenXRInputEye BasisOpenXRInputEye;
-        public BasisVirtualSpineDriver BasisVirtualSpine = new BasisVirtualSpineDriver(); 
-        public void Initialize(UnityEngine.XR.InputDevice device, string UniqueID, string UnUniqueID, string subSystems, bool AssignTrackedRole, BasisBoneTrackedRole basisBoneTrackedRole)
+        public BasisVirtualSpineDriver BasisVirtualSpine = new BasisVirtualSpineDriver();
+        public async Task Initialize(UnityEngine.XR.InputDevice device, string UniqueID, string UnUniqueID, string subSystems, bool AssignTrackedRole, BasisBoneTrackedRole basisBoneTrackedRole)
         {
             Device = device;
-            InitalizeTracking(UniqueID, UnUniqueID, subSystems, AssignTrackedRole, basisBoneTrackedRole);
+            await InitalizeTracking(UniqueID, UnUniqueID, subSystems, AssignTrackedRole, basisBoneTrackedRole);
             if (basisBoneTrackedRole == BasisBoneTrackedRole.CenterEye)
             {
                 BasisOpenXRInputEye = this.gameObject.AddComponent<BasisOpenXRInputEye>();

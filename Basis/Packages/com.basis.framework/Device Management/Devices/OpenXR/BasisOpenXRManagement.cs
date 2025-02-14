@@ -15,17 +15,17 @@ namespace Basis.Scripts.Device_Management.Devices.OpenXR
         public List<InputDevice> inputDevices = new List<InputDevice>();
         public Dictionary<string, InputDevice> TypicalDevices = new Dictionary<string, InputDevice>();
         public bool HasEvents = false;
-        private  void OnDeviceConnected(InputDevice device)
+        private  async void OnDeviceConnected(InputDevice device)
         {
-            UpdateDeviceList();
+          await  UpdateDeviceList();
         }
 
-        private void OnDeviceDisconnected(InputDevice device)
+        private async void OnDeviceDisconnected(InputDevice device)
         {
-            UpdateDeviceList();
+           await UpdateDeviceList();
         }
 
-        private void UpdateDeviceList()
+        private async Task UpdateDeviceList()
         {
             InputDevices.GetDevices(inputDevices);
 
@@ -39,7 +39,7 @@ namespace Basis.Scripts.Device_Management.Devices.OpenXR
                     string id = GenerateID(device);
                     if (!TypicalDevices.ContainsKey(id))
                     {
-                       CreatePhysicalTrackedDevice(device, id);
+                     await  CreatePhysicalTrackedDevice(device, id);
                         TypicalDevices[id] = device;
                     }
                 }
@@ -66,7 +66,7 @@ namespace Basis.Scripts.Device_Management.Devices.OpenXR
             return $"{device.name}|{device.serialNumber}|{device.manufacturer}|{(int)device.characteristics}";
         }
 
-        private void CreatePhysicalTrackedDevice(InputDevice device, string uniqueID)
+        private async Task CreatePhysicalTrackedDevice(InputDevice device, string uniqueID)
         {
             var gameObject = new GameObject(uniqueID)
             {
@@ -78,7 +78,7 @@ namespace Basis.Scripts.Device_Management.Devices.OpenXR
             var basisXRInput = gameObject.AddComponent<BasisOpenXRInput>();
             basisXRInput.ClassName = nameof(BasisOpenXRInput);
             bool state = GetControllerOrHMD(device, out BasisBoneTrackedRole BasisBoneTrackedRole);
-           basisXRInput.Initialize(device, uniqueID, device.name + BasisBoneTrackedRole.ToString(), nameof(BasisOpenXRManagement), state, BasisBoneTrackedRole);
+            await basisXRInput.Initialize(device, uniqueID, device.name + BasisBoneTrackedRole.ToString(), nameof(BasisOpenXRManagement), state, BasisBoneTrackedRole);
             BasisDeviceManagement.Instance.TryAdd(basisXRInput);
         }
         private bool GetControllerOrHMD(InputDevice device, out BasisBoneTrackedRole BasisBoneTrackedRole)

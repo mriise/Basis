@@ -1,4 +1,4 @@
-﻿using Basis.Scripts.Device_Management;
+using Basis.Scripts.Device_Management;
 using UnityEngine;
 
 namespace BattlePhaze.SettingsManager.Integrations

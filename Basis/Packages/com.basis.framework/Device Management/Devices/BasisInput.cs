@@ -153,7 +153,7 @@ namespace Basis.Scripts.Device_Management.Devices
         /// <param name="subSystems"></param>
         /// <param name="ForceAssignTrackedRole"></param>
         /// <param name="basisBoneTrackedRole"></param>
-        public async void InitalizeTracking(string uniqueID, string unUniqueDeviceID, string subSystems, bool ForceAssignTrackedRole, BasisBoneTrackedRole basisBoneTrackedRole)
+        public async Task InitalizeTracking(string uniqueID, string unUniqueDeviceID, string subSystems, bool ForceAssignTrackedRole, BasisBoneTrackedRole basisBoneTrackedRole)
         {
             //unassign the old tracker
             UnAssignTracker();
@@ -179,7 +179,7 @@ namespace Basis.Scripts.Device_Management.Devices
                 HasInteractVisual = BasisDeviceMatchSettings.HasInteractVisual;
                 if (HasRaycastSupport)
                 {
-                  await  CreateRayCaster(this);
+                    await CreateRayCaster(this);
                 }
             }
             /*            if (ForceAssignTrackedRole)

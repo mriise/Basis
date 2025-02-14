@@ -28,6 +28,12 @@ public class SMModuleAntialiasingURP : SettingsManagerOption
         {
             return;
         }
+#if UNITY_ANDROID
+        Asset.msaaSampleCount = MediumLowmsaaSampleCount;
+        Camera.allowMSAA = true;
+        Data.antialiasing = AntialiasingMode.SubpixelMorphologicalAntiAliasing;
+        Data.antialiasingQuality = AntialiasingQuality.Medium;
+#else
         switch (Quality)
         {
             case "very low":
@@ -61,6 +67,7 @@ public class SMModuleAntialiasingURP : SettingsManagerOption
                 Data.antialiasingQuality = AntialiasingQuality.High;
                 break;
         }
+#endif
     }
 }
 #endif
