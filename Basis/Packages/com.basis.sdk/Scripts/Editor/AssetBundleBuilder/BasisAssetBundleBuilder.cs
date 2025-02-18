@@ -6,7 +6,7 @@ using UnityEngine;
 using static BasisEncryptionWrapper;
 public static class AssetBundleBuilder
 {
-    public static async Task<BasisBundleGenerated> BuildAssetBundle(string targetDirectory,BasisAssetBundleObject settings,string assetBundleName,string mode,string password,BuildTarget buildTarget,bool isEncrypted = true)
+    public static async Task<BasisBundleGenerated> BuildAssetBundle(string targetDirectory, BasisAssetBundleObject settings, string assetBundleName, string mode, string password, BuildTarget buildTarget, bool isEncrypted = true)
     {
         BasisBundleGenerated BasisBundleGenerated = new BasisBundleGenerated();
         EnsureDirectoryExists(targetDirectory);
@@ -14,9 +14,9 @@ public static class AssetBundleBuilder
         AssetBundleManifest manifest = BuildPipeline.BuildAssetBundles(targetDirectory, settings.BuildAssetBundleOptions, buildTarget);
         if (manifest != null)
         {
-          InformationHash Hash = await ProcessAssetBundles(targetDirectory, settings, manifest, password, isEncrypted);
-            BasisBundleGenerated = new BasisBundleGenerated(Hash.bundleHash.ToString(),mode,assetBundleName,Hash.CRC,true,password,buildTarget.ToString(),true, $"{Hash.File}{settings.BasisBundleEncryptedExtension}");
-            DeleteManifestFiles(targetDirectory);
+            InformationHash Hash = await ProcessAssetBundles(targetDirectory, settings, manifest, password, isEncrypted);
+            BasisBundleGenerated = new BasisBundleGenerated(Hash.bundleHash.ToString(), mode, assetBundleName, Hash.CRC, true, password, buildTarget.ToString(), true, $"{Hash.File}{settings.BasisBundleEncryptedExtension}");
+            DeleteManifestFiles(targetDirectory, buildTarget.ToString());
         }
         else
         {
@@ -90,25 +90,34 @@ public static class AssetBundleBuilder
         }
     }
 
-    private static void DeleteManifestFiles(string targetDirectory)
+    private static void DeleteManifestFiles(string targetDirectory, string Platform, bool DeleteManifestFiles = true)
     {
-        string[] Files = Directory.GetFiles(targetDirectory, "*.manifest");
-        foreach (string manifestFile in Files)
+        if (DeleteManifestFiles)
         {
-            if (File.Exists(manifestFile))
+            string[] Files = Directory.GetFiles(targetDirectory, "*.manifest");
+            foreach (string manifestFile in Files)
             {
-                File.Delete(manifestFile);
-                BasisDebug.Log("Deleted manifest file: " + manifestFile);
+                if (File.Exists(manifestFile))
+                {
+                    File.Delete(manifestFile);
+                    BasisDebug.Log("Deleted manifest file: " + manifestFile);
+                }
             }
-        }
 
-        string[] BundlesFiles = Directory.GetFiles(targetDirectory);
-        foreach (string assetFile in BundlesFiles)
-        {
-            if (Path.GetFileNameWithoutExtension(assetFile) == "AssetBundles")
+
+            string[] BundlesFiles = Directory.GetFiles(targetDirectory);
+            foreach (string assetFile in BundlesFiles)
             {
-                File.Delete(assetFile);
-                BasisDebug.Log("Deleted manifest file: " + assetFile);
+                if (Path.GetFileNameWithoutExtension(assetFile) == "AssetBundles")
+                {
+                    File.Delete(assetFile);
+                    BasisDebug.Log("Deleted AssetBundles file: " + assetFile);
+                }
+                if (Path.GetFileNameWithoutExtension(assetFile) == Platform)
+                {
+                    File.Delete(assetFile);
+                    BasisDebug.Log("Deleted Platform file: " + assetFile);
+                }
             }
         }
     }

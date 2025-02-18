@@ -18,10 +18,7 @@ public static class BasisBundleBuild
     {
         return await BuildBundle(BasisContentBase, Targets,(content, obj, hex, target) => BasisAssetBundlePipeline.BuildAssetBundle(content.gameObject.scene, obj, hex, target));
     }
-    public static async Task<(bool, string)> BuildBundle(
-        BasisContentBase BasisContentBase,
-        List<BuildTarget> Targets,
-        Func<BasisContentBase, BasisAssetBundleObject, string, BuildTarget, Task<(bool, BasisBundleGenerated)>> buildFunction)
+    public static async Task<(bool, string)> BuildBundle(BasisContentBase BasisContentBase,List<BuildTarget> Targets,Func<BasisContentBase, BasisAssetBundleObject, string, BuildTarget, Task<(bool, BasisBundleGenerated)>> buildFunction)
     {
         Debug.Log("Starting BuildBundle...");
 
@@ -79,7 +76,7 @@ public static class BasisBundleBuild
             BasisContentBase.BasisBundleDescription,
             Bundles
         );
-        await BasisBasisBundleInformationHandler.BasisBundleConnector(Objects, BasisBundleConnector, hexString);
+        await BasisBasisBundleInformationHandler.BasisBundleConnector(Objects, BasisBundleConnector, hexString,true);
 
         Debug.Log("Successfully built asset bundle.");
 

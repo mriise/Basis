@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 public static class BasisBasisBundleInformationHandler
 {
-    public static async Task<BasisBundleConnector> BasisBundleConnector(BasisAssetBundleObject BuildSettings, BasisBundleConnector BasisBundleConnector, string ConnectorPassword)
+    public static async Task<BasisBundleConnector> BasisBundleConnector(BasisAssetBundleObject BuildSettings, BasisBundleConnector BasisBundleConnector, string ConnectorPassword, bool DeleteUnEncrypted = true)
     {
         string filePath = Path.Combine(BuildSettings.AssetBundleDirectory, $"Connector{BuildSettings.BasisMetaExtension}");
 
@@ -12,10 +12,10 @@ public static class BasisBasisBundleInformationHandler
         {
             File.Delete(filePath);
         }
-        await SaveBasisBundleConnector(BasisBundleConnector, filePath, BuildSettings, ConnectorPassword);
+        await SaveBasisBundleConnector(BasisBundleConnector, filePath, BuildSettings, ConnectorPassword, DeleteUnEncrypted);
         return BasisBundleConnector;
     }
-    private static async Task SaveBasisBundleConnector(BasisBundleConnector BasisBundleConnector, string filePath, BasisAssetBundleObject BuildSettings, string password)
+    private static async Task SaveBasisBundleConnector(BasisBundleConnector BasisBundleConnector, string filePath, BasisAssetBundleObject BuildSettings, string password,bool DeleteUnEncrypted = true)
     {
         byte[] Information = SerializationUtility.SerializeValue<BasisBundleConnector>(BasisBundleConnector, DataFormat.JSON);
         try
@@ -33,7 +33,7 @@ public static class BasisBasisBundleInformationHandler
             await BasisEncryptionWrapper.EncryptFileAsync(UniqueID, BasisPassword, filePath, EncryptedPath, Report);
 
             // Delete the bundle file if it exists
-            if (File.Exists(filePath))
+            if (DeleteUnEncrypted && File.Exists(filePath))
             {
                 File.Delete(filePath);
             }
