@@ -98,7 +98,7 @@ public static class BasisAssetBundlePipeline
             }
 
             string assetBundleName = AssetBundleBuilder.SetAssetBundleName(assetPath, uniqueID, settings);
-            await AssetBundleBuilder.BuildAssetBundle(targetDirectory, settings, assetBundleName, isScene ? "Scene" : "GameObject", Password, Target);
+            BasisBundleGenerated BasisBundleGenerated = await AssetBundleBuilder.BuildAssetBundle(targetDirectory, settings, assetBundleName, isScene ? "Scene" : "GameObject", Password, Target);
 
             AssetBundleBuilder.ResetAssetBundleName(assetPath);
             TemporaryStorageHandler.ClearTemporaryStorage(settings.TemporaryStorage);
@@ -112,8 +112,7 @@ public static class BasisAssetBundlePipeline
             {
                 OnAfterBuildPrefab?.Invoke(assetBundleName);
             }
-
-            return new(true,);
+            return new(true, BasisBundleGenerated);
         }
         catch (Exception ex)
         {

@@ -8,12 +8,14 @@ public static class AssetBundleBuilder
 {
     public static async Task<BasisBundleGenerated> BuildAssetBundle(string targetDirectory,BasisAssetBundleObject settings,string assetBundleName,string mode,string password,BuildTarget buildTarget,bool isEncrypted = true)
     {
+        BasisBundleGenerated BasisBundleGenerated = new BasisBundleGenerated();
         EnsureDirectoryExists(targetDirectory);
         EditorUtility.DisplayProgressBar("Building Asset Bundles", "Initializing...", 0f);
         AssetBundleManifest manifest = BuildPipeline.BuildAssetBundles(targetDirectory, settings.BuildAssetBundleOptions, buildTarget);
         if (manifest != null)
         {
           InformationHash Hash = await ProcessAssetBundles(targetDirectory, settings, manifest, password, isEncrypted,password);
+            BasisBundleGenerated = new BasisBundleGenerated(Hash.bundleHash.ToString(),mode,assetBundleName,Hash.CRC,true,password,buildTarget.ToString(),true, $"{Hash.File}{settings.BasisBundleEncryptedExtension}");
             DeleteManifestFiles(targetDirectory);
         }
         else
@@ -21,6 +23,7 @@ public static class AssetBundleBuilder
             BasisDebug.LogError("AssetBundle build failed.");
         }
         EditorUtility.ClearProgressBar();
+        return BasisBundleGenerated;
     }
     private static async Task<InformationHash> ProcessAssetBundles(string targetDirectory,BasisAssetBundleObject settings,AssetBundleManifest manifest,string password,bool isEncrypted,string PasswordTextFileFolderPath)
     {

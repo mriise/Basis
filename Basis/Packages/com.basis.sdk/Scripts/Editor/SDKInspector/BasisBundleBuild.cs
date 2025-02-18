@@ -6,26 +6,41 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public static class BasisBundleBuild
 {
     public static async Task<(bool, string)> GameObjectBundleBuild(BasisContentBase BasisContentBase, List<BuildTarget> Targets)
     {
-        Debug.Log("Starting GameObjectBundleBuild...");
+        return await BuildBundle(BasisContentBase, Targets,
+            (content, obj, hex, target) => BasisAssetBundlePipeline.BuildAssetBundle(content.gameObject, obj, hex, target));
+    }
+
+    public static async Task<(bool, string)> SceneBundleBuild(BasisContentBase BasisContentBase, List<BuildTarget> Targets)
+    {
+        return await BuildBundle(BasisContentBase, Targets,
+            (content, obj, hex, target) => BasisAssetBundlePipeline.BuildAssetBundle(content.gameObject.scene, obj, hex, target));
+    }
+    public static async Task<(bool, string)> BuildBundle(
+        BasisContentBase BasisContentBase,
+        List<BuildTarget> Targets,
+        Func<BasisContentBase, BasisAssetBundleObject, string, BuildTarget, Task<(bool, BasisBundleGenerated)>> buildFunction)
+    {
+        Debug.Log("Starting BuildBundle...");
 
         // Store the initial active build target
         BuildTarget originalActiveTarget = EditorUserBuildSettings.activeBuildTarget;
 
         if (ErrorChecking(BasisContentBase, out string Error) == false)
         {
-            return new(false, Error);
+            return (false, Error);
         }
 
         if (CheckIfWeCanBuild(Targets, out Error) == false)
         {
-            return new(false, Error);
+            return (false, Error);
         }
+
+        Debug.Log("Passed error checking for BuildBundle...");
 
         // Ensure active build target is first in the list
         BuildTarget activeTarget = EditorUserBuildSettings.activeBuildTarget;
@@ -39,95 +54,48 @@ public static class BasisBundleBuild
             Targets.Remove(activeTarget);
             Targets.Insert(0, activeTarget);
         }
+
         BasisAssetBundleObject Objects = AssetDatabase.LoadAssetAtPath<BasisAssetBundleObject>(BasisAssetBundleObject.AssetBundleObject);
+
         Debug.Log("Generating random bytes for hex string...");
         byte[] randomBytes = GenerateRandomBytes(32);
         string hexString = ByteArrayToHexString(randomBytes);
         Debug.Log($"Generated hex string: {hexString}");
 
         Debug.Log("IL2CPP is installed. Proceeding to build asset bundle...");
-        foreach (BuildTarget Target in Targets)
+
+        BasisBundleGenerated[] Bundles = new BasisBundleGenerated[Targets.Count];
+        for (int Index = 0; Index < Targets.Count; Index++)
         {
-            bool Success = await BasisAssetBundlePipeline.BuildAssetBundle(BasisContentBase.gameObject, Objects, hexString, Target);
-            if (Success == false)
+            BuildTarget Target = Targets[Index];
+            (bool success, BasisBundleGenerated bundle) = await buildFunction(BasisContentBase, Objects, hexString, Target);
+            if (!success)
             {
-                return new(false, "Failure While Building for " + Target);
+                return (false, "Failure While Building for " + Target);
             }
+            Bundles[Index] = bundle;
         }
-        Debug.Log("Passed error checking for GameObjectBundleBuild...");
 
-        BasisBundleConnector BasisBundleConnector = new BasisBundleConnector(BasisGenerateUniqueID.GenerateUniqueID(), BasisContentBase.BasisBundleDescription,);
+        BasisBundleConnector BasisBundleConnector = new BasisBundleConnector(
+            BasisGenerateUniqueID.GenerateUniqueID(),
+            BasisContentBase.BasisBundleDescription,
+            Bundles
+        );
 
-        Debug.Log("Successfully built GameObject asset bundle.");
+        Debug.Log("Successfully built asset bundle.");
 
-        // If the original active target was not the current one, switch back
+        // Restore the original build target
         if (EditorUserBuildSettings.activeBuildTarget != originalActiveTarget)
         {
-            EditorUserBuildSettings.SwitchActiveBuildTarget(BuildPipeline.GetBuildTargetGroup(originalActiveTarget), originalActiveTarget);
+            EditorUserBuildSettings.SwitchActiveBuildTarget(
+                BuildPipeline.GetBuildTargetGroup(originalActiveTarget),
+                originalActiveTarget
+            );
             Debug.Log($"Switched back to original build target: {originalActiveTarget}");
         }
+
         OpenRelativePath(Objects.AssetBundleDirectory);
-        return new(true, "Success");
-    }
-    public static async Task<(bool, string)> SceneBundleBuild(BasisContentBase BasisContentBase, List<BuildTarget> Targets)
-    {
-        Debug.Log("Starting SceneBundleBuild...");
-
-        // Store the initial active build target
-        BuildTarget originalActiveTarget = EditorUserBuildSettings.activeBuildTarget;
-
-        if (ErrorChecking(BasisContentBase,out string Error) == false)
-        {
-            return new (false, Error);
-        }
-
-        if (CheckIfWeCanBuild(Targets, out Error) == false)
-        {
-            return new(false, Error);
-        }
-
-        Debug.Log("Passed error checking for SceneBundleBuild...");
-        // Ensure active build target is first in the list
-        BuildTarget activeTarget = EditorUserBuildSettings.activeBuildTarget;
-        if (!Targets.Contains(activeTarget))
-        {
-            Debug.LogWarning($"Active build target {activeTarget} not in list of targets.");
-        }
-        else
-        {
-            // Move active build target to the front
-            Targets.Remove(activeTarget);
-            Targets.Insert(0, activeTarget);
-        }
-        BasisAssetBundleObject Objects = AssetDatabase.LoadAssetAtPath<BasisAssetBundleObject>(BasisAssetBundleObject.AssetBundleObject);
-        Debug.Log("Generating random bytes for hex string...");
-        byte[] randomBytes = GenerateRandomBytes(32);
-        string hexString = ByteArrayToHexString(randomBytes);
-        Debug.Log($"Generated hex string: {hexString}");
-
-        Debug.Log("IL2CPP is installed. Proceeding to build asset bundle...");
-        foreach (BuildTarget Target in Targets)
-        {
-            bool Success = await BasisAssetBundlePipeline.BuildAssetBundle(BasisContentBase.gameObject, Objects, hexString, Target);
-            if (Success == false)
-            {
-                return new(false, "Failure While Building for " + Target);
-            }
-        }
-        Debug.Log("Passed error checking for GameObjectBundleBuild...");
-        BasisBundleGenerated[] Generated = new BasisBundleGenerated[] { };
-        BasisBundleConnector BasisBundleConnector = new BasisBundleConnector(BasisGenerateUniqueID.GenerateUniqueID(), BasisContentBase.BasisBundleDescription, Generated);
-
-        Debug.Log("Successfully built GameObject asset bundle.");
-
-        // If the original active target was not the current one, switch back
-        if (EditorUserBuildSettings.activeBuildTarget != originalActiveTarget)
-        {
-            EditorUserBuildSettings.SwitchActiveBuildTarget(BuildPipeline.GetBuildTargetGroup(originalActiveTarget), originalActiveTarget);
-            Debug.Log($"Switched back to original build target: {originalActiveTarget}");
-        }
-        OpenRelativePath(Objects.AssetBundleDirectory);
-        return new(true, "Success");
+        return (true, "Success");
     }
     public static string OpenRelativePath(string relativePath)
     {
