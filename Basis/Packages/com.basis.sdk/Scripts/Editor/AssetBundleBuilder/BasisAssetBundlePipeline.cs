@@ -75,6 +75,7 @@ public static class BasisAssetBundlePipeline
         bool wasModified = false;
         string assetPath = null;
         string uniqueID = null;
+        GameObject prefab = null;
         try
         {
             if (isScene)
@@ -91,9 +92,14 @@ public static class BasisAssetBundlePipeline
             }
             else
             {
-              GameObject  prefab = Object.Instantiate(asset);
+                prefab = Object.Instantiate(asset);
                 OnBeforeBuildPrefab?.Invoke(prefab, settings);
                 assetPath = TemporaryStorageHandler.SavePrefabToTemporaryStorage(prefab, settings, ref wasModified, out uniqueID);
+
+                if (prefab != null)
+                {
+                    GameObject.DestroyImmediate(prefab);
+                }
             }
 
             string assetBundleName = AssetBundleBuilder.SetAssetBundleName(assetPath, uniqueID, settings);

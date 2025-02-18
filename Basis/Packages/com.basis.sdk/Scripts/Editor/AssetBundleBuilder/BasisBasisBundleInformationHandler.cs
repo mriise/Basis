@@ -1,18 +1,10 @@
 using BasisSerializer.OdinSerializer;
 using System.IO;
 using System.Threading.Tasks;
-using static AssetBundleBuilder;
-
 public static class BasisBasisBundleInformationHandler
 {
-    public static async Task<BasisBundleConnector> BasisBundleConnector(BasisAssetBundleObject BuildSettings, BasisBundleConnector BasisBundleConnector,string ConnectorPassword, InformationHash[] InformationHash, string[] AssetMode, string[] AssetBundlePath, string[] ExportFilePath, string[] Password, bool[] IsEncrypted, string[] Platform)
+    public static async Task<BasisBundleConnector> BasisBundleConnector(BasisAssetBundleObject BuildSettings, BasisBundleConnector BasisBundleConnector, string ConnectorPassword)
     {
-        BasisBundleConnector.BasisBundleGenerated = new BasisBundleGenerated[InformationHash.Length];
-        for (int Index = 0; Index < InformationHash.Length; Index++)
-        {
-            BasisBundleConnector.BasisBundleGenerated[Index] = new BasisBundleGenerated(InformationHash[Index].bundleHash.ToString(), AssetMode[Index], InformationHash[Index].File, InformationHash[Index].CRC, IsEncrypted[Index], Password[Index], Platform[Index], true, Platform[Index]);
-        }
-        BasisBundleConnector.UniqueVersion = BasisGenerateUniqueID.GenerateUniqueID();
         string filePath = Path.Combine(BuildSettings.AssetBundleDirectory, $"Connector{BuildSettings.BasisMetaExtension}");
 
         // If the file exists, delete it
@@ -52,5 +44,5 @@ public static class BasisBasisBundleInformationHandler
         }
     }
     // Function to validate BasisBundleInformation
-     private static BasisProgressReport Report = new BasisProgressReport();
+    private static BasisProgressReport Report = new BasisProgressReport();
 }

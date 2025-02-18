@@ -79,6 +79,7 @@ public static class BasisBundleBuild
             BasisContentBase.BasisBundleDescription,
             Bundles
         );
+        await BasisBasisBundleInformationHandler.BasisBundleConnector(Objects, BasisBundleConnector, hexString);
 
         Debug.Log("Successfully built asset bundle.");
 
