@@ -14,7 +14,7 @@ public static class AssetBundleBuilder
         AssetBundleManifest manifest = BuildPipeline.BuildAssetBundles(targetDirectory, settings.BuildAssetBundleOptions, buildTarget);
         if (manifest != null)
         {
-          InformationHash Hash = await ProcessAssetBundles(targetDirectory, settings, manifest, password, isEncrypted,password);
+          InformationHash Hash = await ProcessAssetBundles(targetDirectory, settings, manifest, password, isEncrypted);
             BasisBundleGenerated = new BasisBundleGenerated(Hash.bundleHash.ToString(),mode,assetBundleName,Hash.CRC,true,password,buildTarget.ToString(),true, $"{Hash.File}{settings.BasisBundleEncryptedExtension}");
             DeleteManifestFiles(targetDirectory);
         }
@@ -25,7 +25,7 @@ public static class AssetBundleBuilder
         EditorUtility.ClearProgressBar();
         return BasisBundleGenerated;
     }
-    private static async Task<InformationHash> ProcessAssetBundles(string targetDirectory,BasisAssetBundleObject settings,AssetBundleManifest manifest,string password,bool isEncrypted,string PasswordTextFileFolderPath)
+    private static async Task<InformationHash> ProcessAssetBundles(string targetDirectory,BasisAssetBundleObject settings,AssetBundleManifest manifest,string password,bool isEncrypted)
     {
         string[] files = manifest.GetAllAssetBundles();
         int totalFiles = files.Length;
@@ -49,7 +49,6 @@ public static class AssetBundleBuilder
             CleanupOriginalFile(actualFilePath);
             InformationHashes.Add(informationHash);
         }
-        await SaveFileAsync(PasswordTextFileFolderPath, settings.ProtectedPasswordFileName, "txt", password);
         if (InformationHashes.Count == 1)
         {
             return InformationHashes[0];

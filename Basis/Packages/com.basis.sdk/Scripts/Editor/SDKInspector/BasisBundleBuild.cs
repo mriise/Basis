@@ -11,14 +11,12 @@ public static class BasisBundleBuild
 {
     public static async Task<(bool, string)> GameObjectBundleBuild(BasisContentBase BasisContentBase, List<BuildTarget> Targets)
     {
-        return await BuildBundle(BasisContentBase, Targets,
-            (content, obj, hex, target) => BasisAssetBundlePipeline.BuildAssetBundle(content.gameObject, obj, hex, target));
+        return await BuildBundle(BasisContentBase, Targets, (content, obj, hex, target) => BasisAssetBundlePipeline.BuildAssetBundle(content.gameObject, obj, hex, target));
     }
 
     public static async Task<(bool, string)> SceneBundleBuild(BasisContentBase BasisContentBase, List<BuildTarget> Targets)
     {
-        return await BuildBundle(BasisContentBase, Targets,
-            (content, obj, hex, target) => BasisAssetBundlePipeline.BuildAssetBundle(content.gameObject.scene, obj, hex, target));
+        return await BuildBundle(BasisContentBase, Targets,(content, obj, hex, target) => BasisAssetBundlePipeline.BuildAssetBundle(content.gameObject.scene, obj, hex, target));
     }
     public static async Task<(bool, string)> BuildBundle(
         BasisContentBase BasisContentBase,
@@ -93,7 +91,7 @@ public static class BasisBundleBuild
             );
             Debug.Log($"Switched back to original build target: {originalActiveTarget}");
         }
-
+        await AssetBundleBuilder.SaveFileAsync(Objects.AssetBundleDirectory, Objects.ProtectedPasswordFileName, "txt", hexString);
         OpenRelativePath(Objects.AssetBundleDirectory);
         return (true, "Success");
     }
