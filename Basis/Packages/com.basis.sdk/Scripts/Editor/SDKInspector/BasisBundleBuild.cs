@@ -1,12 +1,12 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Security.Cryptography;
 using System.Text;
-using System;
+using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using System.IO;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 
 public static class BasisBundleBuild
 {
@@ -26,11 +26,6 @@ public static class BasisBundleBuild
         {
             return new(false, Error);
         }
-
-        Debug.Log("Passed error checking for GameObjectBundleBuild...");
-
-        BasisBundleInformation(BasisContentBase, out BasisAssetBundleObject Objects, out BasisBundleInformation Information, out string hexString);
-        Debug.Log($"Generated bundle information. Hex string: {hexString}");
 
         // Ensure active build target is first in the list
         BuildTarget activeTarget = EditorUserBuildSettings.activeBuildTarget;
@@ -54,6 +49,10 @@ public static class BasisBundleBuild
                 return new(false, "Failure While Building for " + Target);
             }
         }
+        Debug.Log("Passed error checking for GameObjectBundleBuild...");
+        BasisBundleGenerated[] Generated = new BasisBundleGenerated[] { };
+        BasisBundleInformation(BasisContentBase, Generated, out BasisAssetBundleObject Objects, out BasisBundleConnector Information, out string hexString);
+        Debug.Log($"Generated bundle information. Hex string: {hexString}");
 
         Debug.Log("Successfully built GameObject asset bundle.");
 
@@ -66,7 +65,6 @@ public static class BasisBundleBuild
         OpenRelativePath(Objects.AssetBundleDirectory);
         return new(true, "Success");
     }
-
     public static async Task<(bool, string)> SceneBundleBuild(BasisContentBase BasisContentBase, List<BuildTarget> Targets)
     {
         Debug.Log("Starting SceneBundleBuild...");
@@ -86,7 +84,7 @@ public static class BasisBundleBuild
 
         Debug.Log("Passed error checking for SceneBundleBuild...");
 
-        BasisBundleInformation(BasisContentBase, out BasisAssetBundleObject Objects, out BasisBundleInformation Information, out string hexString);
+        BasisBundleInformation(BasisContentBase, out BasisAssetBundleObject Objects, out BasisBundleConnector Information, out string hexString);
         Debug.Log($"Generated bundle information. Hex string: {hexString}");
 
         // Ensure active build target is first in the list
@@ -159,15 +157,12 @@ public static class BasisBundleBuild
             Debug.LogError("Path does not exist: " + windowsPath);
         }
     }
-    public static void BasisBundleInformation(BasisContentBase BasisContentBase, out BasisAssetBundleObject BasisAssetBundleObject, out BasisBundleInformation basisBundleInformation, out string hexString)
+    public static void BasisBundleInformation(BasisContentBase BasisContentBase, BasisBundleGenerated[] BasisBundleGenerateds, out BasisAssetBundleObject BasisAssetBundleObject, out BasisBundleConnector basisBundleInformation, out string hexString)
     {
         Debug.Log("Fetching BasisBundleInformation...");
 
         BasisAssetBundleObject = AssetDatabase.LoadAssetAtPath<BasisAssetBundleObject>(BasisAssetBundleObject.AssetBundleObject);
-        basisBundleInformation = new BasisBundleInformation
-        {
-            BasisBundleDescription = BasisContentBase.BasisBundleDescription
-        };
+        basisBundleInformation = new BasisBundleConnector(BasisGenerateUniqueID.GenerateUniqueID(), BasisContentBase.BasisBundleDescription, BasisBundleGenerateds);
 
         Debug.Log("Generating random bytes for hex string...");
         byte[] randomBytes = GenerateRandomBytes(32);

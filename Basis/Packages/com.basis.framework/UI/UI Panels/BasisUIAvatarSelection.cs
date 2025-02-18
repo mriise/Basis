@@ -74,11 +74,7 @@ namespace Basis.Scripts.UI.UI_Panels
                     BundleURL = BundleField.text,
                     MetaURL = MetaField.text
                 },
-                BasisBundleInformation = new BasisBundleInformation
-                {
-                    BasisBundleDescription = new BasisBundleDescription(),
-                    BasisBundleGenerated = new BasisBundleGenerated()
-                },
+                BasisBundleConnector = new BasisBundleConnector(),
                 BasisLocalEncryptedBundle = new BasisStoredEncyptedBundle()
             };
 
@@ -128,10 +124,11 @@ namespace Basis.Scripts.UI.UI_Panels
                     BasisLoadableBundle bundle = new BasisLoadableBundle
                     {
                         BasisRemoteBundleEncrypted = info.StoredRemote,
-                        BasisBundleInformation = new BasisBundleInformation
+                        BasisBundleConnector = new BasisBundleConnector
                         {
                             BasisBundleDescription = new BasisBundleDescription(),
-                            BasisBundleGenerated = new BasisBundleGenerated()
+                            BasisBundleGenerated = new BasisBundleGenerated[] { new BasisBundleGenerated() },
+                            UniqueVersion = ""
                         },
                         BasisLocalEncryptedBundle = info.StoredLocal,
                         UnlockPassword = activeKeys[Index].Pass
@@ -173,7 +170,7 @@ namespace Basis.Scripts.UI.UI_Panels
                         try
                         {
                             await BasisLoadHandler.HandleMetaLoading(wrapper, Report, new CancellationToken());
-                            buttonText.text = wrapper.LoadableBundle.BasisBundleInformation.BasisBundleDescription.AssetBundleName;
+                            buttonText.text = wrapper.LoadableBundle.BasisBundleConnector.BasisBundleDescription.AssetBundleName;
                         }
                         catch (Exception E)
                         {
@@ -201,7 +198,7 @@ namespace Basis.Scripts.UI.UI_Panels
         {
             if (BasisLocalPlayer.Instance != null)
             {
-                var assetMode = avatarLoadRequest.BasisBundleInformation.BasisBundleGenerated.AssetMode;
+                var assetMode = avatarLoadRequest.BasisBundleConnector.BasisBundleGenerated[0].AssetMode;
                 var mode = !string.IsNullOrEmpty(assetMode) && byte.TryParse(assetMode, out var result) ? result : (byte)0;
                 await BasisLocalPlayer.Instance.CreateAvatar(mode, avatarLoadRequest);
             }

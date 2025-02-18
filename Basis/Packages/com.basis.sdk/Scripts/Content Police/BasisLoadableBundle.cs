@@ -5,6 +5,5 @@ public class BasisLoadableBundle
     //encrypted state
     public BasisRemoteEncyptedBundle BasisRemoteBundleEncrypted = new BasisRemoteEncyptedBundle();
     public BasisStoredEncyptedBundle BasisLocalEncryptedBundle= new BasisStoredEncyptedBundle();
-    //loaded MetaFile
-    public BasisBundleInformation BasisBundleInformation = new BasisBundleInformation();
+    public BasisBundleConnector BasisBundleConnector;
 }

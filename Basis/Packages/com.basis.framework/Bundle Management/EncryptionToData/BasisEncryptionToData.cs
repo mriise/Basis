@@ -61,17 +61,17 @@ public static class BasisEncryptionToData
         BasisLoadableBundle.BasisBundleInformation = ConvertBytesToJson(LoadedMetaData);
         return BasisLoadableBundle;
     }
-    public static BasisBundleInformation ConvertBytesToJson(byte[] loadedlocalmeta)
+    public static BasisBundleConnector ConvertBytesToJson(byte[] loadedlocalmeta)
     {
         if (loadedlocalmeta == null || loadedlocalmeta.Length == 0)
         {
-            BasisDebug.LogError($"Data for {nameof(BasisBundleInformation)} is empty or null.", BasisDebug.LogTag.Event);
+            BasisDebug.LogError($"Data for {nameof(BasisBundleConnector)} is empty or null.", BasisDebug.LogTag.Event);
             return new BasisBundleInformation() { HasError = true };
         }
 
         // Convert the byte array to a JSON string (assuming UTF-8 encoding)
         BasisDebug.Log($"Converting byte array to JSON string...", BasisDebug.LogTag.Event);
-        BasisBundleInformation Information = SerializationUtility.DeserializeValue<BasisBundleInformation>(loadedlocalmeta, DataFormat.JSON);
+        BasisBundleConnector Information = SerializationUtility.DeserializeValue<BasisBundleConnector>(loadedlocalmeta, DataFormat.JSON);
         return Information;
     }
 }
