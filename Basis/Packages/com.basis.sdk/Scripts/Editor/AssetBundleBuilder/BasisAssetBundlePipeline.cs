@@ -51,16 +51,16 @@ public static class BasisAssetBundlePipeline
 
         Debug.Log("All AssetBundle names cleared from Importer settings.");
     }
-    public static async Task<bool> BuildAssetBundle(GameObject originalPrefab, BasisAssetBundleObject settings, BasisBundleConnector BasisBundleConnector, string Password, BuildTarget Target)
+    public static async Task<(bool, BasisBundleGenerated)> BuildAssetBundle(GameObject originalPrefab, BasisAssetBundleObject settings, string Password, BuildTarget Target)
     {
-        return await BuildAssetBundle(false, originalPrefab, new Scene(), settings, BasisBundleConnector, Password, Target);
+        return await BuildAssetBundle(false, originalPrefab, new Scene(), settings, Password, Target);
     }
 
-    public static async Task<bool> BuildAssetBundle(Scene scene, BasisAssetBundleObject settings, BasisBundleConnector BasisBundleConnector, string Password, BuildTarget Target)
+    public static async Task<(bool, BasisBundleGenerated)> BuildAssetBundle(Scene scene, BasisAssetBundleObject settings, string Password, BuildTarget Target)
     {
-        return await BuildAssetBundle(true, null, scene, settings, BasisBundleConnector, Password, Target);
+        return await BuildAssetBundle(true, null, scene, settings, Password, Target);
     }
-    public static async Task<bool> BuildAssetBundle(bool isScene, GameObject asset, Scene scene, BasisAssetBundleObject settings, BasisBundleConnector BasisBundleConnector, string Password, BuildTarget Target)
+    public static async Task<(bool,BasisBundleGenerated)> BuildAssetBundle(bool isScene, GameObject asset, Scene scene, BasisAssetBundleObject settings, string Password, BuildTarget Target)
     {
         if (EditorUserBuildSettings.activeBuildTarget != Target)
         {
@@ -84,7 +84,7 @@ public static class BasisAssetBundlePipeline
                 if (!BasisValidationHandler.IsSceneValid(scene))
                 {
                     Debug.LogError("Invalid scene. AssetBundle build aborted.");
-                    return false;
+                    return new (false, null);
                 }
 
                 OnBeforeBuildScene?.Invoke(scene, settings);
@@ -98,7 +98,7 @@ public static class BasisAssetBundlePipeline
             }
 
             string assetBundleName = AssetBundleBuilder.SetAssetBundleName(assetPath, uniqueID, settings);
-            await AssetBundleBuilder.BuildAssetBundle(targetDirectory, settings, assetBundleName, BasisBundleConnector, isScene ? "Scene" : "GameObject", Password, Target);
+            await AssetBundleBuilder.BuildAssetBundle(targetDirectory, settings, assetBundleName, isScene ? "Scene" : "GameObject", Password, Target);
 
             AssetBundleBuilder.ResetAssetBundleName(assetPath);
             TemporaryStorageHandler.ClearTemporaryStorage(settings.TemporaryStorage);
@@ -113,7 +113,7 @@ public static class BasisAssetBundlePipeline
                 OnAfterBuildPrefab?.Invoke(assetBundleName);
             }
 
-            return true;
+            return new(true,);
         }
         catch (Exception ex)
         {
@@ -129,7 +129,7 @@ public static class BasisAssetBundlePipeline
                 EditorUtility.DisplayDialog("Failed To Build", "Please check the console for the full issue: " + ex, "Will do");
             }
 
-            return false;
+            return new(false, null);
         }
         finally
         {

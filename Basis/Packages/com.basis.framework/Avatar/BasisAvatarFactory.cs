@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 namespace Basis.Scripts.Avatar
@@ -15,35 +14,32 @@ namespace Basis.Scripts.Avatar
     public static class BasisAvatarFactory
     {
       public static BasisLoadableBundle LoadingAvatar = new BasisLoadableBundle()
-        {
-            BasisBundleInformation = new BasisBundleInformation()
-            {
-                BasisBundleDescription = new BasisBundleDescription()
-                {
-                    AssetBundleDescription = "LoadingAvatar",
-                    AssetBundleName = "LoadingAvatar"
-                },
-                HasError = false,
-                BasisBundleGenerated = new BasisBundleGenerated()
-                {
-                    AssetBundleCRC = 0,
-                    AssetBundleHash = "N/A",
-                    AssetMode = "Gameobject"
-                },
-            },
-            UnlockPassword = "N/A",
-            BasisRemoteBundleEncrypted = new BasisRemoteEncyptedBundle()
-            {
-                BundleURL = "LoadingAvatar",
-                IsLocal = true,
-                MetaURL = "LoadingAvatar",
-            },
-            BasisLocalEncryptedBundle = new BasisStoredEncyptedBundle()
-            {
-                LocalBundleFile = "LoadingAvatar",
-                LocalMetaFile = "LoadingAvatar",
-            },
-        };
+      {
+          BasisBundleConnector = new BasisBundleConnector()
+          {
+              BasisBundleDescription = new BasisBundleDescription()
+              {
+                  AssetBundleDescription = "LoadingAvatar",
+                  AssetBundleName = "LoadingAvatar"
+              },
+              BasisBundleGenerated = new BasisBundleGenerated[]
+                 {
+                    new BasisBundleGenerated("N/A","Gameobject",string.Empty,0,true,string.Empty,string.Empty,true,string.Empty)
+                 },
+          },
+          UnlockPassword = "N/A",
+          BasisRemoteBundleEncrypted = new BasisRemoteEncyptedBundle()
+          {
+              BundleURL = "LoadingAvatar",
+              IsLocal = true,
+              MetaURL = "LoadingAvatar",
+          },
+          BasisLocalEncryptedBundle = new BasisStoredEncyptedBundle()
+          {
+              LocalBundleFile = "LoadingAvatar",
+              LocalMetaFile = "LoadingAvatar",
+          },
+      };
         public static async Task LoadAvatarLocal(BasisLocalPlayer Player,byte Mode, BasisLoadableBundle BasisLoadableBundle)
         {
             if (string.IsNullOrEmpty(BasisLoadableBundle.BasisRemoteBundleEncrypted.BundleURL))

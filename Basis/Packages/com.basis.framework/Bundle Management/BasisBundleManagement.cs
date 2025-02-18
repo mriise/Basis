@@ -12,18 +12,18 @@ public static class BasisBundleManagement
 
     // Dictionary to track ongoing downloads keyed by MetaURL
     public static BasisProgressReport FindAllBundlesReport = new BasisProgressReport();
-    public static async Task DownloadStoreMetaAndBundle(BasisTrackedBundleWrapper BasisTrackedBundleWrapper, BasisProgressReport progressCallback, CancellationToken cancellationToken)
+    public static async Task<bool> DownloadStoreMetaAndBundle(BasisTrackedBundleWrapper BasisTrackedBundleWrapper, BasisProgressReport progressCallback, CancellationToken cancellationToken)
     {
         if (BasisTrackedBundleWrapper == null)
         {
             BasisDebug.LogError("Basis Tracked Bundle Wrapper is null.");
-            return;
+            return false;
         }
 
         if (BasisTrackedBundleWrapper.LoadableBundle == null || BasisTrackedBundleWrapper.LoadableBundle.BasisRemoteBundleEncrypted == null)
         {
             BasisDebug.LogError("Loadable Bundle or Basis Remote Bundle Encrypted is null.");
-            return;
+            return false;
         }
 
         string metaUrl = BasisTrackedBundleWrapper.LoadableBundle.BasisRemoteBundleEncrypted.MetaURL;
@@ -31,7 +31,7 @@ public static class BasisBundleManagement
         if (string.IsNullOrEmpty(metaUrl))
         {
             BasisDebug.LogError("MetaURL is null or empty.");
-            return;
+            return false;
         }
 
         BasisDebug.Log($"Starting download process for {metaUrl}");
@@ -44,14 +44,14 @@ public static class BasisBundleManagement
             if (string.IsNullOrEmpty(UniqueDownload))
             {
                 BasisDebug.LogError("Failed to generate a unique ID.");
-                return;
+                return false;
             }
 
             string UniqueFilePath = BasisIOManagement.GenerateFilePath($"Temp_{UniqueDownload}{EncryptedMetaBasisSuffix}", LockedBundlesFolder);
             if (string.IsNullOrEmpty(UniqueFilePath))
             {
                 BasisDebug.LogError("Failed to generate file path for the unique file.");
-                return;
+                return false;
             }
 
             if (File.Exists(UniqueFilePath))
@@ -64,7 +64,7 @@ public static class BasisBundleManagement
                 if (!File.Exists(BasisTrackedBundleWrapper.LoadableBundle.BasisRemoteBundleEncrypted.MetaURL))
                 {
                     BasisDebug.LogError($"Local meta file not found: {metaUrl}");
-                    return;
+                    return false;
                 }
 
                 File.Copy(BasisTrackedBundleWrapper.LoadableBundle.BasisRemoteBundleEncrypted.MetaURL, UniqueFilePath); // The goal here is just to get the data out
@@ -81,7 +81,7 @@ public static class BasisBundleManagement
             if (BasisTrackedBundleWrapper.LoadableBundle == null)
             {
                 BasisDebug.LogError("Failed to decrypt meta file, Loadable Bundle is null.");
-                return;
+                return false;
             }
 
             // Step 4: Download the bundle file
@@ -90,27 +90,27 @@ public static class BasisBundleManagement
             if (string.IsNullOrEmpty(bundleUrl))
             {
                 BasisDebug.LogError("BundleURL is null or empty.");
-                return;
+                return false;
             }
 
             BasisDebug.Log($"Downloading bundle file from {bundleUrl}");
-            if (BasisTrackedBundleWrapper.LoadableBundle.BasisBundleInformation == null)
+            if (BasisTrackedBundleWrapper.LoadableBundle.BasisBundleConnector == null)
             {
                 BasisDebug.LogError("Missing Basis Bundle Information for Loaded Bundle ", BasisDebug.LogTag.System);
-                return;
+                return false;
             }
-            if (BasisTrackedBundleWrapper.LoadableBundle.BasisBundleInformation.BasisBundleGenerated == null)
+            if (BasisTrackedBundleWrapper.LoadableBundle.BasisBundleConnector.BasisBundleGenerated == null)
             {
                 BasisDebug.LogError("Missing Basis Bundle Generated for Loaded Bundle ", BasisDebug.LogTag.System);
-                return;
+                return false;
             }
-            string FilePathMeta = BasisIOManagement.GenerateFilePath($"{BasisTrackedBundleWrapper.LoadableBundle.BasisBundleInformation.BasisBundleGenerated.AssetToLoadName}{EncryptedMetaBasisSuffix}", AssetBundlesFolder);
-            string FilePathBundle = BasisIOManagement.GenerateFilePath($"{BasisTrackedBundleWrapper.LoadableBundle.BasisBundleInformation.BasisBundleGenerated.AssetToLoadName}{EncryptedBundleBasisSuffix}", AssetBundlesFolder);
+            string FilePathMeta = BasisIOManagement.GenerateFilePath($"{BasisTrackedBundleWrapper.LoadableBundle.BasisBundleConnector.BasisBundleGenerated[0].AssetToLoadName}{EncryptedMetaBasisSuffix}", AssetBundlesFolder);
+            string FilePathBundle = BasisIOManagement.GenerateFilePath($"{BasisTrackedBundleWrapper.LoadableBundle.BasisBundleConnector.BasisBundleGenerated[0].AssetToLoadName}{EncryptedBundleBasisSuffix}", AssetBundlesFolder);
 
             if (string.IsNullOrEmpty(FilePathMeta) || string.IsNullOrEmpty(FilePathBundle))
             {
                 BasisDebug.LogError("Failed to generate file paths for meta or bundle.");
-                return;
+                return false;
             }
 
             if (File.Exists(FilePathMeta))
@@ -125,7 +125,7 @@ public static class BasisBundleManagement
                 if (!File.Exists(bundleUrl))
                 {
                     BasisDebug.LogError($"Local bundle file not found: {bundleUrl}");
-                    return;
+                    return false;
                 }
 
                 if (File.Exists(FilePathBundle))
@@ -143,25 +143,26 @@ public static class BasisBundleManagement
             BasisDebug.Log($"Successfully downloaded bundle file for {bundleUrl}");
             BasisTrackedBundleWrapper.LoadableBundle.BasisLocalEncryptedBundle.LocalBundleFile = FilePathBundle;
             BasisTrackedBundleWrapper.LoadableBundle.BasisLocalEncryptedBundle.LocalMetaFile = FilePathMeta;
+            return true;
         }
         catch (Exception ex)
         {
             BasisDebug.LogError($"Error during download and processing of meta: {ex.Message} {ex.StackTrace}");
-            BasisTrackedBundleWrapper.LoadableBundle.BasisBundleInformation.HasError = true;
+            return false;
         }
     }
-    public static async Task DownloadAndSaveMetaFile(BasisTrackedBundleWrapper BasisTrackedBundleWrapper, BasisProgressReport progressCallback, CancellationToken cancellationToken)
+    public static async Task<bool> DownloadAndSaveMetaFile(BasisTrackedBundleWrapper BasisTrackedBundleWrapper, BasisProgressReport progressCallback, CancellationToken cancellationToken)
     {
         if (BasisTrackedBundleWrapper == null)
         {
             BasisDebug.LogError("BasisTrackedBundleWrapper is null.");
-            return;
+            return false;
         }
 
         if (BasisTrackedBundleWrapper.LoadableBundle == null || BasisTrackedBundleWrapper.LoadableBundle.BasisRemoteBundleEncrypted == null)
         {
             BasisDebug.LogError("LoadableBundle or BasisRemoteBundleEncrypted is null.");
-            return;
+            return false;
         }
 
         string metaUrl = BasisTrackedBundleWrapper.LoadableBundle.BasisRemoteBundleEncrypted.MetaURL;
@@ -169,7 +170,7 @@ public static class BasisBundleManagement
         if (string.IsNullOrEmpty(metaUrl))
         {
             BasisDebug.LogError("MetaURL is null or empty.");
-            return;
+            return false;
         }
 
         BasisDebug.Log($"Starting download process for {metaUrl}");
@@ -182,14 +183,14 @@ public static class BasisBundleManagement
             if (string.IsNullOrEmpty(UniqueDownload))
             {
                 BasisDebug.LogError("Failed to generate a unique ID.");
-                return;
+                return false;
             }
 
             string UniqueFilePath = BasisIOManagement.GenerateFilePath($"{UniqueDownload}{EncryptedMetaBasisSuffix}", LockedBundlesFolder);
             if (string.IsNullOrEmpty(UniqueFilePath))
             {
                 BasisDebug.LogError("Failed to generate file path for the unique file.");
-                return;
+                return false;
             }
 
             if (File.Exists(UniqueFilePath))
@@ -202,7 +203,7 @@ public static class BasisBundleManagement
                 if (!File.Exists(BasisTrackedBundleWrapper.LoadableBundle.BasisRemoteBundleEncrypted.MetaURL))
                 {
                     BasisDebug.LogError($"Local meta file not found: {metaUrl}");
-                    return;
+                    return false;
                 }
 
                 File.Copy(BasisTrackedBundleWrapper.LoadableBundle.BasisRemoteBundleEncrypted.MetaURL, UniqueFilePath); // The goal here is just to get the data out
@@ -219,16 +220,16 @@ public static class BasisBundleManagement
             if (BasisTrackedBundleWrapper.LoadableBundle == null)
             {
                 BasisDebug.LogError("Failed to decrypt meta file, LoadableBundle is null.");
-                return;
+                return false;
             }
 
             // Move the meta file to its final destination
-            string FilePathMeta = BasisIOManagement.GenerateFilePath($"{BasisTrackedBundleWrapper.LoadableBundle.BasisBundleInformation.BasisBundleGenerated.AssetToLoadName}{EncryptedMetaBasisSuffix}", AssetBundlesFolder);
+            string FilePathMeta = BasisIOManagement.GenerateFilePath($"{BasisTrackedBundleWrapper.LoadableBundle.BasisBundleConnector.BasisBundleGenerated[0].AssetToLoadName}{EncryptedMetaBasisSuffix}", AssetBundlesFolder);
 
             if (string.IsNullOrEmpty(FilePathMeta))
             {
                 BasisDebug.LogError("Failed to generate file path for the meta file.");
-                return;
+                return false;
             }
 
             if (File.Exists(FilePathMeta))
@@ -241,11 +242,12 @@ public static class BasisBundleManagement
             BasisTrackedBundleWrapper.LoadableBundle.BasisLocalEncryptedBundle.LocalMetaFile = FilePathMeta;
 
             BasisDebug.Log($"Meta file saved successfully at {FilePathMeta}");
+            return true;
         }
         catch (Exception ex)
         {
             BasisDebug.LogError($"Error during download and processing of meta: {ex.Message}");
-            BasisTrackedBundleWrapper.LoadableBundle.BasisBundleInformation.HasError = true;
+            return false;
         }
     }
     public static async Task ProcessOnDiscMetaDataAsync(BasisTrackedBundleWrapper basisTrackedBundleWrapper, BasisStoredEncyptedBundle BasisStoredEncyptedBundle, BasisProgressReport progressCallback, CancellationToken cancellationToken)

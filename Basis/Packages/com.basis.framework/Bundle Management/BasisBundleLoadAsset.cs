@@ -12,33 +12,36 @@ public static class BasisBundleLoadAsset
         if (BasisLoadableBundle.AssetBundle != null)
         {
             BasisLoadableBundle output = BasisLoadableBundle.LoadableBundle;
-            switch (output.BasisBundleInformation.BasisBundleGenerated.AssetMode)
+            if (output.BasisBundleConnector.GetPlatform(out BasisBundleGenerated Generated))
             {
-                case "GameObject":
-                    {
-                        AssetBundleRequest Request = BasisLoadableBundle.AssetBundle.LoadAssetAsync<GameObject>(output.BasisBundleInformation.BasisBundleGenerated.AssetToLoadName);
-                        await Request;
-                        GameObject loadedObject = Request.asset as GameObject;
-                        if (loadedObject == null)
+                switch (Generated.AssetMode)
+                {
+                    case "GameObject":
                         {
-                            BasisDebug.LogError("Unable to proceed, null Gameobject");
-                            BasisLoadableBundle.DidErrorOccur = true;
-                            await BasisLoadableBundle.AssetBundle.UnloadAsync(true);
-                            return null;
+                            AssetBundleRequest Request = BasisLoadableBundle.AssetBundle.LoadAssetAsync<GameObject>(Generated.AssetToLoadName);
+                            await Request;
+                            GameObject loadedObject = Request.asset as GameObject;
+                            if (loadedObject == null)
+                            {
+                                BasisDebug.LogError("Unable to proceed, null Gameobject");
+                                BasisLoadableBundle.DidErrorOccur = true;
+                                await BasisLoadableBundle.AssetBundle.UnloadAsync(true);
+                                return null;
+                            }
+                            ChecksRequired ChecksRequired = new ChecksRequired();
+                            if (loadedObject.TryGetComponent<BasisAvatar>(out BasisAvatar BasisAvatar))
+                            {
+                                ChecksRequired.DisableAnimatorEvents = true;
+                            }
+                            ChecksRequired.UseContentRemoval = UseContentRemoval;
+                            GameObject CreatedCopy = ContentPoliceControl.ContentControl(loadedObject, ChecksRequired, Position, Rotation, ModifyScale, Scale, Parent);
+                            Incremented = BasisLoadableBundle.Increment();
+                            return CreatedCopy;
                         }
-                        ChecksRequired ChecksRequired = new ChecksRequired();
-                        if (loadedObject.TryGetComponent<BasisAvatar>(out BasisAvatar BasisAvatar))
-                        {
-                            ChecksRequired.DisableAnimatorEvents = true;
-                        }
-                        ChecksRequired.UseContentRemoval = UseContentRemoval;
-                        GameObject CreatedCopy = ContentPoliceControl.ContentControl(loadedObject, ChecksRequired, Position, Rotation, ModifyScale, Scale, Parent);
-                        Incremented = BasisLoadableBundle.Increment();
-                        return CreatedCopy;
-                    }
-                default:
-                    BasisDebug.LogError("Requested type " + output.BasisBundleInformation.BasisBundleGenerated.AssetMode + " has no handler");
-                    return null;
+                    default:
+                        BasisDebug.LogError("Requested type " + Generated.AssetMode + " has no handler");
+                        return null;
+                }
             }
         }
         else

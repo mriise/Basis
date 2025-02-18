@@ -39,20 +39,24 @@ public static class BasisBundleBuild
             Targets.Remove(activeTarget);
             Targets.Insert(0, activeTarget);
         }
+        BasisAssetBundleObject Objects = AssetDatabase.LoadAssetAtPath<BasisAssetBundleObject>(BasisAssetBundleObject.AssetBundleObject);
+        Debug.Log("Generating random bytes for hex string...");
+        byte[] randomBytes = GenerateRandomBytes(32);
+        string hexString = ByteArrayToHexString(randomBytes);
+        Debug.Log($"Generated hex string: {hexString}");
 
         Debug.Log("IL2CPP is installed. Proceeding to build asset bundle...");
         foreach (BuildTarget Target in Targets)
         {
-           bool Success = await BasisAssetBundlePipeline.BuildAssetBundle(BasisContentBase.gameObject, Objects, Information, hexString, Target);
+            bool Success = await BasisAssetBundlePipeline.BuildAssetBundle(BasisContentBase.gameObject, Objects, hexString, Target);
             if (Success == false)
             {
                 return new(false, "Failure While Building for " + Target);
             }
         }
         Debug.Log("Passed error checking for GameObjectBundleBuild...");
-        BasisBundleGenerated[] Generated = new BasisBundleGenerated[] { };
-        BasisBundleInformation(BasisContentBase, Generated, out BasisAssetBundleObject Objects, out BasisBundleConnector Information, out string hexString);
-        Debug.Log($"Generated bundle information. Hex string: {hexString}");
+
+        BasisBundleConnector BasisBundleConnector = new BasisBundleConnector(BasisGenerateUniqueID.GenerateUniqueID(), BasisContentBase.BasisBundleDescription,);
 
         Debug.Log("Successfully built GameObject asset bundle.");
 
@@ -83,10 +87,6 @@ public static class BasisBundleBuild
         }
 
         Debug.Log("Passed error checking for SceneBundleBuild...");
-
-        BasisBundleInformation(BasisContentBase, out BasisAssetBundleObject Objects, out BasisBundleConnector Information, out string hexString);
-        Debug.Log($"Generated bundle information. Hex string: {hexString}");
-
         // Ensure active build target is first in the list
         BuildTarget activeTarget = EditorUserBuildSettings.activeBuildTarget;
         if (!Targets.Contains(activeTarget))
@@ -99,19 +99,26 @@ public static class BasisBundleBuild
             Targets.Remove(activeTarget);
             Targets.Insert(0, activeTarget);
         }
+        BasisAssetBundleObject Objects = AssetDatabase.LoadAssetAtPath<BasisAssetBundleObject>(BasisAssetBundleObject.AssetBundleObject);
+        Debug.Log("Generating random bytes for hex string...");
+        byte[] randomBytes = GenerateRandomBytes(32);
+        string hexString = ByteArrayToHexString(randomBytes);
+        Debug.Log($"Generated hex string: {hexString}");
 
-        Debug.Log("IL2CPP is installed. Proceeding to build scene asset bundle...");
-        Scene activeScene = BasisContentBase.gameObject.scene;
+        Debug.Log("IL2CPP is installed. Proceeding to build asset bundle...");
         foreach (BuildTarget Target in Targets)
         {
-            bool Success = await BasisAssetBundlePipeline.BuildAssetBundle(activeScene, Objects, Information, hexString, Target);
+            bool Success = await BasisAssetBundlePipeline.BuildAssetBundle(BasisContentBase.gameObject, Objects, hexString, Target);
             if (Success == false)
             {
                 return new(false, "Failure While Building for " + Target);
             }
         }
+        Debug.Log("Passed error checking for GameObjectBundleBuild...");
+        BasisBundleGenerated[] Generated = new BasisBundleGenerated[] { };
+        BasisBundleConnector BasisBundleConnector = new BasisBundleConnector(BasisGenerateUniqueID.GenerateUniqueID(), BasisContentBase.BasisBundleDescription, Generated);
 
-        Debug.Log("Successfully built Scene asset bundle.");
+        Debug.Log("Successfully built GameObject asset bundle.");
 
         // If the original active target was not the current one, switch back
         if (EditorUserBuildSettings.activeBuildTarget != originalActiveTarget)
@@ -157,19 +164,6 @@ public static class BasisBundleBuild
             Debug.LogError("Path does not exist: " + windowsPath);
         }
     }
-    public static void BasisBundleInformation(BasisContentBase BasisContentBase, BasisBundleGenerated[] BasisBundleGenerateds, out BasisAssetBundleObject BasisAssetBundleObject, out BasisBundleConnector basisBundleInformation, out string hexString)
-    {
-        Debug.Log("Fetching BasisBundleInformation...");
-
-        BasisAssetBundleObject = AssetDatabase.LoadAssetAtPath<BasisAssetBundleObject>(BasisAssetBundleObject.AssetBundleObject);
-        basisBundleInformation = new BasisBundleConnector(BasisGenerateUniqueID.GenerateUniqueID(), BasisContentBase.BasisBundleDescription, BasisBundleGenerateds);
-
-        Debug.Log("Generating random bytes for hex string...");
-        byte[] randomBytes = GenerateRandomBytes(32);
-        hexString = ByteArrayToHexString(randomBytes);
-        Debug.Log($"Generated hex string: {hexString}");
-    }
-
     public static bool ErrorChecking(BasisContentBase BasisContentBase, out string Error)
     {
         Error = string.Empty; // Initialize the error variable

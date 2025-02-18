@@ -11,7 +11,7 @@ public static class BasisBundleConversionNetwork
                 MetaURL = AvatarNetworkLoadInformation.AvatarMetaUrl,
                 BundleURL = AvatarNetworkLoadInformation.AvatarBundleUrl
             },
-            BasisBundleInformation = new BasisBundleInformation(),
+             BasisBundleConnector = new BasisBundleConnector(),
             BasisLocalEncryptedBundle = new BasisStoredEncyptedBundle(),
             UnlockPassword = AvatarNetworkLoadInformation.UnlockPassword
         };

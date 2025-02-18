@@ -185,46 +185,54 @@ public static class BasisLoadHandler
         {
             BasisDebug.Log("Bundle was already on disc proceeding", BasisDebug.LogTag.Event);
         }
-        IEnumerable<AssetBundle> AssetBundles = AssetBundle.GetAllLoadedAssetBundles();
-        foreach (AssetBundle assetBundle in AssetBundles)
+        if (wrapper.LoadableBundle.BasisBundleConnector.GetPlatform(out BasisBundleGenerated Generated))
         {
-            if (assetBundle != null && assetBundle.Contains(wrapper.LoadableBundle.BasisBundleInformation.BasisBundleGenerated.AssetToLoadName))
+            IEnumerable<AssetBundle> AssetBundles = AssetBundle.GetAllLoadedAssetBundles();
+            foreach (AssetBundle assetBundle in AssetBundles)
             {
-                wrapper.AssetBundle = assetBundle;
-                BasisDebug.Log("we already have this AssetToLoadName in our loaded bundles using that instead!");
-                if (IsMetaOnDisc == false || IsBundleOnDisc == false)
+                if (assetBundle != null && assetBundle.Contains(Generated.AssetToLoadName))
                 {
-                    OnDiscInformation newDiscInfo = new OnDiscInformation
+                    wrapper.AssetBundle = assetBundle;
+                    BasisDebug.Log("we already have this AssetToLoadName in our loaded bundles using that instead!");
+                    if (IsMetaOnDisc == false || IsBundleOnDisc == false)
                     {
-                        StoredRemote = wrapper.LoadableBundle.BasisRemoteBundleEncrypted,
-                        StoredLocal = wrapper.LoadableBundle.BasisLocalEncryptedBundle,
-                        AssetIDToLoad = wrapper.LoadableBundle.BasisBundleInformation.BasisBundleGenerated.AssetToLoadName,
-                    };
+                        OnDiscInformation newDiscInfo = new OnDiscInformation
+                        {
+                            StoredRemote = wrapper.LoadableBundle.BasisRemoteBundleEncrypted,
+                            StoredLocal = wrapper.LoadableBundle.BasisLocalEncryptedBundle,
+                            AssetIDToLoad = Generated.AssetToLoadName,
+                        };
 
-                    await AddDiscInfo(newDiscInfo);
+                        await AddDiscInfo(newDiscInfo);
+                    }
+                    return;
                 }
-                return;
+            }
+
+            AssetBundleCreateRequest bundleRequest = await BasisEncryptionToData.GenerateBundleFromFile(
+                wrapper.LoadableBundle.UnlockPassword,
+                wrapper.LoadableBundle.BasisLocalEncryptedBundle.LocalBundleFile,
+                Generated.AssetBundleCRC,
+                report
+            );
+
+            wrapper.AssetBundle = bundleRequest.assetBundle;
+
+            if (IsMetaOnDisc == false || IsBundleOnDisc == false)
+            {
+                OnDiscInformation newDiscInfo = new OnDiscInformation
+                {
+                    StoredRemote = wrapper.LoadableBundle.BasisRemoteBundleEncrypted,
+                    StoredLocal = wrapper.LoadableBundle.BasisLocalEncryptedBundle,
+                    AssetIDToLoad = Generated.AssetToLoadName,
+                };
+
+                await AddDiscInfo(newDiscInfo);
             }
         }
-        AssetBundleCreateRequest bundleRequest = await BasisEncryptionToData.GenerateBundleFromFile(
-            wrapper.LoadableBundle.UnlockPassword,
-            wrapper.LoadableBundle.BasisLocalEncryptedBundle.LocalBundleFile,
-            wrapper.LoadableBundle.BasisBundleInformation.BasisBundleGenerated.AssetBundleCRC,
-            report
-        );
-
-        wrapper.AssetBundle = bundleRequest.assetBundle;
-
-        if (IsMetaOnDisc == false || IsBundleOnDisc == false)
+        else
         {
-            OnDiscInformation newDiscInfo = new OnDiscInformation
-            {
-                StoredRemote = wrapper.LoadableBundle.BasisRemoteBundleEncrypted,
-                StoredLocal = wrapper.LoadableBundle.BasisLocalEncryptedBundle,
-                AssetIDToLoad = wrapper.LoadableBundle.BasisBundleInformation.BasisBundleGenerated.AssetToLoadName,
-            };
-
-            await AddDiscInfo(newDiscInfo);
+           BasisDebug.LogError("Missing Bundle Request Platform for " + Application.platform);
         }
     }
     public static async Task HandleMetaLoading(BasisTrackedBundleWrapper wrapper, BasisProgressReport report, CancellationToken cancellationToken)
@@ -242,14 +250,20 @@ public static class BasisLoadHandler
 
         if (!isOnDisc)
         {
-            OnDiscInformation newDiscInfo = new OnDiscInformation
+            if (wrapper.LoadableBundle.BasisBundleConnector.GetPlatform(out BasisBundleGenerated Generated))
             {
-                StoredRemote = wrapper.LoadableBundle.BasisRemoteBundleEncrypted,
-                StoredLocal = wrapper.LoadableBundle.BasisLocalEncryptedBundle,
-                AssetIDToLoad = wrapper.LoadableBundle.BasisBundleInformation.BasisBundleGenerated.AssetToLoadName,
-            };
-
-            await AddDiscInfo(newDiscInfo);
+                OnDiscInformation newDiscInfo = new OnDiscInformation
+                {
+                    StoredRemote = wrapper.LoadableBundle.BasisRemoteBundleEncrypted,
+                    StoredLocal = wrapper.LoadableBundle.BasisLocalEncryptedBundle,
+                    AssetIDToLoad = Generated.AssetToLoadName,
+                };
+                await AddDiscInfo(newDiscInfo);
+            }
+            else
+            {
+                BasisDebug.LogError("Missing Bundle Request Platform for " + Application.platform);
+            }
         }
     }
     public static bool IsMetaDataOnDisc(string MetaURL, out OnDiscInformation info)

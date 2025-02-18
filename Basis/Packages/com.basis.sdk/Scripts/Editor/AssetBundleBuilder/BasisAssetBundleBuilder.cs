@@ -6,14 +6,14 @@ using UnityEngine;
 using static BasisEncryptionWrapper;
 public static class AssetBundleBuilder
 {
-    public static async Task<BasisBundleConnector> BuildAssetBundle(string targetDirectory,BasisAssetBundleObject settings,string assetBundleName,BasisBundleConnector basisBundleConnector,string mode,string password,BuildTarget buildTarget,bool isEncrypted = true)
+    public static async Task<BasisBundleGenerated> BuildAssetBundle(string targetDirectory,BasisAssetBundleObject settings,string assetBundleName,string mode,string password,BuildTarget buildTarget,bool isEncrypted = true)
     {
         EnsureDirectoryExists(targetDirectory);
         EditorUtility.DisplayProgressBar("Building Asset Bundles", "Initializing...", 0f);
         AssetBundleManifest manifest = BuildPipeline.BuildAssetBundles(targetDirectory, settings.BuildAssetBundleOptions, buildTarget);
         if (manifest != null)
         {
-            await ProcessAssetBundles(targetDirectory, settings, manifest, password, isEncrypted,password);
+          InformationHash Hash = await ProcessAssetBundles(targetDirectory, settings, manifest, password, isEncrypted,password);
             DeleteManifestFiles(targetDirectory);
         }
         else
@@ -21,7 +21,6 @@ public static class AssetBundleBuilder
             BasisDebug.LogError("AssetBundle build failed.");
         }
         EditorUtility.ClearProgressBar();
-        return basisBundleConnector;
     }
     private static async Task<InformationHash> ProcessAssetBundles(string targetDirectory,BasisAssetBundleObject settings,AssetBundleManifest manifest,string password,bool isEncrypted,string PasswordTextFileFolderPath)
     {
