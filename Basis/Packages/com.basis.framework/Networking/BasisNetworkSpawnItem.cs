@@ -138,7 +138,7 @@ public static class BasisNetworkSpawnItem
             {
                 BundleURL = localLoadResource.BundleURL,
                 IsLocal = localLoadResource.IsLocalLoad,
-                MetaURL = localLoadResource.MetaURL
+                ConnectorURL = localLoadResource.MetaURL
             },
             UnlockPassword = localLoadResource.UnlockPassword,
         };
@@ -173,7 +173,7 @@ public static class BasisNetworkSpawnItem
             {
                 BundleURL = localLoadResource.BundleURL,
                 IsLocal = localLoadResource.IsLocalLoad,
-                MetaURL = localLoadResource.MetaURL
+                ConnectorURL = localLoadResource.MetaURL
             },
             UnlockPassword = localLoadResource.UnlockPassword,
         };

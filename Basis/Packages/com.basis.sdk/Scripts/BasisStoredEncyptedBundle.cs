@@ -1,6 +1,5 @@
-﻿[System.Serializable]
-public class BasisStoredEncyptedBundle
+[System.Serializable]
+public class BasisStoredEncryptedBundle
 {
-    public string LocalMetaFile;
-    public string LocalBundleFile;
+    public string LocalConnectorPath;
 }

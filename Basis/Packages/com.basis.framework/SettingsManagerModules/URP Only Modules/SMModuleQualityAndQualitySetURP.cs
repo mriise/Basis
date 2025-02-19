@@ -65,7 +65,7 @@ namespace BattlePhaze.SettingsManager.Intergrations
                 bool State = value == "on";
                 Data.requiresColorOption = State ? CameraOverrideOption.On: CameraOverrideOption.Off;
                 Data.requiresColorTexture = State;
-                Debug.Log($"Opaque rendering set to {value}.");
+                BasisDebug.Log($"Opaque rendering set to {value}.");
             }
         }
 
@@ -78,7 +78,7 @@ namespace BattlePhaze.SettingsManager.Intergrations
                 bool State = value == "on";
                 Data.requiresDepthOption = State? CameraOverrideOption.On: CameraOverrideOption.Off;
                 Data.requiresDepthTexture = State;
-               Debug.Log($"Depth rendering set to {value}.");
+                BasisDebug.Log($"Depth rendering set to {value}.");
             }
         }
         public void ChangeQualityLevel(string quality)

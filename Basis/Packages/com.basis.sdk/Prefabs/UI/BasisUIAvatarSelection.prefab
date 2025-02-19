@@ -709,34 +709,12 @@ MonoBehaviour:
     BasisLocalEncryptedBundle:
       LocalMetaFile: 
       LocalBundleFile: 
-    BasisBundleInformation:
-      HasError: 0
+    BasisBundleConnector:
+      UniqueVersion: 
       BasisBundleDescription:
         AssetBundleName: 
         AssetBundleDescription: 
-      BasisBundleGenerated:
-        AssetBundleHash: 
-        AssetMode: 
-        AssetToLoadName: 
-        AssetBundleCRC: 0
-  - UnlockPassword: d34c500ad4422707c00eb3f5d5971e0f8d33806f94fad5b928e57189d3c48a96
-    BasisRemoteBundleEncrypted:
-      IsLocal: 0
-      MetaURL: https://BasisFramework.b-cdn.net/Avatars/Vulkan/Aurellia/a8e663d1-2324-450f-b7d6-1d82870c0b36_638749527891394169.BasisEncyptedMeta
-      BundleURL: https://BasisFramework.b-cdn.net/Avatars/Vulkan/Aurellia/a8e663d1-2324-450f-b7d6-1d82870c0b36_638749527891394169.BasisEncyptedBundle
-    BasisLocalEncryptedBundle:
-      LocalMetaFile: 
-      LocalBundleFile: 
-    BasisBundleInformation:
-      HasError: 0
-      BasisBundleDescription:
-        AssetBundleName: 
-        AssetBundleDescription: 
-      BasisBundleGenerated:
-        AssetBundleHash: 
-        AssetMode: 
-        AssetToLoadName: 
-        AssetBundleCRC: 0
+      BasisBundleGenerated: []
   - UnlockPassword: LoadingAvatar
     BasisRemoteBundleEncrypted:
       IsLocal: 1
@@ -745,16 +723,12 @@ MonoBehaviour:
     BasisLocalEncryptedBundle:
       LocalMetaFile: 
       LocalBundleFile: 
-    BasisBundleInformation:
-      HasError: 0
+    BasisBundleConnector:
+      UniqueVersion: 
       BasisBundleDescription:
         AssetBundleName: 
         AssetBundleDescription: 
-      BasisBundleGenerated:
-        AssetBundleHash: 
-        AssetMode: 1
-        AssetToLoadName: 
-        AssetBundleCRC: 0
+      BasisBundleGenerated: []
   ParentedAvatarButtons: {fileID: 4707479195400357847}
   ButtonPrefab: {fileID: 5504761427362873086}
   MetaField: {fileID: 2269253443789147195}

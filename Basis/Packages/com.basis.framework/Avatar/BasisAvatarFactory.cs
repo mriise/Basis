@@ -32,12 +32,12 @@ namespace Basis.Scripts.Avatar
           {
               BundleURL = "LoadingAvatar",
               IsLocal = true,
-              MetaURL = "LoadingAvatar",
+              ConnectorURL = "LoadingAvatar",
           },
-          BasisLocalEncryptedBundle = new BasisStoredEncyptedBundle()
+          BasisLocalEncryptedBundle = new BasisStoredEncryptedBundle()
           {
               LocalBundleFile = "LoadingAvatar",
-              LocalMetaFile = "LoadingAvatar",
+              LocalConnectorPath = "LoadingAvatar",
           },
       };
         public static async Task LoadAvatarLocal(BasisLocalPlayer Player,byte Mode, BasisLoadableBundle BasisLoadableBundle)
@@ -85,7 +85,7 @@ namespace Basis.Scripts.Avatar
                         Output = await DownloadAndLoadAvatar(BasisLoadableBundle, Player);
                         break;
                 }
-                Player.AvatarMetaData =  BasisBundleConversionNetwork.ConvertFromNetwork(new AvatarNetworkLoadInformation() { AvatarBundleUrl = BasisLoadableBundle.BasisRemoteBundleEncrypted.BundleURL, AvatarMetaUrl = BasisLoadableBundle.BasisRemoteBundleEncrypted.MetaURL, UnlockPassword = BasisLoadableBundle.UnlockPassword });
+                Player.AvatarMetaData =  BasisBundleConversionNetwork.ConvertFromNetwork(new AvatarNetworkLoadInformation() { AvatarBundleUrl = BasisLoadableBundle.BasisRemoteBundleEncrypted.BundleURL, AvatarMetaUrl = BasisLoadableBundle.BasisRemoteBundleEncrypted.ConnectorURL, UnlockPassword = BasisLoadableBundle.UnlockPassword });
                 Player.AvatarLoadMode = Mode;
 
                 InitializePlayerAvatar(Player, Output);
@@ -142,7 +142,7 @@ namespace Basis.Scripts.Avatar
                         Output = await DownloadAndLoadAvatar(BasisLoadableBundle, Player);
                         break;
                 }
-                Player.AvatarMetaData = BasisBundleConversionNetwork.ConvertFromNetwork(new AvatarNetworkLoadInformation() { AvatarBundleUrl = BasisLoadableBundle.BasisRemoteBundleEncrypted.BundleURL, AvatarMetaUrl = BasisLoadableBundle.BasisRemoteBundleEncrypted.MetaURL, UnlockPassword = BasisLoadableBundle.UnlockPassword });
+                Player.AvatarMetaData = BasisBundleConversionNetwork.ConvertFromNetwork(new AvatarNetworkLoadInformation() { AvatarBundleUrl = BasisLoadableBundle.BasisRemoteBundleEncrypted.BundleURL, AvatarMetaUrl = BasisLoadableBundle.BasisRemoteBundleEncrypted.ConnectorURL, UnlockPassword = BasisLoadableBundle.UnlockPassword });
                 Player.AvatarLoadMode = Mode;
 
                 InitializePlayerAvatar(Player, Output);
@@ -273,7 +273,7 @@ namespace Basis.Scripts.Avatar
                 }
                 else
                 {
-                  await  BasisLoadHandler.DestroyGameobject(Player.BasisAvatar.gameObject, Player.AvatarMetaData.BasisRemoteBundleEncrypted.MetaURL, false);
+                  await  BasisLoadHandler.DestroyGameobject(Player.BasisAvatar.gameObject, Player.AvatarMetaData.BasisRemoteBundleEncrypted.ConnectorURL, false);
                 }
             }
 
