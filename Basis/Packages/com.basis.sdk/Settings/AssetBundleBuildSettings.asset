@@ -15,10 +15,10 @@ MonoBehaviour:
   TemporaryStorage: Assets/TemporaryStorage
   BundleExtension: .bundle
   hashExtension: .hash
-  BasisMetaExtension: .BasisMeta
-  BasisBundleEncryptedExtension: .BasisEncryptedBundle
-  BasisBundleDecryptedExtension: .BasisDecryptedBundle
-  BasisMetaEncryptedExtension: .BasisEncryptedMeta
+  BasisMetaExtension: .BME
+  BasisBundleEncryptedExtension: .BEB
+  BasisBundleDecryptedExtension: .BDB
+  BasisMetaEncryptedExtension: .BEM
   ProtectedPasswordFileName: dontuploadmepassword
   useCompression: 1
   GenerateImage: 1

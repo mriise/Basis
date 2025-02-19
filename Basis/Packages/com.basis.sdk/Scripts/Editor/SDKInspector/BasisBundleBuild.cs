@@ -51,7 +51,10 @@ public static class BasisBundleBuild
         }
 
         BasisAssetBundleObject Objects = AssetDatabase.LoadAssetAtPath<BasisAssetBundleObject>(BasisAssetBundleObject.AssetBundleObject);
-
+        if (Directory.Exists(Objects.AssetBundleDirectory))
+        {
+            System.IO.Directory.Delete(Objects.AssetBundleDirectory,true);
+        }
         Debug.Log("Generating random bytes for hex string...");
         byte[] randomBytes = GenerateRandomBytes(32);
         string hexString = ByteArrayToHexString(randomBytes);
@@ -79,8 +82,6 @@ public static class BasisBundleBuild
         await BasisBasisBundleInformationHandler.BasisBundleConnector(Objects, BasisBundleConnector, hexString,true);
 
         Debug.Log("Successfully built asset bundle.");
-
-        // Restore the original build target
         if (EditorUserBuildSettings.activeBuildTarget != originalActiveTarget)
         {
             EditorUserBuildSettings.SwitchActiveBuildTarget(
@@ -90,8 +91,61 @@ public static class BasisBundleBuild
             Debug.Log($"Switched back to original build target: {originalActiveTarget}");
         }
         await AssetBundleBuilder.SaveFileAsync(Objects.AssetBundleDirectory, Objects.ProtectedPasswordFileName, "txt", hexString);
+
+        MoveFilesUpAndDeleteFolders(Objects.AssetBundleDirectory);
+
         OpenRelativePath(Objects.AssetBundleDirectory);
         return (true, "Success");
+    }
+    static void MoveFilesUpAndDeleteFolders(string parentDir)
+    {
+        if (!Directory.Exists(parentDir))
+        {
+            BasisDebug.Log("Directory does not exist.");
+            return;
+        }
+
+        foreach (string subDir in Directory.GetDirectories(parentDir))
+        {
+            try
+            {
+                foreach (string file in Directory.GetFiles(subDir))
+                {
+                    string fileName = Path.GetFileName(file);
+                    string destFile = Path.Combine(parentDir, fileName);
+
+                    // Ensure unique filenames
+                    destFile = GetUniqueFileName(destFile);
+
+                    File.Move(file, destFile);
+                    BasisDebug.Log($"Moved: {file} -> {destFile}");
+                }
+
+                // Delete the empty folder
+                Directory.Delete(subDir, true);
+                BasisDebug.Log($"Deleted folder: {subDir}");
+            }
+            catch (Exception ex)
+            {
+                BasisDebug.LogError($"Error processing {subDir}: {ex.Message}");
+            }
+        }
+    }
+
+    static string GetUniqueFileName(string path)
+    {
+        string directory = Path.GetDirectoryName(path);
+        string fileName = Path.GetFileNameWithoutExtension(path);
+        string extension = Path.GetExtension(path);
+        int count = 1;
+
+        while (File.Exists(path))
+        {
+            path = Path.Combine(directory, $"{fileName} ({count}){extension}");
+            count++;
+        }
+
+        return path;
     }
     public static string OpenRelativePath(string relativePath)
     {
