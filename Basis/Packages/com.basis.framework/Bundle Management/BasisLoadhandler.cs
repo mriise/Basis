@@ -165,6 +165,10 @@ public static class BasisLoadHandler
     public static async Task HandleBundleAndMetaLoading(BasisTrackedBundleWrapper wrapper, BasisProgressReport report, CancellationToken cancellationToken)
     {
         bool IsMetaOnDisc = IsMetaDataOnDisc(wrapper.LoadableBundle.BasisRemoteBundleEncrypted.ConnectorURL, out OnDiscInformation MetaInfo);
+        if(MetaInfo.StoredLocal.LocalConnectorPath)
+        {
+
+        }
         bool IsBundleOnDisc = IsBundleDataOnDisc(wrapper.LoadableBundle.BasisRemoteBundleEncrypted.BundleURL, out OnDiscInformation BundleInfo);
 
         if (IsMetaOnDisc)
