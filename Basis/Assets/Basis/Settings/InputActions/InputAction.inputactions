@@ -344,6 +344,17 @@
                 },
                 {
                     "name": "",
+                    "id": "d00b0952-966b-4182-930e-abd4b219cdf8",
+                    "path": "<Gamepad>/buttonSouth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Jump",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "f2e78f9f-6b38-4981-9d67-a04d8dc17a76",
                     "path": "<Keyboard>/leftShift",
                     "interactions": "",
@@ -382,6 +393,17 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "XR;All",
+                    "action": "Escape",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "6e4ca21b-30ca-4e5e-be2a-226b643c368f",
+                    "path": "<Gamepad>/start",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
                     "action": "Escape",
                     "isComposite": false,
                     "isPartOfComposite": false

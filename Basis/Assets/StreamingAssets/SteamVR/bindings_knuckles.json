@@ -86,9 +86,6 @@
                "inputs" : {
                   "pull" : {
                      "output" : "/actions/default/in/handtrigger"
-                  },
-                  "touch" : {
-                     "output" : "/actions/default/in/grip"
                   }
                },
                "mode" : "trigger",
@@ -137,9 +134,6 @@
                "inputs" : {
                   "pull" : {
                      "output" : "/actions/default/in/handtrigger"
-                  },
-                  "touch" : {
-                     "output" : "/actions/default/in/grip"
                   }
                },
                "mode" : "trigger",
@@ -186,6 +180,34 @@
                },
                "mode" : "trigger",
                "path" : "/user/hand/right/input/trigger"
+            },
+            {
+               "inputs" : {
+                  "grab" : {
+                     "output" : "/actions/default/in/grip"
+                  }
+               },
+               "mode" : "grab",
+               "parameters" : {
+                  "force_hold_threshold" : "0.15",
+                  "value_hold_threshold" : "1.1",
+                  "value_release_threshold" : "0.65"
+               },
+               "path" : "/user/hand/left/input/grip"
+            },
+            {
+               "inputs" : {
+                  "grab" : {
+                     "output" : "/actions/default/in/grip"
+                  }
+               },
+               "mode" : "grab",
+               "parameters" : {
+                  "force_hold_threshold" : "0.15",
+                  "value_hold_threshold" : "1.1",
+                  "value_release_threshold" : "0.65"
+               },
+               "path" : "/user/hand/right/input/grip"
             }
          ]
       },
