@@ -1,11 +1,13 @@
 #if SETTINGS_MANAGER_UNIVERSAL
 using Basis.Scripts.Device_Management;
 using BattlePhaze.SettingsManager;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.XR;
 public class SMModuleRenderResolutionURP : SettingsManagerOption
 {
+    List<XRDisplaySubsystem> xrDisplays = new List<XRDisplaySubsystem>();
     public void Start()
     {
         BasisDeviceManagement.Instance.OnBootModeChanged += OnBootModeChanged;
@@ -24,7 +26,7 @@ public class SMModuleRenderResolutionURP : SettingsManagerOption
     {
         if (NameReturn(0, Option))
         {
-            BasisDebug.Log("Render Resolution");
+           // BasisDebug.Log("Render Resolution");
             UniversalRenderPipelineAsset Asset = (UniversalRenderPipelineAsset)QualitySettings.renderPipeline;
             if (SliderReadOption(Option, Manager, out float Value))
             {
@@ -37,11 +39,28 @@ public class SMModuleRenderResolutionURP : SettingsManagerOption
             {
                 SetUpscaler(Option.SelectedValue);
             }
+            else
+            {
+                if (NameReturn(2, Option))
+                {
+                    SubsystemManager.GetSubsystems(xrDisplays);
+                    if (xrDisplays.Count == 1)
+                    {
+                        if (SliderReadOption(Option, Manager, out float Value))
+                        {
+                            xrDisplays[0].foveatedRenderingLevel = Value; // Full strength
+                            xrDisplays[0].foveatedRenderingFlags = XRDisplaySubsystem.FoveatedRenderingFlags.GazeAllowed;
+                        }
+                    }
+                }
+            }
         }
     }
     public float RenderScale = 1;
     public void SetRenderResolution(float renderScale)
     {
+#if UNITY_ANDROID
+#else
         RenderScale = renderScale;
         if (BasisDeviceManagement.Instance.CurrentMode == BasisDeviceManagement.Desktop)
         {
@@ -58,22 +77,22 @@ public class SMModuleRenderResolutionURP : SettingsManagerOption
                 XRSettings.useOcclusionMesh = true;
             }
             UniversalRenderPipelineAsset Asset = (UniversalRenderPipelineAsset)QualitySettings.renderPipeline;
-           // if (Asset.renderScale != 1)
-           // {
-            //    Asset.renderScale = 1;
-           // }
             if (XRSettings.eyeTextureResolutionScale != renderScale)
             {
                 XRSettings.eyeTextureResolutionScale = RenderScale;
             }
-            if (XRSettings.renderViewportScale != RenderScale)
+            /// the system allows us to scale the render resolution correctly, however gpu culling does not know about this
+            if (Asset.renderScale != 1)
             {
-                XRSettings.renderViewportScale = RenderScale;
+                Asset.renderScale = 1;
             }
         }
+#endif
     }
     public void SetUpscaler(string Using)
     {
+#if UNITY_ANDROID
+#else
         UniversalRenderPipelineAsset Asset = (UniversalRenderPipelineAsset)QualitySettings.renderPipeline;
         switch (Using)
         {
@@ -93,6 +112,7 @@ public class SMModuleRenderResolutionURP : SettingsManagerOption
                 Asset.upscalingFilter = UpscalingFilterSelection.STP;
                 break;
         }
+#endif
     }
 }
 #endif

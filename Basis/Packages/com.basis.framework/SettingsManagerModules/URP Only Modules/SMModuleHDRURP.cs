@@ -15,6 +15,10 @@ public class SMModuleHDRURP : SettingsManagerOption
     public void SetHDRPrecision(string SelectedValue)
     {
         UniversalRenderPipelineAsset Asset = (UniversalRenderPipelineAsset)QualitySettings.renderPipeline;
+#if UNITY_ANDROID
+        Asset.hdrColorBufferPrecision = HDRColorBufferPrecision._32Bits;
+        Asset.supportsHDR = false;
+#else
         switch (SelectedValue)
         {
             case "ultra":
@@ -30,6 +34,7 @@ public class SMModuleHDRURP : SettingsManagerOption
                 Asset.supportsHDR = false;
                 break;
         }
+#endif
     }
 }
 #endif

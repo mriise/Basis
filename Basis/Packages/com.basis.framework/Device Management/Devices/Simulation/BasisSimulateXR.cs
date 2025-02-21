@@ -26,7 +26,6 @@ namespace Basis.Scripts.Device_Management.Devices.Simulation
             BasisDeviceManagement.Instance.TryAdd(BasisInput);
             return BasisInput;
         }
-
         public override void StopSDK()
         {
         }

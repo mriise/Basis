@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Basis.Scripts.BasisSdk.Helpers;
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Drivers;
@@ -44,7 +45,7 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
             }
             FinalPosition = LocalRawPosition;
             FinalRotation = LocalRawRotation;
-            InitalizeTracking(ID, ID, subSystems, true, BasisBoneTrackedRole.CenterEye);
+             InitalizeTracking(ID, ID, subSystems, true, BasisBoneTrackedRole.CenterEye);
             if (BasisHelpers.CheckInstance(Instance))
             {
                 Instance = this;

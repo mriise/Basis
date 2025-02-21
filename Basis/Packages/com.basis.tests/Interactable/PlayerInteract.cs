@@ -8,8 +8,6 @@ using UnityEngine.AddressableAssets;
 using Unity.Burst;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using Basis.Scripts.TransformBinders.BoneControl;
-using UnityEngine.Profiling;
-
 public class PlayerInteract : MonoBehaviour
 {
 
@@ -91,8 +89,7 @@ public class PlayerInteract : MonoBehaviour
     private void OnInputChanged(BasisInput Input)
     {
         // TODO: need a different config value for can interact/pickup/grab. Mainly input action/trigger values
-        if (Input.BasisDeviceMatchSettings != null && Input.BasisDeviceMatchSettings.HasRayCastSupport
-        )
+        if (Input.BasisDeviceMatchSettings != null && Input.BasisDeviceMatchSettings.HasRayCastSupport)
         {
             AddInput(Input);
         }
@@ -109,7 +106,9 @@ public class PlayerInteract : MonoBehaviour
     [BurstCompile]
     private void PollSystem()
     {
+#if UNITY_EDITOR//just remove when your profiling this
         Profiler.BeginSample("Interactable System");
+#endif
         if (InteractInputs == null)
         {
             return;
@@ -127,21 +126,11 @@ public class PlayerInteract : MonoBehaviour
                 BasisDebug.LogWarning("Pickup input device unexpectedly null, input devices likely changed");
                 continue;
             }
-
             HoverInteractSphere hoverSphere = interactInput.hoverInteract;
-            
+
             RaycastHit rayHit;
             InteractableObject hitInteractable = null;
-
-            if(interactInput.input.BasisPointRaycaster == null)
-            {
-                BasisDebug.LogWarning("Missing Point Raycaster!");
-                continue;
-            }
-
-            bool isValidRayHit = interactInput.input.BasisPointRaycaster.FirstHit(out rayHit, raycastDistance) &&
-                ((1 << rayHit.collider.gameObject.layer) & InteractableLayerMask) != 0 &&
-                rayHit.collider.TryGetComponent(out hitInteractable);
+            bool isValidRayHit = interactInput.input.BasisPointRaycaster.FirstHit(out rayHit, raycastDistance) &&((1 << rayHit.collider.gameObject.layer) & InteractableLayerMask) != 0 && rayHit.collider.TryGetComponent(out hitInteractable);
 
             if (isValidRayHit || hoverSphere.HoverTarget != null)
             {
@@ -240,7 +229,9 @@ public class PlayerInteract : MonoBehaviour
                 input.lineRenderer.enabled = false;
             }
         }
+#if UNITY_EDITOR//just remove when your profiling this
         Profiler.EndSample();
+#endif
     }
 
     private InteractInput UpdatePickupState(InteractableObject hitInteractable, InteractInput interactInput)

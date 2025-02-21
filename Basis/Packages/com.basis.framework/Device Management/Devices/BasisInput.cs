@@ -7,12 +7,10 @@ using Basis.Scripts.TransformBinders.BoneControl;
 using Basis.Scripts.UI;
 using Basis.Scripts.UI.UI_Panels;
 using System.Linq;
-using System.Threading.Tasks;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using static Basis.Scripts.Drivers.BaseBoneDriver;
-
 namespace Basis.Scripts.Device_Management.Devices
 {
     public abstract class BasisInput : MonoBehaviour
@@ -44,7 +42,6 @@ namespace Basis.Scripts.Device_Management.Devices
         public BasisUIRaycast BasisUIRaycast;
         public AddressableGenericResource LoadedDeviceRequest;
         public event SimulationHandler AfterControlApply;
-        public GameObject BasisPointRaycasterRef;
         public BasisDeviceMatchSettings BasisDeviceMatchSettings;
         [SerializeField]
         public BasisInputState InputState = new BasisInputState();
@@ -119,7 +116,7 @@ namespace Basis.Scripts.Device_Management.Devices
         public Quaternion InitalBoneRotation;
         public void UnAssignRoleAndTracker()
         {
-            if(Control != null)
+            if (Control != null)
             {
                 Control.IncomingData.position = Vector3.zero;
                 Control.IncomingData.rotation = Quaternion.identity;
@@ -153,7 +150,7 @@ namespace Basis.Scripts.Device_Management.Devices
         /// <param name="subSystems"></param>
         /// <param name="ForceAssignTrackedRole"></param>
         /// <param name="basisBoneTrackedRole"></param>
-        public async void InitalizeTracking(string uniqueID, string unUniqueDeviceID, string subSystems, bool ForceAssignTrackedRole, BasisBoneTrackedRole basisBoneTrackedRole)
+        public void InitalizeTracking(string uniqueID, string unUniqueDeviceID, string subSystems, bool ForceAssignTrackedRole, BasisBoneTrackedRole basisBoneTrackedRole)
         {
             //unassign the old tracker
             UnAssignTracker();
@@ -171,23 +168,15 @@ namespace Basis.Scripts.Device_Management.Devices
                 AssignRoleAndTracker(BasisDeviceMatchSettings.TrackedRole);
             }
 
-            if (hasRoleAssigned)
+            AvatarRotationOffset = BasisDeviceMatchSettings.AvatarRotationOffset;
+            AvatarPositionOffset = BasisDeviceMatchSettings.AvatarPositionOffset;
+            HasRaycastSupport = BasisDeviceMatchSettings.HasRayCastSupport;
+            HasInteractVisual = BasisDeviceMatchSettings.HasInteractVisual;
+            if (HasRaycastSupport)
             {
-                AvatarRotationOffset = BasisDeviceMatchSettings.AvatarRotationOffset;
-                AvatarPositionOffset = BasisDeviceMatchSettings.AvatarPositionOffset;
-                HasRaycastSupport = BasisDeviceMatchSettings.HasRayCastSupport;
-                HasInteractVisual = BasisDeviceMatchSettings.HasInteractVisual;
-                if (HasRaycastSupport)
-                {
-                  await  CreateRayCaster(this);
-                }
+                CreateRayCaster(this);
             }
-            /*            if (ForceAssignTrackedRole)
-                {
-                    AssignRoleAndTracker(basisBoneTrackedRole);
-                }
-             */
-            //events
+
             if (HasEvents == false)
             {
                 BasisLocalPlayer.Instance.LocalBoneDriver.OnSimulate += PollData;
@@ -469,16 +458,19 @@ namespace Basis.Scripts.Device_Management.Devices
                 AddressableLoadFactory.ReleaseResource(LoadedDeviceRequest);
             }
         }
-        public async Task CreateRayCaster(BasisInput BaseInput)
+        public GameObject BasisPointRaycasterRef;
+        public void CreateRayCaster(BasisInput BaseInput)
         {
-            BasisDebug.Log("Adding RayCaster");
+            BasisDebug.Log("Adding RayCaster " + BaseInput.UniqueDeviceIdentifier);
+
             BasisPointRaycasterRef = new GameObject(nameof(BasisPointRaycaster));
             BasisPointRaycasterRef.transform.parent = this.transform;
             BasisPointRaycasterRef.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
             BasisPointRaycaster = BasisHelpers.GetOrAddComponent<BasisPointRaycaster>(BasisPointRaycasterRef);
             BasisPointRaycaster.Initialize(BaseInput);
+
             BasisUIRaycast = new BasisUIRaycast();
-            await BasisUIRaycast.Initialize(BaseInput, BasisPointRaycaster);
+            BasisUIRaycast.Initialize(BaseInput, BasisPointRaycaster);
         }
     }
 }

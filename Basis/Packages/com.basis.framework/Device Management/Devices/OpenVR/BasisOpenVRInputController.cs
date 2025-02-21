@@ -1,10 +1,10 @@
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Device_Management.Devices.OpenVR.Structs;
 using Basis.Scripts.TransformBinders.BoneControl;
+using System.Threading.Tasks;
 using Unity.Mathematics;
 using UnityEngine;
 using Valve.VR;
-using static UnityEngine.GraphicsBuffer;
 
 namespace Basis.Scripts.Device_Management.Devices.OpenVR
 {
@@ -25,7 +25,7 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
             }
             inputSource = SteamVR_Input_Sources;
             Device = device;
-            InitalizeTracking(UniqueID, UnUniqueID, subSystems, AssignTrackedRole, basisBoneTrackedRole);
+           InitalizeTracking(UniqueID, UnUniqueID, subSystems, AssignTrackedRole, basisBoneTrackedRole);
             if (poseAction != null)
             {
                 if (HasOnUpate == false)

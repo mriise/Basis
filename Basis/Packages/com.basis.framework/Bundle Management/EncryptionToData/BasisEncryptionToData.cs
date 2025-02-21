@@ -1,8 +1,6 @@
 using BasisSerializer.OdinSerializer;
-using System;
 using System.Threading.Tasks;
 using UnityEngine;
-
 public static class BasisEncryptionToData
 {
     public static async Task<AssetBundleCreateRequest> GenerateBundleFromFile(string Password, string FilePath, uint CRC, BasisProgressReport progressCallback)
@@ -18,7 +16,6 @@ public static class BasisEncryptionToData
 
         // Start the AssetBundle loading process from memory with CRC check
         AssetBundleCreateRequest assetBundleCreateRequest = AssetBundle.LoadFromMemoryAsync(LoadedBundleData, CRC);
-
         // Track the last reported progress
         int lastReportedProgress = -1;
 

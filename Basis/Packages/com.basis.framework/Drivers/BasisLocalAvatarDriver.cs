@@ -592,7 +592,7 @@ namespace Basis.Scripts.Drivers
             foreach (var control in Controls)
             {
                 // Add event listener for each control to update Layer's active state when HasRigLayer changes
-                control.OnHasRigChanged.AddListener(delegate { UpdateLayerActiveState(Controls, Layer); });
+                control.OnHasRigChanged += delegate { UpdateLayerActiveState(Controls, Layer); };
                 control.HasEvents = true;
             }
 

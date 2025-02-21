@@ -217,11 +217,11 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
                             bool foundRole = TryAssignRole(device.deviceClass, device.deviceIndex, notUniqueID, out BasisBoneTrackedRole role, out SteamVR_Input_Sources source);
                             if (role == BasisBoneTrackedRole.Head || role == BasisBoneTrackedRole.CenterEye)
                             {
-                                spatial.Initialize(UnityEngine.SpatialTracking.TrackedPoseDriver.TrackedPose.Head, uniqueID, notUniqueID, nameof(BasisOpenVRManagement), foundRole, role, source);
+                               spatial.Initialize(UnityEngine.SpatialTracking.TrackedPoseDriver.TrackedPose.Head, uniqueID, notUniqueID, nameof(BasisOpenVRManagement), foundRole, role, source);
                             }
                             else
                             {
-                                spatial.Initialize(UnityEngine.SpatialTracking.TrackedPoseDriver.TrackedPose.Center, uniqueID, notUniqueID, nameof(BasisOpenVRManagement), foundRole, role, source);
+                               spatial.Initialize(UnityEngine.SpatialTracking.TrackedPoseDriver.TrackedPose.Center, uniqueID, notUniqueID, nameof(BasisOpenVRManagement), foundRole, role, source);
                             }
                         }
                         else if (input is BasisOpenVRInputController controller)

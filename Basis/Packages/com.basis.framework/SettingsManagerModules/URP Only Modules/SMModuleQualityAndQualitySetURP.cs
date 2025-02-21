@@ -11,12 +11,18 @@ namespace BattlePhaze.SettingsManager.Intergrations
         {
             if (NameReturn(0, Option))
             {
-                ChangeOpaque(Option.SelectedValue);
+#if UNITY_ANDROID
+#else
+      ChangeOpaque(Option.SelectedValue);
+#endif
                 QualitySettings.SetQualityLevel(QualitySettings.GetQualityLevel(), true);
             }
             if (NameReturn(1, Option))
             {
-                ChangeDepth(Option.SelectedValue);
+#if UNITY_ANDROID
+#else
+      ChangeDepth(Option.SelectedValue);
+#endif
                 QualitySettings.SetQualityLevel(QualitySettings.GetQualityLevel(), true);
             }
             if (NameReturn(2, Option))
@@ -24,6 +30,19 @@ namespace BattlePhaze.SettingsManager.Intergrations
                 ChangeQualityLevel(Option.SelectedValue);
 
             }
+#if UNITY_ANDROID
+            if (NameReturn(2, Option))
+            {
+                ChangeQualityLevel("very low");
+
+            }
+#else
+            if (NameReturn(2, Option))
+            {
+                ChangeQualityLevel(Option.SelectedValue);
+
+            }
+#endif
         }
 
         public Camera Camera;
@@ -62,17 +81,6 @@ namespace BattlePhaze.SettingsManager.Intergrations
                Debug.Log($"Depth rendering set to {value}.");
             }
         }
-        public void ChangePostProcessing(string value)
-        {
-            EnsureCameraData();
-
-            if (Data != null)
-            {
-                Data.renderPostProcessing = value == "on";
-               // Debug.Log($"Post Processing set to {value}.");
-            }
-        }
-
         public void ChangeQualityLevel(string quality)
         {
             EnsureCameraData();
@@ -80,11 +88,11 @@ namespace BattlePhaze.SettingsManager.Intergrations
             switch (quality)
             {
                 case "very low":
-                    ApplyQualitySettings(AnisotropicFiltering.Disable, 256, false, false);
-                    Data.renderPostProcessing = false;
+                    ApplyQualitySettings(AnisotropicFiltering.Enable, 256, false, false);
+                    Data.renderPostProcessing = true;
                     break;
                 case "low":
-                    ApplyQualitySettings(AnisotropicFiltering.Disable, 512, true, true);
+                    ApplyQualitySettings(AnisotropicFiltering.Enable, 512, true, true);
                     Data.renderPostProcessing = true;
                     break;
                 case "medium":
