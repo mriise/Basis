@@ -107,7 +107,7 @@ public class PlayerInteract : MonoBehaviour
     private void PollSystem()
     {
 #if UNITY_EDITOR//just remove when your profiling this
-        Profiler.BeginSample("Interactable System");
+        UnityEngine.Profiling.Profiler.BeginSample("Interactable System");
 #endif
         if (InteractInputs == null)
         {
@@ -230,7 +230,7 @@ public class PlayerInteract : MonoBehaviour
             }
         }
 #if UNITY_EDITOR//just remove when your profiling this
-        Profiler.EndSample();
+        UnityEngine.Profiling.Profiler.EndSample();
 #endif
     }
 
