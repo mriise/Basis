@@ -17,7 +17,7 @@ public class BasisFakeDeviceHelperWindow : EditorWindow
         GetWindow<BasisFakeDeviceHelperWindow>("Fake Device Helper");
     }
 
-    public async void OnGUI()
+    public void OnGUI()
     {
         // Input field
         TrackerPhysicalName = EditorGUILayout.TextField("Tracker Physical Name:", TrackerPhysicalName);
@@ -32,7 +32,7 @@ public class BasisFakeDeviceHelperWindow : EditorWindow
         if (GUILayout.Button("Submit"))
         {
             BasisSimulateXR Sim = BasisMenuItemsEditor.FindSimulate();
-          await  Sim.CreatePhysicalTrackedDevice(TrackerUniquePhysicalName, TrackerPhysicalName, BasisBoneTrackedRole, Overridebool);
+            Sim.CreatePhysicalTrackedDevice(TrackerUniquePhysicalName, TrackerPhysicalName, BasisBoneTrackedRole, Overridebool);
         }
     }
 }

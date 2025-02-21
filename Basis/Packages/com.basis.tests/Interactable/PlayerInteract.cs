@@ -8,8 +8,6 @@ using UnityEngine.AddressableAssets;
 using Unity.Burst;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using Basis.Scripts.TransformBinders.BoneControl;
-using UnityEngine.Profiling;
-
 public class PlayerInteract : MonoBehaviour
 {
 
@@ -132,9 +130,7 @@ public class PlayerInteract : MonoBehaviour
 
             RaycastHit rayHit;
             InteractableObject hitInteractable = null;
-            bool isValidRayHit = interactInput.input.BasisPointRaycaster.FirstHit(out rayHit, raycastDistance) &&
-                ((1 << rayHit.collider.gameObject.layer) & InteractableLayerMask) != 0 &&
-                rayHit.collider.TryGetComponent(out hitInteractable);
+            bool isValidRayHit = interactInput.input.BasisPointRaycaster.FirstHit(out rayHit, raycastDistance) &&((1 << rayHit.collider.gameObject.layer) & InteractableLayerMask) != 0 && rayHit.collider.TryGetComponent(out hitInteractable);
 
             if (isValidRayHit || hoverSphere.HoverTarget != null)
             {

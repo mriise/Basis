@@ -9,7 +9,7 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
     public class BasisDesktopManagement : BasisBaseTypeManagement
     {
         public BasisAvatarEyeInput BasisAvatarEyeInput;
-        public override async void BeginLoadSDK()
+        public override void BeginLoadSDK()
         {
             if (BasisAvatarEyeInput == null)
             {
@@ -21,7 +21,7 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
                     gameObject.transform.parent = BasisLocalPlayer.Instance.LocalBoneDriver.transform;
                 }
                 BasisAvatarEyeInput = gameObject.AddComponent<BasisAvatarEyeInput>();
-                await BasisAvatarEyeInput.Initalize("Desktop Eye", nameof(BasisDesktopManagement));
+                BasisAvatarEyeInput.Initalize("Desktop Eye", nameof(BasisDesktopManagement));
                 BasisDeviceManagement.Instance.TryAdd(BasisAvatarEyeInput);
             }
         }
