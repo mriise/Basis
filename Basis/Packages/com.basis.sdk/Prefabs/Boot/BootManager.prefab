@@ -2732,11 +2732,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Selector: {fileID: 11400000, guid: 8393424ebf34934449c2d1309a700837, type: 2}
   DefaultScene:
-    UnlockPassword: 
+    UnlockPassword: 5c8d2db15f1e02f48065a251e0c2fe3793c17bb6572738a368266d2441c5075a
     BasisRemoteBundleEncrypted:
       IsLocal: 0
-      MetaURL: 
-      BundleURL: 
+      MetaURL: https://BasisFramework.b-cdn.net/Worlds/Vulkan/e6e2d3bd-6a1c-40f1-bb9f-fe4545e839f7_638755878022685920.BasisEncyptedMeta
+      BundleURL: https://BasisFramework.b-cdn.net/Worlds/Vulkan/e6e2d3bd-6a1c-40f1-bb9f-fe4545e839f7_638755878022685920.BasisEncyptedBundle
     BasisLocalEncryptedBundle:
       LocalMetaFile: 
       LocalBundleFile: 
@@ -2770,4 +2770,4 @@ MonoBehaviour:
         AssetToLoadName: LoadingAvatar
         AssetBundleCRC: 0
   UseAddressablesToLoadScene: 0
-  UseSceneProvidedHere: 0
+  UseSceneProvidedHere: 1
