@@ -8,13 +8,13 @@ using Base58 = SimpleBase.Base58;
 using Debug = System.Diagnostics.Debug;
 using Did = Basis.Contrib.Auth.DecentralizedIds.Newtypes.Did;
 using DidUrlFragment = Basis.Contrib.Auth.DecentralizedIds.Newtypes.DidUrlFragment;
-using Ed25519 = Org.BouncyCastle.Math.EC.Rfc8032.Ed25519;
+using Ed25519 = Basis.Contrib.Crypto.Ed25519;
 using StringSplitOptions = System.StringSplitOptions;
 
 namespace Basis.Contrib.Auth.DecentralizedIds
 {
 	/// Implements resolution of a did:key to the various information stored in it
-	public class DidKeyResolver : IDidMethod
+	public sealed class DidKeyResolver : IDidMethod
 	{
 		public const string PREFIX = "did:key:";
 
@@ -23,6 +23,8 @@ namespace Basis.Contrib.Auth.DecentralizedIds
 
 		/// https://datatracker.ietf.org/doc/html/draft-multiformats-multibase#appendix-D.1
 		const char BASE58_BTC_MULTIBASE_CODE = 'z';
+
+		public DidMethodKind Kind => DidMethodKind.Key;
 
 		public Task<DidDocument> ResolveDocument(Did did)
 		{
@@ -67,7 +69,7 @@ namespace Basis.Contrib.Auth.DecentralizedIds
 				);
 			}
 			var pubkeyBytes = multicodecPrefixed[prefixLen..];
-			if (pubkeyBytes.Length != Ed25519.PublicKeySize)
+			if (pubkeyBytes.Length != Ed25519.PubkeySize)
 			{
 				throw new DidKeyDecodeException(DidKeyDecodeError.WrongPubkeyLen);
 			}
@@ -84,7 +86,7 @@ namespace Basis.Contrib.Auth.DecentralizedIds
 		/// See
 		private static JsonWebKey CreateEd25519Jwk(byte[] pubkeyBytes)
 		{
-			Debug.Assert(pubkeyBytes.Length == Ed25519.PublicKeySize);
+			Debug.Assert(pubkeyBytes.Length == Ed25519.PubkeySize);
 			var key = new JsonWebKey
 			{
 				Kty = "OKP",
@@ -112,7 +114,7 @@ namespace Basis.Contrib.Auth.DecentralizedIds
 		WrongPubkeyLen,
 	}
 
-	public class DidKeyDecodeException : System.Exception
+	public sealed class DidKeyDecodeException : System.Exception
 	{
 		public DidKeyDecodeError Error { get; }
 
