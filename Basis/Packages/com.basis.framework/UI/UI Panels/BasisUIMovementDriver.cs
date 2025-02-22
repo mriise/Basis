@@ -65,7 +65,7 @@ namespace Basis.Scripts.UI.UI_Panels
                 return;
             }
             // Log the current scale for debugging purposes
-            BasisDebug.Log("Scale was " + BasisLocalPlayer.Instance.EyeRatioPlayerToDefaultScale);
+            BasisDebug.Log("Scale was " + BasisLocalPlayer.Instance.CurrentHeight.EyeRatioPlayerToDefaultScale);
 
             // Extract the yaw (rotation around the vertical axis) and ignore pitch and roll
             Vector3 eulerRotation = Rotation.eulerAngles;
@@ -74,12 +74,12 @@ namespace Basis.Scripts.UI.UI_Panels
             // Create a new quaternion with the adjusted rotation
             Quaternion horizontalRotation = Quaternion.Euler(eulerRotation);
 
-            Vector3 adjustedOffset = new Vector3(WorldOffset.x, 0, WorldOffset.z) * BasisLocalPlayer.Instance.EyeRatioPlayerToDefaultScale;
+            Vector3 adjustedOffset = new Vector3(WorldOffset.x, 0, WorldOffset.z) * BasisLocalPlayer.Instance.CurrentHeight.EyeRatioPlayerToDefaultScale;
             Vector3 targetPosition = Position + (horizontalRotation * adjustedOffset);
 
             // Set the position and the adjusted horizontal rotation
             transform.SetPositionAndRotation(targetPosition, horizontalRotation);
-            transform.localScale = InitalScale * BasisLocalPlayer.Instance.EyeRatioPlayerToDefaultScale;
+            transform.localScale = InitalScale * BasisLocalPlayer.Instance.CurrentHeight.EyeRatioPlayerToDefaultScale;
         }
 
     }

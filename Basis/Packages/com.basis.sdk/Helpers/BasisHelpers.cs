@@ -1,4 +1,4 @@
-﻿using Unity.Mathematics;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace Basis.Scripts.BasisSdk.Helpers
@@ -60,6 +60,7 @@ namespace Basis.Scripts.BasisSdk.Helpers
 
         public static bool TryGetFloor(Animator animator, out float3 bottom)
         {
+            /* the below code is faulty, instead i just use the animators position now.
             if (TryGetVector3Bone(animator, HumanBodyBones.LeftFoot, out Vector3 leftFoot) && TryGetVector3Bone(animator, HumanBodyBones.RightFoot, out Vector3 rightFoot))
             {
                 bottom = Vector3.Lerp(leftFoot, rightFoot, 0.5f);
@@ -70,6 +71,9 @@ namespace Basis.Scripts.BasisSdk.Helpers
                 bottom = Vector3.zero;
                 return false;
             }
+            */
+            bottom = animator.transform.position;
+            return true;
         }
         public static bool TryGetVector3Bone(Animator animator, HumanBodyBones bone, out Vector3 position)
         {

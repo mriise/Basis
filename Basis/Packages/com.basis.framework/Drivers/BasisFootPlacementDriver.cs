@@ -124,12 +124,12 @@ namespace Basis.Scripts.Drivers
 
         private void CalculateStepHeight()
         {
-            StepHeight = DefaultFootOffset * Localplayer.EyeRatioPlayerToDefaultScale;
+            StepHeight = DefaultFootOffset * Localplayer.CurrentHeight.EyeRatioPlayerToDefaultScale;
         }
 
         private void CalculateFootDistance()
         {
-            FootDistanceBetweeneachOther = Vector3.Distance(leftFootSolver.foot.TposeLocal.position, rightFootSolver.foot.TposeLocal.position) * (FootDistanceMulti / Localplayer.PlayerEyeHeight);
+            FootDistanceBetweeneachOther = Vector3.Distance(leftFootSolver.foot.TposeLocal.position, rightFootSolver.foot.TposeLocal.position) * (FootDistanceMulti / Localplayer.CurrentHeight.PlayerEyeHeight);
         }
 
         private void OnDestroy()
