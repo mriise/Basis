@@ -33,9 +33,6 @@ namespace Basis.Scripts.Device_Management.Devices
         public float3 AvatarPositionOffset = Vector3.zero;
         public float3 AvatarRotationOffset = Vector3.zero;
 
-        public bool HasRaycastSupport = false;
-        public bool HasInteractVisual = true;
-
         public string CommonDeviceIdentifier;
         public BasisVisualTracker BasisVisualTracker;
         public BasisPointRaycaster BasisPointRaycaster;//used to raycast against things like UI
@@ -142,6 +139,10 @@ namespace Basis.Scripts.Device_Management.Devices
         {
             StopTracking();
         }
+        public bool HasRaycastSupport()
+        {
+            return hasRoleAssigned && BasisDeviceMatchSettings.HasRayCastSupport;
+        }
         /// <summary>
         /// initalize the tracking of this input
         /// </summary>
@@ -171,21 +172,16 @@ namespace Basis.Scripts.Device_Management.Devices
             {
                 AvatarRotationOffset = BasisDeviceMatchSettings.AvatarRotationOffset;
                 AvatarPositionOffset = BasisDeviceMatchSettings.AvatarPositionOffset;
-                HasRaycastSupport = BasisDeviceMatchSettings.HasRayCastSupport;
-                HasInteractVisual = BasisDeviceMatchSettings.HasInteractVisual;
-                if (HasRaycastSupport)
-                {
-                    CreateRayCaster(this);
-                }
             }
             else
             {
-                HasRaycastSupport = false;
-                HasInteractVisual = false;
                 AvatarPositionOffset =  Vector3.zero;
                 AvatarRotationOffset = Vector3.zero;
             }
-
+            if(HasRaycastSupport())
+            {
+                CreateRayCaster(this);
+            }
             if (HasEvents == false)
             {
                 BasisLocalPlayer.Instance.LocalBoneDriver.OnSimulate += PollData;
@@ -389,7 +385,7 @@ namespace Basis.Scripts.Device_Management.Devices
                 case BasisBoneTrackedRole.Mouth:
                     break;
             }
-            if (HasRaycastSupport)
+            if (HasRaycastSupport())
             {
                 BasisPointRaycaster.UpdateRaycast();
                 BasisUIRaycast.HandleUIRaycast();
