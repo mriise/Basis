@@ -58,14 +58,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.047169805, g: 0.047169805, b: 0.047169805, a: 0.5058824}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: f395b9e3209420041ab698613780825b, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 2f40c57d4ed9f194189003a5de9fa264, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -175,12 +175,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2951a224fadc49d48a1c4e6ffe90905a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  OnCloseMenu:
-    m_PersistentCalls:
-      m_Calls: []
-  OnCreatedMenu:
-    m_PersistentCalls:
-      m_Calls: []
   Canvas: {fileID: 5570272466211790668}
   CanvasRectTransform: {fileID: 6845612300474487947}
   CopyFrom: {fileID: 4059875018082726956}
@@ -224,9 +218,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b87e7a2b5ca91e74f93d8eb6d575954e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  LocalPlayer: {fileID: 0}
-  CameraDriver: {fileID: 0}
-  WorldOffset: {x: 0, y: -0.25, z: 0.25}
+  WorldOffset: {x: 0, y: 0, z: 0.5}
+  hasLocalCreationEvent: 0
+  Position: {x: 0, y: 0, z: 0}
+  Rotation: {x: 0, y: 0, z: 0, w: 0}
 --- !u!1 &3823630266701080739
 GameObject:
   m_ObjectHideFlags: 0

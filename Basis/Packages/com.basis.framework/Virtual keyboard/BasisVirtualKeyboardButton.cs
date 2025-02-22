@@ -1,4 +1,4 @@
-﻿using TMPro;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,6 +13,6 @@ public struct BasisVirtualKeyboardButton
 }
 public enum BasisVirtualKeyboardSpecialKey
 {
-   NotSpecial, IsDeleteKey, IsCaseSwitchKey,IsEnterKey
+   NotSpecial, IsDeleteKey, IsCaseSwitchKey,IsEnterKey,IsCloseKey
 }
 }
