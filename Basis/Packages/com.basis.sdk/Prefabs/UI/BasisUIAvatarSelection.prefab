@@ -659,7 +659,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
-  m_PresetInfoIsWorld: 0
+  m_PresetInfoIsWorld: 1
 --- !u!114 &3843996678262047675
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -701,11 +701,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   preLoadedBundles:
-  - UnlockPassword: 709becbec5c69a75bdc1017f8bd81b8caefcbb2b49b3e87e10ff242824c5d28d
+  - UnlockPassword: 0f13e759d76a199392d114198e9702c5654308caa7b0fb5cb44522a54ca0c691
     BasisRemoteBundleEncrypted:
       IsLocal: 0
-      MetaURL: https://BasisFramework.b-cdn.net/Avatars/Vulkan/Yun/1c0c98bb-a507-4bff-a735-6b02b5d109c1_638749527547946109.BasisEncyptedMeta
-      BundleURL: https://BasisFramework.b-cdn.net/Avatars/Vulkan/Yun/1c0c98bb-a507-4bff-a735-6b02b5d109c1_638749527547946109.BasisEncyptedBundle
+      MetaURL: https://BasisFramework.b-cdn.net/Avatars/Vulkan%2023022025/Yun/601dd442-a899-4a9c-8d76-13c603e81ff0_638758438256736008.BasisEncyptedMeta
+      BundleURL: https://BasisFramework.b-cdn.net/Avatars/Vulkan%2023022025/Yun/601dd442-a899-4a9c-8d76-13c603e81ff0_638758438256736008.BasisEncyptedBundle
     BasisLocalEncryptedBundle:
       LocalMetaFile: 
       LocalBundleFile: 
@@ -719,11 +719,11 @@ MonoBehaviour:
         AssetMode: 
         AssetToLoadName: 
         AssetBundleCRC: 0
-  - UnlockPassword: d34c500ad4422707c00eb3f5d5971e0f8d33806f94fad5b928e57189d3c48a96
+  - UnlockPassword: 5a974d0eda6bca0fcf35a420e9bc9da18baeff5ca9852c758347a351d3655e91
     BasisRemoteBundleEncrypted:
       IsLocal: 0
-      MetaURL: https://BasisFramework.b-cdn.net/Avatars/Vulkan/Aurellia/a8e663d1-2324-450f-b7d6-1d82870c0b36_638749527891394169.BasisEncyptedMeta
-      BundleURL: https://BasisFramework.b-cdn.net/Avatars/Vulkan/Aurellia/a8e663d1-2324-450f-b7d6-1d82870c0b36_638749527891394169.BasisEncyptedBundle
+      MetaURL: https://BasisFramework.b-cdn.net/Avatars/Vulkan%2023022025/Aurellia/a2c3958a-8857-41a3-b0ab-fdfc9f5d946e_638758435867069505.BasisEncyptedMeta
+      BundleURL: https://BasisFramework.b-cdn.net/Avatars/Vulkan%2023022025/Aurellia/a2c3958a-8857-41a3-b0ab-fdfc9f5d946e_638758435867069505.BasisEncyptedBundle
     BasisLocalEncryptedBundle:
       LocalMetaFile: 
       LocalBundleFile: 
