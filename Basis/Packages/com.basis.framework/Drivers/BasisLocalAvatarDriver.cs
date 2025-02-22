@@ -146,7 +146,7 @@ namespace Basis.Scripts.Drivers
             }
             StoredRolesTransforms = BasisAvatarIKStageCalibration.GetAllRolesAsTransform();
             Player.BasisAvatar.transform.parent = Hips.BoneTransform;
-            Player.BasisAvatar.transform.SetLocalPositionAndRotation(-Hips.TposeLocal.position,Quaternion.identity);
+            Player.BasisAvatar.transform.SetLocalPositionAndRotation(-Hips.TposeLocal.position, Quaternion.identity);
             CalibrateOffsets();
             BuildBuilder();
         }

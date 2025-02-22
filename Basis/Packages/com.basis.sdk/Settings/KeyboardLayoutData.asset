@@ -28,39 +28,40 @@ MonoBehaviour:
       - 9
       - 0
     - innerCollection:
-      - Q
-      - W
-      - E
-      - R
-      - T
-      - Y
-      - U
-      - I
-      - O
-      - P
+      - q
+      - w
+      - e
+      - r
+      - t
+      - y
+      - u
+      - i
+      - o
+      - p
     - innerCollection:
-      - A
-      - S
-      - D
-      - F
-      - G
-      - H
-      - J
-      - K
-      - L
+      - a
+      - s
+      - d
+      - f
+      - g
+      - h
+      - j
+      - k
+      - l
     - innerCollection:
-      - Z
-      - X
-      - C
-      - V
-      - B
-      - N
-      - M
+      - z
+      - x
+      - c
+      - v
+      - b
+      - n
+      - m
     - innerCollection:
       - ' '
-      - Enter
-      - <-
-      - Caps
+      - enter
+      - delete
+      - caps
+      - Close
     SpecialKeys:
     - Match: ' '
       WidthSize: 150
@@ -84,8 +85,8 @@ MonoBehaviour:
         m_ColorMultiplier: 1
         m_FadeDuration: 0.1
       BasisVirtualKeyboardSpecialKey: 3
-    - Match: <-
-      WidthSize: 44
+    - Match: Delete
+      WidthSize: 70
       ColorBlock:
         m_NormalColor: {r: 0.48235294, g: 0.48235294, b: 0.48235294, a: 1}
         m_HighlightedColor: {r: 0.3018868, g: 0.3018868, b: 0.3018868, a: 1}
@@ -106,6 +107,17 @@ MonoBehaviour:
         m_ColorMultiplier: 1
         m_FadeDuration: 0.1
       BasisVirtualKeyboardSpecialKey: 2
+    - Match: Close
+      WidthSize: 70
+      ColorBlock:
+        m_NormalColor: {r: 1, g: 0, b: 0, a: 1}
+        m_HighlightedColor: {r: 0.5660378, g: 0, b: 0, a: 1}
+        m_PressedColor: {r: 0.4245283, g: 0, b: 0, a: 1}
+        m_SelectedColor: {r: 0.735849, g: 0, b: 0, a: 1}
+        m_DisabledColor: {r: 0.122641504, g: 0.122641504, b: 0, a: 1}
+        m_ColorMultiplier: 1
+        m_FadeDuration: 0.1
+      BasisVirtualKeyboardSpecialKey: 4
   - language: Mandarin Chinese
     style: Pinyin
     rows:

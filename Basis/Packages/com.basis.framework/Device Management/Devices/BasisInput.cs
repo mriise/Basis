@@ -167,14 +167,23 @@ namespace Basis.Scripts.Device_Management.Devices
                 BasisDebug.Log("Overriding Tracker " + BasisDeviceMatchSettings.DeviceID, BasisDebug.LogTag.Input);
                 AssignRoleAndTracker(BasisDeviceMatchSettings.TrackedRole);
             }
-
-            AvatarRotationOffset = BasisDeviceMatchSettings.AvatarRotationOffset;
-            AvatarPositionOffset = BasisDeviceMatchSettings.AvatarPositionOffset;
-            HasRaycastSupport = BasisDeviceMatchSettings.HasRayCastSupport;
-            HasInteractVisual = BasisDeviceMatchSettings.HasInteractVisual;
-            if (HasRaycastSupport)
+            if (hasRoleAssigned)
             {
-                CreateRayCaster(this);
+                AvatarRotationOffset = BasisDeviceMatchSettings.AvatarRotationOffset;
+                AvatarPositionOffset = BasisDeviceMatchSettings.AvatarPositionOffset;
+                HasRaycastSupport = BasisDeviceMatchSettings.HasRayCastSupport;
+                HasInteractVisual = BasisDeviceMatchSettings.HasInteractVisual;
+                if (HasRaycastSupport)
+                {
+                    CreateRayCaster(this);
+                }
+            }
+            else
+            {
+                HasRaycastSupport = false;
+                HasInteractVisual = false;
+                AvatarPositionOffset =  Vector3.zero;
+                AvatarRotationOffset = Vector3.zero;
             }
 
             if (HasEvents == false)

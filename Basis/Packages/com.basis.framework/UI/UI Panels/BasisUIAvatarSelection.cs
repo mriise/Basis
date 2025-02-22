@@ -117,7 +117,10 @@ namespace Basis.Scripts.UI.UI_Panels
             {
                 if (!BasisLoadHandler.IsMetaDataOnDisc(activeKeys[Index].Url, out var info))
                 {
-                    BasisDebug.LogError("Missing File on Disc For " + activeKeys[Index].Url);
+                    if (activeKeys[Index].Url != BasisLocalPlayer.DefaultAvatar)
+                    {
+                        BasisDebug.LogError("Missing File on Disc For " + activeKeys[Index].Url);
+                    }
                     await BasisDataStoreAvatarKeys.RemoveKey(activeKeys[Index]);
                     continue;
                 }

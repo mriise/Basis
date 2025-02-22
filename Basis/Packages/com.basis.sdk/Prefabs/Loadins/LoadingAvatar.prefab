@@ -68,10 +68,34 @@ PrefabInstance:
       propertyPath: m_Name
       value: LoadingAvatar
       objectReference: {fileID: 0}
+    - target: {fileID: 2438656852951536746, guid: c5d7ffea6aec9f14f8c57483e9ff1e54, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2438656852951536746, guid: c5d7ffea6aec9f14f8c57483e9ff1e54, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2438656852951536746, guid: c5d7ffea6aec9f14f8c57483e9ff1e54, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5064880245253675553, guid: c5d7ffea6aec9f14f8c57483e9ff1e54, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 9fb5feadd6ca34342aaebdf1168d8dee, type: 2}
+    - target: {fileID: 8879528566716807029, guid: c5d7ffea6aec9f14f8c57483e9ff1e54, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8879528566716807029, guid: c5d7ffea6aec9f14f8c57483e9ff1e54, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8879528566716807029, guid: c5d7ffea6aec9f14f8c57483e9ff1e54, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -108,7 +132,7 @@ MonoBehaviour:
   FaceBlinkMesh: {fileID: 8839165641088738499}
   AvatarEyePosition: {x: 1.5230026, y: 0.15810776}
   AvatarMouthPosition: {x: 1.3779702, y: 0.12749863}
-  FaceVisemeMovement: 
+  FaceVisemeMovement: ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
   BlinkViseme: ffffffffffffffff
   laughterBlendTarget: -1
   IsOwnedLocally: 0

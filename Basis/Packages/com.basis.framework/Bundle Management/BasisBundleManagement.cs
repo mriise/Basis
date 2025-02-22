@@ -1,3 +1,4 @@
+using Basis.Scripts.BasisSdk.Players;
 using System;
 using System.IO;
 using System.Threading;
@@ -201,7 +202,10 @@ public static class BasisBundleManagement
             {
                 if (!File.Exists(BasisTrackedBundleWrapper.LoadableBundle.BasisRemoteBundleEncrypted.MetaURL))
                 {
-                    BasisDebug.LogError($"Local meta file not found: {metaUrl}");
+                    if (metaUrl != BasisLocalPlayer.DefaultAvatar)
+                    {
+                        BasisDebug.LogError($"Local meta file not found: {metaUrl}");
+                    }
                     return;
                 }
 

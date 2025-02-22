@@ -15,17 +15,17 @@ namespace Basis.Scripts.Device_Management.Devices.OpenXR
         public List<InputDevice> inputDevices = new List<InputDevice>();
         public Dictionary<string, InputDevice> TypicalDevices = new Dictionary<string, InputDevice>();
         public bool HasEvents = false;
-        private  async void OnDeviceConnected(InputDevice device)
+        private void OnDeviceConnected(InputDevice device)
         {
-          await  UpdateDeviceList();
+            UpdateDeviceList();
         }
 
-        private async void OnDeviceDisconnected(InputDevice device)
+        private  void OnDeviceDisconnected(InputDevice device)
         {
-           await UpdateDeviceList();
+            UpdateDeviceList();
         }
 
-        private async Task UpdateDeviceList()
+        private void UpdateDeviceList()
         {
             InputDevices.GetDevices(inputDevices);
 
@@ -127,7 +127,7 @@ namespace Basis.Scripts.Device_Management.Devices.OpenXR
         {
         }
 
-        public override async void StartSDK()
+        public override void StartSDK()
         {
           BasisDeviceManagement.Instance.SetCameraRenderState(true);
             BasisDebug.Log("Starting BasisOpenXRManagement");
@@ -137,7 +137,7 @@ namespace Basis.Scripts.Device_Management.Devices.OpenXR
                 InputDevices.deviceDisconnected += OnDeviceDisconnected;
                 HasEvents = true;
             }
-          await UpdateDeviceList();
+           UpdateDeviceList();
         }
 
         public override string Type()

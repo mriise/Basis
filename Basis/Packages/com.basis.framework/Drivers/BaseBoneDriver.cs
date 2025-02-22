@@ -7,8 +7,6 @@ using Basis.Scripts.Avatar;
 using Basis.Scripts.BasisSdk.Helpers;
 using Basis.Scripts.BasisSdk.Players;
 using Unity.Mathematics;
-using System.Data;
-
 namespace Basis.Scripts.Drivers
 {
     public abstract class BaseBoneDriver : MonoBehaviour
@@ -184,7 +182,7 @@ namespace Basis.Scripts.Drivers
                     Vector3 BonePosition = Control.OutgoingWorldData.position;
                     if (BasisBoneTrackedRoleCommonCheck.CheckIfRightHand(Role) || BasisBoneTrackedRoleCommonCheck.CheckIfLeftHand(Role))
                     {
-                        if (BasisGizmoManager.CreateSphereGizmo(out Control.GizmoReference, BonePosition, HandGizmoSize * BasisLocalPlayer.Instance.EyeRatioAvatarToAvatarDefaultScale, Control.Color))
+                        if (BasisGizmoManager.CreateSphereGizmo(out Control.GizmoReference, BonePosition, HandGizmoSize * BasisLocalPlayer.Instance.CurrentHeight.EyeRatioAvatarToAvatarDefaultScale, Control.Color))
                         {
                             Control.HasGizmo = true;
                         }
@@ -198,7 +196,7 @@ namespace Basis.Scripts.Drivers
                                 Control.HasLineDraw = true;
                             }
                         }
-                        if (BasisGizmoManager.CreateSphereGizmo(out Control.GizmoReference, BonePosition, DefaultGizmoSize * BasisLocalPlayer.Instance.EyeRatioAvatarToAvatarDefaultScale, Control.Color))
+                        if (BasisGizmoManager.CreateSphereGizmo(out Control.GizmoReference, BonePosition, DefaultGizmoSize * BasisLocalPlayer.Instance.CurrentHeight.EyeRatioAvatarToAvatarDefaultScale, Control.Color))
                         {
                             Control.HasGizmo = true;
                         }
@@ -240,12 +238,12 @@ namespace Basis.Scripts.Drivers
             addToBone.LerpAmount = positional;
             addToBone.HasTarget = target != null;
         }
-        public static Vector3 ConvertToAvatarSpaceInital(Animator animator, Vector3 WorldSpace, float AvatarHeightOffset)// out Vector3 FloorPosition
+        public static Vector3 ConvertToAvatarSpaceInital(Animator animator, Vector3 WorldSpace)// out Vector3 FloorPosition
         {
             if (BasisHelpers.TryGetFloor(animator, out float3 Bottom))
             {
                 //FloorPosition = Bottom;
-                return BasisHelpers.ConvertToLocalSpace(WorldSpace + new Vector3(0f, AvatarHeightOffset, 0f), Bottom);
+                return BasisHelpers.ConvertToLocalSpace(WorldSpace, Bottom);
             }
             else
             {
@@ -311,7 +309,7 @@ namespace Basis.Scripts.Drivers
                             }
                             else
                             {
-                                if (BasisGizmoManager.CreateSphereGizmo(out Control.TposeGizmoReference, BonePosition, BasisAvatarIKStageCalibration.MaxDistanceBeforeMax(role) * BasisLocalPlayer.Instance.EyeRatioAvatarToAvatarDefaultScale, Control.Color))
+                                if (BasisGizmoManager.CreateSphereGizmo(out Control.TposeGizmoReference, BonePosition, BasisAvatarIKStageCalibration.MaxDistanceBeforeMax(role) * BasisLocalPlayer.Instance.CurrentHeight.EyeRatioAvatarToAvatarDefaultScale, Control.Color))
                                 {
                                     Control.TposeHasGizmo = true;
                                 }

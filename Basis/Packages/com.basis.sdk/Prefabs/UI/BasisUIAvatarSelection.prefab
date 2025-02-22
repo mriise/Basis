@@ -533,7 +533,6 @@ RectTransform:
   - {fileID: 4861714727393408449}
   - {fileID: 330315760127844190}
   - {fileID: 1829600906290187368}
-  - {fileID: 4816877110853353965}
   m_Father: {fileID: 6503624412630808888}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
@@ -597,11 +596,12 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1526230169533217176}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.51155066}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.001, y: 0.001, z: 0.001}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5744437856525829021}
+  - {fileID: 4816877110853353965}
   - {fileID: 2497016452143760483}
   - {fileID: 8034001580859523998}
   - {fileID: 4707479195400357847}
@@ -611,8 +611,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.98107624, y: 0.050002337}
-  m_SizeDelta: {x: 400, y: 900}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 400, y: 700}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!223 &8408648589585476704
 Canvas:
@@ -701,11 +701,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   preLoadedBundles:
-  - UnlockPassword: 709becbec5c69a75bdc1017f8bd81b8caefcbb2b49b3e87e10ff242824c5d28d
+  - UnlockPassword: 0f13e759d76a199392d114198e9702c5654308caa7b0fb5cb44522a54ca0c691
     BasisRemoteBundleEncrypted:
       IsLocal: 0
-      MetaURL: https://BasisFramework.b-cdn.net/Avatars/Vulkan/Yun/1c0c98bb-a507-4bff-a735-6b02b5d109c1_638749527547946109.BasisEncyptedMeta
-      BundleURL: https://BasisFramework.b-cdn.net/Avatars/Vulkan/Yun/1c0c98bb-a507-4bff-a735-6b02b5d109c1_638749527547946109.BasisEncyptedBundle
+      MetaURL: https://BasisFramework.b-cdn.net/Avatars/Vulkan%2023022025/Yun/601dd442-a899-4a9c-8d76-13c603e81ff0_638758438256736008.BasisEncyptedMeta
+      BundleURL: https://BasisFramework.b-cdn.net/Avatars/Vulkan%2023022025/Yun/601dd442-a899-4a9c-8d76-13c603e81ff0_638758438256736008.BasisEncyptedBundle
     BasisLocalEncryptedBundle:
       LocalMetaFile: 
       LocalBundleFile: 
@@ -719,11 +719,11 @@ MonoBehaviour:
         AssetMode: 
         AssetToLoadName: 
         AssetBundleCRC: 0
-  - UnlockPassword: d34c500ad4422707c00eb3f5d5971e0f8d33806f94fad5b928e57189d3c48a96
+  - UnlockPassword: 5a974d0eda6bca0fcf35a420e9bc9da18baeff5ca9852c758347a351d3655e91
     BasisRemoteBundleEncrypted:
       IsLocal: 0
-      MetaURL: https://BasisFramework.b-cdn.net/Avatars/Vulkan/Aurellia/a8e663d1-2324-450f-b7d6-1d82870c0b36_638749527891394169.BasisEncyptedMeta
-      BundleURL: https://BasisFramework.b-cdn.net/Avatars/Vulkan/Aurellia/a8e663d1-2324-450f-b7d6-1d82870c0b36_638749527891394169.BasisEncyptedBundle
+      MetaURL: https://BasisFramework.b-cdn.net/Avatars/Vulkan%2023022025/Aurellia/a2c3958a-8857-41a3-b0ab-fdfc9f5d946e_638758435867069505.BasisEncyptedMeta
+      BundleURL: https://BasisFramework.b-cdn.net/Avatars/Vulkan%2023022025/Aurellia/a2c3958a-8857-41a3-b0ab-fdfc9f5d946e_638758435867069505.BasisEncyptedBundle
     BasisLocalEncryptedBundle:
       LocalMetaFile: 
       LocalBundleFile: 
@@ -951,7 +951,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 185, y: 433}
+  m_AnchoredPosition: {x: 185, y: 333.5}
   m_SizeDelta: {x: 30, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1721728047809048151
@@ -1434,7 +1434,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 400, y: 900}
+  m_SizeDelta: {x: 400, y: 700}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5981926764767142364
 CanvasRenderer:
@@ -1508,7 +1508,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -105, y: 260}
+  m_AnchoredPosition: {x: -145.8, y: 182}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &763412405237073563
@@ -1778,7 +1778,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -340}
+  m_AnchoredPosition: {x: 0, y: -246.1}
   m_SizeDelta: {x: 383.82, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5860740572237563609
@@ -1919,7 +1919,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -77.1, y: 392.1}
+  m_AnchoredPosition: {x: -146.7, y: 158.5}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &914162932108478399
@@ -3163,12 +3163,12 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3096508925571034548}
-  m_Father: {fileID: 2497016452143760483}
+  m_Father: {fileID: 6503624412630808888}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 160, y: 30}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 331.7, y: -59.6}
+  m_SizeDelta: {x: 50, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &98559438619192734
 CanvasRenderer:
@@ -3381,7 +3381,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 26.85
+  m_fontSize: 26.35
   m_fontSizeBase: 24
   m_fontWeight: 400
   m_enableAutoSizing: 1
