@@ -20,8 +20,8 @@ namespace Basis.Scripts.Avatar
             {
                 BasisBundleDescription = new BasisBundleDescription()
                 {
-                    AssetBundleDescription = "LoadingAvatar",
-                    AssetBundleName = "LoadingAvatar"
+                    AssetBundleDescription = BasisLocalPlayer.DefaultAvatar,
+                    AssetBundleName = BasisLocalPlayer.DefaultAvatar
                 },
                 HasError = false,
                 BasisBundleGenerated = new BasisBundleGenerated()
@@ -34,14 +34,14 @@ namespace Basis.Scripts.Avatar
             UnlockPassword = "N/A",
             BasisRemoteBundleEncrypted = new BasisRemoteEncyptedBundle()
             {
-                BundleURL = "LoadingAvatar",
+                BundleURL = BasisLocalPlayer.DefaultAvatar,
                 IsLocal = true,
-                MetaURL = "LoadingAvatar",
+                MetaURL = BasisLocalPlayer.DefaultAvatar,
             },
             BasisLocalEncryptedBundle = new BasisStoredEncyptedBundle()
             {
-                LocalBundleFile = "LoadingAvatar",
-                LocalMetaFile = "LoadingAvatar",
+                LocalBundleFile = BasisLocalPlayer.DefaultAvatar,
+                LocalMetaFile = BasisLocalPlayer.DefaultAvatar,
             },
         };
         public static async Task LoadAvatarLocal(BasisLocalPlayer Player,byte Mode, BasisLoadableBundle BasisLoadableBundle)

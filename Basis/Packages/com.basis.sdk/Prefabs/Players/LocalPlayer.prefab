@@ -559,13 +559,13 @@ MonoBehaviour:
   LocalBoneDriver: {fileID: 1116109802514353462}
   AvatarDriver: {fileID: 5000096567804979388}
   VisemeDriver: {fileID: 0}
+  CameraDriver: {fileID: 22857711927985140}
   GroundMask:
     serializedVersion: 2
     m_Bits: 1
   HasEvents: 0
   MicrophoneRecorder: {fileID: 0}
   SpawnPlayerOnSceneLoad: 1
-  Driver: {fileID: 22857711927985140}
   HasCalibrationEvents: 0
 --- !u!114 &1116109802514353462
 MonoBehaviour:
@@ -793,12 +793,6 @@ MonoBehaviour:
     HasEvents: 0
     hasTrackerDriver: 1
     NotProcessing: 0
-    OnHasRigChanged:
-      m_PersistentCalls:
-        m_Calls: []
-    WeightsChanged:
-      m_PersistentCalls:
-        m_Calls: []
     hasRigLayer: 1
     positionWeight: 1
     rotationWeight: 1
@@ -899,12 +893,6 @@ MonoBehaviour:
     HasEvents: 0
     hasTrackerDriver: 1
     NotProcessing: 0
-    OnHasRigChanged:
-      m_PersistentCalls:
-        m_Calls: []
-    WeightsChanged:
-      m_PersistentCalls:
-        m_Calls: []
     hasRigLayer: 1
     positionWeight: 1
     rotationWeight: 1

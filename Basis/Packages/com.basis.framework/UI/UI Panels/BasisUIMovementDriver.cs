@@ -1,5 +1,7 @@
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Drivers;
+using Basis.Scripts.TransformBinders.BoneControl;
+using System.Collections;
 using UnityEngine;
 
 namespace Basis.Scripts.UI.UI_Panels
@@ -10,8 +12,10 @@ namespace Basis.Scripts.UI.UI_Panels
         public bool hasLocalCreationEvent = false;
         public Vector3 Position;
         public Quaternion Rotation;
+        private Vector3 InitalScale;
         public void OnEnable()
         {
+            InitalScale = transform.localScale;
             if (BasisLocalPlayer.Instance != null)
             {
                 LocalPlayerGenerated();
@@ -41,27 +45,42 @@ namespace Basis.Scripts.UI.UI_Panels
         }
         public void StartWaitAndSetUILocation()
         {
-            BasisDebug.Log("StartWaitAndSetUILocation");
+            StartCoroutine(DelaySetUI());
+        }
+        private IEnumerator DelaySetUI() // Waits until end of frame to set position, to ensure all other data has been updated
+        {
+            yield return null;
             SetUILocation();
         }
         public void SetUILocation()
         {
             // Get the current position and rotation from the BasisLocalCameraDriver
             BasisLocalCameraDriver.GetPositionAndRotation(out Position, out Rotation);
-
+            if(BasisLocalPlayer.Instance == null)
+            {
+                return;
+            }
+            if (BasisLocalPlayer.Instance.CameraDriver == null)
+            {
+                return;
+            }
             // Log the current scale for debugging purposes
             BasisDebug.Log("Scale was " + BasisLocalPlayer.Instance.EyeRatioPlayerToDefaultScale);
 
             // Extract the yaw (rotation around the vertical axis) and ignore pitch and roll
             Vector3 eulerRotation = Rotation.eulerAngles;
-         //   eulerRotation.x = 0f; // Remove pitch
             eulerRotation.z = 0f; // Remove roll
 
             // Create a new quaternion with the adjusted rotation
             Quaternion horizontalRotation = Quaternion.Euler(eulerRotation);
 
+            Vector3 adjustedOffset = new Vector3(WorldOffset.x, 0, WorldOffset.z) * BasisLocalPlayer.Instance.EyeRatioPlayerToDefaultScale;
+            Vector3 targetPosition = Position + (horizontalRotation * adjustedOffset);
+
             // Set the position and the adjusted horizontal rotation
-            transform.SetPositionAndRotation(Position + (horizontalRotation * (WorldOffset * BasisLocalPlayer.Instance.EyeRatioPlayerToDefaultScale)), horizontalRotation);
+            transform.SetPositionAndRotation(targetPosition, horizontalRotation);
+            transform.localScale = InitalScale * BasisLocalPlayer.Instance.EyeRatioPlayerToDefaultScale;
         }
+
     }
 }

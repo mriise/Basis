@@ -35,10 +35,13 @@ namespace Basis.Scripts.BasisSdk.Players
         /// use the bool to 
         /// </summary>
         public Action OnPlayersHeightChanged;
+
         public BasisLocalBoneDriver LocalBoneDriver;
         public BasisLocalAvatarDriver AvatarDriver;
         //   public BasisFootPlacementDriver FootPlacementDriver;
         public BasisAudioAndVisemeDriver VisemeDriver;
+        public BasisLocalCameraDriver CameraDriver;
+
         [SerializeField]
         public LayerMask GroundMask;
         public static string LoadFileNameAndExtension = "LastUsedAvatar.BAS";
@@ -46,7 +49,6 @@ namespace Basis.Scripts.BasisSdk.Players
         public MicrophoneRecorder MicrophoneRecorder;
         public bool SpawnPlayerOnSceneLoad = true;
         public const string DefaultAvatar = "LoadingAvatar";
-        public BasisLocalCameraDriver Driver;
         public async Task LocalInitialize()
         {
             if (BasisHelpers.CheckInstance(Instance))
@@ -59,7 +61,7 @@ namespace Basis.Scripts.BasisSdk.Players
             IsLocal = true;
             LocalBoneDriver.CreateInitialArrays(LocalBoneDriver.transform, true);
             BasisDeviceManagement.Instance.InputActions.Initialize(this);
-            Driver.gameObject.SetActive(true);  
+            CameraDriver.gameObject.SetActive(true);  
             //  FootPlacementDriver = BasisHelpers.GetOrAddComponent<BasisFootPlacementDriver>(this.gameObject);
             //  FootPlacementDriver.Initialize();
             Move.Initialize();
