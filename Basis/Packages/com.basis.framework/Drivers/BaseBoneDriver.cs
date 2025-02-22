@@ -240,12 +240,12 @@ namespace Basis.Scripts.Drivers
             addToBone.LerpAmount = positional;
             addToBone.HasTarget = target != null;
         }
-        public static Vector3 ConvertToAvatarSpaceInital(Animator animator, Vector3 WorldSpace, float AvatarHeightOffset)// out Vector3 FloorPosition
+        public static Vector3 ConvertToAvatarSpaceInital(Animator animator, Vector3 WorldSpace)// out Vector3 FloorPosition
         {
             if (BasisHelpers.TryGetFloor(animator, out float3 Bottom))
             {
                 //FloorPosition = Bottom;
-                return BasisHelpers.ConvertToLocalSpace(WorldSpace + new Vector3(0f, AvatarHeightOffset, 0f), Bottom);
+                return BasisHelpers.ConvertToLocalSpace(WorldSpace, Bottom);
             }
             else
             {
