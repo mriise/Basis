@@ -137,7 +137,6 @@ public static class BasisNetworkSpawnItem
         {
             BasisRemoteBundleEncrypted = new BasisRemoteEncyptedBundle()
             {
-                BundleURL = localLoadResource.BundleURL,
                 IsLocal = localLoadResource.IsLocalLoad,
                 ConnectorURL = localLoadResource.MetaURL
             },
@@ -172,7 +171,6 @@ public static class BasisNetworkSpawnItem
         {
             BasisRemoteBundleEncrypted = new BasisRemoteEncyptedBundle()
             {
-                BundleURL = localLoadResource.BundleURL,
                 IsLocal = localLoadResource.IsLocalLoad,
                 ConnectorURL = localLoadResource.MetaURL
             },

@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using UnityEditor;
+using UnityEditor.Build;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
@@ -62,11 +63,13 @@ public static class BasisAssetBundlePipeline
     }
     public static async Task<(bool,BasisBundleGenerated)> BuildAssetBundle(bool isScene, GameObject asset, Scene scene, BasisAssetBundleObject settings, string Password, BuildTarget Target)
     {
+        ScriptingImplementation ResetTo = ScriptingImplementation.IL2CPP;
         if (EditorUserBuildSettings.activeBuildTarget != Target)
         {
             EditorUserBuildSettings.SwitchActiveBuildTarget(BuildPipeline.GetBuildTargetGroup(Target), Target);
         }
 
+        ApplyScriptingBackend( ScriptingImplementation.Mono2x,out ResetTo);
         ClearOutExistingSets(); // Removes all bundle names
         string targetDirectory = Path.Combine(settings.AssetBundleDirectory, Target.ToString());
         TemporaryStorageHandler.ClearTemporaryStorage(targetDirectory);
@@ -117,6 +120,14 @@ public static class BasisAssetBundlePipeline
             {
                 OnAfterBuildPrefab?.Invoke(assetBundleName);
             }
+
+            BuildTarget buildTarget = EditorUserBuildSettings.activeBuildTarget;
+            BuildTargetGroup targetGroup = BuildPipeline.GetBuildTargetGroup(buildTarget);
+            var namedBuildTarget = UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(targetGroup);
+            if (ResetTo != PlayerSettings.GetScriptingBackend(namedBuildTarget))
+            {
+                PlayerSettings.SetScriptingBackend(namedBuildTarget, ResetTo);
+            }
             return new(true, BasisBundleGenerated);
         }
         catch (Exception ex)
@@ -132,8 +143,25 @@ public static class BasisAssetBundlePipeline
                 BasisBundleErrorHandler.HandleBuildError(ex, asset, wasModified, settings.TemporaryStorage);
                 EditorUtility.DisplayDialog("Failed To Build", "Please check the console for the full issue: " + ex, "Will do");
             }
-
+            BuildTarget buildTarget = EditorUserBuildSettings.activeBuildTarget;
+            BuildTargetGroup targetGroup = BuildPipeline.GetBuildTargetGroup(buildTarget);
+            var namedBuildTarget = UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(targetGroup);
+            if (ResetTo != PlayerSettings.GetScriptingBackend(namedBuildTarget))
+            {
+                PlayerSettings.SetScriptingBackend(namedBuildTarget, ResetTo);
+            }
             return new(false, null);
+        }
+    }
+    public static void ApplyScriptingBackend(ScriptingImplementation ScriptingImplementation,out ScriptingImplementation ResetTo)
+    {
+        BuildTarget buildTarget = EditorUserBuildSettings.activeBuildTarget;
+        BuildTargetGroup targetGroup = BuildPipeline.GetBuildTargetGroup(buildTarget);
+        var namedBuildTarget = UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(targetGroup);
+        ResetTo = PlayerSettings.GetScriptingBackend(namedBuildTarget);
+        if (ResetTo != ScriptingImplementation)
+        {
+            PlayerSettings.SetScriptingBackend(namedBuildTarget, ScriptingImplementation);
         }
     }
 }

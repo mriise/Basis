@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEditor;
+using UnityEditor.Build;
 using UnityEngine;
 
 public static class BasisBundleBuild
@@ -26,11 +27,6 @@ public static class BasisBundleBuild
         BuildTarget originalActiveTarget = EditorUserBuildSettings.activeBuildTarget;
 
         if (ErrorChecking(BasisContentBase, out string Error) == false)
-        {
-            return (false, Error);
-        }
-
-        if (CheckIfWeCanBuild(Targets, out Error) == false)
         {
             return (false, Error);
         }
@@ -59,8 +55,6 @@ public static class BasisBundleBuild
         byte[] randomBytes = GenerateRandomBytes(32);
         string hexString = ByteArrayToHexString(randomBytes);
         Debug.Log($"Generated hex string: {hexString}");
-
-        Debug.Log("IL2CPP is installed. Proceeding to build asset bundle...");
 
         BasisBundleGenerated[] Bundles = new BasisBundleGenerated[Targets.Count];
         for (int Index = 0; Index < Targets.Count; Index++)
@@ -199,52 +193,6 @@ public static class BasisBundleBuild
         }
 
         return true;
-    }
-
-    public static bool CheckIfWeCanBuild(List<BuildTarget> Targets, out string Error)
-    {
-        for (int Index = 0; Index < Targets.Count; Index++)
-        {
-            BuildTarget item = Targets[Index];
-
-            //   if (IsPlatformInstalled(item) == false)
-            //  {
-            //   Error = "Missing Platform for " + item + " please install from the Unity Hub, make sure to include IL2CPP";
-            //    return false;
-            //  }
-
-            var playbackEndingDirectory = BuildPipeline.GetPlaybackEngineDirectory(item, BuildOptions.None, false);
-            bool isInstalled = !string.IsNullOrEmpty(playbackEndingDirectory) && Directory.Exists(Path.Combine(playbackEndingDirectory, "Variations", "il2cpp"));
-
-            if (isInstalled == false)
-            {
-                Error = "IL2CPP is NOT installed for platform " + item + " please add it from the unity hub!";
-                return false;
-            }
-        }
-        Error = string.Empty;
-        return true;
-    }
-
-    static bool IsPlatformInstalled(BuildTarget target)
-    {
-        // Use Unity's method to check for the platform installation
-        string playbackEnginePath = BuildPipeline.GetPlaybackEngineDirectory(target, BuildOptions.None, false);
-
-        if (string.IsNullOrEmpty(playbackEnginePath))
-        {
-            return false; // If no path returned, platform isn't installed
-        }
-
-        // Special check for StandaloneWindows64 which might be named differently in the folder structure
-        if (target == BuildTarget.StandaloneWindows64)
-        {
-            // Check if the "windows64" folder exists in the PlaybackEngines directory
-            return Directory.Exists(Path.Combine(playbackEnginePath, "windows64"));
-        }
-
-        // For all other platforms, we rely on the normal method
-        return Directory.Exists(playbackEnginePath);
     }
     // Generates a random byte array of specified length
     public static byte[] GenerateRandomBytes(int length)

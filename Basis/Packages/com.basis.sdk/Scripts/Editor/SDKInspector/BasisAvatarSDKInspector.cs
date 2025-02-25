@@ -21,7 +21,6 @@ public partial class BasisAvatarSDKInspector : Editor
     public AvatarSDKJiggleBonesView AvatarSDKJiggleBonesView = new AvatarSDKJiggleBonesView();
     public AvatarSDKVisemes AvatarSDKVisemes = new AvatarSDKVisemes();
     public Button EventCallbackAvatarBundleButton { get; private set; }
-    private bool IsIL2CPPIsInstalled;
     public Texture2D Texture;
     private Label resultLabel; // Store the result label for later clearing
     private List<BuildTarget> selectedTargets = new List<BuildTarget>();
@@ -30,7 +29,6 @@ public partial class BasisAvatarSDKInspector : Editor
     {
         visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(BasisSDKConstants.AvataruxmlPath);
         Avatar = (BasisAvatar)target;
-        IsIL2CPPIsInstalled = BasisBundleBuild.CheckIfWeCanBuild(new List<BuildTarget>() { EditorUserBuildSettings.activeBuildTarget },out string Error);
         // Initialize selectedTargets with all available targets
         selectedTargets = new List<BuildTarget>(BasisSDKConstants.allowedTargets);
     }
@@ -250,16 +248,8 @@ public partial class BasisAvatarSDKInspector : Editor
         avatarEyePositionClick.text = "Eye Position Gizmo " + AvatarHelper.BoolToText(AvatarEyePositionState);
         avatarMouthPositionClick.text = "Mouth Position Gizmo " + AvatarHelper.BoolToText(AvatarMouthPositionState);
 
-        if (!IsIL2CPPIsInstalled)
-        {
-            ErrorMessage.visible = true;
-            ErrorMessage.text = Error;
-        }
-        else
-        {
-            ErrorMessage.visible = false;
-            ErrorMessage.text = "";
-        }
+        ErrorMessage.visible = false;
+        ErrorMessage.text = "";
     }
     private async void EventCallbackAvatarBundle(List<BuildTarget> targets)
     {

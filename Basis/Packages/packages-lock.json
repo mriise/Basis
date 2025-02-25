@@ -297,7 +297,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.searcher": {
-      "version": "4.9.3",
+      "version": "4.9.2",
       "depth": 2,
       "source": "registry",
       "dependencies": {},
@@ -309,7 +309,7 @@
       "source": "builtin",
       "dependencies": {
         "com.unity.render-pipelines.core": "17.0.3",
-        "com.unity.searcher": "4.9.3"
+        "com.unity.searcher": "4.9.2"
       }
     },
     "com.unity.sysroot": {
@@ -329,7 +329,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.test-framework": {
-      "version": "1.4.6",
+      "version": "1.4.5",
       "depth": 1,
       "source": "registry",
       "dependencies": {
@@ -373,7 +373,7 @@
     },
     "com.unity.ugui": {
       "version": "2.0.0",
-      "depth": 1,
+      "depth": 2,
       "source": "builtin",
       "dependencies": {
         "com.unity.modules.ui": "1.0.0",
@@ -399,7 +399,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.xr.legacyinputhelpers": {
-      "version": "2.1.12",
+      "version": "2.1.11",
       "depth": 1,
       "source": "registry",
       "dependencies": {

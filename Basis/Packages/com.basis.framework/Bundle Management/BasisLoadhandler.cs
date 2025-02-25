@@ -165,12 +165,14 @@ public static class BasisLoadHandler
     public static async Task HandleBundleAndMetaLoading(BasisTrackedBundleWrapper wrapper, BasisProgressReport report, CancellationToken cancellationToken)
     {
         bool IsMetaOnDisc = IsMetaDataOnDisc(wrapper.LoadableBundle.BasisRemoteBundleEncrypted.ConnectorURL, out OnDiscInformation MetaInfo);
+        /*here LD
         if(MetaInfo.StoredLocal.LocalConnectorPath)
         {
 
         }
-        bool IsBundleOnDisc = IsBundleDataOnDisc(wrapper.LoadableBundle.BasisRemoteBundleEncrypted.BundleURL, out OnDiscInformation BundleInfo);
-
+        */
+        // bool IsBundleOnDisc = IsBundleDataOnDisc(wrapper.LoadableBundle.BasisRemoteBundleEncrypted.BundleURL, out OnDiscInformation BundleInfo);
+        bool IsBundleOnDisc = false;
         if (IsMetaOnDisc)
         {
             BasisDebug.Log("ProcessOnDiscMetaDataAsync", BasisDebug.LogTag.Event);
@@ -215,7 +217,7 @@ public static class BasisLoadHandler
 
             AssetBundleCreateRequest bundleRequest = await BasisEncryptionToData.GenerateBundleFromFile(
                 wrapper.LoadableBundle.UnlockPassword,
-                wrapper.LoadableBundle.BasisLocalEncryptedBundle.LocalBundleFile,
+                wrapper.LoadableBundle.BasisLocalEncryptedBundle.LocalConnectorPath,
                 Generated.AssetBundleCRC,
                 report
             );
@@ -296,10 +298,10 @@ public static class BasisLoadHandler
         {
             foreach (var discInfo in OnDiscData.Values)
             {
-                if (discInfo.StoredRemote.BundleURL == BundleURL)
+                if (discInfo.StoredRemote.ConnectorURL == BundleURL)
                 {
                     info = discInfo;
-                    if (File.Exists(discInfo.StoredLocal.LocalBundleFile))
+                    if (File.Exists(discInfo.StoredLocal.LocalConnectorPath))
                     {
                         return true;
                     }
@@ -418,6 +420,7 @@ public static class BasisLoadHandler
         {
             File.Delete(bundle.LocalConnectorPath);
         }
+        /* here LD
         BasisEncryptionToData.GenerateBundleFromFile(, bundle.LocalConnectorPath,bundle);
 
         bundle.LocalConnectorPath
@@ -425,5 +428,6 @@ public static class BasisLoadHandler
         {
             File.Delete(bundle.LocalBundleFile);
         }
+        */
     }
 }

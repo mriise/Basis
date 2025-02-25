@@ -8,8 +8,7 @@ public static class BasisBundleConversionNetwork
         {
             BasisRemoteBundleEncrypted = new BasisRemoteEncyptedBundle
             {
-                ConnectorURL = AvatarNetworkLoadInformation.AvatarMetaUrl,
-                BundleURL = AvatarNetworkLoadInformation.AvatarBundleUrl
+                ConnectorURL = AvatarNetworkLoadInformation.URL,
             },
              BasisBundleConnector = new BasisBundleConnector(),
             BasisLocalEncryptedBundle = new BasisStoredEncryptedBundle(),
@@ -24,8 +23,7 @@ public static class BasisBundleConversionNetwork
     {
         AvatarNetworkLoadInformation AvatarNetworkLoadInformation = new AvatarNetworkLoadInformation
         {
-            AvatarMetaUrl = BasisLoadableBundle.BasisRemoteBundleEncrypted.ConnectorURL,
-            AvatarBundleUrl = BasisLoadableBundle.BasisRemoteBundleEncrypted.BundleURL,
+            URL = BasisLoadableBundle.BasisRemoteBundleEncrypted.ConnectorURL,
             UnlockPassword = BasisLoadableBundle.UnlockPassword
         };
         return AvatarNetworkLoadInformation;

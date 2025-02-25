@@ -85,7 +85,7 @@ public static class BasisBundleManagement
             }
 
             // Step 4: Download the bundle file
-            string bundleUrl = BasisTrackedBundleWrapper.LoadableBundle.BasisRemoteBundleEncrypted.BundleURL;
+            string bundleUrl = BasisTrackedBundleWrapper.LoadableBundle.BasisRemoteBundleEncrypted.ConnectorURL;
 
             if (string.IsNullOrEmpty(bundleUrl))
             {
@@ -143,7 +143,7 @@ public static class BasisBundleManagement
                 }
 
                 BasisDebug.Log($"Successfully downloaded bundle file for {bundleUrl}");
-                BasisTrackedBundleWrapper.LoadableBundle.BasisLocalEncryptedBundle.LocalBundleFile = FilePathBundle;
+               // BasisTrackedBundleWrapper.LoadableBundle.BasisLocalEncryptedBundle.LocalConnectorPath = FilePathBundle;
                 BasisTrackedBundleWrapper.LoadableBundle.BasisLocalEncryptedBundle.LocalConnectorPath = FilePathMeta;
                 return true;
             }
@@ -303,7 +303,7 @@ public static class BasisBundleManagement
         }
 
         // Set local paths
-        BasisDebug.Log($"Setting local bundle file: {BasisStoredEncyptedBundle.LocalBundleFile} Setting local meta file: {BasisStoredEncyptedBundle.LocalConnectorPath}");
+        BasisDebug.Log($"Setting local bundle file: {BasisStoredEncyptedBundle.LocalConnectorPath} Setting local meta file: {BasisStoredEncyptedBundle.LocalConnectorPath}");
 
         basisTrackedBundleWrapper.LoadableBundle.BasisLocalEncryptedBundle = BasisStoredEncyptedBundle;
 
