@@ -15,10 +15,10 @@ namespace Basis.Scripts.Device_Management.Devices.Unity_Spatial_Tracking
         public TrackedPoseDriver.TrackedPose TrackedPose = TrackedPoseDriver.TrackedPose.Center;
         public BasisOpenVRInputEye BasisOpenVRInputEye;
         public BasisVirtualSpineDriver BasisVirtualSpine = new BasisVirtualSpineDriver();
-        public async Task Initialize(TrackedPoseDriver.TrackedPose trackedPose, string UniqueID, string UnUniqueID, string subSystems, bool AssignTrackedRole, BasisBoneTrackedRole basisBoneTrackedRole, SteamVR_Input_Sources SteamVR_Input_Sources)
+        public void Initialize(TrackedPoseDriver.TrackedPose trackedPose, string UniqueID, string UnUniqueID, string subSystems, bool AssignTrackedRole, BasisBoneTrackedRole basisBoneTrackedRole, SteamVR_Input_Sources SteamVR_Input_Sources)
         {
             TrackedPose = trackedPose;
-           await InitalizeTracking(UniqueID, UnUniqueID, subSystems, AssignTrackedRole, basisBoneTrackedRole);
+            InitalizeTracking(UniqueID, UnUniqueID, subSystems, AssignTrackedRole, basisBoneTrackedRole);
             if (basisBoneTrackedRole == BasisBoneTrackedRole.CenterEye)
             {
                 BasisOpenVRInputEye = gameObject.AddComponent<BasisOpenVRInputEye>();
@@ -42,7 +42,7 @@ namespace Basis.Scripts.Device_Management.Devices.Unity_Spatial_Tracking
                 {
                     if (Control.HasTracked != BasisHasTracked.HasNoTracker)
                     {
-                        Control.IncomingData.position = FinalPosition - math.mul(FinalRotation, AvatarPositionOffset * BasisLocalPlayer.Instance.EyeRatioAvatarToAvatarDefaultScale);
+                        Control.IncomingData.position = FinalPosition - math.mul(FinalRotation, AvatarPositionOffset * BasisLocalPlayer.Instance.CurrentHeight.EyeRatioAvatarToAvatarDefaultScale);
                         Control.IncomingData.rotation = math.mul(FinalRotation, Quaternion.Euler(AvatarRotationOffset));
                     }
                 }
@@ -54,7 +54,7 @@ namespace Basis.Scripts.Device_Management.Devices.Unity_Spatial_Tracking
                     }
                 }
             }
-            FinalPosition = LocalRawPosition * BasisLocalPlayer.Instance.EyeRatioAvatarToAvatarDefaultScale;
+            FinalPosition = LocalRawPosition * BasisLocalPlayer.Instance.CurrentHeight.EyeRatioAvatarToAvatarDefaultScale;
             FinalRotation = LocalRawRotation;
             UpdatePlayerControl();
         }

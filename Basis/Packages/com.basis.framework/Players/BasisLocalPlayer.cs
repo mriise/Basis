@@ -23,11 +23,30 @@ namespace Basis.Scripts.BasisSdk.Players
 
         public static float DefaultPlayerEyeHeight = 1.64f;
         public static float DefaultAvatarEyeHeight = 1.64f;
-        public float PlayerEyeHeight = 1.64f;
-        public float AvatarEyeHeight = 1.64f;
-        public float RatioPlayerToAvatarScale = 1f;
-        public float EyeRatioPlayerToDefaultScale = 1f;
-        public float EyeRatioAvatarToAvatarDefaultScale = 1f;//should be used for the player
+        public LocalHeightInformation CurrentHeight;
+        public LocalHeightInformation LastHeight;
+        [System.Serializable]
+        public class LocalHeightInformation
+        {
+            public string AvatarName;
+            public float PlayerEyeHeight = 1.64f;
+            public float AvatarEyeHeight = 1.64f;
+            public float RatioPlayerToAvatarScale = 1f;
+            public float EyeRatioPlayerToDefaultScale = 1f;
+            public float EyeRatioAvatarToAvatarDefaultScale = 1f; // should be used for the player
+
+            public void CopyTo(LocalHeightInformation target)
+            {
+                if (target == null) return;
+
+                target.AvatarName  = this.AvatarName;
+                target.PlayerEyeHeight = this.PlayerEyeHeight;
+                target.AvatarEyeHeight = this.AvatarEyeHeight;
+                target.RatioPlayerToAvatarScale = this.RatioPlayerToAvatarScale;
+                target.EyeRatioPlayerToDefaultScale = this.EyeRatioPlayerToDefaultScale;
+                target.EyeRatioAvatarToAvatarDefaultScale = this.EyeRatioAvatarToAvatarDefaultScale;
+            }
+        }
 
         /// <summary>
         /// the bool when true is the final size
@@ -35,10 +54,13 @@ namespace Basis.Scripts.BasisSdk.Players
         /// use the bool to 
         /// </summary>
         public Action OnPlayersHeightChanged;
+
         public BasisLocalBoneDriver LocalBoneDriver;
         public BasisLocalAvatarDriver AvatarDriver;
         //   public BasisFootPlacementDriver FootPlacementDriver;
         public BasisAudioAndVisemeDriver VisemeDriver;
+        public BasisLocalCameraDriver CameraDriver;
+
         [SerializeField]
         public LayerMask GroundMask;
         public static string LoadFileNameAndExtension = "LastUsedAvatar.BAS";
@@ -46,7 +68,6 @@ namespace Basis.Scripts.BasisSdk.Players
         public MicrophoneRecorder MicrophoneRecorder;
         public bool SpawnPlayerOnSceneLoad = true;
         public const string DefaultAvatar = "LoadingAvatar";
-        public BasisLocalCameraDriver Driver;
         public async Task LocalInitialize()
         {
             if (BasisHelpers.CheckInstance(Instance))
@@ -59,7 +80,7 @@ namespace Basis.Scripts.BasisSdk.Players
             IsLocal = true;
             LocalBoneDriver.CreateInitialArrays(LocalBoneDriver.transform, true);
             BasisDeviceManagement.Instance.InputActions.Initialize(this);
-            Driver.gameObject.SetActive(true);  
+            CameraDriver.gameObject.SetActive(true);  
             //  FootPlacementDriver = BasisHelpers.GetOrAddComponent<BasisFootPlacementDriver>(this.gameObject);
             //  FootPlacementDriver.Initialize();
             Move.Initialize();

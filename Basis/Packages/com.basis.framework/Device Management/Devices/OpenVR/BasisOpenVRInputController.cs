@@ -16,7 +16,7 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
         public SteamVR_Action_Pose poseAction = SteamVR_Input.GetAction<SteamVR_Action_Pose>("Pose");
         public BasisOpenVRInputSkeleton SkeletonHandInput = null;
         public bool HasOnUpate = false;
-        public async Task Initialize(OpenVRDevice device, string UniqueID, string UnUniqueID, string subSystems, bool AssignTrackedRole, BasisBoneTrackedRole basisBoneTrackedRole, SteamVR_Input_Sources SteamVR_Input_Sources)
+        public void Initialize(OpenVRDevice device, string UniqueID, string UnUniqueID, string subSystems, bool AssignTrackedRole, BasisBoneTrackedRole basisBoneTrackedRole, SteamVR_Input_Sources SteamVR_Input_Sources)
         {
             if (HasOnUpate && poseAction != null)
             {
@@ -25,7 +25,7 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
             }
             inputSource = SteamVR_Input_Sources;
             Device = device;
-          await  InitalizeTracking(UniqueID, UnUniqueID, subSystems, AssignTrackedRole, basisBoneTrackedRole);
+           InitalizeTracking(UniqueID, UnUniqueID, subSystems, AssignTrackedRole, basisBoneTrackedRole);
             if (poseAction != null)
             {
                 if (HasOnUpate == false)
@@ -80,14 +80,14 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
                 LocalRawPosition = poseAction[inputSource].localPosition;
                 LocalRawRotation = poseAction[inputSource].localRotation;
             }
-            FinalPosition = LocalRawPosition * BasisLocalPlayer.Instance.EyeRatioAvatarToAvatarDefaultScale;
+            FinalPosition = LocalRawPosition * BasisLocalPlayer.Instance.CurrentHeight.EyeRatioAvatarToAvatarDefaultScale;
             FinalRotation = LocalRawRotation;
             if (hasRoleAssigned)
             {
                 if (Control.HasTracked != BasisHasTracked.HasNoTracker)
                 {
                     // Apply position offset using math.mul for quaternion-vector multiplication
-                    Control.IncomingData.position = FinalPosition - math.mul(FinalRotation, AvatarPositionOffset * BasisLocalPlayer.Instance.EyeRatioAvatarToAvatarDefaultScale);
+                    Control.IncomingData.position = FinalPosition - math.mul(FinalRotation, AvatarPositionOffset * BasisLocalPlayer.Instance.CurrentHeight.EyeRatioAvatarToAvatarDefaultScale);
 
                     // Apply rotation offset using math.mul for quaternion multiplication
                     Control.IncomingData.rotation = math.mul(FinalRotation, Quaternion.Euler(AvatarRotationOffset));

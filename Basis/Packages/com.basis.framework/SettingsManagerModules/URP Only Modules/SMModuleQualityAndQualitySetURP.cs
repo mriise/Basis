@@ -13,7 +13,7 @@ namespace BattlePhaze.SettingsManager.Intergrations
             {
 #if UNITY_ANDROID
 #else
-      ChangeOpaque(Option.SelectedValue);
+  //    ChangeOpaque(Option.SelectedValue);
 #endif
                 QualitySettings.SetQualityLevel(QualitySettings.GetQualityLevel(), true);
             }
@@ -21,7 +21,7 @@ namespace BattlePhaze.SettingsManager.Intergrations
             {
 #if UNITY_ANDROID
 #else
-      ChangeDepth(Option.SelectedValue);
+    //  ChangeDepth(Option.SelectedValue);
 #endif
                 QualitySettings.SetQualityLevel(QualitySettings.GetQualityLevel(), true);
             }

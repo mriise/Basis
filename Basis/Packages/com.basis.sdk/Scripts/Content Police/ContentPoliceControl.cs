@@ -21,6 +21,7 @@ public static class ContentPoliceControl
             SearchAndDestroy = GameObject.Instantiate(SearchAndDestroy, Position, Rotation, newGameObject.transform);
             if(ModifyScale)
             {
+                BasisDebug.Log("Overriding Default scale is now " + Scale + " for gameobject " + SearchAndDestroy.name);
                 SearchAndDestroy.transform.localScale = Scale;
             }
             // Create a list to hold all components in the original GameObject

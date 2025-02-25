@@ -64,7 +64,8 @@ namespace BasisNetworking.InitalData
                 ScaleX = config.ScaleX,
                 ScaleY = config.ScaleY,
                 ScaleZ = config.ScaleZ,
-                Persist = config.Persist
+                Persist = config.Persist,
+                 ModifyScale = config.ModifyScale
             };
         }
         public const string exampleXml = @"<BasisLoadableConfiguration>

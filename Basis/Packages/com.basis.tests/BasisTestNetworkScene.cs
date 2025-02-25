@@ -30,6 +30,7 @@ public class BasisTestNetworkScene : MonoBehaviour
     public string PropBundleUrl = "https://BasisFramework.b-cdn.net/Props/DX11/90516234-6412-4a1e-a45f-c3f8dfbd7071_638735227126189132.BasisEncyptedBundle";
     public bool OverrideSpawnPosition;
     public Vector3 Position;
+    public bool ModifyScale = false;
     public void Awake()
     {
         BasisNetworkManagement.OnLocalPlayerJoined += OnLocalPlayerJoined;
@@ -57,14 +58,14 @@ public class BasisTestNetworkScene : MonoBehaviour
             BasisNetworkSpawnItem.RequestGameObjectLoad(GameobjectPassword,
                  GameobjectBundleUrl,
                  GameobjectMetaUrl,
-                 false, Position, Quaternion.identity, Vector3.one, IsPersistent, out Gameobject);
+                 false, Position, Quaternion.identity, Vector3.one, IsPersistent, ModifyScale, out Gameobject);
         }
         if (PropLoadTest)
         {
             BasisNetworkSpawnItem.RequestGameObjectLoad(PropPassword,
                  PropBundleUrl,
                  PropMetaUrl,
-                 false, Position, Quaternion.identity, Vector3.one, IsPersistent, out Gameobject);
+                 false, Position, Quaternion.identity, Vector3.one, IsPersistent, ModifyScale, out Gameobject);
         }
     }
     public void OnDisable()

@@ -30,7 +30,7 @@ namespace BasisNetworking.InitialData
         public float ScaleZ = 1f;
 
         public bool Persist = false;
-
+        public bool ModifyScale;
         public static BasisLoadableConfiguration[] LoadAllFromFolder(string folderPath)
         {
             if (!Directory.Exists(folderPath))

@@ -1,4 +1,5 @@
 using System;
+using System.Data;
 using Basis.Scripts.BasisSdk;
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Eye_Follow;
@@ -30,8 +31,6 @@ namespace HVR.Basis.Comms
         
         private bool _anyAddressUpdated;
         private bool _isWearer;
-        private BasisLocalEyeFollowBase _eyeFollowDriverLateInit;
-        
 #region NetworkingFields
         private int _guidIndex;
         // Can be null due to:
@@ -40,7 +39,8 @@ namespace HVR.Basis.Comms
         // Nullability is needed for local tests without initialization scene.
         // - Becomes non-null after HVRAvatarComms.OnAvatarNetworkReady is successfully invoked
         private FeatureInterpolator _featureInterpolator;
-
+        public BasisRemotePlayer _basisRemotePlayer;
+        public BasisLocalEyeFollowBase _eyeFollowDriverLateInit;
         #endregion
 
         private void Awake()
@@ -55,12 +55,11 @@ namespace HVR.Basis.Comms
             avatar.OnAvatarNetworkReady -= OnAvatarNetworkReady;
             avatar.OnAvatarNetworkReady += OnAvatarNetworkReady;
         }
-
         private void OnAvatarNetworkReady(bool IsOwner)
         {
             if (BasisNetworkManagement.AvatarToPlayer(avatar, out var player) && player is BasisRemotePlayer remote)
             {
-              //here LD this is wrong  _eyeFollowDriverLateInit = remote.RemoteAvatarDriver.BasisRemoteEyeFollowBase;
+                _basisRemotePlayer = remote;
             }
         }
 
@@ -137,7 +136,10 @@ namespace HVR.Basis.Comms
 
         private void ForceUpdate()
         {
-            if (!_eyeFollowDriverLateInit) return;
+            if (_eyeFollowDriverLateInit == null && _basisRemotePlayer == null)
+            {
+                return;
+            }
             if (_isWearer && !_anyAddressUpdated) return;
             
             // FIXME: Temp fix, we'll need to hook to NetworkReady instead.
@@ -148,24 +150,45 @@ namespace HVR.Basis.Comms
             SetEyeRotation(_fEyeLeftX, _fEyeY, EyeSide.Left);
             SetEyeRotation(_fEyeRightX, _fEyeY, EyeSide.Right);
         }
-
         private void SetEyeRotation(float x, float y, EyeSide side)
         {
-            if (!_eyeFollowDriverLateInit) return;
-            
-            var xDeg = Mathf.Asin(x) * Mathf.Rad2Deg * multiplyX;
-            var yDeg = Mathf.Asin(-y) * Mathf.Rad2Deg * multiplyY;
-            var euler = Quaternion.Euler(yDeg, xDeg, 0);
-            switch (side)
+            if (_eyeFollowDriverLateInit != null)
             {
-                // FIXME: This wrongly assumes that eye bone transforms are oriented the same.
-                // This needs to be fixed later by using the work-in-progress normalized muscle system instead.
-                case EyeSide.Left: _eyeFollowDriverLateInit.leftEyeTransform.localRotation = math.mul(_eyeFollowDriverLateInit.leftEyeInitialRotation , euler);
-                    break;
-                case EyeSide.Right: _eyeFollowDriverLateInit.rightEyeTransform.localRotation = math.mul(_eyeFollowDriverLateInit.rightEyeInitialRotation , euler);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(side), side, null);
+                var xDeg = Mathf.Asin(x) * Mathf.Rad2Deg * multiplyX;
+                var yDeg = Mathf.Asin(-y) * Mathf.Rad2Deg * multiplyY;
+                var euler = Quaternion.Euler(yDeg, xDeg, 0);
+                switch (side)
+                {
+                    // FIXME: This wrongly assumes that eye bone transforms are oriented the same.
+                    // This needs to be fixed later by using the work-in-progress normalized muscle system instead.
+                    case EyeSide.Left:
+                        _eyeFollowDriverLateInit.leftEyeTransform.localRotation = math.mul(_eyeFollowDriverLateInit.leftEyeInitialRotation, euler);
+                        break;
+                    case EyeSide.Right:
+                        _eyeFollowDriverLateInit.rightEyeTransform.localRotation = math.mul(_eyeFollowDriverLateInit.rightEyeInitialRotation, euler);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(side), side, null);
+                }
+            }
+            else
+            {
+                if(_basisRemotePlayer != null)
+                {
+                    switch (side)
+                    {
+                        case EyeSide.Left:
+                            _basisRemotePlayer.NetworkReceiver.Eyes[0] = y;
+                            _basisRemotePlayer.NetworkReceiver.Eyes[1] = x;
+                            break;
+                        case EyeSide.Right:
+                            _basisRemotePlayer.NetworkReceiver.Eyes[2] = y;
+                            _basisRemotePlayer.NetworkReceiver.Eyes[3] = x;
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(side), side, null);
+                    }
+                }
             }
         }
 

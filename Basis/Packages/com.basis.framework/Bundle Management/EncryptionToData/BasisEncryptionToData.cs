@@ -1,8 +1,6 @@
 using BasisSerializer.OdinSerializer;
-using System;
 using System.Threading.Tasks;
 using UnityEngine;
-
 public static class BasisEncryptionToData
 {
     public static async Task<AssetBundleCreateRequest> GenerateBundleFromFile(string Password, string FilePath, uint CRC, BasisProgressReport progressCallback)

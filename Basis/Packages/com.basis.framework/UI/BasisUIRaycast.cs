@@ -1,16 +1,13 @@
-using Basis.Scripts.Addressable_Driver;
-using Basis.Scripts.Addressable_Driver.Enums;
-using Basis.Scripts.Addressable_Driver.Factory;
-using Basis.Scripts.Addressable_Driver.Resource;
 using Basis.Scripts.BasisSdk.Helpers;
 using Basis.Scripts.Device_Management;
 using Basis.Scripts.Device_Management.Devices;
 using Basis.Scripts.Drivers;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using UnityEngine.EventSystems;
+using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.UI;
 
 namespace Basis.Scripts.UI
@@ -72,7 +69,7 @@ namespace Basis.Scripts.UI
             public int displayIndex;
         }
 
-        public async Task Initialize(BasisInput basisInput, BasisPointRaycaster pointRaycaster)
+        public void Initialize(BasisInput basisInput, BasisPointRaycaster pointRaycaster)
         {
             CurrentEventData = new BasisPointerEventData(EventSystem.current);
             BasisInput = basisInput;
@@ -88,13 +85,12 @@ namespace Basis.Scripts.UI
                 // Add a Line Renderer component to the GameObject
                 LineRenderer = BasisHelpers.GetOrAddComponent<LineRenderer>(BasisPointRaycaster.gameObject);
                 LineRenderer.enabled = false;
-                AddressableGenericResource Resource = new AddressableGenericResource(LoadMaterialAddress, AddressableExpectedResult.SingleItem);
-                if (await AddressableLoadFactory.LoadAddressableResourceAsync<Material>(Resource))
-                {
-                    lineMaterial = (Material)Resource.Handles[0].Result;
-                    // Set the Line Renderer properties
-                    LineRenderer.material = lineMaterial;
-                }
+                AsyncOperationHandle<Material> handle = Addressables.LoadAssetAsync<Material>(LoadMaterialAddress);
+                Material InMemory = handle.WaitForCompletion();
+
+                lineMaterial = InMemory;
+                // Set the Line Renderer properties
+                LineRenderer.material = lineMaterial;
                 LineRenderer.startWidth = lineWidth;
                 LineRenderer.endWidth = lineWidth;
 
@@ -108,37 +104,23 @@ namespace Basis.Scripts.UI
             }
             if (BasisDeviceMatchableNames.HasRayCastRedical)
             {
-                await CreateRadical();
+                CreateRadical();
                 HasRedicalRenderer = true;
             }
             CachedLinerRenderState = HasLineRenderer;
 
         }
-        public async Task CreateRadical()
+        public void CreateRadical()
         {
-            ChecksRequired Required = new ChecksRequired
+            AsyncOperationHandle<GameObject> handle = Addressables.LoadAssetAsync<GameObject>(LoadUIRedicalAddress);
+            GameObject InMemory = handle.WaitForCompletion();
+            GameObject gameObject = GameObject.Instantiate(InMemory);
+            gameObject.name = BasisDeviceMatchableNames.DeviceID + "_Redical";
+            gameObject.transform.SetParent(BasisPointRaycaster.gameObject.transform);
+            highlightQuadInstance = gameObject;
+            if (highlightQuadInstance.TryGetComponent(out Canvas Canvas))
             {
-                UseContentRemoval = false,
-                DisableAnimatorEvents = false
-            };
-            (List<GameObject>, AddressableGenericResource) data = await AddressableResourceProcess.LoadAsGameObjectsAsync(LoadUIRedicalAddress, new UnityEngine.ResourceManagement.ResourceProviders.InstantiationParameters(), Required);
-            List<GameObject> gameObjects = data.Item1;
-            if (gameObjects == null)
-            {
-                return;
-            }
-            if (gameObjects.Count != 0)
-            {
-                foreach (GameObject gameObject in gameObjects)
-                {
-                    gameObject.name = BasisDeviceMatchableNames.DeviceID + "_Redical";
-                    gameObject.transform.SetParent(BasisPointRaycaster.gameObject.transform);
-                    highlightQuadInstance = gameObject;
-                    if (highlightQuadInstance.TryGetComponent(out Canvas Canvas))
-                    {
-                        Canvas.worldCamera = BasisLocalCameraDriver.Instance.Camera;
-                    }
-                }
+                Canvas.worldCamera = BasisLocalCameraDriver.Instance.Camera;
             }
         }
         public void ApplyStaticDataToRaycastResult()

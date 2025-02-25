@@ -273,7 +273,7 @@ namespace Basis.Scripts.Drivers
         }
         public void SetInitialData(Animator animator, BasisBoneControl bone, BasisBoneTrackedRole Role,Vector3 WorldTpose)
         {
-            bone.OutGoingData.position = BasisLocalBoneDriver.ConvertToAvatarSpaceInital(animator, WorldTpose, 0.1f * animator.transform.localScale.y);//out Vector3 WorldSpaceFloor
+            bone.OutGoingData.position = BasisLocalBoneDriver.ConvertToAvatarSpaceInital(animator, WorldTpose);//out Vector3 WorldSpaceFloor
             bone.TposeLocal.position = bone.OutGoingData.position;
             bone.TposeLocal.rotation = bone.OutGoingData.rotation;
             if (IsApartOfSpineVertical(Role))

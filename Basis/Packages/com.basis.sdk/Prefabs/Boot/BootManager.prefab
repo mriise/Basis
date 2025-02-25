@@ -27,6 +27,7 @@ GameObject:
   - component: {fileID: 8531479666972516414}
   - component: {fileID: 4926678751529155332}
   - component: {fileID: 1359221182720975491}
+  - component: {fileID: 8285517692325404402}
   - component: {fileID: 7748182058184839400}
   - component: {fileID: 3774979555950593746}
   - component: {fileID: 1804859497805470527}
@@ -188,11 +189,11 @@ MonoBehaviour:
   - OptionName: Opaque Support
     Explanation: 
     Parse: 1
-    Type: 1
+    Type: 4
   - OptionName: Depth Support
     Explanation: 
     Parse: 1
-    Type: 1
+    Type: 4
   - OptionName: Quality Level
     Explanation: Quality Level
     Parse: 1
@@ -447,6 +448,24 @@ MonoBehaviour:
     Explanation: 
     Parse: 0
     Type: 4
+--- !u!114 &8285517692325404402
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3197856584617865972}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0954d8d22c0cc9f4ba61e520c621bfa2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ManagerModuleOptions:
+  - OptionName: Field Of View
+    Explanation: 
+    Parse: 0
+    Type: 3
+  SelectedFOV: 60
 --- !u!114 &7748182058184839400
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -752,6 +771,7 @@ MonoBehaviour:
     CurrentlySelectedSaveModule: {fileID: 1567513160798075255}
     CurrentlySelectedSaveModuleName: JSON
   SettingsManagerOptions:
+  - {fileID: 8285517692325404402}
   - {fileID: 1359221182720975491}
   - {fileID: 4926678751529155332}
   - {fileID: 8531479666972516414}
@@ -853,50 +873,6 @@ MonoBehaviour:
       SetString: medium
     ExcludeFromThesePlatforms: []
     MasterQualityState: 2
-    ParseController: 1
-    ReturnedValueTextType: 0
-    SelectableValueList:
-    - realValue: very low
-      UserValue: Very Low
-    - realValue: low
-      UserValue: Low
-    - realValue: medium
-      UserValue: Medium
-    - realValue: high
-      UserValue: High
-    - realValue: ultra
-      UserValue: Ultra
-  - EditorBasedUIToggles:
-      SupportedRenderPipelines: 0
-      DefaultPlatform: 0
-      ExcludePlatform: 0
-      ValueToggle: 0
-      EditorVisable: 0
-    SupportedRenderPipeline: 030000000400000000000000
-    Round: 0
-    RoundTo: 0
-    MaxPercentage: 0
-    MinPercentage: 0
-    SliderMaxValue: 0
-    SliderMinValue: 0
-    Name: Ambient Occlusion
-    ValueDescriptor: Ambient Occlusion
-    SelectedValueDefault: ultra
-    ValueDefault: ultra
-    Explanation: Ambient Occlusion
-    selectedValue: ultra
-    Type: 4
-    TextDescription: {fileID: 0}
-    ObjectInput: {fileID: 0}
-    ApplyInput: {fileID: 0}
-    ResetToDefault: {fileID: 0}
-    PlatFormDefaultState:
-    - Platform: 0
-      GraphicsVendor: 0
-      SetString: very low
-    ExcludeFromThesePlatforms:
-    - Platform: 0
-    MasterQualityState: 1
     ParseController: 1
     ReturnedValueTextType: 0
     SelectableValueList:
@@ -1425,6 +1401,80 @@ MonoBehaviour:
       UserValue: false
   - EditorBasedUIToggles:
       SupportedRenderPipelines: 0
+      DefaultPlatform: 1
+      ExcludePlatform: 1
+      ValueToggle: 1
+      EditorVisable: 0
+    SupportedRenderPipeline: 030000000400000000000000
+    Round: 0
+    RoundTo: 2
+    MaxPercentage: 100
+    MinPercentage: 0
+    SliderMaxValue: 100
+    SliderMinValue: 0
+    Name: Depth Support
+    ValueDescriptor: Depth Support
+    SelectedValueDefault: 
+    ValueDefault: True
+    Explanation: 
+    selectedValue: off
+    Type: 4
+    TextDescription: {fileID: 0}
+    ObjectInput: {fileID: 0}
+    ApplyInput: {fileID: 0}
+    ResetToDefault: {fileID: 0}
+    PlatFormDefaultState:
+    - Platform: 11
+      GraphicsVendor: 3
+      SetString: False
+    ExcludeFromThesePlatforms: []
+    MasterQualityState: 0
+    ParseController: 1
+    ReturnedValueTextType: 0
+    SelectableValueList:
+    - realValue: off
+      UserValue: Off
+    - realValue: on
+      UserValue: On
+  - EditorBasedUIToggles:
+      SupportedRenderPipelines: 0
+      DefaultPlatform: 1
+      ExcludePlatform: 0
+      ValueToggle: 1
+      EditorVisable: 0
+    SupportedRenderPipeline: 030000000400000000000000
+    Round: 0
+    RoundTo: 2
+    MaxPercentage: 100
+    MinPercentage: 0
+    SliderMaxValue: 100
+    SliderMinValue: 0
+    Name: Opaque Support
+    ValueDescriptor: Opaque Support
+    SelectedValueDefault: 
+    ValueDefault: True
+    Explanation: 
+    selectedValue: off
+    Type: 4
+    TextDescription: {fileID: 0}
+    ObjectInput: {fileID: 0}
+    ApplyInput: {fileID: 0}
+    ResetToDefault: {fileID: 0}
+    PlatFormDefaultState:
+    - Platform: 11
+      GraphicsVendor: 3
+      SetString: False
+    ExcludeFromThesePlatforms: []
+    MasterQualityState: 0
+    ParseController: 1
+    ReturnedValueTextType: 0
+    SelectableValueList:
+    - realValue: off
+      UserValue: Off
+    - realValue: on
+      UserValue: On
+  - EditorBasedUIToggles:
+      SupportedRenderPipelines: 0
       DefaultPlatform: 0
       ExcludePlatform: 0
       ValueToggle: 0
@@ -1796,7 +1846,7 @@ MonoBehaviour:
       DefaultPlatform: 0
       ExcludePlatform: 0
       ValueToggle: 0
-      EditorVisable: 1
+      EditorVisable: 0
     SupportedRenderPipeline: 030000000400000000000000
     Round: 1
     RoundTo: 1
@@ -1918,36 +1968,6 @@ MonoBehaviour:
       ValueToggle: 0
       EditorVisable: 0
     SupportedRenderPipeline: 030000000400000000000000
-    Round: 0
-    RoundTo: 0
-    MaxPercentage: 100
-    MinPercentage: 0
-    SliderMaxValue: 75
-    SliderMinValue: 0
-    Name: Maximum Avatar Distance
-    ValueDescriptor: Maximum Avatar Distance
-    SelectedValueDefault: 75
-    ValueDefault: 75
-    Explanation: 
-    selectedValue: 75
-    Type: 4
-    TextDescription: {fileID: 0}
-    ObjectInput: {fileID: 0}
-    ApplyInput: {fileID: 0}
-    ResetToDefault: {fileID: 0}
-    PlatFormDefaultState: []
-    ExcludeFromThesePlatforms: []
-    MasterQualityState: 0
-    ParseController: 0
-    ReturnedValueTextType: 1
-    SelectableValueList: []
-  - EditorBasedUIToggles:
-      SupportedRenderPipelines: 0
-      DefaultPlatform: 0
-      ExcludePlatform: 0
-      ValueToggle: 0
-      EditorVisable: 0
-    SupportedRenderPipeline: 030000000400000000000000
     Round: 1
     RoundTo: 0
     MaxPercentage: 100
@@ -1971,80 +1991,6 @@ MonoBehaviour:
     ParseController: 1
     ReturnedValueTextType: 1
     SelectableValueList: []
-  - EditorBasedUIToggles:
-      SupportedRenderPipelines: 0
-      DefaultPlatform: 1
-      ExcludePlatform: 1
-      ValueToggle: 1
-      EditorVisable: 0
-    SupportedRenderPipeline: 030000000400000000000000
-    Round: 0
-    RoundTo: 2
-    MaxPercentage: 100
-    MinPercentage: 0
-    SliderMaxValue: 100
-    SliderMinValue: 0
-    Name: Depth Support
-    ValueDescriptor: Depth Support
-    SelectedValueDefault: 
-    ValueDefault: True
-    Explanation: 
-    selectedValue: off
-    Type: 1
-    TextDescription: {fileID: 0}
-    ObjectInput: {fileID: 0}
-    ApplyInput: {fileID: 0}
-    ResetToDefault: {fileID: 0}
-    PlatFormDefaultState:
-    - Platform: 11
-      GraphicsVendor: 3
-      SetString: False
-    ExcludeFromThesePlatforms: []
-    MasterQualityState: 0
-    ParseController: 1
-    ReturnedValueTextType: 0
-    SelectableValueList:
-    - realValue: off
-      UserValue: Off
-    - realValue: on
-      UserValue: On
-  - EditorBasedUIToggles:
-      SupportedRenderPipelines: 0
-      DefaultPlatform: 1
-      ExcludePlatform: 0
-      ValueToggle: 1
-      EditorVisable: 0
-    SupportedRenderPipeline: 030000000400000000000000
-    Round: 0
-    RoundTo: 2
-    MaxPercentage: 100
-    MinPercentage: 0
-    SliderMaxValue: 100
-    SliderMinValue: 0
-    Name: Opaque Support
-    ValueDescriptor: Opaque Support
-    SelectedValueDefault: 
-    ValueDefault: True
-    Explanation: 
-    selectedValue: off
-    Type: 1
-    TextDescription: {fileID: 0}
-    ObjectInput: {fileID: 0}
-    ApplyInput: {fileID: 0}
-    ResetToDefault: {fileID: 0}
-    PlatFormDefaultState:
-    - Platform: 11
-      GraphicsVendor: 3
-      SetString: False
-    ExcludeFromThesePlatforms: []
-    MasterQualityState: 0
-    ParseController: 1
-    ReturnedValueTextType: 0
-    SelectableValueList:
-    - realValue: off
-      UserValue: Off
-    - realValue: on
-      UserValue: On
   - EditorBasedUIToggles:
       SupportedRenderPipelines: 0
       DefaultPlatform: 1
@@ -2077,6 +2023,113 @@ MonoBehaviour:
     MasterQualityState: 0
     ParseController: 1
     ReturnedValueTextType: 0
+    SelectableValueList: []
+  - EditorBasedUIToggles:
+      SupportedRenderPipelines: 1
+      DefaultPlatform: 1
+      ExcludePlatform: 0
+      ValueToggle: 0
+      EditorVisable: 0
+    SupportedRenderPipeline: 030000000400000000000000
+    Round: 0
+    RoundTo: 2
+    MaxPercentage: 100
+    MinPercentage: 0
+    SliderMaxValue: 160
+    SliderMinValue: 40
+    Name: Field Of View
+    ValueDescriptor: Field Of View
+    SelectedValueDefault: 
+    ValueDefault: 90
+    Explanation: 
+    selectedValue: 
+    Type: 3
+    TextDescription: {fileID: 0}
+    ObjectInput: {fileID: 0}
+    ApplyInput: {fileID: 0}
+    ResetToDefault: {fileID: 0}
+    PlatFormDefaultState:
+    - Platform: 11
+      GraphicsVendor: 0
+      SetString: 90
+    ExcludeFromThesePlatforms: []
+    MasterQualityState: 0
+    ParseController: 0
+    ReturnedValueTextType: 1
+    SelectableValueList: []
+  - EditorBasedUIToggles:
+      SupportedRenderPipelines: 0
+      DefaultPlatform: 0
+      ExcludePlatform: 0
+      ValueToggle: 0
+      EditorVisable: 0
+    SupportedRenderPipeline: 030000000400000000000000
+    Round: 0
+    RoundTo: 0
+    MaxPercentage: 0
+    MinPercentage: 0
+    SliderMaxValue: 0
+    SliderMinValue: 0
+    Name: Ambient Occlusion
+    ValueDescriptor: Ambient Occlusion
+    SelectedValueDefault: ultra
+    ValueDefault: ultra
+    Explanation: Ambient Occlusion
+    selectedValue: ultra
+    Type: 4
+    TextDescription: {fileID: 0}
+    ObjectInput: {fileID: 0}
+    ApplyInput: {fileID: 0}
+    ResetToDefault: {fileID: 0}
+    PlatFormDefaultState:
+    - Platform: 0
+      GraphicsVendor: 0
+      SetString: very low
+    ExcludeFromThesePlatforms:
+    - Platform: 0
+    MasterQualityState: 1
+    ParseController: 1
+    ReturnedValueTextType: 0
+    SelectableValueList:
+    - realValue: very low
+      UserValue: Very Low
+    - realValue: low
+      UserValue: Low
+    - realValue: medium
+      UserValue: Medium
+    - realValue: high
+      UserValue: High
+    - realValue: ultra
+      UserValue: Ultra
+  - EditorBasedUIToggles:
+      SupportedRenderPipelines: 0
+      DefaultPlatform: 0
+      ExcludePlatform: 0
+      ValueToggle: 0
+      EditorVisable: 0
+    SupportedRenderPipeline: 030000000400000000000000
+    Round: 0
+    RoundTo: 0
+    MaxPercentage: 100
+    MinPercentage: 0
+    SliderMaxValue: 75
+    SliderMinValue: 0
+    Name: Maximum Avatar Distance
+    ValueDescriptor: Maximum Avatar Distance
+    SelectedValueDefault: 75
+    ValueDefault: 75
+    Explanation: 
+    selectedValue: 75
+    Type: 4
+    TextDescription: {fileID: 0}
+    ObjectInput: {fileID: 0}
+    ApplyInput: {fileID: 0}
+    ResetToDefault: {fileID: 0}
+    PlatFormDefaultState: []
+    ExcludeFromThesePlatforms: []
+    MasterQualityState: 0
+    ParseController: 0
+    ReturnedValueTextType: 1
     SelectableValueList: []
   SaveModules:
   - {fileID: 4578771601958354073}
@@ -2504,8 +2557,8 @@ MonoBehaviour:
     SelectedValue: 0.9523397
     Index: 26
     SelectableValueList: []
-    Min: 0.25
-    Max: 1.5
+    Min: 0
+    Max: 0
   - Name: Controller DeadZone
     DefaultValue: 0.05
     SelectedValue: 0.1
@@ -2554,31 +2607,32 @@ MonoBehaviour:
     Max: 0
   - Name: Opaque Support
     DefaultValue: 
-    SelectedValue: off
+    SelectedValue: 0
     Index: 33
     SelectableValueList:
     - realValue: off
       UserValue: Off
     - realValue: on
       UserValue: On
-    Min: 0
-    Max: 0
-  - Name: 
+    Min: 40
+    Max: 160
+  - Name: Foveated Rendering Level
     DefaultValue: 
-    SelectedValue: 0
+    SelectedValue: 
     Index: 34
     SelectableValueList: []
     Min: 0
-    Max: 1
+    Max: 0
+  - Name: Field Of View
+    DefaultValue: 
+    SelectedValue: 0
+    Index: 35
+    SelectableValueList: []
+    Min: 40
+    Max: 160
   DefaultSaveType:
     Platform: 0
     SaveType: JSON
-  OnSettingsSaving:
-    m_PersistentCalls:
-      m_Calls: []
-  OnSettingsSaved:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!114 &1625421887690667428
 MonoBehaviour:
   m_ObjectHideFlags: 0

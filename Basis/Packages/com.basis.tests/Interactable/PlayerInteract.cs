@@ -8,8 +8,6 @@ using UnityEngine.AddressableAssets;
 using Unity.Burst;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using Basis.Scripts.TransformBinders.BoneControl;
-using UnityEngine.Profiling;
-
 public class PlayerInteract : MonoBehaviour
 {
 
@@ -91,7 +89,7 @@ public class PlayerInteract : MonoBehaviour
     private void OnInputChanged(BasisInput Input)
     {
         // TODO: need a different config value for can interact/pickup/grab. Mainly input action/trigger values
-        if (Input.BasisDeviceMatchSettings != null && Input.BasisDeviceMatchSettings.HasRayCastSupport)
+        if (Input.HasRaycastSupport())
         {
             AddInput(Input);
         }
@@ -109,7 +107,7 @@ public class PlayerInteract : MonoBehaviour
     private void PollSystem()
     {
 #if UNITY_EDITOR//just remove when your profiling this
-        Profiler.BeginSample("Interactable System");
+        UnityEngine.Profiling.Profiler.BeginSample("Interactable System");
 #endif
         if (InteractInputs == null)
         {
@@ -132,9 +130,7 @@ public class PlayerInteract : MonoBehaviour
 
             RaycastHit rayHit;
             InteractableObject hitInteractable = null;
-            bool isValidRayHit = interactInput.input.BasisPointRaycaster.FirstHit(out rayHit, raycastDistance) &&
-                ((1 << rayHit.collider.gameObject.layer) & InteractableLayerMask) != 0 &&
-                rayHit.collider.TryGetComponent(out hitInteractable);
+            bool isValidRayHit = interactInput.input.BasisPointRaycaster.FirstHit(out rayHit, raycastDistance) &&((1 << rayHit.collider.gameObject.layer) & InteractableLayerMask) != 0 && rayHit.collider.TryGetComponent(out hitInteractable);
 
             if (isValidRayHit || hoverSphere.HoverTarget != null)
             {
@@ -234,7 +230,7 @@ public class PlayerInteract : MonoBehaviour
             }
         }
 #if UNITY_EDITOR//just remove when your profiling this
-        Profiler.EndSample();
+        UnityEngine.Profiling.Profiler.EndSample();
 #endif
     }
 

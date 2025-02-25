@@ -14,10 +14,10 @@ namespace Basis.Scripts.Device_Management.Devices.OpenXR
         public FingerPose FingerCurls;
         public BasisOpenXRInputEye BasisOpenXRInputEye;
         public BasisVirtualSpineDriver BasisVirtualSpine = new BasisVirtualSpineDriver();
-        public async Task Initialize(UnityEngine.XR.InputDevice device, string UniqueID, string UnUniqueID, string subSystems, bool AssignTrackedRole, BasisBoneTrackedRole basisBoneTrackedRole)
+        public void Initialize(UnityEngine.XR.InputDevice device, string UniqueID, string UnUniqueID, string subSystems, bool AssignTrackedRole, BasisBoneTrackedRole basisBoneTrackedRole)
         {
             Device = device;
-            await InitalizeTracking(UniqueID, UnUniqueID, subSystems, AssignTrackedRole, basisBoneTrackedRole);
+            InitalizeTracking(UniqueID, UnUniqueID, subSystems, AssignTrackedRole, basisBoneTrackedRole);
             if (basisBoneTrackedRole == BasisBoneTrackedRole.CenterEye)
             {
                 BasisOpenXRInputEye = this.gameObject.AddComponent<BasisOpenXRInputEye>();
@@ -54,11 +54,11 @@ namespace Basis.Scripts.Device_Management.Devices.OpenXR
                     if (hasRoleAssigned && Control.HasTracked != BasisHasTracked.HasNoTracker)
                     {
                         // Apply the inverse rotation to position offset
-                        Control.IncomingData.position = LocalRawPosition - math.mul(LocalRawRotation, AvatarPositionOffset * BasisLocalPlayer.Instance.EyeRatioAvatarToAvatarDefaultScale);
+                        Control.IncomingData.position = LocalRawPosition - math.mul(LocalRawRotation, AvatarPositionOffset * BasisLocalPlayer.Instance.CurrentHeight.EyeRatioAvatarToAvatarDefaultScale);
                     }
                 }
 
-                FinalPosition = LocalRawPosition * BasisLocalPlayer.Instance.EyeRatioAvatarToAvatarDefaultScale;
+                FinalPosition = LocalRawPosition * BasisLocalPlayer.Instance.CurrentHeight.EyeRatioAvatarToAvatarDefaultScale;
                 FinalRotation = LocalRawRotation;
 
                 // Input States
