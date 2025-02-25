@@ -17,6 +17,8 @@ namespace BattlePhaze.SettingsManager
             public string Option;
             public UnityEngine.Object TextDescription;
             public UnityEngine.Object ObjectInput;
+            public UnityEngine.Object ApplyInput;
+            public UnityEngine.Object ResetToDefault;
         }
 
         public void Awake()
@@ -30,6 +32,8 @@ namespace BattlePhaze.SettingsManager
                     if (Output != int.MinValue)
                     {
                         Manager.Options[Output].ObjectInput = ToModifyOption[ToModifyOptionIndex].ObjectInput;
+                        Manager.Options[Output].ApplyInput = ToModifyOption[ToModifyOptionIndex].ApplyInput;
+                        Manager.Options[Output].ResetToDefault = ToModifyOption[ToModifyOptionIndex].ResetToDefault;
                         Manager.Options[Output].TextDescription = ToModifyOption[ToModifyOptionIndex].TextDescription;
                         SettingsManagerDescriptionSystem.TxtDescriptionSetText(Manager, Output);
                     }
@@ -41,7 +45,8 @@ namespace BattlePhaze.SettingsManager
 
         public int SettingsManagerLoop(string LookUpName, SettingsManager Manager)
         {
-            for (int SettingsOptionsIndex = 0; SettingsOptionsIndex < Manager.Options.Count; SettingsOptionsIndex++)
+            int count = Manager.Options.Count;
+            for (int SettingsOptionsIndex = 0; SettingsOptionsIndex < count; SettingsOptionsIndex++)
             {
                 if (Manager.Options[SettingsOptionsIndex].Name == LookUpName)
                 {
@@ -56,18 +61,20 @@ namespace BattlePhaze.SettingsManager
             SettingsManager Manager = SettingsManager.Instance;
             if (Manager != null)
             {
-                for (int ToModifyOptionIndex = 0; ToModifyOptionIndex < ToModifyOption.Count; ToModifyOptionIndex++)
+                int count = ToModifyOption.Count;
+                for (int ToModifyOptionIndex = 0; ToModifyOptionIndex < count; ToModifyOptionIndex++)
                 {
                     int Output = SettingsManagerLoop(ToModifyOption[ToModifyOptionIndex].Option, Manager);
                     if (Output != int.MinValue)
                     {
                         Manager.Options[Output].ObjectInput = null;
                         Manager.Options[Output].TextDescription = null;
+                        Manager.Options[Output].ResetToDefault = null;
+                        Manager.Options[Output].ApplyInput = null;
                     }
                 }
             }
         }
-
         public void LoadSettings()
         {
             SettingsManager Manager = SettingsManager.Instance;
@@ -79,7 +86,8 @@ namespace BattlePhaze.SettingsManager
             {
                 Debug.Log("Found Manager!");
                 ToModifyOption.Clear(); // Clear current list to load fresh data from Manager
-                for (int SettingsOptionsIndex = 0; SettingsOptionsIndex < Manager.Options.Count; SettingsOptionsIndex++)
+                int Count = Manager.Options.Count;
+                for (int SettingsOptionsIndex = 0; SettingsOptionsIndex < Count; SettingsOptionsIndex++)
                 {
                     var option = Manager.Options[SettingsOptionsIndex];
                     Debug.Log("Loading Options " + option.Name);
@@ -87,7 +95,9 @@ namespace BattlePhaze.SettingsManager
                     {
                         Option = option.Name,
                         TextDescription = option.TextDescription,
-                        ObjectInput = option.ObjectInput
+                        ObjectInput = option.ObjectInput,
+                         ResetToDefault = option.ResetToDefault,
+                          ApplyInput = option.ApplyInput,
                     };
                     ToModifyOption.Add(config);
                 }
@@ -96,7 +106,6 @@ namespace BattlePhaze.SettingsManager
     }
 }
 #if UNITY_EDITOR
-
 namespace BattlePhaze.SettingsManager
 {
     [CustomEditor(typeof(SettingsManagerRuntimeMenuIntegration))]

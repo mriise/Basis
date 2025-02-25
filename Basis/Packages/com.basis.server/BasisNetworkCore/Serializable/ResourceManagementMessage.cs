@@ -33,6 +33,11 @@ public static partial class SerializableBasis
         public float ScaleZ;
 
         public bool Persist;
+        /// <summary>
+        /// this is used to state if the scale should be set or
+        /// just use whatever scale it thinks it is.
+        /// </summary>
+        public bool ModifyScale;
         //will never remove this item from the server,
         //if off when player count on server is zero it will be removed.
         public void Deserialize(NetDataReader Writer)
@@ -44,6 +49,7 @@ public static partial class SerializableBasis
             BundleURL = Writer.GetString();
             IsLocalLoad = Writer.GetBool();
             Persist = Writer.GetBool();
+            ModifyScale = Writer.GetBool();
             if (Mode == 0)
             {
                 PositionX = Writer.GetFloat();
@@ -69,6 +75,7 @@ public static partial class SerializableBasis
             Writer.Put(BundleURL);
             Writer.Put(IsLocalLoad);
             Writer.Put(Persist);
+            Writer.Put(ModifyScale);
             if (Mode == 0)
             {
                 Writer.Put(PositionX);
