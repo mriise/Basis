@@ -39,7 +39,7 @@ public static class AssetBundleBuilder
             string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileOutput);
             Hash128 bundleHash = manifest.GetAssetBundleHash(fileOutput);
             BuildPipeline.GetCRCForAssetBundle(fileOutput, out uint crc);
-            string actualFilePath = Path.Combine(targetDirectory, fileNameWithoutExtension) + ".bundle";
+            string actualFilePath = $"{Path.Combine(targetDirectory, fileNameWithoutExtension)}.bundle";
             InformationHash informationHash = new InformationHash
             {
                 bundleHash = bundleHash,

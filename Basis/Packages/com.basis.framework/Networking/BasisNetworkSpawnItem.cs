@@ -138,7 +138,7 @@ public static class BasisNetworkSpawnItem
             BasisRemoteBundleEncrypted = new BasisRemoteEncyptedBundle()
             {
                 IsLocal = localLoadResource.IsLocalLoad,
-                ConnectorURL = localLoadResource.MetaURL
+                CombinedURL = localLoadResource.MetaURL
             },
             UnlockPassword = localLoadResource.UnlockPassword,
         };
@@ -172,7 +172,7 @@ public static class BasisNetworkSpawnItem
             BasisRemoteBundleEncrypted = new BasisRemoteEncyptedBundle()
             {
                 IsLocal = localLoadResource.IsLocalLoad,
-                ConnectorURL = localLoadResource.MetaURL
+                CombinedURL = localLoadResource.MetaURL
             },
             UnlockPassword = localLoadResource.UnlockPassword,
         };

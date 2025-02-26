@@ -12,10 +12,10 @@ public static class BasisBasisBundleInformationHandler
         {
             File.Delete(filePath);
         }
-        await SaveBasisBundleConnector(BasisBundleConnector, filePath, BuildSettings, ConnectorPassword, DeleteUnEncrypted);
-        return new (BasisBundleConnector, filePath);
+        string EcnyptedfilePath = await SaveBasisBundleConnector(BasisBundleConnector, filePath, BuildSettings, ConnectorPassword, DeleteUnEncrypted);
+        return new (BasisBundleConnector, EcnyptedfilePath);
     }
-    private static async Task SaveBasisBundleConnector(BasisBundleConnector BasisBundleConnector, string filePath, BasisAssetBundleObject BuildSettings, string password,bool DeleteUnEncrypted = true)
+    private static async Task<string> SaveBasisBundleConnector(BasisBundleConnector BasisBundleConnector, string filePath, BasisAssetBundleObject BuildSettings, string password,bool DeleteUnEncrypted = true)
     {
         byte[] Information = SerializationUtility.SerializeValue<BasisBundleConnector>(BasisBundleConnector, DataFormat.JSON);
         try
@@ -37,10 +37,12 @@ public static class BasisBasisBundleInformationHandler
             {
                 File.Delete(filePath);
             }
+            return EncryptedPath;
         }
         catch (IOException ioEx)
         {
             BasisDebug.LogError($"Failed to save BasisBundleInformation to {filePath}: {ioEx.Message}");
+            return string.Empty;
         }
     }
     // Function to validate BasisBundleInformation

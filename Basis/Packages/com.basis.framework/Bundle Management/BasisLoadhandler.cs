@@ -76,7 +76,7 @@ public static class BasisLoadHandler
         }
         else
         {
-            if (LoadedKey.ToLower() != BasisAvatarFactory.LoadingAvatar.BasisRemoteBundleEncrypted.ConnectorURL.ToLower())
+            if (LoadedKey.ToLower() != BasisAvatarFactory.LoadingAvatar.BasisRemoteBundleEncrypted.CombinedURL.ToLower())
             {
                 BasisDebug.LogError($"tried to find Loaded Key {LoadedKey} but could not find it!");
             }
@@ -86,7 +86,7 @@ public static class BasisLoadHandler
     {
         await EnsureInitializationComplete();
 
-        if (LoadedBundles.TryGetValue(loadableBundle.BasisRemoteBundleEncrypted.ConnectorURL, out BasisTrackedBundleWrapper wrapper))
+        if (LoadedBundles.TryGetValue(loadableBundle.BasisRemoteBundleEncrypted.CombinedURL, out BasisTrackedBundleWrapper wrapper))
         {
             try
             {
@@ -96,7 +96,7 @@ public static class BasisLoadHandler
             catch (Exception ex)
             {
                 BasisDebug.LogError($"Failed to load content: {ex}");
-                LoadedBundles.Remove(loadableBundle.BasisRemoteBundleEncrypted.ConnectorURL);
+                LoadedBundles.Remove(loadableBundle.BasisRemoteBundleEncrypted.CombinedURL);
                 return null;
             }
         }
@@ -108,7 +108,7 @@ public static class BasisLoadHandler
     {
         await EnsureInitializationComplete();
 
-        if (LoadedBundles.TryGetValue(loadableBundle.BasisRemoteBundleEncrypted.ConnectorURL, out BasisTrackedBundleWrapper wrapper))
+        if (LoadedBundles.TryGetValue(loadableBundle.BasisRemoteBundleEncrypted.CombinedURL, out BasisTrackedBundleWrapper wrapper))
         {
             BasisDebug.Log($"Bundle On Disc Loading", BasisDebug.LogTag.Networking);
             await wrapper.WaitForBundleLoadAsync();
@@ -123,7 +123,7 @@ public static class BasisLoadHandler
     {
         BasisTrackedBundleWrapper wrapper = new BasisTrackedBundleWrapper { AssetBundle = null, LoadableBundle = loadableBundle };
 
-        if (!LoadedBundles.TryAdd(loadableBundle.BasisRemoteBundleEncrypted.ConnectorURL, wrapper))
+        if (!LoadedBundles.TryAdd(loadableBundle.BasisRemoteBundleEncrypted.CombinedURL, wrapper))
         {
             BasisDebug.LogError("Unable to add bundle wrapper.");
             return new Scene();
@@ -141,7 +141,7 @@ public static class BasisLoadHandler
             LoadableBundle = loadableBundle
         };
 
-        if (!LoadedBundles.TryAdd(loadableBundle.BasisRemoteBundleEncrypted.ConnectorURL, wrapper))
+        if (!LoadedBundles.TryAdd(loadableBundle.BasisRemoteBundleEncrypted.CombinedURL, wrapper))
         {
             BasisDebug.LogError("Unable to add bundle wrapper.");
             return null;
@@ -155,16 +155,16 @@ public static class BasisLoadHandler
         catch (Exception ex)
         {
             BasisDebug.LogError(ex);
-            LoadedBundles.Remove(loadableBundle.BasisRemoteBundleEncrypted.ConnectorURL);
+            LoadedBundles.Remove(loadableBundle.BasisRemoteBundleEncrypted.CombinedURL);
             CleanupFiles(loadableBundle.BasisLocalEncryptedBundle);
-            OnDiscData.TryRemove(loadableBundle.BasisRemoteBundleEncrypted.ConnectorURL, out _);
+            OnDiscData.TryRemove(loadableBundle.BasisRemoteBundleEncrypted.CombinedURL, out _);
             return null;
         }
     }
 
     public static async Task HandleBundleAndMetaLoading(BasisTrackedBundleWrapper wrapper, BasisProgressReport report, CancellationToken cancellationToken)
     {
-        bool IsMetaOnDisc = IsMetaDataOnDisc(wrapper.LoadableBundle.BasisRemoteBundleEncrypted.ConnectorURL, out OnDiscInformation MetaInfo);
+        bool IsMetaOnDisc = IsMetaDataOnDisc(wrapper.LoadableBundle.BasisRemoteBundleEncrypted.CombinedURL, out OnDiscInformation MetaInfo);
         /*here LD
         if(MetaInfo.StoredLocal.LocalConnectorPath)
         {
@@ -243,7 +243,7 @@ public static class BasisLoadHandler
     }
     public static async Task HandleMetaLoading(BasisTrackedBundleWrapper wrapper, BasisProgressReport report, CancellationToken cancellationToken)
     {
-        bool isOnDisc = IsMetaDataOnDisc(wrapper.LoadableBundle.BasisRemoteBundleEncrypted.ConnectorURL, out OnDiscInformation discInfo);
+        bool isOnDisc = IsMetaDataOnDisc(wrapper.LoadableBundle.BasisRemoteBundleEncrypted.CombinedURL, out OnDiscInformation discInfo);
 
         if (isOnDisc)
         {
@@ -278,7 +278,7 @@ public static class BasisLoadHandler
         {
             foreach (var discInfo in OnDiscData.Values)
             {
-                if (discInfo.StoredRemote.ConnectorURL == MetaURL)
+                if (discInfo.StoredRemote.CombinedURL == MetaURL)
                 {
                     info = discInfo;
                     if (File.Exists(discInfo.StoredLocal.LocalConnectorPath))
@@ -298,7 +298,7 @@ public static class BasisLoadHandler
         {
             foreach (var discInfo in OnDiscData.Values)
             {
-                if (discInfo.StoredRemote.ConnectorURL == BundleURL)
+                if (discInfo.StoredRemote.CombinedURL == BundleURL)
                 {
                     info = discInfo;
                     if (File.Exists(discInfo.StoredLocal.LocalConnectorPath))
@@ -315,12 +315,12 @@ public static class BasisLoadHandler
 
     public static async Task AddDiscInfo(OnDiscInformation discInfo)
     {
-        if (OnDiscData.TryAdd(discInfo.StoredRemote.ConnectorURL, discInfo))
+        if (OnDiscData.TryAdd(discInfo.StoredRemote.CombinedURL, discInfo))
         {
         }
         else
         {
-            OnDiscData[discInfo.StoredRemote.ConnectorURL] = discInfo;
+            OnDiscData[discInfo.StoredRemote.CombinedURL] = discInfo;
             BasisDebug.Log("Disc info updated.", BasisDebug.LogTag.Event);
         }
         string filePath = BasisIOManagement.GenerateFilePath($"{discInfo.AssetIDToLoad}{BasisBundleManagement.MetaLinkBasisSuffix}", BasisBundleManagement.AssetBundlesFolder);
@@ -400,7 +400,7 @@ public static class BasisLoadHandler
                 {
                     byte[] fileData = await File.ReadAllBytesAsync(file);
                     OnDiscInformation discInfo = SerializationUtility.DeserializeValue<OnDiscInformation>(fileData, DataFormat.Binary);
-                    OnDiscData.TryAdd(discInfo.StoredRemote.ConnectorURL, discInfo);
+                    OnDiscData.TryAdd(discInfo.StoredRemote.CombinedURL, discInfo);
                 }
                 catch (Exception ex)
                 {
