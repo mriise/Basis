@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 public static class BasisBasisBundleInformationHandler
 {
-    public static async Task<BasisBundleConnector> BasisBundleConnector(BasisAssetBundleObject BuildSettings, BasisBundleConnector BasisBundleConnector, string ConnectorPassword, bool DeleteUnEncrypted = true)
+    public static async Task<(BasisBundleConnector,string)> BasisBundleConnector(BasisAssetBundleObject BuildSettings, BasisBundleConnector BasisBundleConnector, string ConnectorPassword, bool DeleteUnEncrypted = true)
     {
         string filePath = Path.Combine(BuildSettings.AssetBundleDirectory, $"Connector{BuildSettings.BasisMetaExtension}");
 
@@ -13,7 +13,7 @@ public static class BasisBasisBundleInformationHandler
             File.Delete(filePath);
         }
         await SaveBasisBundleConnector(BasisBundleConnector, filePath, BuildSettings, ConnectorPassword, DeleteUnEncrypted);
-        return BasisBundleConnector;
+        return new (BasisBundleConnector, filePath);
     }
     private static async Task SaveBasisBundleConnector(BasisBundleConnector BasisBundleConnector, string filePath, BasisAssetBundleObject BuildSettings, string password,bool DeleteUnEncrypted = true)
     {

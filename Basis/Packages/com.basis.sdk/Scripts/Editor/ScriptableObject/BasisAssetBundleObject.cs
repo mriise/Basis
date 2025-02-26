@@ -12,6 +12,7 @@ public class BasisAssetBundleObject : ScriptableObject
     public string BasisBundleEncryptedExtension = ".BEB";
     public string BasisBundleDecryptedExtension = ".BDB";
     public string BasisMetaEncryptedExtension = ".BEM";
+    public string BasisEncryptedExtension = ".BEE";
     public string ProtectedPasswordFileName = "dontuploadmepassword";
     public bool useCompression = true;
     public bool GenerateImage = true;
@@ -54,6 +55,7 @@ public class BasisAssetBundleObjectEditor : Editor
         assetBundleObject.BuildAssetBundleOptions = BuildAssetBundleOptions.None;
         assetBundleObject.AssetBundleDirectory = "./AssetBundles";
         assetBundleObject.ProtectedPasswordFileName = "dontuploadmepassword";
+        assetBundleObject.BasisEncryptedExtension = ".BEE";
 
         // Mark the object as dirty to save changes
         EditorUtility.SetDirty(assetBundleObject);

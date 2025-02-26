@@ -120,9 +120,6 @@ public class BasisBundleConnector
 
                 if (string.IsNullOrWhiteSpace(bundle.Platform))
                     errors.Add($"BasisBundleGenerated[{i}].Platform is null or empty.");
-
-                if (string.IsNullOrWhiteSpace(bundle.BundleDiscoveryURL))
-                    errors.Add($"BasisBundleGenerated[{i}].BundleDiscoveryURL is null or empty.");
             }
         }
 
@@ -153,17 +150,13 @@ public class BasisBundleGenerated
     public string AssetToLoadName;// assets name we are using out of the box.
     public uint AssetBundleCRC;//CRC of the assetbundle
     public bool IsEncrypted = true;//if the bundle is encrypted
-
-    public string Password;//this unlocks the bundle at the url below
+    public string Password;//this unlocks the bundle
     public string Platform;//Deployed Platform
-    //instead of the full url we just swap the final part of the url with this
-    public bool BundleDiscoveryPartiallyURl = true;
-    //for example mybundle.extension
-    public string BundleDiscoveryURL;
+    public long EndByte;
     public BasisBundleGenerated()
     {
     }
-    public BasisBundleGenerated(string assetBundleHash, string assetMode, string assetToLoadName, uint assetBundleCRC, bool isEncrypted, string password, string platform, bool BundleDiscoveryPartiallyURl, string bundleDiscoveryURL)
+    public BasisBundleGenerated(string assetBundleHash, string assetMode, string assetToLoadName, uint assetBundleCRC, bool isEncrypted, string password, string platform, long endbyte)
     {
         AssetBundleHash = assetBundleHash ?? throw new ArgumentNullException(nameof(assetBundleHash));
         AssetMode = assetMode ?? throw new ArgumentNullException(nameof(assetMode));
@@ -172,7 +165,6 @@ public class BasisBundleGenerated
         IsEncrypted = isEncrypted;
         Password = password ?? throw new ArgumentNullException(nameof(password));
         Platform = platform ?? throw new ArgumentNullException(nameof(platform));
-        this.BundleDiscoveryPartiallyURl = BundleDiscoveryPartiallyURl;
-        BundleDiscoveryURL = bundleDiscoveryURL ?? throw new ArgumentNullException(nameof(bundleDiscoveryURL));
+        EndByte = endbyte;
     }
 }

@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using UnityEditor;
-using UnityEditor.Build;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
@@ -52,24 +51,22 @@ public static class BasisAssetBundlePipeline
 
         Debug.Log("All AssetBundle names cleared from Importer settings.");
     }
-    public static async Task<(bool, BasisBundleGenerated)> BuildAssetBundle(GameObject originalPrefab, BasisAssetBundleObject settings, string Password, BuildTarget Target)
+    public static async Task<(bool, (BasisBundleGenerated, AssetBundleBuilder.InformationHash))> BuildAssetBundle(GameObject originalPrefab, BasisAssetBundleObject settings, string Password, BuildTarget Target)
     {
         return await BuildAssetBundle(false, originalPrefab, new Scene(), settings, Password, Target);
     }
 
-    public static async Task<(bool, BasisBundleGenerated)> BuildAssetBundle(Scene scene, BasisAssetBundleObject settings, string Password, BuildTarget Target)
+    public static async Task<(bool, (BasisBundleGenerated, AssetBundleBuilder.InformationHash))> BuildAssetBundle(Scene scene, BasisAssetBundleObject settings, string Password, BuildTarget Target)
     {
         return await BuildAssetBundle(true, null, scene, settings, Password, Target);
     }
-    public static async Task<(bool,BasisBundleGenerated)> BuildAssetBundle(bool isScene, GameObject asset, Scene scene, BasisAssetBundleObject settings, string Password, BuildTarget Target)
+    public static async Task<(bool,(BasisBundleGenerated, AssetBundleBuilder.InformationHash))> BuildAssetBundle(bool isScene, GameObject asset, Scene scene, BasisAssetBundleObject settings, string Password, BuildTarget Target)
     {
         ScriptingImplementation ResetTo = ScriptingImplementation.IL2CPP;
         if (EditorUserBuildSettings.activeBuildTarget != Target)
         {
             EditorUserBuildSettings.SwitchActiveBuildTarget(BuildPipeline.GetBuildTargetGroup(Target), Target);
         }
-
-        ApplyScriptingBackend( ScriptingImplementation.Mono2x,out ResetTo);
         ClearOutExistingSets(); // Removes all bundle names
         string targetDirectory = Path.Combine(settings.AssetBundleDirectory, Target.ToString());
         TemporaryStorageHandler.ClearTemporaryStorage(targetDirectory);
@@ -87,7 +84,7 @@ public static class BasisAssetBundlePipeline
                 if (!BasisValidationHandler.IsSceneValid(scene))
                 {
                     Debug.LogError("Invalid scene. AssetBundle build aborted.");
-                    return new (false, null);
+                    return new(false, (null, new AssetBundleBuilder.InformationHash()));
                 }
 
                 OnBeforeBuildScene?.Invoke(scene, settings);
@@ -106,7 +103,7 @@ public static class BasisAssetBundlePipeline
             }
 
             string assetBundleName = AssetBundleBuilder.SetAssetBundleName(assetPath, uniqueID, settings);
-            BasisBundleGenerated BasisBundleGenerated = await AssetBundleBuilder.BuildAssetBundle(targetDirectory, settings, assetBundleName, isScene ? "Scene" : "GameObject", Password, Target);
+            (BasisBundleGenerated, AssetBundleBuilder.InformationHash) value = await AssetBundleBuilder.BuildAssetBundle(targetDirectory, settings, assetBundleName, isScene ? "Scene" : "GameObject", Password, Target);
 
             AssetBundleBuilder.ResetAssetBundleName(assetPath);
             TemporaryStorageHandler.ClearTemporaryStorage(settings.TemporaryStorage);
@@ -128,7 +125,7 @@ public static class BasisAssetBundlePipeline
             {
                 PlayerSettings.SetScriptingBackend(namedBuildTarget, ResetTo);
             }
-            return new(true, BasisBundleGenerated);
+            return new(true, value);
         }
         catch (Exception ex)
         {
@@ -150,18 +147,8 @@ public static class BasisAssetBundlePipeline
             {
                 PlayerSettings.SetScriptingBackend(namedBuildTarget, ResetTo);
             }
-            return new(false, null);
+            return new(false,( null, new AssetBundleBuilder.InformationHash()));
         }
     }
-    public static void ApplyScriptingBackend(ScriptingImplementation ScriptingImplementation,out ScriptingImplementation ResetTo)
-    {
-        BuildTarget buildTarget = EditorUserBuildSettings.activeBuildTarget;
-        BuildTargetGroup targetGroup = BuildPipeline.GetBuildTargetGroup(buildTarget);
-        var namedBuildTarget = UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(targetGroup);
-        ResetTo = PlayerSettings.GetScriptingBackend(namedBuildTarget);
-        if (ResetTo != ScriptingImplementation)
-        {
-            PlayerSettings.SetScriptingBackend(namedBuildTarget, ScriptingImplementation);
-        }
-    }
+
 }

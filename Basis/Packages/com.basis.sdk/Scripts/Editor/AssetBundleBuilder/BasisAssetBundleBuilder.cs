@@ -6,24 +6,27 @@ using UnityEngine;
 using static BasisEncryptionWrapper;
 public static class AssetBundleBuilder
 {
-    public static async Task<BasisBundleGenerated> BuildAssetBundle(string targetDirectory, BasisAssetBundleObject settings, string assetBundleName, string mode, string password, BuildTarget buildTarget, bool isEncrypted = true)
+    public static async Task<(BasisBundleGenerated, InformationHash)> BuildAssetBundle(string targetDirectory, BasisAssetBundleObject settings, string assetBundleName, string mode, string password, BuildTarget buildTarget, bool isEncrypted = true)
     {
+        InformationHash Hash = new InformationHash();
         BasisBundleGenerated BasisBundleGenerated = new BasisBundleGenerated();
         EnsureDirectoryExists(targetDirectory);
         EditorUtility.DisplayProgressBar("Building Asset Bundles", "Initializing...", 0f);
         AssetBundleManifest manifest = BuildPipeline.BuildAssetBundles(targetDirectory, settings.BuildAssetBundleOptions, buildTarget);
         if (manifest != null)
         {
-            InformationHash Hash = await ProcessAssetBundles(targetDirectory, settings, manifest, password, isEncrypted);
-            BasisBundleGenerated = new BasisBundleGenerated(Hash.bundleHash.ToString(), mode, assetBundleName, Hash.CRC, true, password, buildTarget.ToString(), true, $"{Hash.File}{settings.BasisBundleEncryptedExtension}");
+            Hash = await ProcessAssetBundles(targetDirectory, settings, manifest, password, isEncrypted);
+            BasisBundleGenerated = new BasisBundleGenerated(Hash.bundleHash.ToString(), mode, assetBundleName, Hash.CRC, true, password, buildTarget.ToString(),Hash.Length);
             DeleteManifestFiles(targetDirectory, buildTarget.ToString());
+
+
         }
         else
         {
             BasisDebug.LogError("AssetBundle build failed.");
         }
         EditorUtility.ClearProgressBar();
-        return BasisBundleGenerated;
+        return new (BasisBundleGenerated, Hash);
     }
     private static async Task<InformationHash> ProcessAssetBundles(string targetDirectory,BasisAssetBundleObject settings,AssetBundleManifest manifest,string password,bool isEncrypted)
     {
@@ -36,17 +39,19 @@ public static class AssetBundleBuilder
             string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileOutput);
             Hash128 bundleHash = manifest.GetAssetBundleHash(fileOutput);
             BuildPipeline.GetCRCForAssetBundle(fileOutput, out uint crc);
+            string actualFilePath = Path.Combine(targetDirectory, fileNameWithoutExtension) + ".bundle";
             InformationHash informationHash = new InformationHash
             {
-                File = fileNameWithoutExtension,
                 bundleHash = bundleHash,
-                CRC = crc
+                CRC = crc,
             };
-            string actualFilePath = Path.Combine(targetDirectory, informationHash.File) + ".bundle";
             float progress = (float)(index + 1) / totalFiles;
             EditorUtility.DisplayProgressBar("Building Asset Bundles", $"Processing {fileOutput}...", progress);
             string encryptedFilePath = await HandleEncryption(actualFilePath, password, settings, manifest, isEncrypted);
             CleanupOriginalFile(actualFilePath);
+            informationHash.EncyptedPath = encryptedFilePath;
+            FileInfo FileInfo = new FileInfo(encryptedFilePath);
+            informationHash.Length = FileInfo.Length;
             InformationHashes.Add(informationHash);
         }
         if (InformationHashes.Count == 1)
@@ -138,9 +143,10 @@ public static class AssetBundleBuilder
     }
     public struct InformationHash
     {
-        public string File;
+        public string EncyptedPath;
         public Hash128 bundleHash;
         public uint CRC;
+        public long Length;
     }
 
     private static BasisProgressReport Report = new BasisProgressReport();

@@ -5,7 +5,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEditor;
-using UnityEditor.Build;
 using UnityEngine;
 
 public static class BasisBundleBuild
@@ -19,12 +18,14 @@ public static class BasisBundleBuild
     {
         return await BuildBundle(BasisContentBase, Targets,(content, obj, hex, target) => BasisAssetBundlePipeline.BuildAssetBundle(content.gameObject.scene, obj, hex, target));
     }
-    public static async Task<(bool, string)> BuildBundle(BasisContentBase BasisContentBase,List<BuildTarget> Targets,Func<BasisContentBase, BasisAssetBundleObject, string, BuildTarget, Task<(bool, BasisBundleGenerated)>> buildFunction)
+    public static async Task<(bool, string)> BuildBundle(BasisContentBase BasisContentBase,List<BuildTarget> Targets,Func<BasisContentBase, BasisAssetBundleObject, string, BuildTarget, Task<(bool, (BasisBundleGenerated, AssetBundleBuilder.InformationHash))>> buildFunction)
     {
         Debug.Log("Starting BuildBundle...");
 
         // Store the initial active build target
         BuildTarget originalActiveTarget = EditorUserBuildSettings.activeBuildTarget;
+
+
 
         if (ErrorChecking(BasisContentBase, out string Error) == false)
         {
@@ -49,7 +50,7 @@ public static class BasisBundleBuild
         BasisAssetBundleObject Objects = AssetDatabase.LoadAssetAtPath<BasisAssetBundleObject>(BasisAssetBundleObject.AssetBundleObject);
         if (Directory.Exists(Objects.AssetBundleDirectory))
         {
-            System.IO.Directory.Delete(Objects.AssetBundleDirectory,true);
+            Directory.Delete(Objects.AssetBundleDirectory,true);
         }
         Debug.Log("Generating random bytes for hex string...");
         byte[] randomBytes = GenerateRandomBytes(32);
@@ -57,41 +58,73 @@ public static class BasisBundleBuild
         Debug.Log($"Generated hex string: {hexString}");
 
         BasisBundleGenerated[] Bundles = new BasisBundleGenerated[Targets.Count];
+        List<string> Paths = new List<string>();
         for (int Index = 0; Index < Targets.Count; Index++)
         {
             BuildTarget Target = Targets[Index];
-            (bool success, BasisBundleGenerated bundle) = await buildFunction(BasisContentBase, Objects, hexString, Target);
+            (bool success, (BasisBundleGenerated Generated, AssetBundleBuilder.InformationHash Hash)) = await buildFunction(BasisContentBase, Objects, hexString, Target);
             if (!success)
             {
                 return (false, "Failure While Building for " + Target);
             }
-            Bundles[Index] = bundle;
+            Bundles[Index] = Generated;
+            Paths.Add(Hash.EncyptedPath);
         }
 
-        BasisBundleConnector BasisBundleConnector = new BasisBundleConnector(
-            BasisGenerateUniqueID.GenerateUniqueID(),
-            BasisContentBase.BasisBundleDescription,
-            Bundles
-        );
-        await BasisBasisBundleInformationHandler.BasisBundleConnector(Objects, BasisBundleConnector, hexString,true);
+        string GeneratedID = BasisGenerateUniqueID.GenerateUniqueID();
+        BasisBundleConnector BasisBundleConnector = new BasisBundleConnector(GeneratedID, BasisContentBase.BasisBundleDescription,  Bundles );
+        var values = await BasisBasisBundleInformationHandler.BasisBundleConnector(Objects, BasisBundleConnector, hexString,true);
+        BasisBundleConnector = values.Item1;
+        Paths.Insert(0,values.Item2);
+
+
 
         Debug.Log("Successfully built asset bundle.");
         if (EditorUserBuildSettings.activeBuildTarget != originalActiveTarget)
         {
-            EditorUserBuildSettings.SwitchActiveBuildTarget(
-                BuildPipeline.GetBuildTargetGroup(originalActiveTarget),
-                originalActiveTarget
-            );
+            EditorUserBuildSettings.SwitchActiveBuildTarget(BuildPipeline.GetBuildTargetGroup(originalActiveTarget),originalActiveTarget);
             Debug.Log($"Switched back to original build target: {originalActiveTarget}");
         }
-        await AssetBundleBuilder.SaveFileAsync(Objects.AssetBundleDirectory, Objects.ProtectedPasswordFileName, "txt", hexString);
+        await Task.WhenAll(
+            CombineFiles(Path.Combine(Objects.AssetBundleDirectory, GeneratedID + Objects.BasisEncryptedExtension), Paths),
+            AssetBundleBuilder.SaveFileAsync(Objects.AssetBundleDirectory, Objects.ProtectedPasswordFileName, "txt", hexString)
+        );
 
-        MoveFilesUpAndDeleteFolders(Objects.AssetBundleDirectory);
+        DeleteFolders(Objects.AssetBundleDirectory);
 
         OpenRelativePath(Objects.AssetBundleDirectory);
         return (true, "Success");
     }
-    static void MoveFilesUpAndDeleteFolders(string parentDir)
+    public static async Task CombineFiles(string outputPath, List<string> bundlePaths)
+    {
+        try
+        {
+            using (FileStream outputStream = new FileStream(outputPath, FileMode.Create, FileAccess.Write))
+            {
+                for (int Index = 0; Index < bundlePaths.Count; Index++)
+                {
+                    string Path = bundlePaths[Index];
+                    if (File.Exists(Path))
+                    {
+                        byte[] fileBytes = await File.ReadAllBytesAsync(Path);
+                        await outputStream.WriteAsync(fileBytes, 0, fileBytes.Length);
+                    }
+                    else
+                    {
+                        BasisDebug.LogError($"File not found: {Path}");
+                        new Exception("ERROR File not found!");
+                    }
+                }
+            }
+            BasisDebug.Log($"Files combined successfully into: {outputPath}");
+        }
+        catch (Exception ex)
+        {
+            BasisDebug.LogError($"Error combining files: {ex.Message}");
+        }
+    }
+
+    static void DeleteFolders(string parentDir)
     {
         if (!Directory.Exists(parentDir))
         {
@@ -103,6 +136,7 @@ public static class BasisBundleBuild
         {
             try
             {
+                /*
                 foreach (string file in Directory.GetFiles(subDir))
                 {
                     string fileName = Path.GetFileName(file);
@@ -114,6 +148,7 @@ public static class BasisBundleBuild
                     File.Move(file, destFile);
                     BasisDebug.Log($"Moved: {file} -> {destFile}");
                 }
+                */
 
                 // Delete the empty folder
                 Directory.Delete(subDir, true);
@@ -125,7 +160,6 @@ public static class BasisBundleBuild
             }
         }
     }
-
     static string GetUniqueFileName(string path)
     {
         string directory = Path.GetDirectoryName(path);

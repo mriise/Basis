@@ -24,7 +24,7 @@ namespace Basis.Scripts.Avatar
                 },
                 BasisBundleGenerated = new BasisBundleGenerated[]
                  {
-                    new BasisBundleGenerated("N/A","Gameobject",string.Empty,0,true,string.Empty,string.Empty,true,string.Empty)
+                    new BasisBundleGenerated("N/A","Gameobject",string.Empty,0,true,string.Empty,string.Empty,0)
                  },
             },
             UnlockPassword = "N/A",
