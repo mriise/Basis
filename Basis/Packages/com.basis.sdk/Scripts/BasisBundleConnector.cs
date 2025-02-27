@@ -29,7 +29,10 @@ public class BasisBundleConnector
         platformBundle = BasisBundleGenerated.FirstOrDefault(bundle => PlatformMatch(bundle.Platform));
         return platformBundle != null;
     }
-
+    public static bool IsPlatform(BasisBundleGenerated platformBundle)
+    {
+        return PlatformMatch(platformBundle.Platform);
+    }
     private static readonly Dictionary<string, HashSet<RuntimePlatform>> platformMappings = new Dictionary<string, HashSet<RuntimePlatform>>()
     {
         { Enum.GetName(typeof(BuildTarget), BuildTarget.StandaloneWindows), new HashSet<RuntimePlatform> { RuntimePlatform.WindowsEditor, RuntimePlatform.WindowsPlayer, RuntimePlatform.WindowsServer } },
@@ -60,7 +63,7 @@ public class BasisBundleConnector
         VisionOS = 47,
         ReservedCFE = 48,
     }
-    public bool PlatformMatch(string platformRequest)
+    public static bool PlatformMatch(string platformRequest)
     {
         return platformMappings.TryGetValue(platformRequest, out var validPlatforms) && validPlatforms.Contains(Application.platform);
     }

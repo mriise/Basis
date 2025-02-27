@@ -65,6 +65,25 @@ public static class BasisEncryptionToData
              return null;
         }
     }
+    public static async Task<BasisBundleConnector> GenerateMetaFromBytes(string VP, byte[] Bytes, BasisProgressReport progressCallback)
+    {
+        var BasisPassword = new BasisEncryptionWrapper.BasisPassword
+        {
+            VP = VP
+        };
+        string UniqueID = BasisGenerateUniqueID.GenerateUniqueID();
+        // BasisDebug.Log("BasisLoadableBundle.UnlockPassword" + BasisLoadableBundle.UnlockPassword);
+        byte[] LoadedMetaData = await BasisEncryptionWrapper.DecryptDataAsync(UniqueID, Bytes, BasisPassword, progressCallback);
+        BasisDebug.Log("Converting decrypted meta file to BasisBundleInformation...", BasisDebug.LogTag.Event);
+        if (ConvertBytesToJson(LoadedMetaData, out BasisBundleConnector BasisBundleConnector))
+        {
+            return BasisBundleConnector;
+        }
+        else
+        {
+            return null;
+        }
+    }
     public static bool ConvertBytesToJson(byte[] loadedlocalmeta,out BasisBundleConnector BasisBundleConnector)
     {
         if (loadedlocalmeta == null || loadedlocalmeta.Length == 0)

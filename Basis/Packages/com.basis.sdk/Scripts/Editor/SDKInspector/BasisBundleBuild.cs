@@ -1,3 +1,4 @@
+using BasisSerializer.OdinSerializer;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,118 +19,128 @@ public static class BasisBundleBuild
     {
         return await BuildBundle(BasisContentBase, Targets,(content, obj, hex, target) => BasisAssetBundlePipeline.BuildAssetBundle(content.gameObject.scene, obj, hex, target));
     }
-    public static async Task<(bool, string)> BuildBundle(BasisContentBase BasisContentBase, List<BuildTarget> Targets, Func<BasisContentBase, BasisAssetBundleObject, string, BuildTarget, Task<(bool, (BasisBundleGenerated, AssetBundleBuilder.InformationHash))>> buildFunction)
+    public static async Task<(bool, string)> BuildBundle(BasisContentBase basisContentBase, List<BuildTarget> targets, Func<BasisContentBase, BasisAssetBundleObject, string, BuildTarget, Task<(bool, (BasisBundleGenerated, AssetBundleBuilder.InformationHash))>> buildFunction)
     {
         Debug.Log("Starting BuildBundle...");
 
-        // Store the initial active build target
+        // Store the original active build target
         BuildTarget originalActiveTarget = EditorUserBuildSettings.activeBuildTarget;
 
-
-
-        if (ErrorChecking(BasisContentBase, out string Error) == false)
+        // Perform error checking
+        if (!ErrorChecking(basisContentBase, out string error))
         {
-            return (false, Error);
+            return (false, error);
         }
 
         Debug.Log("Passed error checking for BuildBundle...");
 
-        // Ensure active build target is first in the list
+        // Ensure active build target is the first in the list
+        AdjustBuildTargetOrder(targets);
+
+        // Load asset bundle object and delete existing directory
+        BasisAssetBundleObject assetBundleObject = AssetDatabase.LoadAssetAtPath<BasisAssetBundleObject>(BasisAssetBundleObject.AssetBundleObject);
+        ClearAssetBundleDirectory(assetBundleObject.AssetBundleDirectory);
+
+        // Generate random bytes for hex string
+        string hexString = GenerateHexString(32);
+
+        BasisBundleGenerated[] bundles = new BasisBundleGenerated[targets.Count];
+        List<string> paths = new List<string>();
+        int cachedcount = targets.Count;
+        for (int i = 0; i < cachedcount; i++)
+        {
+            BuildTarget target = targets[i];
+            var (success, result) = await buildFunction(basisContentBase, assetBundleObject, hexString, target);
+            if (!success)
+            {
+                return (false, $"Failure While Building for {target}");
+            }
+
+            bundles[i] = result.Item1;
+            string hashPath = PathConversion(result.Item2.EncyptedPath);
+            paths.Add(hashPath);
+
+            BasisDebug.Log("Adding " + result.Item2.EncyptedPath);
+        }
+
+        // Generate a unique ID and prepare for saving
+        string generatedID = BasisGenerateUniqueID.GenerateUniqueID();
+        BasisBundleConnector basisBundleConnector = new BasisBundleConnector(generatedID, basisContentBase.BasisBundleDescription, bundles);
+        byte[] BasisbundleconnectorUnEncrypted = BasisSerializer.OdinSerializer.SerializationUtility.SerializeValue<BasisBundleConnector>(basisBundleConnector, DataFormat.JSON);
+        var BasisPassword = new BasisEncryptionWrapper.BasisPassword
+        {
+            VP = hexString
+        };
+        string UniqueID = BasisGenerateUniqueID.GenerateUniqueID();
+        BasisProgressReport report = new BasisProgressReport();
+      byte[] EncryptedConnector =  await BasisEncryptionWrapper.EncryptDataAsync(UniqueID, BasisbundleconnectorUnEncrypted,BasisPassword, report);
+
+        await CombineFiles(Path.Combine(assetBundleObject.AssetBundleDirectory, $"{generatedID}{assetBundleObject.BasisEncryptedExtension}"), paths, EncryptedConnector);
+        await AssetBundleBuilder.SaveFileAsync(assetBundleObject.AssetBundleDirectory, assetBundleObject.ProtectedPasswordFileName, "txt", hexString);
+
+        // Clean up
+        DeleteFolders(assetBundleObject.AssetBundleDirectory);
+        OpenRelativePath(assetBundleObject.AssetBundleDirectory);
+
+        // Restore the original build target if necessary
+        RestoreOriginalBuildTarget(originalActiveTarget);
+
+        Debug.Log("Successfully built asset bundle.");
+        return (true, "Success");
+    }
+
+    private static void AdjustBuildTargetOrder(List<BuildTarget> targets)
+    {
         BuildTarget activeTarget = EditorUserBuildSettings.activeBuildTarget;
-        if (!Targets.Contains(activeTarget))
+        if (!targets.Contains(activeTarget))
         {
             Debug.LogWarning($"Active build target {activeTarget} not in list of targets.");
         }
         else
         {
-            // Move active build target to the front
-            Targets.Remove(activeTarget);
-            Targets.Insert(0, activeTarget);
+            targets.Remove(activeTarget);
+            targets.Insert(0, activeTarget);
         }
-
-        BasisAssetBundleObject Objects = AssetDatabase.LoadAssetAtPath<BasisAssetBundleObject>(BasisAssetBundleObject.AssetBundleObject);
-        if (Directory.Exists(Objects.AssetBundleDirectory))
-        {
-            Directory.Delete(Objects.AssetBundleDirectory, true);
-        }
-        Debug.Log("Generating random bytes for hex string...");
-        byte[] randomBytes = GenerateRandomBytes(32);
-        string hexString = ByteArrayToHexString(randomBytes);
-        Debug.Log($"Generated hex string: {hexString}");
-
-        BasisBundleGenerated[] Bundles = new BasisBundleGenerated[Targets.Count];
-        List<string> Paths = new List<string>();
-        for (int Index = 0; Index < Targets.Count; Index++)
-        {
-            BuildTarget Target = Targets[Index];
-            (bool success, (BasisBundleGenerated Generated, AssetBundleBuilder.InformationHash Hash)) = await buildFunction(BasisContentBase, Objects, hexString, Target);
-            if (!success)
-            {
-                return (false, "Failure While Building for " + Target);
-            }
-            Bundles[Index] = Generated;
-            BasisDebug.Log("Adding " + Hash.EncyptedPath);
-            string HashPath = PathConversion(Hash.EncyptedPath);
-            Paths.Add(HashPath);
-        }
-
-        string GeneratedID = BasisGenerateUniqueID.GenerateUniqueID();
-        BasisBundleConnector BasisBundleConnector = new BasisBundleConnector(GeneratedID, BasisContentBase.BasisBundleDescription, Bundles);
-        (BasisBundleConnector, string) values = await BasisBasisBundleInformationHandler.BasisBundleConnector(Objects, BasisBundleConnector, hexString, true);
-        BasisBundleConnector = values.Item1;
-
-        string relativePath = values.Item2;
-        string fullPath = PathConversion(relativePath);
-        Paths.Insert(0, fullPath);
-
-
-
-        Debug.Log("Successfully built asset bundle.");
-
-        await CombineFiles(Path.Combine(Objects.AssetBundleDirectory, GeneratedID + Objects.BasisEncryptedExtension), Paths);
-        await AssetBundleBuilder.SaveFileAsync(Objects.AssetBundleDirectory, Objects.ProtectedPasswordFileName, "txt", hexString);
-
-        DeleteFolders(Objects.AssetBundleDirectory);
-        File.Delete(fullPath);
-        OpenRelativePath(Objects.AssetBundleDirectory);
-
-        if (EditorUserBuildSettings.activeBuildTarget != originalActiveTarget)
-        {
-            EditorUserBuildSettings.SwitchActiveBuildTarget(BuildPipeline.GetBuildTargetGroup(originalActiveTarget), originalActiveTarget);
-            Debug.Log($"Switched back to original build target: {originalActiveTarget}");
-        }
-        return (true, "Success");
     }
-    public static string PathConversion(string relativePath)
+
+    private static void ClearAssetBundleDirectory(string directoryPath)
     {
-        // Get the root path of the project (up to the Assets folder)
-        string projectRoot = Application.dataPath.Replace("/Assets", "");
-
-        // If the relative path starts with './', remove it
-        if (relativePath.StartsWith("./"))
+        if (Directory.Exists(directoryPath))
         {
-            relativePath = relativePath.Substring(2); // Remove './'
+            Directory.Delete(directoryPath, true);
         }
-
-        // Combine the root with the relative path
-        string fullPath = Path.Combine(projectRoot, relativePath);
-        return fullPath;
     }
-    public static async Task CombineFiles(string outputPath, List<string> bundlePaths,int bufferSize = 81920)
+
+    private static string GenerateHexString(int length)
+    {
+        byte[] randomBytes = GenerateRandomBytes(length);
+        return ByteArrayToHexString(randomBytes);
+    }
+
+    private static void RestoreOriginalBuildTarget(BuildTarget originalTarget)
+    {
+        if (EditorUserBuildSettings.activeBuildTarget != originalTarget)
+        {
+            EditorUserBuildSettings.SwitchActiveBuildTarget(BuildPipeline.GetBuildTargetGroup(originalTarget), originalTarget);
+            Debug.Log($"Switched back to original build target: {originalTarget}");
+        }
+    }
+
+    public static async Task CombineFiles(string outputPath, List<string> bundlePaths, byte[] EncryptedConnector, int bufferSize = 81920)
     {
         BasisDebug.Log("Combining files: " + bundlePaths.Count);
 
         try
         {
+            long headerLength = EncryptedConnector.Length;
             using (FileStream outputStream = new FileStream(outputPath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize, true))
             {
-                byte[] buffer = new byte[bufferSize]; // 80 KB buffer
+                byte[] buffer = new byte[bufferSize];
                 int totalFiles = bundlePaths.Count;
 
-                // Reserve first 8 bytes for the size of the first file
-                outputStream.Seek(8, SeekOrigin.Begin);
-
-                long firstFileSize = 0;
+                // Write header length and EncryptedConnector to the output stream
+                await outputStream.WriteAsync(BitConverter.GetBytes(headerLength), 0, 8);
+                await outputStream.WriteAsync(EncryptedConnector, 0, EncryptedConnector.Length);
 
                 for (int i = 0; i < totalFiles; i++)
                 {
@@ -146,29 +157,9 @@ public static class BasisBundleBuild
                     EditorUtility.DisplayProgressBar("Combining Files", $"Processing: {Path.GetFileName(path)}", progress);
 
                     BasisDebug.Log("Combining " + path);
-                    using (FileStream inputStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, true))
-                    {
-                        if (i == 0)
-                        {
-                            firstFileSize = inputStream.Length;
-                        }
-
-                        int bytesRead;
-                        while ((bytesRead = await inputStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
-                        {
-                            await outputStream.WriteAsync(buffer, 0, bytesRead);
-                        }
-                    }
-
-                    // Ensure the written data is flushed before moving to the next file
-                    await outputStream.FlushAsync();
+                    // Append file content to output file
+                    await AppendFileToOutput(path, buffer, outputStream, bufferSize);
                 }
-
-                // Write the first file size at the beginning
-                outputStream.Seek(0, SeekOrigin.Begin);
-                byte[] sizeBytes = BitConverter.GetBytes(firstFileSize);
-                await outputStream.WriteAsync(sizeBytes, 0, sizeBytes.Length);
-                BasisDebug.Log("Size of First file is " + firstFileSize);
             }
 
             BasisDebug.Log($"Files combined successfully into: {outputPath}");
@@ -179,12 +170,40 @@ public static class BasisBundleBuild
         }
         finally
         {
-            // Ensure the progress bar is cleared
+            // Clear progress bar
             EditorUtility.ClearProgressBar();
         }
     }
 
+    private static async Task AppendFileToOutput(string path, byte[] buffer, FileStream outputStream,int buffersize = 81920)
+    {
+        using (FileStream inputStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, buffersize, true))
+        {
+            int bytesRead;
+            while ((bytesRead = await inputStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+            {
+                await outputStream.WriteAsync(buffer, 0, bytesRead);
+            }
+        }
 
+        // Ensure the written data is flushed
+        await outputStream.FlushAsync();
+    }
+    public static string PathConversion(string relativePath)
+    {
+        // Get the root path of the project (up to the Assets folder)
+        string projectRoot = Application.dataPath.Replace("/Assets", "");
+
+        // If the relative path starts with './', remove it
+        if (relativePath.StartsWith("./"))
+        {
+            relativePath = relativePath.Substring(2); // Remove './'
+        }
+
+        // Combine the root with the relative path
+        string fullPath = Path.Combine(projectRoot, relativePath);
+        return fullPath;
+    }
     static void DeleteFolders(string parentDir)
     {
         if (!Directory.Exists(parentDir))

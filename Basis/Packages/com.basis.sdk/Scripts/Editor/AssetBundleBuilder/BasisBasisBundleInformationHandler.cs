@@ -23,7 +23,7 @@ public static class BasisBasisBundleInformationHandler
             BasisDebug.Log("Saving Json " + Information.Length);
             // Write JSON data to the file
             await File.WriteAllBytesAsync(filePath, Information);
-            BasisDebug.Log($"BasisBundleInformation saved to {filePath}");
+            BasisDebug.Log($"BasisBundleInformation saved to {filePath} " + password);
             string EncryptedPath = Path.ChangeExtension(filePath, BuildSettings.BasisMetaEncryptedExtension);
             var BasisPassword = new BasisEncryptionWrapper.BasisPassword
             {
