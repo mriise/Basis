@@ -165,14 +165,6 @@ public static class BasisLoadHandler
     public static async Task HandleBundleAndMetaLoading(BasisTrackedBundleWrapper wrapper, BasisProgressReport report, CancellationToken cancellationToken)
     {
         bool IsMetaOnDisc = IsMetaDataOnDisc(wrapper.LoadableBundle.BasisRemoteBundleEncrypted.CombinedURL, out OnDiscInformation MetaInfo);
-        /*here LD
-        if(MetaInfo.StoredLocal.LocalConnectorPath)
-        {
-
-        }
-        */
-        // bool IsBundleOnDisc = IsBundleDataOnDisc(wrapper.LoadableBundle.BasisRemoteBundleEncrypted.BundleURL, out OnDiscInformation BundleInfo);
-        bool IsBundleOnDisc = false;
         if (IsMetaOnDisc)
         {
             BasisDebug.Log("ProcessOnDiscMetaDataAsync", BasisDebug.LogTag.Event);
@@ -180,16 +172,8 @@ public static class BasisLoadHandler
         }
         else
         {
-            BasisDebug.Log("Meta was no on disc downloading on next stage", BasisDebug.LogTag.Event);
-        }
-        if (IsBundleOnDisc == false)
-        {
             BasisDebug.Log("DownloadStoreMetaAndBundle", BasisDebug.LogTag.Event);
             await BasisBundleManagement.DownloadStoreMetaAndBundle(wrapper, report, cancellationToken);
-        }
-        else
-        {
-            BasisDebug.Log("Bundle was already on disc proceeding", BasisDebug.LogTag.Event);
         }
         if (wrapper.LoadableBundle.BasisBundleConnector.GetPlatform(out BasisBundleGenerated Generated))
         {
@@ -200,7 +184,7 @@ public static class BasisLoadHandler
                 {
                     wrapper.AssetBundle = assetBundle;
                     BasisDebug.Log("we already have this AssetToLoadName in our loaded bundles using that instead!");
-                    if (IsMetaOnDisc == false || IsBundleOnDisc == false)
+                    if (IsMetaOnDisc == false)
                     {
                         OnDiscInformation newDiscInfo = new OnDiscInformation
                         {
@@ -224,7 +208,7 @@ public static class BasisLoadHandler
 
             wrapper.AssetBundle = bundleRequest.assetBundle;
 
-            if (IsMetaOnDisc == false || IsBundleOnDisc == false)
+            if (IsMetaOnDisc == false)
             {
                 OnDiscInformation newDiscInfo = new OnDiscInformation
                 {
@@ -239,37 +223,6 @@ public static class BasisLoadHandler
         else
         {
            BasisDebug.LogError("Missing Bundle Request Platform for " + Application.platform);
-        }
-    }
-    public static async Task HandleMetaLoading(BasisTrackedBundleWrapper wrapper, BasisProgressReport report, CancellationToken cancellationToken)
-    {
-        bool isOnDisc = IsMetaDataOnDisc(wrapper.LoadableBundle.BasisRemoteBundleEncrypted.CombinedURL, out OnDiscInformation discInfo);
-
-        if (isOnDisc)
-        {
-            await BasisBundleManagement.ProcessOnDiscMetaDataAsync(wrapper, discInfo.StoredLocal, report, cancellationToken);
-        }
-        else
-        {
-            await BasisBundleManagement.DownloadAndSaveMetaFile(wrapper, report, cancellationToken);//just save the meta data
-        }
-
-        if (!isOnDisc)
-        {
-            if (wrapper.LoadableBundle.BasisBundleConnector.GetPlatform(out BasisBundleGenerated Generated))
-            {
-                OnDiscInformation newDiscInfo = new OnDiscInformation
-                {
-                    StoredRemote = wrapper.LoadableBundle.BasisRemoteBundleEncrypted,
-                    StoredLocal = wrapper.LoadableBundle.BasisLocalEncryptedBundle,
-                    AssetIDToLoad = Generated.AssetToLoadName,
-                };
-                await AddDiscInfo(newDiscInfo);
-            }
-            else
-            {
-                BasisDebug.LogError("Missing Bundle Request Platform for " + Application.platform);
-            }
         }
     }
     public static bool IsMetaDataOnDisc(string MetaURL, out OnDiscInformation info)

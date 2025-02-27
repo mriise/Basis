@@ -170,7 +170,7 @@ namespace Basis.Scripts.UI.UI_Panels
 
                         try
                         {
-                            await BasisLoadHandler.HandleMetaLoading(wrapper, Report, new CancellationToken());
+                            await BasisLoadHandler.HandleBundleAndMetaLoading(wrapper, Report, new CancellationToken());
                             buttonText.text = wrapper.LoadableBundle.BasisBundleConnector.BasisBundleDescription.AssetBundleName;
                         }
                         catch (Exception E)

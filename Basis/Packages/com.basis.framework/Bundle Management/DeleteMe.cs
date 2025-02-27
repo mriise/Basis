@@ -8,10 +8,13 @@ public class DeleteMe : MonoBehaviour
     public string URL = "";
     public string Password = "";
     public BasisBundleConnector Connector = new BasisBundleConnector();
+    public string WhereWasItSaved;
     async void Start()
     {
         BasisProgressReport = new BasisProgressReport();
         CancellationToken = new CancellationToken();
-        Connector = await BasisIOManagement.DownloadBEE(URL, Password, BasisProgressReport, CancellationToken);
+        var output = await BasisIOManagement.DownloadBEE(URL, Password, BasisProgressReport, CancellationToken);
+        Connector = output.Item1;
+        WhereWasItSaved = output.Item2;
     }
 }

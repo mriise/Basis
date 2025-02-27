@@ -8,32 +8,59 @@ using System;
 public static class BasisIOManagement
 {
     public static int HeaderSize = 8;//8 bytes
-    public static async Task<BasisBundleConnector> DownloadBEE(string url, string vp, BasisProgressReport progressCallback, CancellationToken cancellationToken = default)
+    public static async Task<(BasisBundleConnector,string)> DownloadBEE(string url, string vp, BasisProgressReport progressCallback, CancellationToken cancellationToken = default)
     {
-        //this gives us the size as a long that we can then use to grab the next section with
+        // This gives us the size as a long that we can then use to grab the next section with
         byte[] ConnectorSize = await DownloadFileRange(url, null, progressCallback, cancellationToken, 0, HeaderSize, true);
         long LengthOfSection = BitConverter.ToInt64(ConnectorSize, 0);
-        byte[] ConnectorBytes = await DownloadFileRange(url, null, progressCallback, cancellationToken, HeaderSize, HeaderSize + LengthOfSection -1, true);
-        BasisDebug.Log("downloaded Connector file size is " + ConnectorBytes.Length + " trying to decode with " + vp);
+        byte[] ConnectorBytes = await DownloadFileRange(url, null, progressCallback, cancellationToken, HeaderSize, HeaderSize + LengthOfSection - 1, true);
+
+        BasisDebug.Log("Downloaded Connector file size is " + ConnectorBytes.Length + " trying to decode with " + vp);
+
         BasisBundleConnector Connector = await BasisEncryptionToData.GenerateMetaFromBytes(vp, ConnectorBytes, progressCallback);
-        /*
-        long previousEnd = LengthOfSection; // Start one byte before the actual first byte
+        long previousEnd = HeaderSize + LengthOfSection - 1; // Correct start position after header
+        // Iterate through each BasisBundleGenerated
         for (int Index = 0; Index < Connector.BasisBundleGenerated.Length; Index++)
         {
             BasisBundleGenerated pair = Connector.BasisBundleGenerated[Index];
-            long startPosition = previousEnd + 1;
-            long endPosition = pair.EndByte;
+
+            long startPosition = previousEnd + 1; // Start after the previous section
+            long sectionLength = pair.EndByte; // EndByte is the length of the current section
+            long endPosition = startPosition + sectionLength - 1; // Calculate actual end byte position based on section length
+
+            // If the pair is a valid platform, download the section
             if (BasisBundleConnector.IsPlatform(pair))
             {
                 Console.WriteLine($"Downloading from {startPosition} to {endPosition}");
 
                 byte[] sectionData = await DownloadFileRange(url, null, progressCallback, cancellationToken, startPosition, endPosition - startPosition + 1, true);
-                BasisDebug.Log("Length is " + sectionData.Length);
+                BasisDebug.Log("Section length is " + sectionData.Length);
+                string BEEPath = BasisIOManagement.GenerateFilePath($"{pair.AssetToLoadName}{BasisBundleManagement.EncryptedMetaBasisSuffix}", BasisBundleManagement.AssetBundlesFolder);
+
+                // Open the file for writing (this will overwrite any existing file)
+                using (FileStream fileStream = new FileStream(BEEPath, FileMode.Create, FileAccess.Write))
+                {
+                    // Write each array to the file incrementally
+                    WriteByteArrayToFile(fileStream, ConnectorSize);
+                    WriteByteArrayToFile(fileStream, ConnectorBytes);
+                    //since we only care about this section we can just assume that its connect end down to .length
+                    WriteByteArrayToFile(fileStream, sectionData);
+                }
+
+                return new (Connector, BEEPath);
             }
-            previousEnd = endPosition; // Update for the next iteration
+
+            // Update previousEnd for the next iteration
+            previousEnd = endPosition;
         }
-        */
-        return Connector;
+
+        return new (null, string.Empty);
+    }
+    // Method to write a byte array to a file stream
+    static void WriteByteArrayToFile(FileStream fileStream, byte[] byteArray)
+    {
+        // Write the byte array to the file stream directly (without combining them into a single large array)
+        fileStream.Write(byteArray, 0, byteArray.Length);
     }
     /// <summary>
     /// Downloads a file range in chunks.
