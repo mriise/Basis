@@ -7,7 +7,8 @@ using System;
 
 public static class BasisIOManagement
 {
-    public static int HeaderSize = 8;//8 bytes
+    public static int HeaderSize = 8; // 8 bytes
+
     public static async Task<(BasisBundleConnector, string, byte[])> DownloadBEE(string url, string vp, BasisProgressReport progressCallback, CancellationToken cancellationToken = default)
     {
         byte[] ConnectorSize = await DownloadFileRange(url, null, progressCallback, cancellationToken, 0, HeaderSize, true);
@@ -19,6 +20,7 @@ public static class BasisIOManagement
 
         long previousEnd = HeaderSize + LengthOfSection - 1; // Correct start position after header
         byte[] lastSectionData = null;
+
         // Download all necessary sections
         for (int Index = 0; Index < Connector.BasisBundleGenerated.Length; Index++)
         {
@@ -37,44 +39,52 @@ public static class BasisIOManagement
             }
             previousEnd = endPosition;
         }
+
         string BEEPath = BasisIOManagement.GenerateFilePath($"{Connector.UniqueVersion}{BasisBundleManagement.BasisEncryptedExtension}", BasisBundleManagement.AssetBundlesFolder);
 
         await SaveFileDataToDiscAsync(BEEPath, ConnectorBytes, lastSectionData);
 
         return new(Connector, BEEPath, lastSectionData);
     }
+
     public static async Task SaveFileDataToDiscAsync(string BEEPath, byte[] ConnectorBytes, byte[] lastSectionData)
     {
         byte[] connectorSizeBytes = BitConverter.GetBytes(ConnectorBytes.Length);
         if (!BitConverter.IsLittleEndian)
             Array.Reverse(connectorSizeBytes); // Ensure little-endian format
 
-        using (FileStream fileStream = new FileStream(BEEPath, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true))
+        try
         {
-            await fileStream.WriteAsync(connectorSizeBytes, 0, connectorSizeBytes.Length);
-            await fileStream.WriteAsync(ConnectorBytes, 0, ConnectorBytes.Length);
-            await fileStream.WriteAsync(lastSectionData, 0, lastSectionData.Length);
-            await fileStream.FlushAsync();
+            using (FileStream fileStream = new FileStream(BEEPath, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true))
+            {
+                await fileStream.WriteAsync(connectorSizeBytes, 0, connectorSizeBytes.Length);
+                await fileStream.WriteAsync(ConnectorBytes, 0, ConnectorBytes.Length);
+                await fileStream.WriteAsync(lastSectionData, 0, lastSectionData.Length);
+            }
 
+            long expectedSize = connectorSizeBytes.Length + ConnectorBytes.Length + lastSectionData.Length;
+            long actualSize = new FileInfo(BEEPath).Length;
+
+            BasisDebug.Log($"Expected File Size: {expectedSize} bytes");
+            BasisDebug.Log($"Actual File Size on Disk: {actualSize} bytes");
+
+            if (expectedSize == actualSize)
+            {
+                BasisDebug.Log("File size is correct.");
+            }
+            else
+            {
+                BasisDebug.LogError("File size does not match expected size!");
+            }
         }
-
-        long expectedSize = connectorSizeBytes.Length + ConnectorBytes.Length + lastSectionData.Length;
-        long actualSize = new FileInfo(BEEPath).Length;
-
-        BasisDebug.Log($"Expected File Size: {expectedSize} bytes");
-        BasisDebug.Log($"Actual File Size on Disk: {actualSize} bytes");
-
-        if (expectedSize == actualSize)
+        catch (Exception ex)
         {
-            BasisDebug.Log("File size is correct.");
-        }
-        else
-        {
-            BasisDebug.LogError("File size does not match expected size!");
+            BasisDebug.LogError($"Error writing file: {ex.Message}");
         }
     }
 
-    public static async Task<(BasisBundleConnector, byte[])> ReadBEEFile(string filePath, string vp, BasisProgressReport progressCallback, CancellationToken cancellationToken = default)
+    public static async Task<(BasisBundleConnector, byte[])> ReadBEEFile(
+        string filePath, string vp, BasisProgressReport progressCallback, CancellationToken cancellationToken = default)
     {
         BasisBundleConnector connector;
         byte[] sectionData;
@@ -84,13 +94,12 @@ public static class BasisIOManagement
             return (null, null);
         }
 
-        using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+        using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true))
         using (BinaryReader reader = new BinaryReader(fileStream))
         {
             long fileSize = reader.BaseStream.Length;
             BasisDebug.Log($"Total Size of File: {fileSize} bytes");
 
-            // Read the first 4 bytes manually for verification
             byte[] sizeBytes = reader.ReadBytes(sizeof(int));
             BasisDebug.Log($"Raw size bytes: {BitConverter.ToString(sizeBytes)}");
 
@@ -100,27 +109,23 @@ public static class BasisIOManagement
                 return (null, null);
             }
 
-            // Ensure little-endian conversion
             if (!BitConverter.IsLittleEndian)
                 Array.Reverse(sizeBytes);
 
             int connectorSize = BitConverter.ToInt32(sizeBytes, 0);
             BasisDebug.Log($"Connector size read: {connectorSize}");
 
-            // Validate connector size
             if (connectorSize <= 0 || connectorSize > fileSize - reader.BaseStream.Position)
             {
                 BasisDebug.LogError("Invalid connector size detected! Possible corruption or incorrect file format.");
                 return (null, null);
             }
 
-            // Read connector bytes
             byte[] connectorBytes = reader.ReadBytes(connectorSize);
             BasisDebug.Log($"Read Connector file size: {connectorBytes.Length}");
 
             connector = await BasisEncryptionToData.GenerateMetaFromBytes(vp, connectorBytes, progressCallback);
 
-            // Read remaining bytes for last section
             long remainingBytes = fileSize - reader.BaseStream.Position;
             sectionData = reader.ReadBytes((int)remainingBytes);
             BasisDebug.Log($"Read section length: {sectionData.Length}");
@@ -128,16 +133,9 @@ public static class BasisIOManagement
         return (connector, sectionData);
     }
 
-    /// <summary>
-    /// Downloads a file range in chunks.
-    /// </summary>
-    /// <param name="url">File URL</param>
-    /// <param name="localFilePath">Local file path</param>
-    /// <param name="progressCallback">Progress callback</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <param name="startByte">Starting byte of the range</param>
-    /// <param name="endByte">Ending byte of the range</param>
-    public static async Task<byte[]> DownloadFileRange(string url, string localFilePath, BasisProgressReport progressCallback, CancellationToken cancellationToken = default, long startByte = 0, long? endByte = null, bool loadToMemory = false)
+    public static async Task<byte[]> DownloadFileRange(
+        string url, string localFilePath, BasisProgressReport progressCallback, CancellationToken cancellationToken = default,
+        long startByte = 0, long? endByte = null, bool loadToMemory = false)
     {
         BasisDebug.Log($"Starting file download from {url} (Range: {startByte}-{(endByte.HasValue ? endByte.ToString() : "end")})");
         string uniqueID = BasisGenerateUniqueID.GenerateUniqueID();
@@ -154,6 +152,7 @@ public static class BasisIOManagement
             return await ProcessDownload(request, uniqueID, progressCallback, cancellationToken, url, localFilePath, startByte, endByte, loadToMemory);
         }
     }
+
     private static bool ValidateInputs(string url, string localFilePath)
     {
         if (string.IsNullOrWhiteSpace(url))
@@ -168,6 +167,7 @@ public static class BasisIOManagement
         }
         return true;
     }
+
     private static UnityWebRequest CreateRequest(string url, long startByte, long? endByte, string localFilePath = null)
     {
         UnityWebRequest request = UnityWebRequest.Get(url);
@@ -185,7 +185,10 @@ public static class BasisIOManagement
 
         return request;
     }
-    private static async Task<byte[]> ProcessDownload(UnityWebRequest request, string uniqueID, BasisProgressReport progressCallback, CancellationToken cancellationToken, string url, string localFilePath, long startByte, long? endByte, bool loadToMemory)
+
+    private static async Task<byte[]> ProcessDownload(
+        UnityWebRequest request, string uniqueID, BasisProgressReport progressCallback, CancellationToken cancellationToken,
+        string url, string localFilePath, long startByte, long? endByte, bool loadToMemory)
     {
         UnityWebRequestAsyncOperation asyncOperation = request.SendWebRequest();
 
@@ -230,27 +233,24 @@ public static class BasisIOManagement
             return null;  // No data returned for file-based download
         }
     }
+
     public static string GenerateFilePath(string fileName, string subFolder)
     {
         BasisDebug.Log($"Generating folder path for {fileName} in subfolder {subFolder}");
 
-        // Create the full folder path
         string folderPath = GenerateFolderPath(subFolder);
-        // Create the full file path
         string localPath = Path.Combine(folderPath, fileName);
         BasisDebug.Log($"Generated folder path: {localPath}");
 
-        // Return the local path
         return localPath;
     }
+
     public static string GenerateFolderPath(string subFolder)
     {
         BasisDebug.Log($"Generating folder path in subfolder {subFolder}");
 
-        // Create the full folder path
         string folderPath = Path.Combine(Application.persistentDataPath, subFolder);
 
-        // Check if the directory exists, and create it if it doesn't
         if (!Directory.Exists(folderPath))
         {
             BasisDebug.Log($"Directory {folderPath} does not exist. Creating directory.");
@@ -258,5 +258,4 @@ public static class BasisIOManagement
         }
         return folderPath;
     }
-    // Method to write a byte array to a file stream
 }
