@@ -1,7 +1,5 @@
 using Basis.Scripts.BasisSdk;
-using System;
 using System.Threading.Tasks;
-using System.Xml;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 public static class BasisBundleLoadAsset
@@ -18,12 +16,18 @@ public static class BasisBundleLoadAsset
                 {
                     case "GameObject":
                         {
-                            AssetBundleRequest Request = BasisLoadableBundle.AssetBundle.LoadAssetAsync<GameObject>(Generated.AssetToLoadName);
+                            string ReplacedName = Generated.AssetToLoadName.Replace(".bundle", ".prefab");
+
+                            AssetBundleRequest Request = BasisLoadableBundle.AssetBundle.LoadAssetAsync<GameObject>(ReplacedName);//assets/temporarystorage/19a260b00e5f474f8472fa9dea4ca2a920250227.prefab
                             await Request;
                             GameObject loadedObject = Request.asset as GameObject;
                             if (loadedObject == null)
                             {
-                                BasisDebug.LogError("Unable to proceed, null Gameobject");
+                                BasisDebug.LogError("Unable to proceed, null Gameobject for request " + Generated.AssetToLoadName);
+
+                                string[] assetNames = BasisLoadableBundle.AssetBundle.GetAllAssetNames();
+                                BasisDebug.LogError("All assets in bundle: \n" + string.Join("\n", assetNames));
+
                                 BasisLoadableBundle.DidErrorOccur = true;
                                 await BasisLoadableBundle.AssetBundle.UnloadAsync(true);
                                 return null;
@@ -42,6 +46,10 @@ public static class BasisBundleLoadAsset
                         BasisDebug.LogError("Requested type " + Generated.AssetMode + " has no handler");
                         return null;
                 }
+            }
+            else
+            {
+                BasisDebug.LogError("Missing Platform Bundle! cant find : "+ Application.platform);
             }
         }
         else
