@@ -3,20 +3,13 @@ using System.Threading;
 
 public class DeleteMe : MonoBehaviour
 {
-    public CancellationToken CancellationToken;
-    public BasisProgressReport BasisProgressReport = new BasisProgressReport();
-    public string URL = "";
-    public string Password = "";
-    public BasisBundleConnector Connector = new BasisBundleConnector();
-    public string WhereWasItSaved;
-    async void Start()
+    public BasisProgressReport Report = new BasisProgressReport();
+    public CancellationToken CancellationToken = new CancellationToken();
+    public BasisLoadableBundle BasisLoadableBundle;
+    public bool UseSafety = false;
+    public async void Start()
     {
-        BasisProgressReport = new BasisProgressReport();
-        CancellationToken = new CancellationToken();
-        var output = await BasisIOManagement.DownloadBEE(URL, Password, BasisProgressReport, CancellationToken);
-        Connector = output.Item1;
-        WhereWasItSaved = output.Item2;
-
         // BasisLoadHandler.LoadGameObjectBundle();
+        GameObject output = await BasisLoadHandler.LoadGameObjectBundle(BasisLoadableBundle, UseSafety, Report, CancellationToken, Vector3.zero, Quaternion.identity, Vector3.one, false, this.transform);
     }
 }

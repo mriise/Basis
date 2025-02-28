@@ -26,15 +26,15 @@ public static class BasisIOManagement
             BasisBundleGenerated pair = Connector.BasisBundleGenerated[Index];
 
             long startPosition = previousEnd + 1; // Start after the previous section
-            long sectionLength = pair.EndByte; // EndByte is the length of the current section
-            long endPosition = startPosition + sectionLength - 1; // Calculate actual end byte position based on section length
+            long sectionLength = pair.EndByte;    // This is the actual length of the section
+            long endPosition = startPosition + sectionLength - 1; // Compute actual end byte position
 
             // If the pair is a valid platform, download the section
             if (BasisBundleConnector.IsPlatform(pair))
             {
                 Console.WriteLine($"Downloading from {startPosition} to {endPosition}");
 
-                sectionData = await DownloadFileRange(url, null, progressCallback, cancellationToken, startPosition, endPosition - startPosition + 1, true);
+                sectionData = await DownloadFileRange(url, null, progressCallback, cancellationToken, startPosition, endPosition, true);
                 BasisDebug.Log("Section length is " + sectionData.Length);
                 string BEEPath = BasisIOManagement.GenerateFilePath($"{pair.AssetToLoadName}{BasisBundleManagement.EncryptedMetaBasisSuffix}", BasisBundleManagement.AssetBundlesFolder);
 
@@ -54,12 +54,12 @@ public static class BasisIOManagement
         }
         return new (Connector, string.Empty, sectionData);
     }
-    public static async Task<(BasisBundleConnector, byte[])> ReadBEEFile(string filePath, string vp, BasisProgressReport progressCallback, CancellationToken cancellationToken = default)
+    public static async Task<(BasisBundleConnector, byte[])> ReadBEEFile( string filePath, string vp,   BasisProgressReport progressCallback, CancellationToken cancellationToken = default)
     {
         if (!File.Exists(filePath))
         {
             BasisDebug.LogError($"File not found: {filePath}");
-            return new(null, null);
+            return (null, null);
         }
 
         using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
@@ -67,31 +67,30 @@ public static class BasisIOManagement
         {
             // Read the header size
             byte[] headerBytes = reader.ReadBytes(BasisIOManagement.HeaderSize);
-            long LengthOfSection = BitConverter.ToInt64(headerBytes, 0);
+            long lengthOfSection = BitConverter.ToInt64(headerBytes, 0);
 
-            // Read connector bytes hmm conversion from long to int is annoying limits us to 4GB ish i believe
-            byte[] connectorBytes = reader.ReadBytes((int)LengthOfSection);
+            // Read connector bytes (long to int conversion limitation)
+            byte[] connectorBytes = reader.ReadBytes((int)lengthOfSection);
 
-            BasisDebug.Log("Read Connector file size is " + connectorBytes.Length + " trying to decode with " + vp);
-            BasisBundleConnector Connector = await BasisEncryptionToData.GenerateMetaFromBytes(vp, connectorBytes, progressCallback);
+            BasisDebug.Log($"Read Connector file size is {connectorBytes.Length}, trying to decode with {vp}");
+            BasisBundleConnector connector = await BasisEncryptionToData.GenerateMetaFromBytes(vp, connectorBytes, progressCallback);
 
-            for (int Index = 0; Index < Connector.BasisBundleGenerated.Length; Index++)
+            for (int index = 0; index < connector.BasisBundleGenerated.Length; index++)
             {
-                BasisBundleGenerated pair = Connector.BasisBundleGenerated[Index];
+                BasisBundleGenerated pair = connector.BasisBundleGenerated[index];
 
                 if (BasisBundleConnector.IsPlatform(pair))
                 {
-                    byte[] sectionData = reader.ReadBytes((int)pair.EndByte);
-                    BasisDebug.Log("Read section length is " + sectionData.Length);
-                    return (Connector, sectionData);
-                }
-                else
-                {
-                    reader.BaseStream.Seek(pair.EndByte, SeekOrigin.Current);
+                    // Read until the end of the file
+                    long remainingBytes = reader.BaseStream.Length - reader.BaseStream.Position;
+                    byte[] sectionData = reader.ReadBytes((int)remainingBytes);
+
+                    BasisDebug.Log($"Read section length is {sectionData.Length}");
+                    return (connector, sectionData);
                 }
             }
         }
-        return new(null, null);
+        return (null, null);
     }
     /// <summary>
     /// Downloads a file range in chunks.

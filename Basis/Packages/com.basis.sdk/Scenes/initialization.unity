@@ -176,6 +176,64 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f84144c055f881f4797d59bd2802d4a4, type: 3}
+--- !u!1 &1554181180
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1554181182}
+  - component: {fileID: 1554181181}
+  m_Layer: 0
+  m_Name: DeleteMe
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1554181181
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1554181180}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff4fd7396229fae439a5fd16e0179e4e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  BasisLoadableBundle:
+    UnlockPassword: 68fce683e2948564f57a67ccde03aba4df39087ac8012ba76cdb8e190bb1c63e
+    BasisRemoteBundleEncrypted:
+      IsLocal: 0
+      CombinedURL: https://BasisFramework.b-cdn.net/tests/b1010c4d203340ba9149397353fa412720250227.BEE
+    BasisLocalEncryptedBundle:
+      LocalConnectorPath: 
+    BasisBundleConnector:
+      UniqueVersion: 
+      BasisBundleDescription:
+        AssetBundleName: 
+        AssetBundleDescription: 
+      BasisBundleGenerated: []
+  UseSafety: 0
+--- !u!4 &1554181182
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1554181180}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.24680708, y: 0.06948304, z: 0.42395985}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2110158409
 GameObject:
   m_ObjectHideFlags: 0
@@ -186,7 +244,6 @@ GameObject:
   m_Component:
   - component: {fileID: 2110158411}
   - component: {fileID: 2110158410}
-  - component: {fileID: 2110158412}
   m_Layer: 0
   m_Name: GameObject
   m_TagString: Untagged
@@ -224,23 +281,10 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2110158412
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2110158409}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ff4fd7396229fae439a5fd16e0179e4e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  URL: https://BasisFramework.b-cdn.net/tests/b1010c4d203340ba9149397353fa412720250227.BEE
-  Password: 68fce683e2948564f57a67ccde03aba4df39087ac8012ba76cdb8e190bb1c63e
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 1187098623}
   - {fileID: 2110158411}
+  - {fileID: 1554181182}

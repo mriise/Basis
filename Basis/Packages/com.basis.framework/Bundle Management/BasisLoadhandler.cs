@@ -154,7 +154,7 @@ public static class BasisLoadHandler
         }
         catch (Exception ex)
         {
-            BasisDebug.LogError(ex);
+            BasisDebug.LogError($"{ex.Message} {ex.StackTrace}");
             LoadedBundles.Remove(loadableBundle.BasisRemoteBundleEncrypted.CombinedURL);
             CleanupFiles(loadableBundle.BasisLocalEncryptedBundle);
             OnDiscData.TryRemove(loadableBundle.BasisRemoteBundleEncrypted.CombinedURL, out _);
@@ -198,12 +198,12 @@ public static class BasisLoadHandler
                 return;
             }
         }
-
-        AssetBundleCreateRequest bundleRequest = await BasisEncryptionToData.GenerateBundleFromFile(
-            wrapper.LoadableBundle.UnlockPassword,
-           output.Item2,
-            output.Item1.AssetBundleCRC,
-            report
+        if(output.Item2 == null)
+        {
+            BasisDebug.LogError("Missing BundleArray");
+            return;
+        }
+        AssetBundleCreateRequest bundleRequest = await BasisEncryptionToData.GenerateBundleFromFile( wrapper.LoadableBundle.UnlockPassword, output.Item2, output.Item1.AssetBundleCRC,report
         );
 
         wrapper.AssetBundle = bundleRequest.assetBundle;
