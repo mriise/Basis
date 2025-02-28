@@ -190,7 +190,7 @@ public static class BasisLoadHandler
                     {
                         StoredRemote = wrapper.LoadableBundle.BasisRemoteBundleEncrypted,
                         StoredLocal = wrapper.LoadableBundle.BasisLocalEncryptedBundle,
-                        AssetIDToLoad = output.Item1.AssetToLoadName,
+                        UniqueVersion = wrapper.LoadableBundle.BasisBundleConnector.UniqueVersion,
                     };
 
                     await AddDiscInfo(newDiscInfo);
@@ -214,7 +214,7 @@ public static class BasisLoadHandler
             {
                 StoredRemote = wrapper.LoadableBundle.BasisRemoteBundleEncrypted,
                 StoredLocal = wrapper.LoadableBundle.BasisLocalEncryptedBundle,
-                AssetIDToLoad = output.Item1.AssetToLoadName,
+                UniqueVersion = wrapper.LoadableBundle.BasisBundleConnector.UniqueVersion,
             };
 
             await AddDiscInfo(newDiscInfo);
@@ -271,7 +271,7 @@ public static class BasisLoadHandler
             OnDiscData[discInfo.StoredRemote.CombinedURL] = discInfo;
             BasisDebug.Log("Disc info updated.", BasisDebug.LogTag.Event);
         }
-        string filePath = BasisIOManagement.GenerateFilePath($"{discInfo.AssetIDToLoad}{BasisBundleManagement.MetaLinkBasisSuffix}", BasisBundleManagement.AssetBundlesFolder);
+        string filePath = BasisIOManagement.GenerateFilePath($"{discInfo.UniqueVersion}{BasisBundleManagement.BasisMetaExtension}", BasisBundleManagement.AssetBundlesFolder);
         byte[] serializedData = SerializationUtility.SerializeValue(discInfo, DataFormat.Binary);
 
         try
@@ -293,7 +293,7 @@ public static class BasisLoadHandler
     {
         if (OnDiscData.TryRemove(metaUrl, out _))
         {
-            string filePath = BasisIOManagement.GenerateFilePath($"{metaUrl}{BasisBundleManagement.MetaLinkBasisSuffix}", BasisBundleManagement.AssetBundlesFolder);
+            string filePath = BasisIOManagement.GenerateFilePath($"{metaUrl}{BasisBundleManagement.BasisEncryptedExtension}", BasisBundleManagement.AssetBundlesFolder);
 
             if (File.Exists(filePath))
             {
@@ -335,7 +335,7 @@ public static class BasisLoadHandler
     {
         BasisDebug.Log("Loading all disc data...", BasisDebug.LogTag.Event);
         string path = BasisIOManagement.GenerateFolderPath(BasisBundleManagement.AssetBundlesFolder);
-        string[] files = Directory.GetFiles(path, $"*{BasisBundleManagement.MetaLinkBasisSuffix}");
+        string[] files = Directory.GetFiles(path, $"*{BasisBundleManagement.BasisMetaExtension}");
 
         List<Task> loadTasks = new List<Task>();
 

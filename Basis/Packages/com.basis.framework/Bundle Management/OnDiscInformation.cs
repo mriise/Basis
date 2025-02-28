@@ -1,6 +1,6 @@
-﻿public class OnDiscInformation
+public class OnDiscInformation
 {
     public BasisRemoteEncyptedBundle StoredRemote = new BasisRemoteEncyptedBundle();//where we got meta file from
     public BasisStoredEncryptedBundle StoredLocal = new BasisStoredEncryptedBundle();//where we got bundle file from
-    public string AssetIDToLoad;
+    public string UniqueVersion;
 }

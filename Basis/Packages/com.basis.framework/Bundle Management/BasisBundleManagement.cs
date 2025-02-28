@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 
 public static class BasisBundleManagement
 {
-    public static string MetaLinkBasisSuffix = ".BML";
-    public static string EncryptedMetaBasisSuffix = ".BEE";
+    public static string BasisMetaExtension = ".BME";
+    public static string BasisEncryptedExtension = ".BEE";
     public static string AssetBundlesFolder = "BEEData";
     public static async Task<(BasisBundleGenerated, byte[])> DownloadStoreMetaAndBundle(BasisTrackedBundleWrapper bundleWrapper, BasisProgressReport progressCallback, CancellationToken cancellationToken)
     {
@@ -56,6 +56,7 @@ public static class BasisBundleManagement
         BasisDebug.Log($"Processing on-disk meta at {storedBundle.LocalConnectorPath}");
 
         (BasisBundleConnector, byte[]) value = await BasisIOManagement.ReadBEEFile(storedBundle.LocalConnectorPath, bundleWrapper.LoadableBundle.UnlockPassword, progressCallback, cancellationToken);
+        bundleWrapper.LoadableBundle.BasisBundleConnector = value.Item1;
 
         if (bundleWrapper.LoadableBundle == null)
         {

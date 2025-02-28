@@ -10,52 +10,74 @@ public static class BasisIOManagement
     public static int HeaderSize = 8;//8 bytes
     public static async Task<(BasisBundleConnector, string, byte[])> DownloadBEE(string url, string vp, BasisProgressReport progressCallback, CancellationToken cancellationToken = default)
     {
-        // This gives us the size as a long that we can then use to grab the next section with
         byte[] ConnectorSize = await DownloadFileRange(url, null, progressCallback, cancellationToken, 0, HeaderSize, true);
         long LengthOfSection = BitConverter.ToInt64(ConnectorSize, 0);
         byte[] ConnectorBytes = await DownloadFileRange(url, null, progressCallback, cancellationToken, HeaderSize, HeaderSize + LengthOfSection - 1, true);
 
         BasisDebug.Log("Downloaded Connector file size is " + ConnectorBytes.Length + " trying to decode with " + vp);
-
         BasisBundleConnector Connector = await BasisEncryptionToData.GenerateMetaFromBytes(vp, ConnectorBytes, progressCallback);
+
         long previousEnd = HeaderSize + LengthOfSection - 1; // Correct start position after header
-        byte[] sectionData = null;
-        // Iterate through each BasisBundleGenerated
+        byte[] lastSectionData = null;
+        // Download all necessary sections
         for (int Index = 0; Index < Connector.BasisBundleGenerated.Length; Index++)
         {
             BasisBundleGenerated pair = Connector.BasisBundleGenerated[Index];
 
-            long startPosition = previousEnd + 1; // Start after the previous section
-            long sectionLength = pair.EndByte;    // This is the actual length of the section
-            long endPosition = startPosition + sectionLength - 1; // Compute actual end byte position
+            long startPosition = previousEnd + 1;
+            long sectionLength = pair.EndByte;
+            long endPosition = startPosition + sectionLength - 1;
 
-            // If the pair is a valid platform, download the section
             if (BasisBundleConnector.IsPlatform(pair))
             {
                 Console.WriteLine($"Downloading from {startPosition} to {endPosition}");
 
-                sectionData = await DownloadFileRange(url, null, progressCallback, cancellationToken, startPosition, endPosition, true);
-                BasisDebug.Log("Section length is " + sectionData.Length);
-                string BEEPath = BasisIOManagement.GenerateFilePath($"{pair.AssetToLoadName}{BasisBundleManagement.EncryptedMetaBasisSuffix}", BasisBundleManagement.AssetBundlesFolder);
-
-                // Open the file for writing (this will overwrite any existing file)
-                using (FileStream fileStream = new FileStream(BEEPath, FileMode.Create, FileAccess.Write))
-                {
-                    // Write each array to the file incrementally
-                    WriteByteArrayToFile(fileStream, ConnectorSize);
-                    WriteByteArrayToFile(fileStream, ConnectorBytes);
-                    //since we only care about this section we can just assume that its connect end down to .length
-                    WriteByteArrayToFile(fileStream, sectionData);
-                }
-                return new (Connector, BEEPath, sectionData);
+                lastSectionData = await DownloadFileRange(url, null, progressCallback, cancellationToken, startPosition, endPosition, true);
+                BasisDebug.Log("Section length is " + lastSectionData.Length);
             }
-            // Update previousEnd for the next iteration
             previousEnd = endPosition;
         }
-        return new (Connector, string.Empty, sectionData);
+        string BEEPath = BasisIOManagement.GenerateFilePath($"{Connector.UniqueVersion}{BasisBundleManagement.BasisEncryptedExtension}", BasisBundleManagement.AssetBundlesFolder);
+
+        await SaveFileDataToDiscAsync(BEEPath, ConnectorBytes, lastSectionData);
+
+        return new(Connector, BEEPath, lastSectionData);
     }
-    public static async Task<(BasisBundleConnector, byte[])> ReadBEEFile( string filePath, string vp,   BasisProgressReport progressCallback, CancellationToken cancellationToken = default)
+    public static async Task SaveFileDataToDiscAsync(string BEEPath, byte[] ConnectorBytes, byte[] lastSectionData)
     {
+        byte[] connectorSizeBytes = BitConverter.GetBytes(ConnectorBytes.Length);
+        if (!BitConverter.IsLittleEndian)
+            Array.Reverse(connectorSizeBytes); // Ensure little-endian format
+
+        using (FileStream fileStream = new FileStream(BEEPath, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true))
+        {
+            await fileStream.WriteAsync(connectorSizeBytes, 0, connectorSizeBytes.Length);
+            await fileStream.WriteAsync(ConnectorBytes, 0, ConnectorBytes.Length);
+            await fileStream.WriteAsync(lastSectionData, 0, lastSectionData.Length);
+            await fileStream.FlushAsync();
+
+        }
+
+        long expectedSize = connectorSizeBytes.Length + ConnectorBytes.Length + lastSectionData.Length;
+        long actualSize = new FileInfo(BEEPath).Length;
+
+        BasisDebug.Log($"Expected File Size: {expectedSize} bytes");
+        BasisDebug.Log($"Actual File Size on Disk: {actualSize} bytes");
+
+        if (expectedSize == actualSize)
+        {
+            BasisDebug.Log("File size is correct.");
+        }
+        else
+        {
+            BasisDebug.LogError("File size does not match expected size!");
+        }
+    }
+
+    public static async Task<(BasisBundleConnector, byte[])> ReadBEEFile(string filePath, string vp, BasisProgressReport progressCallback, CancellationToken cancellationToken = default)
+    {
+        BasisBundleConnector connector;
+        byte[] sectionData;
         if (!File.Exists(filePath))
         {
             BasisDebug.LogError($"File not found: {filePath}");
@@ -65,33 +87,47 @@ public static class BasisIOManagement
         using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
         using (BinaryReader reader = new BinaryReader(fileStream))
         {
-            // Read the header size
-            byte[] headerBytes = reader.ReadBytes(BasisIOManagement.HeaderSize);
-            long lengthOfSection = BitConverter.ToInt64(headerBytes, 0);
+            long fileSize = reader.BaseStream.Length;
+            BasisDebug.Log($"Total Size of File: {fileSize} bytes");
 
-            // Read connector bytes (long to int conversion limitation)
-            byte[] connectorBytes = reader.ReadBytes((int)lengthOfSection);
+            // Read the first 4 bytes manually for verification
+            byte[] sizeBytes = reader.ReadBytes(sizeof(int));
+            BasisDebug.Log($"Raw size bytes: {BitConverter.ToString(sizeBytes)}");
 
-            BasisDebug.Log($"Read Connector file size is {connectorBytes.Length}, trying to decode with {vp}");
-            BasisBundleConnector connector = await BasisEncryptionToData.GenerateMetaFromBytes(vp, connectorBytes, progressCallback);
-
-            for (int index = 0; index < connector.BasisBundleGenerated.Length; index++)
+            if (sizeBytes.Length < sizeof(int))
             {
-                BasisBundleGenerated pair = connector.BasisBundleGenerated[index];
-
-                if (BasisBundleConnector.IsPlatform(pair))
-                {
-                    // Read until the end of the file
-                    long remainingBytes = reader.BaseStream.Length - reader.BaseStream.Position;
-                    byte[] sectionData = reader.ReadBytes((int)remainingBytes);
-
-                    BasisDebug.Log($"Read section length is {sectionData.Length}");
-                    return (connector, sectionData);
-                }
+                BasisDebug.LogError("Failed to read the connector size - file might be corrupted.");
+                return (null, null);
             }
+
+            // Ensure little-endian conversion
+            if (!BitConverter.IsLittleEndian)
+                Array.Reverse(sizeBytes);
+
+            int connectorSize = BitConverter.ToInt32(sizeBytes, 0);
+            BasisDebug.Log($"Connector size read: {connectorSize}");
+
+            // Validate connector size
+            if (connectorSize <= 0 || connectorSize > fileSize - reader.BaseStream.Position)
+            {
+                BasisDebug.LogError("Invalid connector size detected! Possible corruption or incorrect file format.");
+                return (null, null);
+            }
+
+            // Read connector bytes
+            byte[] connectorBytes = reader.ReadBytes(connectorSize);
+            BasisDebug.Log($"Read Connector file size: {connectorBytes.Length}");
+
+            connector = await BasisEncryptionToData.GenerateMetaFromBytes(vp, connectorBytes, progressCallback);
+
+            // Read remaining bytes for last section
+            long remainingBytes = fileSize - reader.BaseStream.Position;
+            sectionData = reader.ReadBytes((int)remainingBytes);
+            BasisDebug.Log($"Read section length: {sectionData.Length}");
         }
-        return (null, null);
+        return (connector, sectionData);
     }
+
     /// <summary>
     /// Downloads a file range in chunks.
     /// </summary>
@@ -223,9 +259,4 @@ public static class BasisIOManagement
         return folderPath;
     }
     // Method to write a byte array to a file stream
-    static void WriteByteArrayToFile(FileStream fileStream, byte[] byteArray)
-    {
-        // Write the byte array to the file stream directly (without combining them into a single large array)
-        fileStream.Write(byteArray, 0, byteArray.Length);
-    }
 }
