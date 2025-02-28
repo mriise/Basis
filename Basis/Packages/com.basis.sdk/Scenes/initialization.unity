@@ -206,10 +206,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   BasisLoadableBundle:
-    UnlockPassword: 68fce683e2948564f57a67ccde03aba4df39087ac8012ba76cdb8e190bb1c63e
+    UnlockPassword: 52328c3fda3d3715ed643e04158665f8286f3874687cc9388a920761190a0e85
     BasisRemoteBundleEncrypted:
       IsLocal: 0
-      CombinedURL: https://BasisFramework.b-cdn.net/tests/b1010c4d203340ba9149397353fa412720250227.BEE
+      CombinedURL: https://BasisFramework.b-cdn.net/tests/2d0407264b7c4ed38df45b9a0bf95c9e20250228.BEE
     BasisLocalEncryptedBundle:
       LocalConnectorPath: 
     BasisBundleConnector:
