@@ -81,7 +81,7 @@ namespace Basis.Scripts.UI.UI_Panels
             var avatarKey = new BasisDataStoreAvatarKeys.AvatarKey
             {
                 Url = ConnectorField.text,
-                Pass = PasswordField.text
+                Pass = PasswordField.text,
             };
 
             await BasisDataStoreAvatarKeys.AddNewKey(avatarKey);
