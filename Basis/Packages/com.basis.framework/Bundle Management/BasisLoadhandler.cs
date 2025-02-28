@@ -82,7 +82,7 @@ public static class BasisLoadHandler
             }
         }
     }
-    public static async Task<GameObject> LoadGameObjectBundle(BasisLoadableBundle loadableBundle, bool useContentRemoval, BasisProgressReport report, CancellationToken cancellationToken, Vector3 Position, Quaternion Rotation,Vector3 Scale,bool ModifyScale, Transform Parent = null)
+    public static async Task<GameObject> LoadGameObjectBundle(BasisLoadableBundle loadableBundle, bool useContentRemoval, BasisProgressReport report, CancellationToken cancellationToken, Vector3 Position, Quaternion Rotation, Vector3 Scale, bool ModifyScale, Transform Parent = null)
     {
         await EnsureInitializationComplete();
 
@@ -116,7 +116,7 @@ public static class BasisLoadHandler
             return await BasisBundleLoadAsset.LoadSceneFromBundleAsync(wrapper, makeActiveScene, report);
         }
 
-       return await HandleFirstSceneLoad(loadableBundle, makeActiveScene, report, cancellationToken);
+        return await HandleFirstSceneLoad(loadableBundle, makeActiveScene, report, cancellationToken);
     }
 
     private static async Task<Scene> HandleFirstSceneLoad(BasisLoadableBundle loadableBundle, bool makeActiveScene, BasisProgressReport report, CancellationToken cancellationToken)
@@ -133,7 +133,7 @@ public static class BasisLoadHandler
         return await BasisBundleLoadAsset.LoadSceneFromBundleAsync(wrapper, makeActiveScene, report);
     }
 
-    private static async Task<GameObject> HandleFirstBundleLoad(BasisLoadableBundle loadableBundle, bool useContentRemoval, BasisProgressReport report, CancellationToken cancellationToken, Vector3 Position, Quaternion Rotation, Vector3 Scale,bool ModifyScale, Transform Parent = null)
+    private static async Task<GameObject> HandleFirstBundleLoad(BasisLoadableBundle loadableBundle, bool useContentRemoval, BasisProgressReport report, CancellationToken cancellationToken, Vector3 Position, Quaternion Rotation, Vector3 Scale, bool ModifyScale, Transform Parent = null)
     {
         BasisTrackedBundleWrapper wrapper = new BasisTrackedBundleWrapper
         {
@@ -165,64 +165,59 @@ public static class BasisLoadHandler
     public static async Task HandleBundleAndMetaLoading(BasisTrackedBundleWrapper wrapper, BasisProgressReport report, CancellationToken cancellationToken)
     {
         bool IsMetaOnDisc = IsMetaDataOnDisc(wrapper.LoadableBundle.BasisRemoteBundleEncrypted.CombinedURL, out OnDiscInformation MetaInfo);
+
+        (BasisBundleGenerated, byte[]) output = new(null, null);
         if (IsMetaOnDisc)
         {
-            BasisDebug.Log("ProcessOnDiscMetaDataAsync", BasisDebug.LogTag.Event);
-            await BasisBundleManagement.ProcessOnDiscMetaDataAsync(wrapper, MetaInfo.StoredLocal, report, cancellationToken);
+            BasisDebug.Log("Process On Disc Meta Data Async", BasisDebug.LogTag.Event);
+            output = await BasisBundleManagement.ProcessOnDiscMetaDataAsync(wrapper, MetaInfo.StoredLocal, report, cancellationToken);
         }
         else
         {
-            BasisDebug.Log("DownloadStoreMetaAndBundle", BasisDebug.LogTag.Event);
-            await BasisBundleManagement.DownloadStoreMetaAndBundle(wrapper, report, cancellationToken);
+            BasisDebug.Log("Download Store Meta And Bundle", BasisDebug.LogTag.Event);
+            output = await BasisBundleManagement.DownloadStoreMetaAndBundle(wrapper, report, cancellationToken);
         }
-        if (wrapper.LoadableBundle.BasisBundleConnector.GetPlatform(out BasisBundleGenerated Generated))
+        IEnumerable<AssetBundle> AssetBundles = AssetBundle.GetAllLoadedAssetBundles();
+        foreach (AssetBundle assetBundle in AssetBundles)
         {
-            IEnumerable<AssetBundle> AssetBundles = AssetBundle.GetAllLoadedAssetBundles();
-            foreach (AssetBundle assetBundle in AssetBundles)
+            if (assetBundle != null && assetBundle.Contains(output.Item1.AssetToLoadName))
             {
-                if (assetBundle != null && assetBundle.Contains(Generated.AssetToLoadName))
+                wrapper.AssetBundle = assetBundle;
+                BasisDebug.Log("we already have this AssetToLoadName in our loaded bundles using that instead!");
+                if (IsMetaOnDisc == false)
                 {
-                    wrapper.AssetBundle = assetBundle;
-                    BasisDebug.Log("we already have this AssetToLoadName in our loaded bundles using that instead!");
-                    if (IsMetaOnDisc == false)
+                    OnDiscInformation newDiscInfo = new OnDiscInformation
                     {
-                        OnDiscInformation newDiscInfo = new OnDiscInformation
-                        {
-                            StoredRemote = wrapper.LoadableBundle.BasisRemoteBundleEncrypted,
-                            StoredLocal = wrapper.LoadableBundle.BasisLocalEncryptedBundle,
-                            AssetIDToLoad = Generated.AssetToLoadName,
-                        };
+                        StoredRemote = wrapper.LoadableBundle.BasisRemoteBundleEncrypted,
+                        StoredLocal = wrapper.LoadableBundle.BasisLocalEncryptedBundle,
+                        AssetIDToLoad = output.Item1.AssetToLoadName,
+                    };
 
-                        await AddDiscInfo(newDiscInfo);
-                    }
-                    return;
+                    await AddDiscInfo(newDiscInfo);
                 }
-            }
-
-            AssetBundleCreateRequest bundleRequest = await BasisEncryptionToData.GenerateBundleFromFile(
-                wrapper.LoadableBundle.UnlockPassword,
-                wrapper.LoadableBundle.BasisLocalEncryptedBundle.LocalConnectorPath,
-                Generated.AssetBundleCRC,
-                report
-            );
-
-            wrapper.AssetBundle = bundleRequest.assetBundle;
-
-            if (IsMetaOnDisc == false)
-            {
-                OnDiscInformation newDiscInfo = new OnDiscInformation
-                {
-                    StoredRemote = wrapper.LoadableBundle.BasisRemoteBundleEncrypted,
-                    StoredLocal = wrapper.LoadableBundle.BasisLocalEncryptedBundle,
-                    AssetIDToLoad = Generated.AssetToLoadName,
-                };
-
-                await AddDiscInfo(newDiscInfo);
+                return;
             }
         }
-        else
+
+        AssetBundleCreateRequest bundleRequest = await BasisEncryptionToData.GenerateBundleFromFile(
+            wrapper.LoadableBundle.UnlockPassword,
+           output.Item2,
+            output.Item1.AssetBundleCRC,
+            report
+        );
+
+        wrapper.AssetBundle = bundleRequest.assetBundle;
+
+        if (IsMetaOnDisc == false)
         {
-           BasisDebug.LogError("Missing Bundle Request Platform for " + Application.platform);
+            OnDiscInformation newDiscInfo = new OnDiscInformation
+            {
+                StoredRemote = wrapper.LoadableBundle.BasisRemoteBundleEncrypted,
+                StoredLocal = wrapper.LoadableBundle.BasisLocalEncryptedBundle,
+                AssetIDToLoad = output.Item1.AssetToLoadName,
+            };
+
+            await AddDiscInfo(newDiscInfo);
         }
     }
     public static bool IsMetaDataOnDisc(string MetaURL, out OnDiscInformation info)

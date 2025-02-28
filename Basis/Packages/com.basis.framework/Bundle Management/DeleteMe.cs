@@ -16,5 +16,7 @@ public class DeleteMe : MonoBehaviour
         var output = await BasisIOManagement.DownloadBEE(URL, Password, BasisProgressReport, CancellationToken);
         Connector = output.Item1;
         WhereWasItSaved = output.Item2;
+
+        // BasisLoadHandler.LoadGameObjectBundle();
     }
 }

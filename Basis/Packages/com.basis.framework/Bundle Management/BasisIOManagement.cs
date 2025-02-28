@@ -8,7 +8,7 @@ using System;
 public static class BasisIOManagement
 {
     public static int HeaderSize = 8;//8 bytes
-    public static async Task<(BasisBundleConnector,string)> DownloadBEE(string url, string vp, BasisProgressReport progressCallback, CancellationToken cancellationToken = default)
+    public static async Task<(BasisBundleConnector, string, byte[])> DownloadBEE(string url, string vp, BasisProgressReport progressCallback, CancellationToken cancellationToken = default)
     {
         // This gives us the size as a long that we can then use to grab the next section with
         byte[] ConnectorSize = await DownloadFileRange(url, null, progressCallback, cancellationToken, 0, HeaderSize, true);
@@ -19,6 +19,7 @@ public static class BasisIOManagement
 
         BasisBundleConnector Connector = await BasisEncryptionToData.GenerateMetaFromBytes(vp, ConnectorBytes, progressCallback);
         long previousEnd = HeaderSize + LengthOfSection - 1; // Correct start position after header
+        byte[] sectionData = null;
         // Iterate through each BasisBundleGenerated
         for (int Index = 0; Index < Connector.BasisBundleGenerated.Length; Index++)
         {
@@ -33,7 +34,7 @@ public static class BasisIOManagement
             {
                 Console.WriteLine($"Downloading from {startPosition} to {endPosition}");
 
-                byte[] sectionData = await DownloadFileRange(url, null, progressCallback, cancellationToken, startPosition, endPosition - startPosition + 1, true);
+                sectionData = await DownloadFileRange(url, null, progressCallback, cancellationToken, startPosition, endPosition - startPosition + 1, true);
                 BasisDebug.Log("Section length is " + sectionData.Length);
                 string BEEPath = BasisIOManagement.GenerateFilePath($"{pair.AssetToLoadName}{BasisBundleManagement.EncryptedMetaBasisSuffix}", BasisBundleManagement.AssetBundlesFolder);
 
@@ -46,21 +47,51 @@ public static class BasisIOManagement
                     //since we only care about this section we can just assume that its connect end down to .length
                     WriteByteArrayToFile(fileStream, sectionData);
                 }
-
-                return new (Connector, BEEPath);
+                return new (Connector, BEEPath, sectionData);
             }
-
             // Update previousEnd for the next iteration
             previousEnd = endPosition;
         }
-
-        return new (null, string.Empty);
+        return new (Connector, string.Empty, sectionData);
     }
-    // Method to write a byte array to a file stream
-    static void WriteByteArrayToFile(FileStream fileStream, byte[] byteArray)
+    public static async Task<(BasisBundleConnector, byte[])> ReadBEEFile(string filePath, string vp, BasisProgressReport progressCallback, CancellationToken cancellationToken = default)
     {
-        // Write the byte array to the file stream directly (without combining them into a single large array)
-        fileStream.Write(byteArray, 0, byteArray.Length);
+        if (!File.Exists(filePath))
+        {
+            BasisDebug.LogError($"File not found: {filePath}");
+            return new(null, null);
+        }
+
+        using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+        using (BinaryReader reader = new BinaryReader(fileStream))
+        {
+            // Read the header size
+            byte[] headerBytes = reader.ReadBytes(BasisIOManagement.HeaderSize);
+            long LengthOfSection = BitConverter.ToInt64(headerBytes, 0);
+
+            // Read connector bytes hmm conversion from long to int is annoying limits us to 4GB ish i believe
+            byte[] connectorBytes = reader.ReadBytes((int)LengthOfSection);
+
+            BasisDebug.Log("Read Connector file size is " + connectorBytes.Length + " trying to decode with " + vp);
+            BasisBundleConnector Connector = await BasisEncryptionToData.GenerateMetaFromBytes(vp, connectorBytes, progressCallback);
+
+            for (int Index = 0; Index < Connector.BasisBundleGenerated.Length; Index++)
+            {
+                BasisBundleGenerated pair = Connector.BasisBundleGenerated[Index];
+
+                if (BasisBundleConnector.IsPlatform(pair))
+                {
+                    byte[] sectionData = reader.ReadBytes((int)pair.EndByte);
+                    BasisDebug.Log("Read section length is " + sectionData.Length);
+                    return (Connector, sectionData);
+                }
+                else
+                {
+                    reader.BaseStream.Seek(pair.EndByte, SeekOrigin.Current);
+                }
+            }
+        }
+        return new(null, null);
     }
     /// <summary>
     /// Downloads a file range in chunks.
@@ -102,16 +133,6 @@ public static class BasisIOManagement
         }
         return true;
     }
-
-    private static void EnsureDirectoryExists(string localFilePath)
-    {
-        string directory = Path.GetDirectoryName(localFilePath);
-        if (!Directory.Exists(directory))
-        {
-            Directory.CreateDirectory(directory);
-        }
-    }
-
     private static UnityWebRequest CreateRequest(string url, long startByte, long? endByte, string localFilePath = null)
     {
         UnityWebRequest request = UnityWebRequest.Get(url);
@@ -174,32 +195,6 @@ public static class BasisIOManagement
             return null;  // No data returned for file-based download
         }
     }
-
-    private static bool HandleDownloadCompletion(UnityWebRequest request,string url,string localFilePath,long startByte, long? endByte)
-    {
-        if (request.result != UnityWebRequest.Result.Success)
-        {
-            BasisDebug.LogError($"Failed to download file: {request.error} for URL {url}");
-            return false;
-        }
-
-        long responseCode = request.responseCode;
-        if (responseCode != 206 && responseCode != 200)
-        {
-            BasisDebug.LogError($"Server did not support range requests. Response code: {responseCode} a workaround should be implemented");
-            return false;
-        }
-
-        if (!File.Exists(localFilePath))
-        {
-            BasisDebug.LogError("The file was not created.");
-            return false;
-        }
-
-        BasisDebug.Log($"Successfully downloaded range {startByte}-{(endByte.HasValue ? endByte.ToString() : "end")} from {url} to {localFilePath}");
-        return true;
-    }
-
     public static string GenerateFilePath(string fileName, string subFolder)
     {
         BasisDebug.Log($"Generating folder path for {fileName} in subfolder {subFolder}");
@@ -227,5 +222,11 @@ public static class BasisIOManagement
             Directory.CreateDirectory(folderPath);
         }
         return folderPath;
+    }
+    // Method to write a byte array to a file stream
+    static void WriteByteArrayToFile(FileStream fileStream, byte[] byteArray)
+    {
+        // Write the byte array to the file stream directly (without combining them into a single large array)
+        fileStream.Write(byteArray, 0, byteArray.Length);
     }
 }
