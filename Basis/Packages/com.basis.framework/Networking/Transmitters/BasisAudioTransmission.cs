@@ -1,20 +1,19 @@
 using UnityEngine;
-using UnityOpus;
 using LiteNetLib;
 using Basis.Scripts.Networking.NetworkedAvatar;
 using Basis.Scripts.BasisSdk.Players;
-using Basis.Scripts.Device_Management;
 using Basis.Scripts.Profiler;
 using static SerializableBasis;
 using LiteNetLib.Utils;
 using Basis.Network.Core;
+using OpusSharp.Core;
 
 namespace Basis.Scripts.Networking.Transmitters
 {
     [System.Serializable]
     public class BasisAudioTransmission
     {
-        public Encoder encoder;
+        public OpusEncoder encoder;
         public BasisNetworkPlayer NetworkedPlayer;
         public BasisLocalPlayer Local;
         public MicrophoneRecorder Recorder;
@@ -32,13 +31,7 @@ namespace Basis.Scripts.Networking.Transmitters
 
 
                 // Initialize the Opus encoder with the retrieved settings
-                encoder = new Encoder(BasisOpusSettings.SamplingFrequency, BasisOpusSettings.NumChannels, BasisOpusSettings.OpusApplication)
-                {
-                    Bitrate = BasisOpusSettings.BitrateKPS,
-                    Complexity = BasisOpusSettings.Complexity,
-                    Signal = BasisOpusSettings.OpusSignal
-                };
-
+                encoder = new OpusEncoder(BasisOpusSettings.SampleFreqToInt(), BasisOpusSettings.NumChannels, BasisOpusSettings.OpusApplication);
                 // Cast the networked player to a local player to access the microphone recorder
                 Local = (BasisLocalPlayer)networkedPlayer.Player;
                 Recorder = Local.MicrophoneRecorder;
@@ -88,7 +81,7 @@ namespace Basis.Scripts.Networking.Transmitters
                     AudioSegmentData.buffer = new byte[Recorder.PacketSize];
                 }
                 // Encode the audio data from the microphone recorder's buffer
-                AudioSegmentData.LengthUsed = encoder.Encode(Recorder.processBufferArray, AudioSegmentData.buffer);
+                AudioSegmentData.LengthUsed = encoder.Encode(Recorder.processBufferArray,960, AudioSegmentData.buffer, AudioSegmentData.buffer.Length);
                 NetDataWriter writer = new NetDataWriter();
                 AudioSegmentData.Serialize(writer);
                 BasisNetworkProfiler.AudioSegmentDataMessageCounter.Sample(AudioSegmentData.LengthUsed);

@@ -1,12 +1,9 @@
-using UnityEngine;
 using System;
-using UnityOpus;
-using Basis.Scripts.Device_Management;
 
 public class BasisAudioDecoder
 {
     public event Action OnDecoded;
-    AudioDecoder decoder;
+    OpusSharp.Core.OpusDecoder decoder;
     public float[] pcmBuffer;
     public int pcmLength;
     public int FakepcmLength;
@@ -15,7 +12,7 @@ public class BasisAudioDecoder
         FakepcmLength = 2048;
         pcmLength = 2048;
         pcmBuffer = new float[FakepcmLength * (int)BasisOpusSettings.NumChannels];//AudioDecoder.maximumPacketDuration now its 2048
-        decoder = new AudioDecoder(BasisOpusSettings.SamplingFrequency, BasisOpusSettings.NumChannels);
+        decoder = new OpusSharp.Core.OpusDecoder(BasisOpusSettings.SampleFreqToInt(), BasisOpusSettings.NumChannels);
     }
     public void Deinitalize()
     {
@@ -31,8 +28,8 @@ public class BasisAudioDecoder
     /// <param name="data"></param>
     public void OnDecode(byte[] data, int length)
     {
-       // UnityEngine.BasisDebug.Log("decode size is " + data.Length + " " + length);
-        pcmLength = decoder.Decode(data, length, pcmBuffer);
+        //960 20ms
+        pcmLength = decoder.Decode(data, length, pcmBuffer, 960, false);
         OnDecoded?.Invoke();
     }
 }
