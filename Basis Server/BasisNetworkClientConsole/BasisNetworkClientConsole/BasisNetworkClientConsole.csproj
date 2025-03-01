@@ -12,5 +12,7 @@
 	</PropertyGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\..\BasisNetworkClient\BasisNetworkClient.csproj" />
+	  <ProjectReference Include="..\..\BasisNetworkCore\BasisNetworkCore.csproj" />
+	  <ProjectReference Include="..\..\LiteNetLib\LiteNetLib.csproj" />
 	</ItemGroup>
 </Project>

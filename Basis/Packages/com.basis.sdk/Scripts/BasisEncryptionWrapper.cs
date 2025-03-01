@@ -3,7 +3,6 @@ using System.IO;
 using System.Security.Cryptography;
 using System;
 using System.Threading.Tasks;
-using static BasisProgressReport;
 
 public static class BasisEncryptionWrapper
 {

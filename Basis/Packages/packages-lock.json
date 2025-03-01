@@ -1,5 +1,11 @@
 {
   "dependencies": {
+    "com.avionblock.opussharp": {
+      "version": "file:com.avionblock.opussharp",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.basis.addressables": {
       "version": "file:com.basis.addressables",
       "depth": 0,
@@ -220,7 +226,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.memoryprofiler": {
-      "version": "1.1.4",
+      "version": "1.1.5",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -247,7 +253,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.render-pipelines.core": {
-      "version": "17.0.3",
+      "version": "17.0.4",
       "depth": 1,
       "source": "builtin",
       "dependencies": {
@@ -262,12 +268,12 @@
       }
     },
     "com.unity.render-pipelines.universal": {
-      "version": "17.0.3",
+      "version": "17.0.4",
       "depth": 0,
       "source": "builtin",
       "dependencies": {
-        "com.unity.render-pipelines.core": "17.0.3",
-        "com.unity.shadergraph": "17.0.3",
+        "com.unity.render-pipelines.core": "17.0.4",
+        "com.unity.shadergraph": "17.0.4",
         "com.unity.render-pipelines.universal-config": "17.0.3"
       }
     },
@@ -304,11 +310,11 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.shadergraph": {
-      "version": "17.0.3",
+      "version": "17.0.4",
       "depth": 1,
       "source": "builtin",
       "dependencies": {
-        "com.unity.render-pipelines.core": "17.0.3",
+        "com.unity.render-pipelines.core": "17.0.4",
         "com.unity.searcher": "4.9.3"
       }
     },
@@ -381,12 +387,12 @@
       }
     },
     "com.unity.visualeffectgraph": {
-      "version": "17.0.3",
+      "version": "17.0.4",
       "depth": 0,
       "source": "builtin",
       "dependencies": {
-        "com.unity.shadergraph": "17.0.3",
-        "com.unity.render-pipelines.core": "17.0.3"
+        "com.unity.shadergraph": "17.0.4",
+        "com.unity.render-pipelines.core": "17.0.4"
       }
     },
     "com.unity.xr.core-utils": {
@@ -442,12 +448,6 @@
         "com.unity.xr.legacyinputhelpers": "2.1.4"
       }
     },
-    "com.xiph.opus": {
-      "version": "file:com.xiph.opus",
-      "depth": 0,
-      "source": "embedded",
-      "dependencies": {}
-    },
     "com.xiph.rnnoise": {
       "version": "file:com.xiph.rnnoise",
       "depth": 0,
@@ -484,9 +484,16 @@
       "source": "local",
       "dependencies": {
         "org.basisvr.base128": "1.2.2",
-        "org.basisvr.bouncycastle": "2.5.0",
         "org.basisvr.newtonsoft.json": "13.0.3",
         "org.basisvr.simplebase": "4.0.2"
+      }
+    },
+    "org.basisvr.contrib.crypto": {
+      "version": "file:../../Contrib/Crypto",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "org.basisvr.bouncycastle": "2.5.0"
       }
     },
     "org.basisvr.newtonsoft.json": {

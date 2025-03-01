@@ -45,7 +45,7 @@ public static class BasisNetworkSpawnItem
         return true;
     }
 
-    public static bool RequestGameObjectLoad(string UnlockPassword, string BundleURL, string MetaURL, bool IsLocal, Vector3 Position, Quaternion Rotation, Vector3 Scale, bool Persistent, out LocalLoadResource LocalLoadResource)
+    public static bool RequestGameObjectLoad(string UnlockPassword, string BundleURL, string MetaURL, bool IsLocal, Vector3 Position, Quaternion Rotation, Vector3 Scale, bool Persistent,bool ModifysScale, out LocalLoadResource LocalLoadResource)
     {
         if (string.IsNullOrEmpty(BundleURL) || string.IsNullOrEmpty(MetaURL) || string.IsNullOrEmpty(UnlockPassword))
         {
@@ -75,6 +75,7 @@ public static class BasisNetworkSpawnItem
             ScaleY = Scale.y,
             ScaleZ = Scale.z,
             Persist = Persistent,
+             ModifyScale = ModifysScale,
         };
 
         LiteNetLib.Utils.NetDataWriter writer = new LiteNetLib.Utils.NetDataWriter();
@@ -136,9 +137,8 @@ public static class BasisNetworkSpawnItem
         {
             BasisRemoteBundleEncrypted = new BasisRemoteEncyptedBundle()
             {
-                BundleURL = localLoadResource.BundleURL,
                 IsLocal = localLoadResource.IsLocalLoad,
-                MetaURL = localLoadResource.MetaURL
+                CombinedURL = localLoadResource.MetaURL
             },
             UnlockPassword = localLoadResource.UnlockPassword,
         };
@@ -171,9 +171,8 @@ public static class BasisNetworkSpawnItem
         {
             BasisRemoteBundleEncrypted = new BasisRemoteEncyptedBundle()
             {
-                BundleURL = localLoadResource.BundleURL,
                 IsLocal = localLoadResource.IsLocalLoad,
-                MetaURL = localLoadResource.MetaURL
+                CombinedURL = localLoadResource.MetaURL
             },
             UnlockPassword = localLoadResource.UnlockPassword,
         };
@@ -183,7 +182,7 @@ public static class BasisNetworkSpawnItem
             new Vector3(localLoadResource.PositionX, localLoadResource.PositionY, localLoadResource.PositionZ),
             new Quaternion(localLoadResource.QuaternionX, localLoadResource.QuaternionY, localLoadResource.QuaternionZ, localLoadResource.QuaternionW),
             new Vector3(localLoadResource.ScaleX, localLoadResource.ScaleY, localLoadResource.ScaleZ),
-            true, BasisNetworkManagement.Instance.transform);
+            localLoadResource.ModifyScale, BasisNetworkManagement.Instance.transform);
 
         if (reference.TryGetComponent<BasisContentBase>(out BasisContentBase BasisContentBase))
         {

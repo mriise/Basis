@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 public static class BasisEncryptionToData
 {
-    public static async Task<AssetBundleCreateRequest> GenerateBundleFromFile(string Password, string FilePath, uint CRC, BasisProgressReport progressCallback)
+    public static async Task<AssetBundleCreateRequest> GenerateBundleFromFile(string Password, byte[] Bytes, uint CRC, BasisProgressReport progressCallback)
     {
         // Define the password object for decryption
         var BasisPassword = new BasisEncryptionWrapper.BasisPassword
@@ -12,7 +12,7 @@ public static class BasisEncryptionToData
         };
         string UniqueID = BasisGenerateUniqueID.GenerateUniqueID();
         // Decrypt the file asynchronously
-        byte[] LoadedBundleData = await BasisEncryptionWrapper.DecryptFileAsync(UniqueID, BasisPassword, FilePath, progressCallback, 8388608);
+        byte[] LoadedBundleData = await BasisEncryptionWrapper.DecryptDataAsync(UniqueID, Bytes, BasisPassword, progressCallback);
 
         // Start the AssetBundle loading process from memory with CRC check
         AssetBundleCreateRequest assetBundleCreateRequest = AssetBundle.LoadFromMemoryAsync(LoadedBundleData, CRC);
@@ -46,30 +46,37 @@ public static class BasisEncryptionToData
 
         return assetBundleCreateRequest;
     }
-    public static async Task<BasisLoadableBundle> GenerateMetaFromFile(BasisLoadableBundle BasisLoadableBundle, string FilePath, BasisProgressReport progressCallback)
+    public static async Task<BasisBundleConnector> GenerateMetaFromBytes(string VP, byte[] Bytes, BasisProgressReport progressCallback)
     {
         var BasisPassword = new BasisEncryptionWrapper.BasisPassword
         {
-            VP = BasisLoadableBundle.UnlockPassword
+            VP = VP
         };
         string UniqueID = BasisGenerateUniqueID.GenerateUniqueID();
         // BasisDebug.Log("BasisLoadableBundle.UnlockPassword" + BasisLoadableBundle.UnlockPassword);
-        byte[] LoadedMetaData = await BasisEncryptionWrapper.DecryptFileAsync(UniqueID, BasisPassword, FilePath, progressCallback, 81920);
+        byte[] LoadedMetaData = await BasisEncryptionWrapper.DecryptDataAsync(UniqueID, Bytes, BasisPassword, progressCallback);
         BasisDebug.Log("Converting decrypted meta file to BasisBundleInformation...", BasisDebug.LogTag.Event);
-        BasisLoadableBundle.BasisBundleInformation = ConvertBytesToJson(LoadedMetaData);
-        return BasisLoadableBundle;
-    }
-    public static BasisBundleInformation ConvertBytesToJson(byte[] loadedlocalmeta)
-    {
-        if (loadedlocalmeta == null || loadedlocalmeta.Length == 0)
+        if (ConvertBytesToJson(LoadedMetaData, out BasisBundleConnector BasisBundleConnector))
         {
-            BasisDebug.LogError($"Data for {nameof(BasisBundleInformation)} is empty or null.", BasisDebug.LogTag.Event);
-            return new BasisBundleInformation() { HasError = true };
+            return BasisBundleConnector;
+        }
+        else
+        {
+            return null;
+        }
+    }
+    public static bool ConvertBytesToJson(byte[] ConnectorBytes,out BasisBundleConnector BasisBundleConnector)
+    {
+        if (ConnectorBytes == null || ConnectorBytes.Length == 0)
+        {
+            BasisDebug.LogError($"Data for {nameof(BasisBundleConnector)} is empty or null.", BasisDebug.LogTag.Event);
+            BasisBundleConnector = null;
+            return false;
         }
 
         // Convert the byte array to a JSON string (assuming UTF-8 encoding)
         BasisDebug.Log($"Converting byte array to JSON string...", BasisDebug.LogTag.Event);
-        BasisBundleInformation Information = SerializationUtility.DeserializeValue<BasisBundleInformation>(loadedlocalmeta, DataFormat.JSON);
-        return Information;
+        BasisBundleConnector = SerializationUtility.DeserializeValue<BasisBundleConnector>(ConnectorBytes, DataFormat.JSON);
+        return true;
     }
 }

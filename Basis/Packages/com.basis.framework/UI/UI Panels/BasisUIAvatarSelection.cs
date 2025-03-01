@@ -17,8 +17,7 @@ namespace Basis.Scripts.UI.UI_Panels
 
         public const string AvatarSelection = "BasisUIAvatarSelection";
 
-        [SerializeField] public TMP_InputField MetaField;
-        [SerializeField] public TMP_InputField BundleField;
+        [SerializeField] public TMP_InputField ConnectorField;
         [SerializeField] public TMP_InputField PasswordField;
 
         [SerializeField] public Button AddAvatarApply;
@@ -27,7 +26,7 @@ namespace Basis.Scripts.UI.UI_Panels
         public List<BasisLoadableBundle> avatarUrlsRuntime = new List<BasisLoadableBundle>();
         [SerializeField]
         public List<GameObject> createdCopies = new List<GameObject>();
-
+        public CancellationToken CancellationToken = new CancellationToken();
         private async void Start()
         {
             BasisDataStoreAvatarKeys.DisplayKeys();
@@ -43,7 +42,7 @@ namespace Basis.Scripts.UI.UI_Panels
 
         private async void AddAvatar()
         {
-            if (string.IsNullOrEmpty(MetaField.text) || string.IsNullOrEmpty(BundleField.text) || string.IsNullOrEmpty(PasswordField.text))
+            if (string.IsNullOrEmpty(ConnectorField.text) || string.IsNullOrEmpty(PasswordField.text))
             {
                 BasisDebug.LogError("All fields must be filled.");
                 return;
@@ -51,7 +50,7 @@ namespace Basis.Scripts.UI.UI_Panels
 
             // Check if the avatar key already exists to prevent duplicates
             List<BasisDataStoreAvatarKeys.AvatarKey> activeKeys = BasisDataStoreAvatarKeys.DisplayKeys();
-            bool keyExists = activeKeys.Exists(key => key.Url == MetaField.text && key.Pass == PasswordField.text);
+            bool keyExists = activeKeys.Exists(key => key.Url == ConnectorField.text && key.Pass == PasswordField.text);
 
             if (keyExists)
             {
@@ -60,7 +59,7 @@ namespace Basis.Scripts.UI.UI_Panels
             }
 
             // Avoid duplicate in avatarUrlsRuntime
-            if (avatarUrlsRuntime.Exists(b => b.BasisRemoteBundleEncrypted.MetaURL == MetaField.text))
+            if (avatarUrlsRuntime.Exists(b => b.BasisRemoteBundleEncrypted.CombinedURL == ConnectorField.text))
             {
                 Debug.LogWarning("Avatar with the same Meta URL already exists in runtime list.");
                 return;
@@ -71,23 +70,18 @@ namespace Basis.Scripts.UI.UI_Panels
                 UnlockPassword = PasswordField.text,
                 BasisRemoteBundleEncrypted = new BasisRemoteEncyptedBundle
                 {
-                    BundleURL = BundleField.text,
-                    MetaURL = MetaField.text
+                    CombinedURL = ConnectorField.text
                 },
-                BasisBundleInformation = new BasisBundleInformation
-                {
-                    BasisBundleDescription = new BasisBundleDescription(),
-                    BasisBundleGenerated = new BasisBundleGenerated()
-                },
-                BasisLocalEncryptedBundle = new BasisStoredEncyptedBundle()
+                BasisBundleConnector = new BasisBundleConnector(),
+                BasisLocalEncryptedBundle = new BasisStoredEncryptedBundle()
             };
 
             await BasisLocalPlayer.Instance.CreateAvatar(0, loadableBundle);
 
             var avatarKey = new BasisDataStoreAvatarKeys.AvatarKey
             {
-                Url = MetaField.text,
-                Pass = PasswordField.text
+                Url = ConnectorField.text,
+                Pass = PasswordField.text,
             };
 
             await BasisDataStoreAvatarKeys.AddNewKey(avatarKey);
@@ -103,7 +97,7 @@ namespace Basis.Scripts.UI.UI_Panels
             for (int Index = 0; Index < preLoadedBundles.Count; Index++)
             {
                 BasisLoadableBundle loadableBundle = preLoadedBundles[Index];
-                BasisDataStoreAvatarKeys.AvatarKey Key = new BasisDataStoreAvatarKeys.AvatarKey() { Pass = loadableBundle.UnlockPassword, Url = loadableBundle.BasisRemoteBundleEncrypted.MetaURL };
+                BasisDataStoreAvatarKeys.AvatarKey Key = new BasisDataStoreAvatarKeys.AvatarKey() { Pass = loadableBundle.UnlockPassword, Url = loadableBundle.BasisRemoteBundleEncrypted.CombinedURL };
 
                 // Prevent duplicate keys in the store
                 if (!BasisDataStoreAvatarKeys.DisplayKeys().Exists(k => k.Url == Key.Url && k.Pass == Key.Pass))
@@ -117,24 +111,36 @@ namespace Basis.Scripts.UI.UI_Panels
             {
                 if (!BasisLoadHandler.IsMetaDataOnDisc(activeKeys[Index].Url, out var info))
                 {
-                    if (activeKeys[Index].Url != BasisLocalPlayer.DefaultAvatar)
+                    if (activeKeys[Index].Url == BasisLocalPlayer.DefaultAvatar)
                     {
-                        BasisDebug.LogError("Missing File on Disc For " + activeKeys[Index].Url);
+
+                    }
+                    else
+                    {
+                        if (string.IsNullOrEmpty(activeKeys[Index].Url))
+                        {
+                            BasisDebug.LogError("Supplied URL was null or empty!");
+                        }
+                        else
+                        {
+                            BasisDebug.LogError("Missing File on Disc For " + activeKeys[Index].Url);
+                        }
                     }
                     await BasisDataStoreAvatarKeys.RemoveKey(activeKeys[Index]);
                     continue;
                 }
 
                 // Prevent duplicates in avatarUrlsRuntime
-                if (!avatarUrlsRuntime.Exists(b => b.BasisRemoteBundleEncrypted.MetaURL == activeKeys[Index].Url))
+                if (!avatarUrlsRuntime.Exists(b => b.BasisRemoteBundleEncrypted.CombinedURL == activeKeys[Index].Url))
                 {
                     BasisLoadableBundle bundle = new BasisLoadableBundle
                     {
                         BasisRemoteBundleEncrypted = info.StoredRemote,
-                        BasisBundleInformation = new BasisBundleInformation
+                        BasisBundleConnector = new BasisBundleConnector
                         {
                             BasisBundleDescription = new BasisBundleDescription(),
-                            BasisBundleGenerated = new BasisBundleGenerated()
+                            BasisBundleGenerated = new BasisBundleGenerated[] { new BasisBundleGenerated() },
+                            UniqueVersion = ""
                         },
                         BasisLocalEncryptedBundle = info.StoredLocal,
                         UnlockPassword = activeKeys[Index].Pass
@@ -151,14 +157,14 @@ namespace Basis.Scripts.UI.UI_Panels
             foreach (var bundle in avatarUrlsRuntime)
             {
                 // Ensure no duplicate buttons are created
-                if (createdCopies.Exists(copy => copy.name == bundle.BasisRemoteBundleEncrypted.MetaURL))
+                if (createdCopies.Exists(copy => copy.name == bundle.BasisRemoteBundleEncrypted.CombinedURL))
                 {
-                    Debug.LogWarning("Button for this avatar already exists: " + bundle.BasisRemoteBundleEncrypted.MetaURL);
+                    Debug.LogWarning("Button for this avatar already exists: " + bundle.BasisRemoteBundleEncrypted.CombinedURL);
                     continue;
                 }
 
                 var buttonObject = Instantiate(ButtonPrefab, ParentedAvatarButtons);
-                buttonObject.name = bundle.BasisRemoteBundleEncrypted.MetaURL;
+                buttonObject.name = bundle.BasisRemoteBundleEncrypted.CombinedURL;
                 buttonObject.SetActive(true);
 
                 if (buttonObject.TryGetComponent<Button>(out var button))
@@ -168,20 +174,27 @@ namespace Basis.Scripts.UI.UI_Panels
                     TextMeshProUGUI buttonText = buttonObject.GetComponentInChildren<TextMeshProUGUI>();
                     if (buttonText != null)
                     {
-                        var wrapper = new BasisTrackedBundleWrapper
+                        BasisTrackedBundleWrapper wrapper = new BasisTrackedBundleWrapper
                         {
                             LoadableBundle = bundle
                         };
 
                         try
                         {
-                            await BasisLoadHandler.HandleMetaLoading(wrapper, Report, new CancellationToken());
-                            buttonText.text = wrapper.LoadableBundle.BasisBundleInformation.BasisBundleDescription.AssetBundleName;
+                            if (bundle.UnlockPassword == BasisLocalPlayer.DefaultAvatar)
+                            {
+                                buttonText.text = BasisLocalPlayer.DefaultAvatar;
+                            }
+                            else
+                            {
+                                await BasisLoadHandler.HandleBundleAndMetaLoading(wrapper, Report, CancellationToken);
+                                buttonText.text = wrapper.LoadableBundle.BasisBundleConnector.BasisBundleDescription.AssetBundleName;
+                            }
                         }
                         catch (Exception E)
                         {
                             BasisDebug.LogError(E);
-                            BasisLoadHandler.RemoveDiscInfo(bundle.BasisRemoteBundleEncrypted.MetaURL);
+                            BasisLoadHandler.RemoveDiscInfo(bundle.BasisRemoteBundleEncrypted.CombinedURL);
                             continue;
                         }
                     }
@@ -204,12 +217,29 @@ namespace Basis.Scripts.UI.UI_Panels
         {
             if (BasisLocalPlayer.Instance != null)
             {
-                var assetMode = avatarLoadRequest.BasisBundleInformation.BasisBundleGenerated.AssetMode;
-                var mode = !string.IsNullOrEmpty(assetMode) && byte.TryParse(assetMode, out var result) ? result : (byte)0;
-                await BasisLocalPlayer.Instance.CreateAvatar(mode, avatarLoadRequest);
+                if (avatarLoadRequest.BasisBundleConnector.GetPlatform(out BasisBundleGenerated platformBundle))
+                {
+                    string assetMode = platformBundle.AssetMode;
+                    byte mode = !string.IsNullOrEmpty(assetMode) && byte.TryParse(assetMode, out var result) ? result : (byte)0;
+                    await BasisLocalPlayer.Instance.CreateAvatar(mode, avatarLoadRequest);
+                }
+                else
+                {
+                    if (avatarLoadRequest.UnlockPassword == BasisLocalPlayer.DefaultAvatar)
+                    {
+                        await BasisLocalPlayer.Instance.CreateAvatar(1, avatarLoadRequest);
+                    }
+                    else
+                    {
+                        BasisDebug.LogError("Missing Platform " + Application.platform);
+                    }
+                }
+            }
+            else
+            {
+                BasisDebug.LogError("Missing LocalPlayer!");
             }
         }
-
         public override void DestroyEvent()
         {
             BasisCursorManagement.LockCursor(AvatarSelection);

@@ -12,8 +12,7 @@ namespace BasisNetworking.InitialData
         public byte Mode = 0;
         public string LoadedNetID = "";
         public string UnlockPassword = "";
-        public string MetaURL = "";
-        public string BundleURL = "";
+        public string CombinedURL = "";
         public bool IsLocalLoad = false;
 
         public float PositionX = 0f;
@@ -30,7 +29,7 @@ namespace BasisNetworking.InitialData
         public float ScaleZ = 1f;
 
         public bool Persist = false;
-
+        public bool ModifyScale;
         public static BasisLoadableConfiguration[] LoadAllFromFolder(string folderPath)
         {
             if (!Directory.Exists(folderPath))

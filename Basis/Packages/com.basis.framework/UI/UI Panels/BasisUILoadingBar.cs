@@ -5,6 +5,7 @@ using Basis.Scripts.Device_Management;
 using Basis.Scripts.Drivers;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 
@@ -139,7 +140,7 @@ namespace Basis.Scripts.UI.UI_Panels
 
         private LoadingOperationData GetFirstLoadingOperation()
         {
-            return loadingOperations.Count > 0 ? loadingOperations[0] : null;
+            return loadingOperations.FirstOrDefault(op => op.Percentage > 0);
         }
 
         private void UpdateDisplay(float percentage, string display)

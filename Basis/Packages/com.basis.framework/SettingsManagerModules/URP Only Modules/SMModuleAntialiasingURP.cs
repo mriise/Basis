@@ -29,10 +29,10 @@ public class SMModuleAntialiasingURP : SettingsManagerOption
             return;
         }
 #if UNITY_ANDROID
-        Asset.msaaSampleCount = MediumLowmsaaSampleCount;
+        Asset.msaaSampleCount = LowmsaaSampleCount;
         Camera.allowMSAA = true;
         Data.antialiasing = AntialiasingMode.SubpixelMorphologicalAntiAliasing;
-        Data.antialiasingQuality = AntialiasingQuality.Medium;
+        Data.antialiasingQuality = AntialiasingQuality.Low;
 #else
         switch (Quality)
         {

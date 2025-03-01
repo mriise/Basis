@@ -47,6 +47,7 @@
     <type fullname="SMModuleControllerSettings" preserve="all" />
     <type fullname="SMModuleDebugOptions" preserve="all" />
     <type fullname="SMModuleDistanceBasedReductions" preserve="all" />
+    <type fullname="SMModuleFOVSettings" preserve="all" />
     <type fullname="SMModuleRenderResolutionURP" preserve="all" />
     <type fullname="Basis.Scripts.BasisSdk.Players.BasisLocalPlayer/LocalHeightInformation" preserve="nothing" serialized="true" />
     <type fullname="Basis.Scripts.Device_Management.BasisDeviceMatchSettings" preserve="nothing" serialized="true" />
@@ -92,12 +93,11 @@
     <type fullname="BundledContentHolder" preserve="all" />
     <type fullname="ContentPoliceSelector" preserve="all" />
     <type fullname="Basis.Scripts.Device_Management.BasisObservableList`1" preserve="nothing" serialized="true" />
+    <type fullname="BasisBundleConnector" preserve="nothing" serialized="true" />
     <type fullname="BasisBundleDescription" preserve="nothing" serialized="true" />
-    <type fullname="BasisBundleGenerated" preserve="nothing" serialized="true" />
-    <type fullname="BasisBundleInformation" preserve="nothing" serialized="true" />
     <type fullname="BasisLoadableBundle" preserve="nothing" serialized="true" />
     <type fullname="BasisRemoteEncyptedBundle" preserve="nothing" serialized="true" />
-    <type fullname="BasisStoredEncyptedBundle" preserve="nothing" serialized="true" />
+    <type fullname="BasisStoredEncryptedBundle" preserve="nothing" serialized="true" />
   </assembly>
   <assembly fullname="BattlePhazeSettingsManger, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
     <type fullname="BattlePhaze.SettingsManager.ExplanationManagement.SettingsManagerExplanation" preserve="all" />

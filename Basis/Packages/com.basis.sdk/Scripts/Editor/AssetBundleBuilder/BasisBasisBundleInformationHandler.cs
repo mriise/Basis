@@ -1,102 +1,50 @@
 using BasisSerializer.OdinSerializer;
-using System;
 using System.IO;
 using System.Threading.Tasks;
-using UnityEngine;
-using static AssetBundleBuilder;
-
 public static class BasisBasisBundleInformationHandler
 {
-    public static async Task<BasisBundleInformation> CreateInformation(BasisAssetBundleObject BuildSettings, BasisBundleInformation BasisBundleInformation, InformationHash InformationHash, string AssetMode, string AssetBundlePath, string ExportFilePath, string Password)
+    public static async Task<(BasisBundleConnector,string)> BasisBundleConnector(BasisAssetBundleObject BuildSettings, BasisBundleConnector BasisBundleConnector, string ConnectorPassword, bool DeleteUnEncrypted = true)
     {
-        BasisBundleInformation.BasisBundleGenerated = new BasisBundleGenerated
-        {
-            AssetBundleHash = InformationHash.bundleHash.ToString(),
-            AssetToLoadName = InformationHash.File, // Asset bundle name
-            AssetMode = AssetMode, // Provided asset mode
-            AssetBundleCRC = InformationHash.CRC
-        };
-        // Form the meta file path using the provided extension from build settings
-        string hashFilePath = Path.ChangeExtension(AssetBundlePath, BuildSettings.BasisMetaExtension);
-        string filePath = Path.Combine(ExportFilePath, hashFilePath);
+        string filePath = Path.Combine(BuildSettings.AssetBundleDirectory, $"Connector{BuildSettings.BasisMetaExtension}");
 
         // If the file exists, delete it
         if (File.Exists(filePath))
         {
             File.Delete(filePath);
         }
-        ValidateBasisBundleInformation(ref BasisBundleInformation);
-        if(BasisBundleInformation.HasError)
-        {
-            new Exception("BasisBundleInformation Had Error!");
-            return null;
-        }
-        // Serialize and save the BasisBundleInformation to disk
-        await SaveBasisBundleInformation(BasisBundleInformation, filePath, BuildSettings, Password);
-        return BasisBundleInformation;
+        string EcnyptedfilePath = await SaveBasisBundleConnector(BasisBundleConnector, filePath, BuildSettings, ConnectorPassword, DeleteUnEncrypted);
+        return new (BasisBundleConnector, EcnyptedfilePath);
     }
-    // Function to validate BasisBundleInformation
-    private static void ValidateBasisBundleInformation(ref BasisBundleInformation basisBundleInfo)
+    private static async Task<string> SaveBasisBundleConnector(BasisBundleConnector BasisBundleConnector, string filePath, BasisAssetBundleObject BuildSettings, string password,bool DeleteUnEncrypted = true)
     {
-        basisBundleInfo.HasError = false; // Reset the error flag
-
-        // Check BasisBundleDescription
-        if (string.IsNullOrEmpty(basisBundleInfo.BasisBundleDescription.AssetBundleName))
-        {
-            basisBundleInfo.HasError = true;
-            Debug.LogError("AssetBundleName is not assigned.");
-        }
-        if (string.IsNullOrEmpty(basisBundleInfo.BasisBundleDescription.AssetBundleDescription))
-        {
-            basisBundleInfo.HasError = true;
-            Debug.LogError("AssetBundleDescription is not assigned.");
-        }
-
-        // Check BasisBundleGenerated
-        if (string.IsNullOrEmpty(basisBundleInfo.BasisBundleGenerated.AssetBundleHash))
-        {
-            basisBundleInfo.HasError = true;
-            Debug.LogError("AssetBundleHash is not assigned.");
-        }
-        if (string.IsNullOrEmpty(basisBundleInfo.BasisBundleGenerated.AssetMode))
-        {
-            basisBundleInfo.HasError = true;
-            Debug.LogError("AssetMode is not assigned.");
-        }
-        if (string.IsNullOrEmpty(basisBundleInfo.BasisBundleGenerated.AssetToLoadName))
-        {
-            basisBundleInfo.HasError = true;
-            Debug.LogError("AssetToLoadName is not assigned.");
-        }
-    }
-    private static BasisProgressReport Report = new BasisProgressReport();
-    // Function to serialize and save BasisBundleInformation to disk
-    private static async Task SaveBasisBundleInformation(BasisBundleInformation basisBundleInfo, string filePath, BasisAssetBundleObject BuildSettings, string password)
-    {
-        byte[] Information = SerializationUtility.SerializeValue<BasisBundleInformation>(basisBundleInfo, DataFormat.JSON);
+        byte[] Information = SerializationUtility.SerializeValue<BasisBundleConnector>(BasisBundleConnector, DataFormat.JSON);
         try
         {
-            Debug.Log("Saving Json " + Information.Length);
+            BasisDebug.Log("Saving Json " + Information.Length);
             // Write JSON data to the file
-           await File.WriteAllBytesAsync(filePath, Information);
-            Debug.Log($"BasisBundleInformation saved to {filePath}");
-            string EncryptedPath = Path.ChangeExtension(filePath, BuildSettings.BasisMetaEncyptedExtension);
+            await File.WriteAllBytesAsync(filePath, Information);
+            BasisDebug.Log($"BasisBundleInformation saved to {filePath} " + password);
+            string EncryptedPath = Path.Combine(filePath , BuildSettings.BasisMetaEncryptedExtension);
             var BasisPassword = new BasisEncryptionWrapper.BasisPassword
             {
                 VP = password
             };
             string UniqueID = BasisGenerateUniqueID.GenerateUniqueID();
-            await BasisEncryptionWrapper.EncryptFileAsync(UniqueID,BasisPassword, filePath, EncryptedPath, Report);
+            await BasisEncryptionWrapper.EncryptFileAsync(UniqueID, BasisPassword, filePath, EncryptedPath, Report);
 
             // Delete the bundle file if it exists
-            if (File.Exists(filePath))
+            if (DeleteUnEncrypted && File.Exists(filePath))
             {
                 File.Delete(filePath);
             }
+            return EncryptedPath;
         }
         catch (IOException ioEx)
         {
-            Debug.LogError($"Failed to save BasisBundleInformation to {filePath}: {ioEx.Message}");
+            BasisDebug.LogError($"Failed to save BasisBundleInformation to {filePath}: {ioEx.Message}");
+            return string.Empty;
         }
     }
+    // Function to validate BasisBundleInformation
+    private static BasisProgressReport Report = new BasisProgressReport();
 }

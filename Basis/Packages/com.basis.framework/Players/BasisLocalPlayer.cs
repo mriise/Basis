@@ -138,11 +138,7 @@ namespace Basis.Scripts.BasisSdk.Players
                         BasisLoadableBundle bundle = new BasisLoadableBundle
                         {
                             BasisRemoteBundleEncrypted = info.StoredRemote,
-                            BasisBundleInformation = new BasisBundleInformation
-                            {
-                                BasisBundleDescription = new BasisBundleDescription(),
-                                BasisBundleGenerated = new BasisBundleGenerated()
-                            },
+                             BasisBundleConnector = new BasisBundleConnector("1", new BasisBundleDescription("Loading Avatar", "Loading Avatar"),new BasisBundleGenerated[] { new BasisBundleGenerated()}),
                             BasisLocalEncryptedBundle = info.StoredLocal,
                             UnlockPassword = Key.Pass
                         };
@@ -185,7 +181,7 @@ namespace Basis.Scripts.BasisSdk.Players
         public async Task CreateAvatar(byte mode, BasisLoadableBundle BasisLoadableBundle)
         {
             await BasisAvatarFactory.LoadAvatarLocal(this, mode, BasisLoadableBundle);
-            BasisDataStore.SaveAvatar(BasisLoadableBundle.BasisRemoteBundleEncrypted.MetaURL, mode, LoadFileNameAndExtension);
+            BasisDataStore.SaveAvatar(BasisLoadableBundle.BasisRemoteBundleEncrypted.CombinedURL, mode, LoadFileNameAndExtension);
             OnLocalAvatarChanged?.Invoke();
         }
         public void OnCalibration()

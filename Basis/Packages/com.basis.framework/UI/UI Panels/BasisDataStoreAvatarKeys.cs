@@ -25,7 +25,7 @@ namespace Basis.Scripts.UI.UI_Panels
             {
                 keys.Add(newKey);
                 await SaveKeysToFile();
-                BasisDebug.Log($"Key added: {newKey}");
+                BasisDebug.Log($"Key added: {newKey.Url}");
             }
         }
 
@@ -36,7 +36,7 @@ namespace Basis.Scripts.UI.UI_Panels
             {
                 keys.Remove(key);
                 await SaveKeysToFile();
-                BasisDebug.Log($"Key removed: {keyToRemove}");
+                BasisDebug.Log($"Key removed: {keyToRemove.Url}");
             }
             else
             {

@@ -7,8 +7,7 @@ namespace Basis.Scripts.BasisSdk.Players
     [Serializable]
     public struct AvatarNetworkLoadInformation
     {
-        public string AvatarBundleUrl;
-        public string AvatarMetaUrl;
+        public string URL;
         public string UnlockPassword;
 
         /// <summary>
@@ -19,8 +18,7 @@ namespace Basis.Scripts.BasisSdk.Players
             using var memoryStream = new MemoryStream();
             using (var writer = new BinaryWriter(memoryStream))
             {
-                WriteString(writer, AvatarBundleUrl);
-                WriteString(writer, AvatarMetaUrl);
+                WriteString(writer, URL);
                 WriteString(writer, UnlockPassword);
             }
 
@@ -52,8 +50,7 @@ namespace Basis.Scripts.BasisSdk.Players
 
             return new AvatarNetworkLoadInformation
             {
-                AvatarBundleUrl = ReadString(reader),
-                AvatarMetaUrl = ReadString(reader),
+                URL = ReadString(reader),
                 UnlockPassword = ReadString(reader)
             };
         }

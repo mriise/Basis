@@ -33,7 +33,7 @@ namespace BasisNetworking.InitalData
 
                 foreach (BasisLoadableConfiguration config in configurations)
                 {
-                    BNL.Log($"Bundle: {config.BundleURL}, Meta: {config.MetaURL}, LoadAssetPassword: {config.UnlockPassword}");
+                    BNL.Log($"CombinedURL: {config.CombinedURL}, LoadAssetPassword: {config.UnlockPassword}");
                     LocalLoadResource LLR = FromBasisLoadableConfiguration(config);
                     BasisNetworkResourceManagement.LoadResource(LLR);
 
@@ -51,8 +51,7 @@ namespace BasisNetworking.InitalData
                 Mode = config.Mode,
                 LoadedNetID = config.LoadedNetID,
                 UnlockPassword = config.UnlockPassword,
-                MetaURL = config.MetaURL,
-                BundleURL = config.BundleURL,
+                CombinedURL = config.CombinedURL,
                 IsLocalLoad = config.IsLocalLoad,
                 PositionX = config.PositionX,
                 PositionY = config.PositionY,
@@ -64,7 +63,8 @@ namespace BasisNetworking.InitalData
                 ScaleX = config.ScaleX,
                 ScaleY = config.ScaleY,
                 ScaleZ = config.ScaleZ,
-                Persist = config.Persist
+                Persist = config.Persist,
+                 ModifyScale = config.ModifyScale
             };
         }
         public const string exampleXml = @"<BasisLoadableConfiguration>

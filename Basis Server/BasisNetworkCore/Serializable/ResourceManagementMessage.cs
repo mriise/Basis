@@ -15,8 +15,7 @@ public static partial class SerializableBasis
         /// </summary>
         public string LoadedNetID;
         public string UnlockPassword;
-        public string MetaURL;
-        public string BundleURL;
+        public string CombinedURL;
         public bool IsLocalLoad;
 
         public float PositionX;
@@ -33,6 +32,11 @@ public static partial class SerializableBasis
         public float ScaleZ;
 
         public bool Persist;
+        /// <summary>
+        /// this is used to state if the scale should be set or
+        /// just use whatever scale it thinks it is.
+        /// </summary>
+        public bool ModifyScale;
         //will never remove this item from the server,
         //if off when player count on server is zero it will be removed.
         public void Deserialize(NetDataReader Writer)
@@ -40,10 +44,10 @@ public static partial class SerializableBasis
             Mode = Writer.GetByte();
             LoadedNetID = Writer.GetString();
             UnlockPassword = Writer.GetString();
-            MetaURL = Writer.GetString();
-            BundleURL = Writer.GetString();
+            CombinedURL = Writer.GetString();
             IsLocalLoad = Writer.GetBool();
             Persist = Writer.GetBool();
+            ModifyScale = Writer.GetBool();
             if (Mode == 0)
             {
                 PositionX = Writer.GetFloat();
@@ -65,10 +69,10 @@ public static partial class SerializableBasis
             Writer.Put(Mode);
             Writer.Put(LoadedNetID);
             Writer.Put(UnlockPassword);
-            Writer.Put(MetaURL);
-            Writer.Put(BundleURL);
+            Writer.Put(CombinedURL);
             Writer.Put(IsLocalLoad);
             Writer.Put(Persist);
+            Writer.Put(ModifyScale);
             if (Mode == 0)
             {
                 Writer.Put(PositionX);

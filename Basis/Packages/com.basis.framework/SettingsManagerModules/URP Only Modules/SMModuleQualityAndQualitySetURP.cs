@@ -13,7 +13,7 @@ namespace BattlePhaze.SettingsManager.Intergrations
             {
 #if UNITY_ANDROID
 #else
-      ChangeOpaque(Option.SelectedValue);
+  //    ChangeOpaque(Option.SelectedValue);
 #endif
                 QualitySettings.SetQualityLevel(QualitySettings.GetQualityLevel(), true);
             }
@@ -21,7 +21,7 @@ namespace BattlePhaze.SettingsManager.Intergrations
             {
 #if UNITY_ANDROID
 #else
-      ChangeDepth(Option.SelectedValue);
+    //  ChangeDepth(Option.SelectedValue);
 #endif
                 QualitySettings.SetQualityLevel(QualitySettings.GetQualityLevel(), true);
             }
@@ -65,7 +65,7 @@ namespace BattlePhaze.SettingsManager.Intergrations
                 bool State = value == "on";
                 Data.requiresColorOption = State ? CameraOverrideOption.On: CameraOverrideOption.Off;
                 Data.requiresColorTexture = State;
-                Debug.Log($"Opaque rendering set to {value}.");
+                BasisDebug.Log($"Opaque rendering set to {value}.");
             }
         }
 
@@ -78,7 +78,7 @@ namespace BattlePhaze.SettingsManager.Intergrations
                 bool State = value == "on";
                 Data.requiresDepthOption = State? CameraOverrideOption.On: CameraOverrideOption.Off;
                 Data.requiresDepthTexture = State;
-               Debug.Log($"Depth rendering set to {value}.");
+                BasisDebug.Log($"Depth rendering set to {value}.");
             }
         }
         public void ChangeQualityLevel(string quality)
@@ -89,7 +89,7 @@ namespace BattlePhaze.SettingsManager.Intergrations
             {
                 case "very low":
                     ApplyQualitySettings(AnisotropicFiltering.Enable, 256, false, false);
-                    Data.renderPostProcessing = true;
+                    Data.renderPostProcessing = false;
                     break;
                 case "low":
                     ApplyQualitySettings(AnisotropicFiltering.Enable, 512, true, true);

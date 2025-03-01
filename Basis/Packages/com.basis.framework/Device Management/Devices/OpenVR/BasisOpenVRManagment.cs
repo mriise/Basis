@@ -112,7 +112,7 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
             }
         }
 
-        public void CreateController(OpenVRDevice device, string uniqueID, string notUniqueID)
+        public  void CreateController(OpenVRDevice device, string uniqueID, string notUniqueID)
         {
             if (!TypicalDevices.ContainsKey(uniqueID))
             {
@@ -137,7 +137,7 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
                 GameObject Output = GenerateGameobject(uniqueID);
                 var input = Output.AddComponent<BasisOpenVRInput>();
                 input.ClassName = nameof(BasisOpenVRInput);
-                input.Initialize(device, uniqueID, notUniqueID, nameof(BasisOpenVRManagement), autoAssignRole, role);
+                 input.Initialize(device, uniqueID, notUniqueID, nameof(BasisOpenVRManagement), autoAssignRole, role);
                 BasisDeviceManagement.Instance.TryAdd(input);
                 TypicalDevices.TryAdd(uniqueID, device);
             }
@@ -204,7 +204,7 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
             BasisDeviceManagement.Instance.RemoveDevicesFrom(nameof(BasisOpenVRManagement), id);
         }
 
-        private void HandleExistingDevice(string uniqueID, string notUniqueID, string className, OpenVRDevice device)
+        private  void HandleExistingDevice(string uniqueID, string notUniqueID, string className, OpenVRDevice device)
         {
             foreach (BasisInput input in BasisDeviceManagement.Instance.AllInputDevices)
             {
@@ -217,11 +217,11 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
                             bool foundRole = TryAssignRole(device.deviceClass, device.deviceIndex, notUniqueID, out BasisBoneTrackedRole role, out SteamVR_Input_Sources source);
                             if (role == BasisBoneTrackedRole.Head || role == BasisBoneTrackedRole.CenterEye)
                             {
-                               spatial.Initialize(UnityEngine.SpatialTracking.TrackedPoseDriver.TrackedPose.Head, uniqueID, notUniqueID, nameof(BasisOpenVRManagement), foundRole, role, source);
+                                spatial.Initialize(UnityEngine.SpatialTracking.TrackedPoseDriver.TrackedPose.Head, uniqueID, notUniqueID, nameof(BasisOpenVRManagement), foundRole, role, source);
                             }
                             else
                             {
-                               spatial.Initialize(UnityEngine.SpatialTracking.TrackedPoseDriver.TrackedPose.Center, uniqueID, notUniqueID, nameof(BasisOpenVRManagement), foundRole, role, source);
+                                spatial.Initialize(UnityEngine.SpatialTracking.TrackedPoseDriver.TrackedPose.Center, uniqueID, notUniqueID, nameof(BasisOpenVRManagement), foundRole, role, source);
                             }
                         }
                         else if (input is BasisOpenVRInputController controller)
