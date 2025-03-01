@@ -28,6 +28,10 @@ public class SMModuleRenderResolutionURP : SettingsManagerOption
         {
            // BasisDebug.Log("Render Resolution");
             UniversalRenderPipelineAsset Asset = (UniversalRenderPipelineAsset)QualitySettings.renderPipeline;
+            if (XRSettings.useOcclusionMesh == false)
+            {
+                XRSettings.useOcclusionMesh = true;
+            }
             if (SliderReadOption(Option, Manager, out float Value))
             {
                 SetRenderResolution(Value);
@@ -72,10 +76,6 @@ public class SMModuleRenderResolutionURP : SettingsManagerOption
         }
         else
         {
-            if (XRSettings.useOcclusionMesh == false)
-            {
-                XRSettings.useOcclusionMesh = true;
-            }
             UniversalRenderPipelineAsset Asset = (UniversalRenderPipelineAsset)QualitySettings.renderPipeline;
             if (XRSettings.eyeTextureResolutionScale != renderScale)
             {

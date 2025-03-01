@@ -1996,7 +1996,7 @@ MonoBehaviour:
       DefaultPlatform: 1
       ExcludePlatform: 0
       ValueToggle: 0
-      EditorVisable: 0
+      EditorVisable: 1
     SupportedRenderPipeline: 030000000400000000000000
     Round: 0
     RoundTo: 1
@@ -2596,7 +2596,7 @@ MonoBehaviour:
     Max: 0
   - Name: Depth Support
     DefaultValue: 
-    SelectedValue: off
+    SelectedValue: 0
     Index: 32
     SelectableValueList:
     - realValue: off
@@ -2604,7 +2604,7 @@ MonoBehaviour:
     - realValue: on
       UserValue: On
     Min: 0
-    Max: 0
+    Max: 1
   - Name: Opaque Support
     DefaultValue: 
     SelectedValue: 0
@@ -2830,42 +2830,30 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Selector: {fileID: 11400000, guid: 8393424ebf34934449c2d1309a700837, type: 2}
   DefaultScene:
-    UnlockPassword: 
+    UnlockPassword: 5fbc8c55167d21cc1b57b65724492bfa11b0b71f32eac99f5af03d40e85ccb67
     BasisRemoteBundleEncrypted:
       IsLocal: 0
-      MetaURL: 
-      BundleURL: 
+      CombinedURL: https://BasisFramework.b-cdn.net/Worlds/BEE/ff15e73c52f34d9b9026e264d5744fea20250301.BEE
     BasisLocalEncryptedBundle:
-      LocalMetaFile: 
-      LocalBundleFile: 
-    BasisBundleInformation:
-      HasError: 0
+      LocalConnectorPath: 
+    BasisBundleConnector:
+      UniqueVersion: 
       BasisBundleDescription:
         AssetBundleName: 
         AssetBundleDescription: 
-      BasisBundleGenerated:
-        AssetBundleHash: 
-        AssetMode: 
-        AssetToLoadName: 
-        AssetBundleCRC: 0
+      BasisBundleGenerated: []
   DefaultAvatar:
     UnlockPassword: 
     BasisRemoteBundleEncrypted:
       IsLocal: 0
-      MetaURL: 
-      BundleURL: 
+      CombinedURL: 
     BasisLocalEncryptedBundle:
-      LocalMetaFile: 
-      LocalBundleFile: 
-    BasisBundleInformation:
-      HasError: 0
+      LocalConnectorPath: 
+    BasisBundleConnector:
+      UniqueVersion: 
       BasisBundleDescription:
-        AssetBundleName: LoadingAvatar
-        AssetBundleDescription: LoadingAvatar
-      BasisBundleGenerated:
-        AssetBundleHash: 
-        AssetMode: Gameobject
-        AssetToLoadName: LoadingAvatar
-        AssetBundleCRC: 0
+        AssetBundleName: 
+        AssetBundleDescription: 
+      BasisBundleGenerated: []
   UseAddressablesToLoadScene: 0
-  UseSceneProvidedHere: 0
+  UseSceneProvidedHere: 1

@@ -89,7 +89,7 @@ namespace BattlePhaze.SettingsManager.Intergrations
             {
                 case "very low":
                     ApplyQualitySettings(AnisotropicFiltering.Enable, 256, false, false);
-                    Data.renderPostProcessing = true;
+                    Data.renderPostProcessing = false;
                     break;
                 case "low":
                     ApplyQualitySettings(AnisotropicFiltering.Enable, 512, true, true);
