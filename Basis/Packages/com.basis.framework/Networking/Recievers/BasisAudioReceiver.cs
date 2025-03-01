@@ -27,7 +27,7 @@ namespace Basis.Scripts.Networking.Recievers
             audioSource.volume = 1.0f;
             audioSource.loop = true;
             // Initialize sampling parameters
-            samplingFrequency = BasisOpusSettings.GetSampleFreq();
+            samplingFrequency = BasisOpusSettings.SampleFreqToInt();
             numChannels = 1;
             SampleLength = samplingFrequency * numChannels;
             RingBuffer = new RingBuffer(4096*2);
@@ -54,7 +54,7 @@ namespace Basis.Scripts.Networking.Recievers
             if (decoder != null)
             {
                 decoder.OnDecoded -= OnDecoded;
-                decoder.Deinitalize();
+                decoder.DeInitalize();
             }
             if (audioSource != null)
             {

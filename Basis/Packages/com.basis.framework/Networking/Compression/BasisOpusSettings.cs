@@ -6,20 +6,17 @@ public static class BasisOpusSettings
     public static int NumChannels = 1;
     public static OpusPredefinedValues OpusApplication = OpusPredefinedValues.OPUS_APPLICATION_AUDIO;
     public static float DesiredDurationInSeconds = 0.02f;
-    public static int GetSampleFreq()
+    public static int SampleRate = 960;//0.02
+    public static int SampleFreqToInt()
     {
-        return SampleFreqToInt();
+        return 48000;
     }
     public static int CalculateDesiredTime()
     {
-        return Mathf.CeilToInt(DesiredDurationInSeconds * GetSampleFreq());
+        return Mathf.CeilToInt(DesiredDurationInSeconds * SampleFreqToInt());
     }
     public static float[] CalculateProcessBuffer()
     {
         return new float[CalculateDesiredTime()];
-    }
-    public static int SampleFreqToInt()
-    {
-        return 48000;
     }
 }

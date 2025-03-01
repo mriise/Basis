@@ -19,9 +19,10 @@ namespace Basis.Scripts.Networking.Transmitters
         public MicrophoneRecorder Recorder;
 
         public bool IsInitalized = false;
+        public bool HasEvents = false;
+
         public AudioSegmentDataMessage AudioSegmentData = new AudioSegmentDataMessage();
         public AudioSegmentDataMessage audioSilentSegmentData = new AudioSegmentDataMessage();
-        public bool HasEvents = false;
         public void OnEnable(BasisNetworkPlayer networkedPlayer)
         {
             if (!IsInitalized)

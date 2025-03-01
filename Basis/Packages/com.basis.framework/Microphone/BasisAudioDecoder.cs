@@ -1,9 +1,10 @@
+using OpusSharp.Core;
 using System;
 
 public class BasisAudioDecoder
 {
     public event Action OnDecoded;
-    OpusSharp.Core.OpusDecoder decoder;
+    OpusDecoder decoder;
     public float[] pcmBuffer;
     public int pcmLength;
     public int FakepcmLength;
@@ -11,10 +12,10 @@ public class BasisAudioDecoder
     {
         FakepcmLength = 2048;
         pcmLength = 2048;
-        pcmBuffer = new float[FakepcmLength * (int)BasisOpusSettings.NumChannels];//AudioDecoder.maximumPacketDuration now its 2048
-        decoder = new OpusSharp.Core.OpusDecoder(BasisOpusSettings.SampleFreqToInt(), BasisOpusSettings.NumChannels);
+        pcmBuffer = new float[FakepcmLength * BasisOpusSettings.NumChannels];
+        decoder = new OpusDecoder(BasisOpusSettings.SampleFreqToInt(), BasisOpusSettings.NumChannels);
     }
-    public void Deinitalize()
+    public void DeInitalize()
     {
         decoder.Dispose();
         decoder = null;
@@ -29,7 +30,7 @@ public class BasisAudioDecoder
     public void OnDecode(byte[] data, int length)
     {
         //960 20ms
-        pcmLength = decoder.Decode(data, length, pcmBuffer, 960, false);
+        pcmLength = decoder.Decode(data, length, pcmBuffer, BasisOpusSettings.SampleRate, false);
         OnDecoded?.Invoke();
     }
 }

@@ -34,7 +34,7 @@ public partial class MicrophoneRecorder : MicrophoneRecorderBase
                 Volume = Volume
             };
             ProcessBufferLength = processBufferArray.Length;
-            samplingFrequency = BasisOpusSettings.GetSampleFreq();
+            samplingFrequency = BasisOpusSettings.SampleFreqToInt();
             microphoneBufferArray = new float[BasisOpusSettings.RecordingFullLength * samplingFrequency];
             rmsValues = new float[rmsWindowSize];
             bufferLength = microphoneBufferArray.Length;
