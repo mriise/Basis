@@ -17,7 +17,8 @@ public static class BasisBundleBuild
 
     public static async Task<(bool, string)> SceneBundleBuild(BasisContentBase BasisContentBase, List<BuildTarget> Targets)
     {
-        return await BuildBundle(BasisContentBase, Targets,(content, obj, hex, target) => BasisAssetBundlePipeline.BuildAssetBundle(content.gameObject.scene, obj, hex, target));
+        UnityEngine.SceneManagement.Scene Scene = BasisContentBase.gameObject.scene;
+        return await BuildBundle(BasisContentBase, Targets, (content, obj, hex, target) => BasisAssetBundlePipeline.BuildAssetBundle(Scene, obj, hex, target));
     }
     public static async Task<(bool, string)> BuildBundle(BasisContentBase basisContentBase, List<BuildTarget> targets, Func<BasisContentBase, BasisAssetBundleObject, string, BuildTarget, Task<(bool, (BasisBundleGenerated, AssetBundleBuilder.InformationHash))>> buildFunction)
     {
