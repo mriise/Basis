@@ -12,14 +12,12 @@ public class BasisPropSDKInspector : Editor
     public BasisProp BasisProp;
     public VisualElement rootElement;
     public VisualElement uiElementsRoot;
-    private List<BuildTarget> selectedTargets = new List<BuildTarget>();
     private Label resultLabel; // Store the result label for later clearing
+    public BasisAssetBundleObject assetBundleObject;
     public void OnEnable()
     {
         visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(BasisSDKConstants.PropuxmlPath);
         BasisProp = (BasisProp)target;
-        // Initialize selectedTargets with all available targets
-        selectedTargets = new List<BuildTarget>(BasisSDKConstants.allowedTargets);
     }
     public override VisualElement CreateInspectorGUI()
     {
@@ -38,26 +36,34 @@ public class BasisPropSDKInspector : Editor
             Foldout buildTargetFoldout = new Foldout { text = "Select Build Targets", value = true }; // Expanded by default
             uiElementsRoot.Add(buildTargetFoldout);
 
+            if (assetBundleObject == null)
+            {
+                assetBundleObject = AssetDatabase.LoadAssetAtPath<BasisAssetBundleObject>(BasisAssetBundleObject.AssetBundleObject);
+
+            }
             foreach (var target in BasisSDKConstants.allowedTargets)
             {
+                // Check if the target is already selected
+                bool isSelected = assetBundleObject.selectedTargets.Contains(target);
+
                 Toggle toggle = new Toggle(BasisSDKConstants.targetDisplayNames[target])
                 {
-                    value = true // Set all toggles to true by default
+                    value = isSelected // Set the toggle based on whether the target is in the selected list
                 };
 
                 toggle.RegisterValueChangedCallback(evt =>
                 {
                     if (evt.newValue)
-                        selectedTargets.Add(target);
+                        assetBundleObject.selectedTargets.Add(target);
                     else
-                        selectedTargets.Remove(target);
+                        assetBundleObject.selectedTargets.Remove(target);
                 });
 
                 buildTargetFoldout.Add(toggle);
             }
 
             Button BuildButton = BasisHelpersGizmo.Button(uiElementsRoot, BasisSDKConstants.BuildButton);
-            BuildButton.clicked += () => Build(BuildButton, selectedTargets);
+            BuildButton.clicked += () => Build(BuildButton, assetBundleObject.selectedTargets);
         }
         else
         {

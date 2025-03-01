@@ -45,7 +45,7 @@ public class BasisSDKConstants
         BuildTarget.StandaloneWindows64,
         BuildTarget.StandaloneLinux64,
         BuildTarget.Android,
-       //experimental BuildTarget.iOS,
+        BuildTarget.iOS,
     };
 
     public static Dictionary<BuildTarget, string> targetDisplayNames = new Dictionary<BuildTarget, string>
@@ -53,6 +53,6 @@ public class BasisSDKConstants
         { BuildTarget.StandaloneWindows64, "Windows" },
         { BuildTarget.StandaloneLinux64, "Linux" },
         { BuildTarget.Android, "Android" },
-        //experimental { BuildTarget.iOS, "IOS" },
+        { BuildTarget.iOS, "IOS" },
     };
 }

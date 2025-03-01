@@ -626,3 +626,33 @@ MonoBehaviour:
     HasTrackedRole: 1
     TrackedRole: 19
     HasInteractVisual: 1
+  - DeviceID: Head Tracking - OpenXRCenterEye
+    VersionNumber: 1
+    matchableDeviceIds:
+    - Head Tracking - OpenXRCenterEye
+    HasRayCastSupport: 0
+    CanDisplayPhysicalTracker: 0
+    HasRayCastVisual: 0
+    HasRayCastRedical: 0
+    PositionRayCastOffset: {x: 0, y: 0, z: 0}
+    RotationRaycastOffset: {x: 0, y: 0, z: 0}
+    AvatarPositionOffset: {x: 0, y: 0, z: 0}
+    AvatarRotationOffset: {x: 0, y: 0, z: 0}
+    HasTrackedRole: 1
+    TrackedRole: 0
+    HasInteractVisual: 1
+  - DeviceID: Hand Interaction OpenXRCenterEye
+    VersionNumber: 1
+    matchableDeviceIds:
+    - Hand Interaction OpenXRCenterEye
+    HasRayCastSupport: 0
+    CanDisplayPhysicalTracker: 0
+    HasRayCastVisual: 0
+    HasRayCastRedical: 0
+    PositionRayCastOffset: {x: 0, y: 0, z: 0}
+    RotationRaycastOffset: {x: 0, y: 0, z: 0}
+    AvatarPositionOffset: {x: 0, y: 0, z: 0}
+    AvatarRotationOffset: {x: 0, y: 0, z: 0}
+    HasTrackedRole: 0
+    TrackedRole: 0
+    HasInteractVisual: 1

@@ -23,14 +23,12 @@ public partial class BasisAvatarSDKInspector : Editor
     public Button EventCallbackAvatarBundleButton { get; private set; }
     public Texture2D Texture;
     private Label resultLabel; // Store the result label for later clearing
-    private List<BuildTarget> selectedTargets = new List<BuildTarget>();
     public string Error;
+    public BasisAssetBundleObject assetBundleObject;
     private void OnEnable()
     {
         visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(BasisSDKConstants.AvataruxmlPath);
         Avatar = (BasisAvatar)target;
-        // Initialize selectedTargets with all available targets
-        selectedTargets = new List<BuildTarget>(BasisSDKConstants.allowedTargets);
     }
 
     public override VisualElement CreateInspectorGUI()
@@ -213,25 +211,33 @@ public partial class BasisAvatarSDKInspector : Editor
         // Multi-select dropdown (Foldout with Toggles)
         Foldout buildTargetFoldout = new Foldout { text = "Select Build Targets", value = true }; // Expanded by default
         uiElementsRoot.Add(buildTargetFoldout);
+        if (assetBundleObject == null)
+        {
+            assetBundleObject = AssetDatabase.LoadAssetAtPath<BasisAssetBundleObject>(BasisAssetBundleObject.AssetBundleObject);
+
+        }
 
         foreach (var target in BasisSDKConstants.allowedTargets)
         {
+            // Check if the target is already selected
+            bool isSelected = assetBundleObject.selectedTargets.Contains(target);
+
             Toggle toggle = new Toggle(BasisSDKConstants.targetDisplayNames[target])
             {
-                value = true // Set all toggles to true by default
+                value = isSelected // Set the toggle based on whether the target is in the selected list
             };
 
             toggle.RegisterValueChangedCallback(evt =>
             {
                 if (evt.newValue)
-                    selectedTargets.Add(target);
+                    assetBundleObject.selectedTargets.Add(target);
                 else
-                    selectedTargets.Remove(target);
+                    assetBundleObject.selectedTargets.Remove(target);
             });
 
             buildTargetFoldout.Add(toggle);
         }
-        avatarBundleButton.clicked += () => EventCallbackAvatarBundle(selectedTargets);
+        avatarBundleButton.clicked += () => EventCallbackAvatarBundle(assetBundleObject.selectedTargets);
 
         // Register change events
         eventCallbackAvatarEyePosition += OnEyeHeightValueChanged;

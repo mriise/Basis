@@ -22,7 +22,7 @@ public static class BasisBundleBuild
     public static async Task<(bool, string)> BuildBundle(BasisContentBase basisContentBase, List<BuildTarget> targets, Func<BasisContentBase, BasisAssetBundleObject, string, BuildTarget, Task<(bool, (BasisBundleGenerated, AssetBundleBuilder.InformationHash))>> buildFunction)
     {
         Debug.Log("Starting BuildBundle...");
-
+        EditorUtility.DisplayProgressBar("Starting Bundle Build", "Starting Bundle Build", 0);
         // Store the original active build target
         BuildTarget originalActiveTarget = EditorUserBuildSettings.activeBuildTarget;
 
@@ -62,7 +62,7 @@ public static class BasisBundleBuild
 
             BasisDebug.Log("Adding " + result.Item2.EncyptedPath);
         }
-
+        EditorUtility.DisplayProgressBar("Starting Bundle Build", "Starting Bundle Build", 10);
         // Generate a unique ID and prepare for saving
         string generatedID = BasisGenerateUniqueID.GenerateUniqueID();
         BasisBundleConnector basisBundleConnector = new BasisBundleConnector(generatedID, basisContentBase.BasisBundleDescription, bundles);
@@ -73,8 +73,8 @@ public static class BasisBundleBuild
         };
         string UniqueID = BasisGenerateUniqueID.GenerateUniqueID();
         BasisProgressReport report = new BasisProgressReport();
-      byte[] EncryptedConnector =  await BasisEncryptionWrapper.EncryptDataAsync(UniqueID, BasisbundleconnectorUnEncrypted,BasisPassword, report);
-
+        byte[] EncryptedConnector = await BasisEncryptionWrapper.EncryptDataAsync(UniqueID, BasisbundleconnectorUnEncrypted, BasisPassword, report);
+        EditorUtility.DisplayProgressBar("Starting Bundle Combining", "Starting Bundle Combining", 100);
         await CombineFiles(Path.Combine(assetBundleObject.AssetBundleDirectory, $"{generatedID}{assetBundleObject.BasisEncryptedExtension}"), paths, EncryptedConnector);
         await AssetBundleBuilder.SaveFileAsync(assetBundleObject.AssetBundleDirectory, assetBundleObject.ProtectedPasswordFileName, "txt", hexString);
 
@@ -86,6 +86,7 @@ public static class BasisBundleBuild
         RestoreOriginalBuildTarget(originalActiveTarget);
 
         Debug.Log("Successfully built asset bundle.");
+        EditorUtility.ClearProgressBar();
         return (true, "Success");
     }
 
@@ -167,14 +168,9 @@ public static class BasisBundleBuild
         catch (Exception ex)
         {
             BasisDebug.LogError($"Error combining files: {ex.Message}");
-        }
-        finally
-        {
-            // Clear progress bar
             EditorUtility.ClearProgressBar();
         }
     }
-
     private static async Task AppendFileToOutput(string path, byte[] buffer, FileStream outputStream,int buffersize = 81920)
     {
         using (FileStream inputStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, buffersize, true))

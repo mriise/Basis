@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -19,6 +20,7 @@ public class BasisAssetBundleObject : ScriptableObject
     public BuildTarget BuildTarget = BuildTarget.StandaloneWindows;
     public BuildAssetBundleOptions BuildAssetBundleOptions;
     public string AssetBundleDirectory = "./AssetBundles";
+    public List<BuildTarget> selectedTargets = new List<BuildTarget>(BasisSDKConstants.allowedTargets);
 }
 
 [CustomEditor(typeof(BasisAssetBundleObject))]
@@ -56,6 +58,7 @@ public class BasisAssetBundleObjectEditor : Editor
         assetBundleObject.AssetBundleDirectory = "./AssetBundles";
         assetBundleObject.ProtectedPasswordFileName = "dontuploadmepassword";
         assetBundleObject.BasisEncryptedExtension = ".BEE";
+        assetBundleObject.selectedTargets = new List<BuildTarget>(BasisSDKConstants.allowedTargets);
 
         // Mark the object as dirty to save changes
         EditorUtility.SetDirty(assetBundleObject);
