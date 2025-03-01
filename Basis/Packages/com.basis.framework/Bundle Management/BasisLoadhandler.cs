@@ -177,6 +177,10 @@ public static class BasisLoadHandler
             BasisDebug.Log("Download Store Meta And Bundle", BasisDebug.LogTag.Event);
             output = await BasisBundleManagement.DownloadStoreMetaAndBundle(wrapper, report, cancellationToken);
         }
+        if(output.Item1 == null)
+        {
+            new Exception("missing Bundle Bytes Array");
+        }
         IEnumerable<AssetBundle> AssetBundles = AssetBundle.GetAllLoadedAssetBundles();
         foreach (AssetBundle assetBundle in AssetBundles)
         {

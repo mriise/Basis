@@ -26,7 +26,7 @@ namespace Basis.Scripts.UI.UI_Panels
         public List<BasisLoadableBundle> avatarUrlsRuntime = new List<BasisLoadableBundle>();
         [SerializeField]
         public List<GameObject> createdCopies = new List<GameObject>();
-
+        public CancellationToken CancellationToken = new CancellationToken();
         private async void Start()
         {
             BasisDataStoreAvatarKeys.DisplayKeys();
@@ -111,7 +111,7 @@ namespace Basis.Scripts.UI.UI_Panels
             {
                 if (!BasisLoadHandler.IsMetaDataOnDisc(activeKeys[Index].Url, out var info))
                 {
-                    if (activeKeys[Index].Url != BasisLocalPlayer.DefaultAvatar)
+                    if (activeKeys[Index].Url != BasisLocalPlayer.DefaultAvatar  || activeKeys[Index].Url != string.Empty)
                     {
                         BasisDebug.LogError("Missing File on Disc For " + activeKeys[Index].Url);
                     }
@@ -163,14 +163,14 @@ namespace Basis.Scripts.UI.UI_Panels
                     TextMeshProUGUI buttonText = buttonObject.GetComponentInChildren<TextMeshProUGUI>();
                     if (buttonText != null)
                     {
-                        var wrapper = new BasisTrackedBundleWrapper
+                        BasisTrackedBundleWrapper wrapper = new BasisTrackedBundleWrapper
                         {
                             LoadableBundle = bundle
                         };
 
                         try
                         {
-                            await BasisLoadHandler.HandleBundleAndMetaLoading(wrapper, Report, new CancellationToken());
+                            await BasisLoadHandler.HandleBundleAndMetaLoading(wrapper, Report, CancellationToken);
                             buttonText.text = wrapper.LoadableBundle.BasisBundleConnector.BasisBundleDescription.AssetBundleName;
                         }
                         catch (Exception E)
@@ -199,12 +199,18 @@ namespace Basis.Scripts.UI.UI_Panels
         {
             if (BasisLocalPlayer.Instance != null)
             {
-                var assetMode = avatarLoadRequest.BasisBundleConnector.BasisBundleGenerated[0].AssetMode;
-                var mode = !string.IsNullOrEmpty(assetMode) && byte.TryParse(assetMode, out var result) ? result : (byte)0;
-                await BasisLocalPlayer.Instance.CreateAvatar(mode, avatarLoadRequest);
+                if (avatarLoadRequest.BasisBundleConnector.GetPlatform(out BasisBundleGenerated platformBundle))
+                {
+                    string assetMode = platformBundle.AssetMode;
+                    byte mode = !string.IsNullOrEmpty(assetMode) && byte.TryParse(assetMode, out var result) ? result : (byte)0;
+                    await BasisLocalPlayer.Instance.CreateAvatar(mode, avatarLoadRequest);
+                }
+                else
+                {
+                    BasisDebug.LogError("Missing Platform " + Application.platform);
+                }
             }
         }
-
         public override void DestroyEvent()
         {
             BasisCursorManagement.LockCursor(AvatarSelection);
