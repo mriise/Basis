@@ -127,7 +127,7 @@ public static class BasisBundleBuild
         }
     }
 
-    public static async Task CombineFiles(string outputPath, List<string> bundlePaths, byte[] EncryptedConnector, int bufferSize = 81920)
+    public static async Task CombineFiles(string outputPath, List<string> bundlePaths, byte[] EncryptedConnector, int bufferSize = 327680)
     {
         BasisDebug.Log("Combining files: " + bundlePaths.Count);
 
@@ -171,7 +171,7 @@ public static class BasisBundleBuild
             EditorUtility.ClearProgressBar();
         }
     }
-    private static async Task AppendFileToOutput(string path, byte[] buffer, FileStream outputStream, int bufferSize = 4 * 1024 * 1024)
+    private static async Task AppendFileToOutput(string path, byte[] buffer, FileStream outputStream, int bufferSize = 327680)
     {
         using (FileStream inputStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize,
             FileOptions.SequentialScan | FileOptions.Asynchronous))
