@@ -111,9 +111,20 @@ namespace Basis.Scripts.UI.UI_Panels
             {
                 if (!BasisLoadHandler.IsMetaDataOnDisc(activeKeys[Index].Url, out var info))
                 {
-                    if (activeKeys[Index].Url != BasisLocalPlayer.DefaultAvatar  || activeKeys[Index].Url != string.Empty)
+                    if (activeKeys[Index].Url == BasisLocalPlayer.DefaultAvatar)
                     {
-                        BasisDebug.LogError("Missing File on Disc For " + activeKeys[Index].Url);
+
+                    }
+                    else
+                    {
+                        if (string.IsNullOrEmpty(activeKeys[Index].Url))
+                        {
+                            BasisDebug.LogError("Supplied URL was null or empty!");
+                        }
+                        else
+                        {
+                            BasisDebug.LogError("Missing File on Disc For " + activeKeys[Index].Url);
+                        }
                     }
                     await BasisDataStoreAvatarKeys.RemoveKey(activeKeys[Index]);
                     continue;
@@ -170,8 +181,15 @@ namespace Basis.Scripts.UI.UI_Panels
 
                         try
                         {
-                            await BasisLoadHandler.HandleBundleAndMetaLoading(wrapper, Report, CancellationToken);
-                            buttonText.text = wrapper.LoadableBundle.BasisBundleConnector.BasisBundleDescription.AssetBundleName;
+                            if (bundle.UnlockPassword == BasisLocalPlayer.DefaultAvatar)
+                            {
+                                buttonText.text = BasisLocalPlayer.DefaultAvatar;
+                            }
+                            else
+                            {
+                                await BasisLoadHandler.HandleBundleAndMetaLoading(wrapper, Report, CancellationToken);
+                                buttonText.text = wrapper.LoadableBundle.BasisBundleConnector.BasisBundleDescription.AssetBundleName;
+                            }
                         }
                         catch (Exception E)
                         {
@@ -207,8 +225,19 @@ namespace Basis.Scripts.UI.UI_Panels
                 }
                 else
                 {
-                    BasisDebug.LogError("Missing Platform " + Application.platform);
+                    if (avatarLoadRequest.UnlockPassword == BasisLocalPlayer.DefaultAvatar)
+                    {
+                        await BasisLocalPlayer.Instance.CreateAvatar(1, avatarLoadRequest);
+                    }
+                    else
+                    {
+                        BasisDebug.LogError("Missing Platform " + Application.platform);
+                    }
                 }
+            }
+            else
+            {
+                BasisDebug.LogError("Missing LocalPlayer!");
             }
         }
         public override void DestroyEvent()

@@ -83,8 +83,7 @@ public static class BasisIOManagement
         }
     }
 
-    public static async Task<(BasisBundleConnector, byte[])> ReadBEEFile(
-        string filePath, string vp, BasisProgressReport progressCallback, CancellationToken cancellationToken = default)
+    public static async Task<(BasisBundleConnector, byte[])> ReadBEEFile(string filePath, string vp, BasisProgressReport progressCallback, CancellationToken cancellationToken = default)
     {
         BasisBundleConnector connector;
         byte[] sectionData;
@@ -133,9 +132,7 @@ public static class BasisIOManagement
         return (connector, sectionData);
     }
 
-    public static async Task<byte[]> DownloadFileRange(
-        string url, string localFilePath, BasisProgressReport progressCallback, CancellationToken cancellationToken = default,
-        long startByte = 0, long? endByte = null, bool loadToMemory = false)
+    public static async Task<byte[]> DownloadFileRange(string url, string localFilePath, BasisProgressReport progressCallback, CancellationToken cancellationToken = default,long startByte = 0, long? endByte = null, bool loadToMemory = false)
     {
         BasisDebug.Log($"Starting file download from {url} (Range: {startByte}-{(endByte.HasValue ? endByte.ToString() : "end")})");
         string uniqueID = BasisGenerateUniqueID.GenerateUniqueID();
@@ -186,9 +183,7 @@ public static class BasisIOManagement
         return request;
     }
 
-    private static async Task<byte[]> ProcessDownload(
-        UnityWebRequest request, string uniqueID, BasisProgressReport progressCallback, CancellationToken cancellationToken,
-        string url, string localFilePath, long startByte, long? endByte, bool loadToMemory)
+    private static async Task<byte[]> ProcessDownload(UnityWebRequest request, string uniqueID, BasisProgressReport progressCallback, CancellationToken cancellationToken,string url, string localFilePath, long startByte, long? endByte, bool loadToMemory)
     {
         UnityWebRequestAsyncOperation asyncOperation = request.SendWebRequest();
 

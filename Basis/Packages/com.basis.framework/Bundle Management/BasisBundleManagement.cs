@@ -36,7 +36,7 @@ public static class BasisBundleManagement
         }
         catch (Exception ex)
         {
-            BasisDebug.LogError($"Error during download and processing of meta: {ex.Message} {ex.StackTrace}");
+            BasisDebug.LogError($"Error during download and processing of meta: {ex.Message} {ex.StackTrace} {ex?.InnerException?.StackTrace}");
             return new(null, null);
         }
     }

@@ -25,7 +25,7 @@ namespace Basis.Scripts.UI.UI_Panels
             {
                 keys.Add(newKey);
                 await SaveKeysToFile();
-                BasisDebug.Log($"Key added: {newKey}");
+                BasisDebug.Log($"Key added: {newKey.Url}");
             }
         }
 
