@@ -1,4 +1,78 @@
 <linker>
+
+    <assembly fullname="AudioLink" preserve="all" />
+    <assembly fullname="Basis" preserve="all" />
+    <assembly fullname="Basis.Contrib.Auth.DecentralizedIds" preserve="all" />
+    <assembly fullname="BasisAddressableDriver" preserve="all" />
+    <assembly fullname="BasisCommon" preserve="all" />
+    <assembly fullname="BasisConsoleDisplay" preserve="all" />
+    <assembly fullname="BasisDebug" preserve="all" />
+    <assembly fullname="BasisExamples" preserve="all" />
+    <assembly fullname="BasisGizmos" preserve="all" />
+    <assembly fullname="BasisNetworkClient" preserve="all" />
+    <assembly fullname="BasisNetworkCore" preserve="all" />
+    <assembly fullname="BasisNetworkServer" preserve="all" />
+    <assembly fullname="BasisOpenXR" preserve="all" />
+    <assembly fullname="BasisSDK" preserve="all" />
+    <assembly fullname="BasisSerializer.OdinSerializer" preserve="all" />
+    <assembly fullname="BasisSettings" preserve="all" />
+    <assembly fullname="BattlePhazeSettingsManger" preserve="all" />
+    <assembly fullname="HVR.Basis.Comms" preserve="all" />
+    <assembly fullname="LiteNetLib" preserve="all" />
+    <assembly fullname="Meta.XR.BuildingBlocks" preserve="all" />
+    <assembly fullname="Meta.XR.BuildingBlocks.DepthAPI" preserve="all" />
+    <assembly fullname="Meta.XR.EnvironmentDepth" preserve="all" />
+    <assembly fullname="Meta.XR.ImmersiveDebugger" preserve="all" />
+    <assembly fullname="Meta.XR.ImmersiveDebugger.Interface" preserve="all" />
+    <assembly fullname="Meta.XR.MultiplayerBlocks.Shared" preserve="all" />
+    <assembly fullname="Naelstrof.JigglePhysics" preserve="all" />
+    <assembly fullname="Oculus.VR" preserve="all" />
+    <assembly fullname="OpusIntergration" preserve="all" />
+    <assembly fullname="SettingsManagerModules" preserve="all" />
+    <assembly fullname="SMUniversalRenderPipeline" preserve="all" />
+    <assembly fullname="SteamAudioUnity" preserve="all" />
+    <assembly fullname="uLipSync.Runtime" preserve="all" />
+    <assembly fullname="uLipSync.Samples.Common" preserve="all" />
+    <assembly fullname="uLipSync.Samples.RuntimeSetup.Runtime" preserve="all" />
+    <assembly fullname="uLipSync.Samples.VRM.Runtime" preserve="all" />
+    <assembly fullname="Unity.Addressables" preserve="all" />
+    <assembly fullname="Unity.Animation.Rigging" preserve="all" />
+    <assembly fullname="Unity.Animation.Rigging.DocCodeExamples" preserve="all" />
+    <assembly fullname="Unity.Burst" preserve="all" />
+    <assembly fullname="Unity.Collections" preserve="all" />
+    <assembly fullname="Unity.InputSystem" preserve="all" />
+    <assembly fullname="Unity.InputSystem.ForUI" preserve="all" />
+    <assembly fullname="Unity.Mathematics" preserve="all" />
+    <assembly fullname="Unity.MemoryProfiler" preserve="all" />
+    <assembly fullname="Unity.Profiling.Core" preserve="all" />
+    <assembly fullname="Unity.Rendering.LightTransport.Runtime" preserve="all" />
+    <assembly fullname="Unity.RenderPipeline.Universal.ShaderLibrary" preserve="all" />
+    <assembly fullname="Unity.RenderPipelines.Core.Runtime" preserve="all" />
+    <assembly fullname="Unity.RenderPipelines.Core.Runtime.Shared" preserve="all" />
+    <assembly fullname="Unity.RenderPipelines.Core.ShaderLibrary" preserve="all" />
+    <assembly fullname="Unity.RenderPipelines.GPUDriven.Runtime" preserve="all" />
+    <assembly fullname="Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary" preserve="all" />
+    <assembly fullname="Unity.RenderPipelines.Universal.2D.Runtime" preserve="all" />
+    <assembly fullname="Unity.RenderPipelines.Universal.Config.Runtime" preserve="all" />
+    <assembly fullname="Unity.RenderPipelines.Universal.Runtime" preserve="all" />
+    <assembly fullname="Unity.RenderPipelines.Universal.Shaders" preserve="all" />
+    <assembly fullname="Unity.ResourceManager" preserve="all" />
+    <assembly fullname="Unity.ScriptableBuildPipeline" preserve="all" />
+    <assembly fullname="Unity.TextMeshPro" preserve="all" />
+    <assembly fullname="Unity.Timeline" preserve="all" />
+    <assembly fullname="Unity.VisualEffectGraph.Runtime" preserve="all" />
+    <assembly fullname="Unity.XR.CoreUtils" preserve="all" />
+    <assembly fullname="Unity.XR.Management" preserve="all" />
+    <assembly fullname="Unity.XR.OpenXR" preserve="all" />
+    <assembly fullname="Unity.XR.OpenXR.Features.ConformanceAutomation" preserve="all" />
+    <assembly fullname="Unity.XR.OpenXR.Features.MetaQuestSupport" preserve="all" />
+    <assembly fullname="Unity.XR.OpenXR.Features.MockRuntime" preserve="all" />
+    <assembly fullname="Unity.XR.OpenXR.Features.OculusQuestSupport" preserve="all" />
+    <assembly fullname="Unity.XR.OpenXR.Features.RuntimeDebugger" preserve="all" />
+    <assembly fullname="UnityEngine.SpatialTracking" preserve="all" />
+    <assembly fullname="UnityEngine.UI" preserve="all" />
+	<assembly fullname="UnityEngine" preserve="all" />
+    <assembly fullname="UnityEngine.XR.LegacyInputHelpers" preserve="all" />
 	<!-- Preserve the entire HVR.Basis.Comms assembly -->
 	<assembly fullname="HVR.Basis.Comms" preserve="all" />
 	<assembly fullname="HVR.Basis.Comms">
@@ -14,8 +88,8 @@
 			<type fullname="FeatureNetworking" preserve="all"/>
 		</namespace>
 	</assembly>
-	    <!-- Preserve the entire BasisExamples.dll assembly -->
-    <assembly fullname="BasisExamples.dll" preserve="all" />
+	<!-- Preserve the entire BasisExamples.dll assembly -->
+	<assembly fullname="BasisExamples.dll" preserve="all" />
 
 	<!-- Preserve the entire AudioLink assembly -->
 	<assembly fullname="AudioLink" preserve="all" />
