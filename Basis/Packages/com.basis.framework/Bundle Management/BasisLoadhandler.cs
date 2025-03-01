@@ -184,10 +184,11 @@ public static class BasisLoadHandler
         IEnumerable<AssetBundle> AssetBundles = AssetBundle.GetAllLoadedAssetBundles();
         foreach (AssetBundle assetBundle in AssetBundles)
         {
-            if (assetBundle != null && assetBundle.Contains(output.Item1.AssetToLoadName))
+           string AssetToLoadName = output.Item1.AssetToLoadName;
+            if (assetBundle != null && assetBundle.Contains(AssetToLoadName))
             {
                 wrapper.AssetBundle = assetBundle;
-                BasisDebug.Log("we already have this AssetToLoadName in our loaded bundles using that instead!");
+                BasisDebug.Log($"we already have this AssetToLoadName in our loaded bundles using that instead! {AssetToLoadName}");
                 if (IsMetaOnDisc == false)
                 {
                     OnDiscInformation newDiscInfo = new OnDiscInformation

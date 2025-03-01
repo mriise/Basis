@@ -97,10 +97,10 @@ public static class BasisIOManagement
         using (BinaryReader reader = new BinaryReader(fileStream))
         {
             long fileSize = reader.BaseStream.Length;
-            BasisDebug.Log($"Total Size of File: {fileSize} bytes");
+            //   BasisDebug.Log($"Total Size of File: {fileSize} bytes");
 
             byte[] sizeBytes = reader.ReadBytes(sizeof(int));
-            BasisDebug.Log($"Raw size bytes: {BitConverter.ToString(sizeBytes)}");
+            //   BasisDebug.Log($"Raw size bytes: {BitConverter.ToString(sizeBytes)}");
 
             if (sizeBytes.Length < sizeof(int))
             {
@@ -112,7 +112,7 @@ public static class BasisIOManagement
                 Array.Reverse(sizeBytes);
 
             int connectorSize = BitConverter.ToInt32(sizeBytes, 0);
-            BasisDebug.Log($"Connector size read: {connectorSize}");
+            //  BasisDebug.Log($"Connector size read: {connectorSize}");
 
             if (connectorSize <= 0 || connectorSize > fileSize - reader.BaseStream.Position)
             {
@@ -121,17 +121,16 @@ public static class BasisIOManagement
             }
 
             byte[] connectorBytes = reader.ReadBytes(connectorSize);
-            BasisDebug.Log($"Read Connector file size: {connectorBytes.Length}");
+            //  BasisDebug.Log($"Read Connector file size: {connectorBytes.Length}");
 
             connector = await BasisEncryptionToData.GenerateMetaFromBytes(vp, connectorBytes, progressCallback);
 
             long remainingBytes = fileSize - reader.BaseStream.Position;
             sectionData = reader.ReadBytes((int)remainingBytes);
-            BasisDebug.Log($"Read section length: {sectionData.Length}");
+            //  BasisDebug.Log($"Read section length: {sectionData.Length}");
         }
         return (connector, sectionData);
     }
-
     public static async Task<byte[]> DownloadFileRange(string url, string localFilePath, BasisProgressReport progressCallback, CancellationToken cancellationToken = default,long startByte = 0, long? endByte = null, bool loadToMemory = false)
     {
         BasisDebug.Log($"Starting file download from {url} (Range: {startByte}-{(endByte.HasValue ? endByte.ToString() : "end")})");

@@ -501,7 +501,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
-  m_PresetInfoIsWorld: 0
+  m_PresetInfoIsWorld: 1
 --- !u!114 &3843996678262047675
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -551,6 +551,30 @@ MonoBehaviour:
       LocalConnectorPath: LoadingAvatar
     BasisBundleConnector:
       UniqueVersion: LoadingAvatar
+      BasisBundleDescription:
+        AssetBundleName: 
+        AssetBundleDescription: 
+      BasisBundleGenerated: []
+  - UnlockPassword: 020bbc7e5979ad17c76861d3cd7d1852796f4f0892be6b7b1d3e117eb58901b6
+    BasisRemoteBundleEncrypted:
+      IsLocal: 1
+      CombinedURL: https://BasisFramework.b-cdn.net/Avatars/BEE/BEE/Dooly%26Peechiu/1342fd73ce5d4bd9a8344e373c5b7d9020250301.BEE
+    BasisLocalEncryptedBundle:
+      LocalConnectorPath: https://BasisFramework.b-cdn.net/Avatars/BEE/BEE/Dooly%26Peechiu/1342fd73ce5d4bd9a8344e373c5b7d9020250301.BEE
+    BasisBundleConnector:
+      UniqueVersion: 
+      BasisBundleDescription:
+        AssetBundleName: 
+        AssetBundleDescription: 
+      BasisBundleGenerated: []
+  - UnlockPassword: 57010aaf35d7ed7ebcad86ec34fcf15607519a5b652a6b8a3057d27b60b9f393
+    BasisRemoteBundleEncrypted:
+      IsLocal: 1
+      CombinedURL: https://BasisFramework.b-cdn.net/Avatars/BEE/BEE/Dooly%26Peechiu/1fad23a63de34ae9a722122ff63d265620250301.BEE
+    BasisLocalEncryptedBundle:
+      LocalConnectorPath: https://BasisFramework.b-cdn.net/Avatars/BEE/BEE/Dooly%26Peechiu/1fad23a63de34ae9a722122ff63d265620250301.BEE
+    BasisBundleConnector:
+      UniqueVersion: 
       BasisBundleDescription:
         AssetBundleName: 
         AssetBundleDescription: 
