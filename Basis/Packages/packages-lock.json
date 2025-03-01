@@ -489,7 +489,7 @@
       }
     },
     "org.basisvr.contrib.crypto": {
-      "version": "file:C:/Users/doola/OneDrive/Documents/Github/Basis Foundation/Basis Unity/Contrib/Crypto",
+      "version": "file:../../Contrib/Crypto",
       "depth": 0,
       "source": "local",
       "dependencies": {
