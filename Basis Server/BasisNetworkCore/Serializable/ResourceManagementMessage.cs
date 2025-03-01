@@ -15,8 +15,7 @@ public static partial class SerializableBasis
         /// </summary>
         public string LoadedNetID;
         public string UnlockPassword;
-        public string MetaURL;
-        public string BundleURL;
+        public string CombinedURL;
         public bool IsLocalLoad;
 
         public float PositionX;
@@ -45,8 +44,7 @@ public static partial class SerializableBasis
             Mode = Writer.GetByte();
             LoadedNetID = Writer.GetString();
             UnlockPassword = Writer.GetString();
-            MetaURL = Writer.GetString();
-            BundleURL = Writer.GetString();
+            CombinedURL = Writer.GetString();
             IsLocalLoad = Writer.GetBool();
             Persist = Writer.GetBool();
             ModifyScale = Writer.GetBool();
@@ -71,8 +69,7 @@ public static partial class SerializableBasis
             Writer.Put(Mode);
             Writer.Put(LoadedNetID);
             Writer.Put(UnlockPassword);
-            Writer.Put(MetaURL);
-            Writer.Put(BundleURL);
+            Writer.Put(CombinedURL);
             Writer.Put(IsLocalLoad);
             Writer.Put(Persist);
             Writer.Put(ModifyScale);

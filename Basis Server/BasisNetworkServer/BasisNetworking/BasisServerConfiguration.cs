@@ -62,7 +62,7 @@ public class Configuration
             return config;
         }
 
-        BNL.LogWarning($"{filePath} not found, creating with default values");
+        BNL.Log($"{filePath} not found, creating with default values");
 
         var defaultConfig = new Configuration();
         using var writer = new StreamWriter(filePath);
