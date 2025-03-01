@@ -171,9 +171,10 @@ public static class BasisBundleBuild
             EditorUtility.ClearProgressBar();
         }
     }
-    private static async Task AppendFileToOutput(string path, byte[] buffer, FileStream outputStream,int buffersize = 81920)
+    private static async Task AppendFileToOutput(string path, byte[] buffer, FileStream outputStream, int bufferSize = 4 * 1024 * 1024)
     {
-        using (FileStream inputStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, buffersize, true))
+        using (FileStream inputStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize,
+            FileOptions.SequentialScan | FileOptions.Asynchronous))
         {
             int bytesRead;
             while ((bytesRead = await inputStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
@@ -181,9 +182,6 @@ public static class BasisBundleBuild
                 await outputStream.WriteAsync(buffer, 0, bytesRead);
             }
         }
-
-        // Ensure the written data is flushed
-        await outputStream.FlushAsync();
     }
     public static string PathConversion(string relativePath)
     {
