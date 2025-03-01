@@ -1,10 +1,12 @@
 #nullable enable
 
+using Basis.Contrib.Crypto;
 using Newtonsoft.Json;
+using SigningAlgorithm = Basis.Contrib.Crypto.SigningAlgorithm;
 
 namespace Basis.Contrib.Auth.DecentralizedIds
 {
-	public class JsonWebKey
+	public sealed class JsonWebKey
 	{
 		[JsonProperty("kty")]
 		public string? Kty { get; set; }
@@ -18,10 +20,11 @@ namespace Basis.Contrib.Auth.DecentralizedIds
 		[JsonProperty("use")]
 		public string? Use { get; set; }
 
-		// Ed25519 parameters
+		/// Public portion
 		[JsonProperty("x")]
 		public string? X { get; set; }
 
+		/// Private portion
 		[JsonProperty("d")]
 		public string? D { get; set; }
 
@@ -47,6 +50,31 @@ namespace Basis.Contrib.Auth.DecentralizedIds
 		public static JsonWebKey? Deserialize(string json)
 		{
 			return JsonConvert.DeserializeObject<JsonWebKey>(json, SerializerSettings);
+		}
+
+		/// Returns null if the algorithm is unknown.
+		public SigningAlgorithm? GetAlgorithm()
+		{
+			if (K == "OKP" && Crv == "Ed25519")
+			{
+				return SigningAlgorithm.Ed25519;
+			}
+			return null;
+		}
+
+		public Pubkey DecodePubkey()
+		{
+			return new Pubkey(Base64UrlSafe.Decode(X ?? ""));
+		}
+
+		public Privkey DecodePrivkey()
+		{
+			return new Privkey(Base64UrlSafe.Decode(D ?? ""));
+		}
+
+		public bool IsPubkey()
+		{
+			return D is null;
 		}
 	}
 }
