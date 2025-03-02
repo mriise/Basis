@@ -47,12 +47,12 @@ public class SMModuleRenderResolutionURP : SettingsManagerOption
             {
                 if (NameReturn(2, Option))
                 {
-                    BasisDebug.Log("Changing Foveated Rendering");
+                   // BasisDebug.Log("Changing Foveated Rendering");
                     SubsystemManager.GetSubsystems<XRDisplaySubsystem>(xrDisplays);
 
                     if (xrDisplays.Count  == 0)
                     {
-                        BasisDebug.LogError("No XR display subsystems found.");
+                   //     BasisDebug.LogError("No XR display subsystems found.");
                         return;
                     }
                     foreach (var subsystem in xrDisplays)
@@ -66,7 +66,7 @@ public class SMModuleRenderResolutionURP : SettingsManagerOption
                     xrDisplaySubsystem.foveatedRenderingFlags = XRDisplaySubsystem.FoveatedRenderingFlags.GazeAllowed;
                     if (SliderReadOption(Option, Manager, out float Value))
                     {
-                        BasisDebug.Log("Changing Foveated Rendering to " + Value);
+                      //  BasisDebug.Log("Changing Foveated Rendering to " + Value);
                         xrDisplaySubsystem.foveatedRenderingLevel = Value;
                     }
                 }
