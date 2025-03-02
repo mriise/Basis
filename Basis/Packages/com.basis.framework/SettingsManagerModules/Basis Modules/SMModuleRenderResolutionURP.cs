@@ -26,7 +26,7 @@ public class SMModuleRenderResolutionURP : SettingsManagerOption
     {
         if (NameReturn(0, Option))
         {
-           // BasisDebug.Log("Render Resolution");
+            // BasisDebug.Log("Render Resolution");
             UniversalRenderPipelineAsset Asset = (UniversalRenderPipelineAsset)QualitySettings.renderPipeline;
             if (XRSettings.useOcclusionMesh == false)
             {
@@ -47,20 +47,35 @@ public class SMModuleRenderResolutionURP : SettingsManagerOption
             {
                 if (NameReturn(2, Option))
                 {
-                    SubsystemManager.GetSubsystems(xrDisplays);
-                    if (xrDisplays.Count == 1)
+                    BasisDebug.Log("Changing Foveated Rendering");
+                    SubsystemManager.GetSubsystems<XRDisplaySubsystem>(xrDisplays);
+
+                    if (xrDisplays.Count  == 0)
                     {
-                        if (SliderReadOption(Option, Manager, out float Value))
+                        BasisDebug.LogError("No XR display subsystems found.");
+                        return;
+                    }
+                    foreach (var subsystem in xrDisplays)
+                    {
+                        if (subsystem.running)
                         {
-                            xrDisplays[0].foveatedRenderingLevel = Value; // Full strength
-                            xrDisplays[0].foveatedRenderingFlags = XRDisplaySubsystem.FoveatedRenderingFlags.GazeAllowed;
+                            xrDisplaySubsystem = subsystem;
+                            break;
                         }
+                    }
+                    xrDisplaySubsystem.foveatedRenderingFlags = XRDisplaySubsystem.FoveatedRenderingFlags.GazeAllowed;
+                    if (SliderReadOption(Option, Manager, out float Value))
+                    {
+                        BasisDebug.Log("Changing Foveated Rendering to " + Value);
+                        xrDisplaySubsystem.foveatedRenderingLevel = Value;
                     }
                 }
             }
         }
     }
     public float RenderScale = 1;
+    private XRDisplaySubsystem xrDisplaySubsystem;
+
     public void SetRenderResolution(float renderScale)
     {
 #if UNITY_ANDROID

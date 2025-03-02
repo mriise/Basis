@@ -1,4 +1,4 @@
-using System;
+using UnityEngine;
 
 namespace BattlePhaze.SettingsManager
 {
@@ -7,23 +7,41 @@ namespace BattlePhaze.SettingsManager
         public static void DynamicExecution(int OptionIndex, SettingsManager Manager, int CurrentIndex)
         {
             if (Manager == null)
-                throw new ArgumentNullException(nameof(Manager), "SettingsManager instance cannot be null.");
+            {
+                Debug.LogError("SettingsManager instance cannot be null.");
+                return;
+            }
 
             if (Manager.Options == null)
-                throw new ArgumentNullException(nameof(Manager.Options), "Options list cannot be null.");
+            {
+                Debug.LogError("Options list cannot be null.");
+                return;
+            }
 
             if (OptionIndex < 0 || OptionIndex >= Manager.Options.Count)
-                throw new ArgumentOutOfRangeException(nameof(OptionIndex), "OptionIndex is out of range.");
+            {
+                Debug.LogError($"OptionIndex {OptionIndex} is out of range for ");
+                return;
+            }
 
             var option = Manager.Options[OptionIndex];
             if (option == null)
-                throw new ArgumentNullException(nameof(option), "Option cannot be null.");
+            {
+                Debug.LogError($"Option at index {OptionIndex} is null.");
+                return;
+            }
 
             if (option.SelectableValueList == null)
-                throw new ArgumentNullException(nameof(option.SelectableValueList), "SelectableValueList cannot be null.");
+            {
+                Debug.LogError($"SelectableValueList for option '{option.Name}' is null.");
+                return;
+            }
 
             if (CurrentIndex < 0 || CurrentIndex >= option.SelectableValueList.Count)
-                throw new ArgumentOutOfRangeException(nameof(CurrentIndex), "CurrentIndex is out of range.");
+            {
+                Debug.LogError($"CurrentIndex {CurrentIndex} is out of range for option '{option.Name}'.");
+                return;
+            }
 
             option.SelectedValue = option.SelectableValueList[CurrentIndex]?.RealValue;
 

@@ -1999,7 +1999,7 @@ MonoBehaviour:
       EditorVisable: 1
     SupportedRenderPipeline: 030000000400000000000000
     Round: 0
-    RoundTo: 1
+    RoundTo: 0
     MaxPercentage: 100
     MinPercentage: 0
     SliderMaxValue: 1
@@ -2018,11 +2018,11 @@ MonoBehaviour:
     PlatFormDefaultState:
     - Platform: 11
       GraphicsVendor: 0
-      SetString: 0.75
+      SetString: 0
     ExcludeFromThesePlatforms: []
     MasterQualityState: 0
     ParseController: 1
-    ReturnedValueTextType: 0
+    ReturnedValueTextType: 1
     SelectableValueList: []
   - EditorBasedUIToggles:
       SupportedRenderPipelines: 1
