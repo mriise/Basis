@@ -8,7 +8,7 @@ namespace JigglePhysics
     {
         private static T instance;
 
-        protected static List<IJiggleAdvancable> jiggleRigs;
+        protected static List<IJiggleAdvancable> jiggleRigs = new List<IJiggleAdvancable>();
         protected static IJiggleAdvancable[] jiggleRigsArray;
         protected static int JiggleRigCount;
         private static void CreateInstanceIfNeeded()
