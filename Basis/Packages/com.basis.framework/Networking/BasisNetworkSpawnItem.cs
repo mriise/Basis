@@ -14,9 +14,9 @@ using static SerializableBasis;
 
 public static class BasisNetworkSpawnItem
 {
-    public static bool RequestSceneLoad(string UnlockPassword, string BundleURL, string MetaURL, bool IsLocal, bool Persist, out LocalLoadResource localLoadResource)
+    public static bool RequestSceneLoad(string UnlockPassword, string CombinedURL, bool IsLocal, bool Persist, out LocalLoadResource localLoadResource)
     {
-        if (string.IsNullOrEmpty(BundleURL) || string.IsNullOrEmpty(MetaURL) || string.IsNullOrEmpty(UnlockPassword))
+        if (string.IsNullOrEmpty(CombinedURL) || string.IsNullOrEmpty(UnlockPassword))
         {
             BasisDebug.Log("Invalid parameters for scene load request.", BasisDebug.LogTag.Networking);
             localLoadResource = new LocalLoadResource();
@@ -29,9 +29,8 @@ public static class BasisNetworkSpawnItem
         {
             LoadedNetID = BasisGenerateUniqueID.GenerateUniqueID(),
             Mode = 1,
-            BundleURL = BundleURL,
+            CombinedURL = CombinedURL,
             UnlockPassword = UnlockPassword,
-            MetaURL = MetaURL,
             IsLocalLoad = IsLocal,
             Persist = Persist,
         };
@@ -45,9 +44,9 @@ public static class BasisNetworkSpawnItem
         return true;
     }
 
-    public static bool RequestGameObjectLoad(string UnlockPassword, string BundleURL, string MetaURL, bool IsLocal, Vector3 Position, Quaternion Rotation, Vector3 Scale, bool Persistent,bool ModifysScale, out LocalLoadResource LocalLoadResource)
+    public static bool RequestGameObjectLoad(string UnlockPassword, string CombinedURL, bool IsLocal, Vector3 Position, Quaternion Rotation, Vector3 Scale, bool Persistent,bool ModifysScale, out LocalLoadResource LocalLoadResource)
     {
-        if (string.IsNullOrEmpty(BundleURL) || string.IsNullOrEmpty(MetaURL) || string.IsNullOrEmpty(UnlockPassword))
+        if (string.IsNullOrEmpty(CombinedURL) || string.IsNullOrEmpty(UnlockPassword))
         {
             BasisDebug.Log("Invalid parameters for GameObject load request.", BasisDebug.LogTag.Networking);
             LocalLoadResource = new LocalLoadResource();
@@ -60,9 +59,8 @@ public static class BasisNetworkSpawnItem
         {
             LoadedNetID = BasisGenerateUniqueID.GenerateUniqueID(),
             Mode = 0,
-            BundleURL = BundleURL,
+            CombinedURL = CombinedURL,
             UnlockPassword = UnlockPassword,
-            MetaURL = MetaURL,
             IsLocalLoad = IsLocal,
             PositionX = Position.x,
             PositionY = Position.y,
@@ -138,7 +136,7 @@ public static class BasisNetworkSpawnItem
             BasisRemoteBundleEncrypted = new BasisRemoteEncyptedBundle()
             {
                 IsLocal = localLoadResource.IsLocalLoad,
-                CombinedURL = localLoadResource.MetaURL
+                CombinedURL = localLoadResource.CombinedURL
             },
             UnlockPassword = localLoadResource.UnlockPassword,
         };
@@ -172,7 +170,7 @@ public static class BasisNetworkSpawnItem
             BasisRemoteBundleEncrypted = new BasisRemoteEncyptedBundle()
             {
                 IsLocal = localLoadResource.IsLocalLoad,
-                CombinedURL = localLoadResource.MetaURL
+                CombinedURL = localLoadResource.CombinedURL
             },
             UnlockPassword = localLoadResource.UnlockPassword,
         };
