@@ -1,83 +1,10 @@
-using Basis.Scripts.Drivers;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
-using UnityEngine;
 
 namespace Basis.Scripts.Networking.Recievers
 {
-    public partial class BasisAudioReceiverBase
-    {
-        [SerializeField]
-        public BasisAudioDecoder decoder;
-        [SerializeField]
-        public AudioSource audioSource;
-        [SerializeField]
-        public BasisAudioAndVisemeDriver visemeDriver;
-        [SerializeField]
-        public RingBuffer RingBuffer;
-        public int samplingFrequency;
-        public int numChannels;
-        public int SampleLength;
-        public bool IsPlaying = false;
-        public void OnDecoded()
-        {
-            OnDecoded(decoder.pcmBuffer, decoder.pcmLength);
-        }
-        public void StopAudio()
-        {
-            IsPlaying = false;
-        //    audioSource.enabled = false;
-            audioSource.Stop();
-        }
-        public void StartAudio()
-        {
-            IsPlaying = true;
-          //  audioSource.enabled = true;
-            audioSource.Play();
-        }
-        public void OnDecoded(float[] pcm, int length)
-        {
-            RingBuffer.Add(pcm, length);
-        }
-        public int OnAudioFilterRead(float[] data, int channels)
-        {
-            // Ensure we have enough data for the required samples
-            int length = data.Length;
-            int frames = length / channels; // Number of audio frames
-
-            // If no data in the buffer, clear the output
-            if (RingBuffer.IsEmpty)
-            {
-                // No voice data, fill with silence
-                Array.Fill(data, 0);
-                return length;
-            }
-
-            // Retrieve the segment of audio data from the RingBuffer
-            RingBuffer.Remove(frames, out float[] segment);
-
-            // Apply the filter: multiply the existing data by the generated samples
-            for (int i = 0; i < frames; i++)
-            {
-                float sample = segment[i]; // Single-channel sample from the RingBuffer
-
-                for (int c = 0; c < channels; c++)
-                {
-                    int index = i * channels + c;
-
-                    // Multiply existing data with the sample
-                    data[index] *= sample;
-                }
-            }
-
-            // Return the processed segment back to the buffer for reuse
-            RingBuffer.BufferedReturn.Enqueue(segment);
-            return length;
-        }
-    }
-    public class RingBuffer
+    public class BasisVoiceRingBuffer
     {
         private readonly float[] buffer;
         private int head; // Points to the next position to write
@@ -86,7 +13,7 @@ namespace Basis.Scripts.Networking.Recievers
         private readonly object bufferLock = new();
         public Queue<float[]> BufferedReturn = new Queue<float[]>();
 
-        public RingBuffer(int capacity)
+        public BasisVoiceRingBuffer(int capacity)
         {
             if (capacity <= 0) throw new ArgumentException("Capacity must be greater than zero.");
             buffer = new float[capacity];

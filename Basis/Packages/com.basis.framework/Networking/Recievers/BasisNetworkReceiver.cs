@@ -251,7 +251,7 @@ namespace Basis.Scripts.Networking.Recievers
             if (AudioReceiverModule.decoder != null)
             {
                 BasisNetworkProfiler.ServerAudioSegmentMessageCounter.Sample(audioSegment.audioSegmentData.LengthUsed);
-                AudioReceiverModule.decoder.OnDecode(audioSegment.audioSegmentData.buffer, audioSegment.audioSegmentData.LengthUsed);
+                AudioReceiverModule.OnDecode(audioSegment.audioSegmentData.buffer, audioSegment.audioSegmentData.LengthUsed);
                 Player.AudioReceived?.Invoke(true);
             }
         }
@@ -259,13 +259,13 @@ namespace Basis.Scripts.Networking.Recievers
         {
             if (AudioReceiverModule.decoder != null)
             {
-                if (silentData == null || silentData.Length != AudioReceiverModule.decoder.FakepcmLength)
+                if (silentData == null || silentData.Length != RemoteOpusSettings.Pcmlength)
                 {
-                    silentData = new float[AudioReceiverModule.decoder.FakepcmLength];
+                    silentData = new float[RemoteOpusSettings.Pcmlength];
                     Array.Fill(silentData, 0f);
                 }
                 BasisNetworkProfiler.ServerAudioSegmentMessageCounter.Sample(1);
-                AudioReceiverModule.OnDecoded(silentData, AudioReceiverModule.decoder.FakepcmLength);
+                AudioReceiverModule.OnDecoded(silentData, RemoteOpusSettings.Pcmlength);
                 Player.AudioReceived?.Invoke(false);
             }
         }
@@ -331,12 +331,6 @@ namespace Basis.Scripts.Networking.Recievers
                 PositionFilters = positionFilters,
                 DerivativeFilters = derivativeFilters,
             };
-        }
-        private float Alpha(float cutoff)
-        {
-            float te = 1.0f / (1.0f / interpolationTime);
-            float tau = 1.0f / (2.0f * Mathf.PI * cutoff);
-            return 1.0f / (1.0f + tau / te);
         }
         public void OnCalibration()
         {

@@ -1999,7 +1999,7 @@ MonoBehaviour:
       EditorVisable: 1
     SupportedRenderPipeline: 030000000400000000000000
     Round: 0
-    RoundTo: 1
+    RoundTo: 0
     MaxPercentage: 100
     MinPercentage: 0
     SliderMaxValue: 1
@@ -2018,11 +2018,11 @@ MonoBehaviour:
     PlatFormDefaultState:
     - Platform: 11
       GraphicsVendor: 0
-      SetString: 0.75
+      SetString: 0
     ExcludeFromThesePlatforms: []
     MasterQualityState: 0
     ParseController: 1
-    ReturnedValueTextType: 0
+    ReturnedValueTextType: 1
     SelectableValueList: []
   - EditorBasedUIToggles:
       SupportedRenderPipelines: 1
@@ -2830,10 +2830,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Selector: {fileID: 11400000, guid: 8393424ebf34934449c2d1309a700837, type: 2}
   DefaultScene:
-    UnlockPassword: 5fbc8c55167d21cc1b57b65724492bfa11b0b71f32eac99f5af03d40e85ccb67
+    UnlockPassword: 
     BasisRemoteBundleEncrypted:
       IsLocal: 0
-      CombinedURL: https://BasisFramework.b-cdn.net/Worlds/BEE/ff15e73c52f34d9b9026e264d5744fea20250301.BEE
+      CombinedURL: 
     BasisLocalEncryptedBundle:
       LocalConnectorPath: 
     BasisBundleConnector:
@@ -2856,4 +2856,4 @@ MonoBehaviour:
         AssetBundleDescription: 
       BasisBundleGenerated: []
   UseAddressablesToLoadScene: 0
-  UseSceneProvidedHere: 1
+  UseSceneProvidedHere: 0

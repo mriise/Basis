@@ -19,15 +19,12 @@ public class BasisTestNetworkScene : MonoBehaviour
     public bool IsPersistent;
     public string ScenePassword = "Scene";
     public string SceneMetaUrl = "https://BasisFramework.b-cdn.net/Worlds/DX11/3dd6aa45-a685-4ed2-ba6d-2d9c2f3c1765_638652274774362697.BasisEncyptedMeta";
-    public string SceneBundleUrl = "https://BasisFramework.b-cdn.net/Worlds/DX11/3dd6aa45-a685-4ed2-ba6d-2d9c2f3c1765_638652274774362697.BasisEncyptedBundle";
 
     public string GameobjectPassword = "862eb77aa76d193284a806f040deb6c6b9d4866bef63f7c829237d524fb979d2";
     public string GameobjectMetaUrl = "https://BasisFramework.b-cdn.net/Props/DX11/NetworkedTestPickup/ec0fdd4d-9eb2-467c-9b52-40f05932f859_638736352879974628.BasisEncyptedMeta";
-    public string GameobjectBundleUrl = "https://BasisFramework.b-cdn.net/Props/DX11/NetworkedTestPickup/ec0fdd4d-9eb2-467c-9b52-40f05932f859_638736352879974628.BasisEncyptedBundle";
 
     public string PropPassword = "28d6240548cae8229e169777686b4b967ca23b924abb96565823206989795215";
     public string PropMetaUrl = "https://BasisFramework.b-cdn.net/Props/DX11/90516234-6412-4a1e-a45f-c3f8dfbd7071_638735227126189132.BasisEncyptedMeta";
-    public string PropBundleUrl = "https://BasisFramework.b-cdn.net/Props/DX11/90516234-6412-4a1e-a45f-c3f8dfbd7071_638735227126189132.BasisEncyptedBundle";
     public bool OverrideSpawnPosition;
     public Vector3 Position;
     public bool ModifyScale = false;
@@ -49,21 +46,18 @@ public class BasisTestNetworkScene : MonoBehaviour
         if (SceneLoadTest)
         {
             BasisNetworkSpawnItem.RequestSceneLoad(ScenePassword,
-               SceneBundleUrl,
                SceneMetaUrl,
                false, IsPersistent, out Scene);
         }
         if (GameobjectLoadTest)
         {
             BasisNetworkSpawnItem.RequestGameObjectLoad(GameobjectPassword,
-                 GameobjectBundleUrl,
                  GameobjectMetaUrl,
                  false, Position, Quaternion.identity, Vector3.one, IsPersistent, ModifyScale, out Gameobject);
         }
         if (PropLoadTest)
         {
             BasisNetworkSpawnItem.RequestGameObjectLoad(PropPassword,
-                 PropBundleUrl,
                  PropMetaUrl,
                  false, Position, Quaternion.identity, Vector3.one, IsPersistent, ModifyScale, out Gameobject);
         }

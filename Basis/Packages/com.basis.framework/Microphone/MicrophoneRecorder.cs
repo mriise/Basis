@@ -26,19 +26,6 @@ public partial class MicrophoneRecorder : MicrophoneRecorderBase
     {
         if (!IsInitialize)
         {
-            processBufferArray = BasisOpusSettings.CalculateProcessBuffer();
-            PBA = new NativeArray<float>(processBufferArray, Allocator.Persistent);
-            VAJ = new LogarithmicVolumeAdjustmentJob
-            {
-                processBufferArray = PBA,
-                Volume = Volume
-            };
-            ProcessBufferLength = processBufferArray.Length;
-            samplingFrequency = BasisOpusSettings.GetSampleFreq();
-            microphoneBufferArray = new float[BasisOpusSettings.RecordingFullLength * samplingFrequency];
-            rmsValues = new float[rmsWindowSize];
-            bufferLength = microphoneBufferArray.Length;
-            PacketSize = ProcessBufferLength * 4;
             if (!HasEvents)
             {
                 SMDMicrophone.OnMicrophoneChanged += ResetMicrophones;
@@ -47,10 +34,8 @@ public partial class MicrophoneRecorder : MicrophoneRecorderBase
                 BasisDeviceManagement.Instance.OnBootModeChanged += OnBootModeChanged;
                 HasEvents = true;
             }
-            ChangeMicrophoneVolume(SMDMicrophone.SelectedVolumeMicrophone);
             ResetMicrophones(SMDMicrophone.SelectedMicrophone);
             ConfigureDenoiser(SMDMicrophone.SelectedDenoiserMicrophone);
-
             StartProcessingThread();  // Start the processing thread once
             IsInitialize = true;
             return true;
@@ -86,7 +71,8 @@ public partial class MicrophoneRecorder : MicrophoneRecorderBase
     {
         ResetMicrophones(SMDMicrophone.SelectedMicrophone);
     }
-
+    public int minFreq = 48000;
+    public int maxFreq = 48000;
     public void ResetMicrophones(string newMicrophone)
     {
         if (string.IsNullOrEmpty(newMicrophone))
@@ -115,8 +101,25 @@ public partial class MicrophoneRecorder : MicrophoneRecorderBase
             if (!IsPaused)
             {
                 BasisDebug.Log("Starting Microphone :" + newMicrophone);
-                clip = Microphone.Start(newMicrophone, true, BasisOpusSettings.RecordingFullLength, samplingFrequency);
+
+                Microphone.GetDeviceCaps(newMicrophone, out minFreq, out maxFreq);
+                LocalOpusSettings.SetDeviceAudioConfig(maxFreq);
+
+                clip = Microphone.Start(newMicrophone, true, LocalOpusSettings.RecordingFullLength, LocalOpusSettings.MicrophoneSampleRate);
+                microphoneBufferArray = new float[LocalOpusSettings.RecordingFullLength * LocalOpusSettings.MicrophoneSampleRate];
                 MicrophoneIsStarted = true;
+                processBufferArray = LocalOpusSettings.CalculateProcessBuffer();
+                PBA = new NativeArray<float>(processBufferArray, Allocator.Persistent);
+                VAJ = new LogarithmicVolumeAdjustmentJob
+                {
+                    processBufferArray = PBA,
+                    Volume = Volume
+                };
+                ProcessBufferLength = processBufferArray.Length;
+                rmsValues = new float[LocalOpusSettings.rmsWindowSize];
+                bufferLength = microphoneBufferArray.Length;
+                PacketSize = ProcessBufferLength * 4;
+                ChangeMicrophoneVolume(SMDMicrophone.SelectedVolumeMicrophone);
             }
             else
             {
@@ -349,11 +352,11 @@ public partial class MicrophoneRecorder : MicrophoneRecorderBase
     {
         float rms = GetRMS();
         rmsValues[rmsIndex] = rms;
-        rmsIndex = (rmsIndex + 1) % rmsWindowSize;
+        rmsIndex = (rmsIndex + 1) % LocalOpusSettings.rmsWindowSize;
         averageRms = rmsValues.Average();
     }
     public bool IsTransmitWorthy()
     {
-        return averageRms > silenceThreshold;
+        return averageRms > LocalOpusSettings.silenceThreshold;
     }
 }
