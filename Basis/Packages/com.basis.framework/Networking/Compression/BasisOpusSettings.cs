@@ -21,7 +21,7 @@ public static class LocalOpusSettings
     }
     public static int SampleRate()
     {
-      return (int) Mathf.CeilToInt(DesiredDurationInSeconds * MicrophoneSampleRate);
+      return Mathf.CeilToInt(DesiredDurationInSeconds * MicrophoneSampleRate);
     }
     public static float[] CalculateProcessBuffer()
     {
