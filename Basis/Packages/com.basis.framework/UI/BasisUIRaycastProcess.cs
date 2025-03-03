@@ -66,7 +66,7 @@ public class BasisUIRaycastProcess
             {
                 EventSystem.current.SetSelectedGameObject(null, null);
             }
-
+             DevicesCount = Inputs.Count;
             for (int Index = 0; Index < DevicesCount; Index++)
             {
                 BasisInput input = Inputs[Index];
