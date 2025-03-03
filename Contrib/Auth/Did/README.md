@@ -5,10 +5,4 @@ Serves as the home for authentication based on Decentralized Identifiers
 
 ## How to use
 
-```csharp
-using Basis.Contrib.Auth.DecentralizedIds;
-
-// First, we instantiate the authentication
-var cfg = new Config();
-var didAuth = new DidAuthentication(cfg);
-```
+See the `ServerExample.cs` test in Did.Tests.
