@@ -376,7 +376,7 @@ public class PlayerInteract : MonoBehaviour
         }
         else
         {
-            BasisDebug.LogError("Interact Inputs has multiple inputs of the same UID. Please report this bug.");
+            BasisDebug.LogError($"Interact Inputs has multiple inputs of the same UID {uid}. Please report this bug.");
         }
     }
 

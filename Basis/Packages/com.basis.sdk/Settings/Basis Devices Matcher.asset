@@ -319,6 +319,81 @@ MonoBehaviour:
     HasTrackedRole: 1
     TrackedRole: 19
     HasInteractVisual: 1
+  - DeviceID: '{standable}/rendermodels/Estimated/sfbePelvis'
+    VersionNumber: 1
+    matchableDeviceIds:
+    - '{standable}/rendermodels/Estimated/sfbePelvis'
+    HasRayCastSupport: 1
+    CanDisplayPhysicalTracker: 0
+    HasRayCastVisual: 1
+    HasRayCastRedical: 1
+    PositionRayCastOffset: {x: 0, y: 0, z: 0}
+    RotationRaycastOffset: {x: 0, y: 0, z: 0}
+    AvatarPositionOffset: {x: 0, y: 0, z: 0}
+    AvatarRotationOffset: {x: 0, y: 0, z: 0}
+    HasTrackedRole: 0
+    TrackedRole: 0
+    HasInteractVisual: 1
+  - DeviceID: '{standable}/rendermodels/Estimated/sfbeFoot'
+    VersionNumber: 1
+    matchableDeviceIds:
+    - '{standable}/rendermodels/Estimated/sfbeFoot'
+    HasRayCastSupport: 1
+    CanDisplayPhysicalTracker: 0
+    HasRayCastVisual: 1
+    HasRayCastRedical: 1
+    PositionRayCastOffset: {x: 0, y: 0, z: 0}
+    RotationRaycastOffset: {x: 0, y: 0, z: 0}
+    AvatarPositionOffset: {x: 0, y: 0, z: 0}
+    AvatarRotationOffset: {x: 0, y: 0, z: 0}
+    HasTrackedRole: 0
+    TrackedRole: 0
+    HasInteractVisual: 1
+  - DeviceID: '{standable}/rendermodels/Estimated/sfbeChest'
+    VersionNumber: 1
+    matchableDeviceIds:
+    - '{standable}/rendermodels/Estimated/sfbeChest'
+    HasRayCastSupport: 1
+    CanDisplayPhysicalTracker: 0
+    HasRayCastVisual: 1
+    HasRayCastRedical: 1
+    PositionRayCastOffset: {x: 0, y: 0, z: 0}
+    RotationRaycastOffset: {x: 0, y: 0, z: 0}
+    AvatarPositionOffset: {x: 0, y: 0, z: 0}
+    AvatarRotationOffset: {x: 0, y: 0, z: 0}
+    HasTrackedRole: 0
+    TrackedRole: 0
+    HasInteractVisual: 1
+  - DeviceID: '{standable}/rendermodels/Estimated/sfbeElbow'
+    VersionNumber: 1
+    matchableDeviceIds:
+    - '{standable}/rendermodels/Estimated/sfbeElbow'
+    HasRayCastSupport: 1
+    CanDisplayPhysicalTracker: 0
+    HasRayCastVisual: 1
+    HasRayCastRedical: 1
+    PositionRayCastOffset: {x: 0, y: 0, z: 0}
+    RotationRaycastOffset: {x: 0, y: 0, z: 0}
+    AvatarPositionOffset: {x: 0, y: 0, z: 0}
+    AvatarRotationOffset: {x: 0, y: 0, z: 0}
+    HasTrackedRole: 0
+    TrackedRole: 0
+    HasInteractVisual: 1
+  - DeviceID: '{standable}/rendermodels/Estimated/sfbeKnee'
+    VersionNumber: 1
+    matchableDeviceIds:
+    - '{standable}/rendermodels/Estimated/sfbeKnee'
+    HasRayCastSupport: 1
+    CanDisplayPhysicalTracker: 0
+    HasRayCastVisual: 1
+    HasRayCastRedical: 1
+    PositionRayCastOffset: {x: 0, y: 0, z: 0}
+    RotationRaycastOffset: {x: 0, y: 0, z: 0}
+    AvatarPositionOffset: {x: 0, y: 0, z: 0}
+    AvatarRotationOffset: {x: 0, y: 0, z: 0}
+    HasTrackedRole: 0
+    TrackedRole: 0
+    HasInteractVisual: 1
   BackedUpDevices:
   - DeviceID: vr_tracker_vive_3_0
     VersionNumber: 1
@@ -601,7 +676,7 @@ MonoBehaviour:
     matchableDeviceIds:
     - Left Hand OPENXR
     HasRayCastSupport: 1
-    CanDisplayPhysicalTracker: 0
+    CanDisplayPhysicalTracker: 1
     HasRayCastVisual: 1
     HasRayCastRedical: 1
     PositionRayCastOffset: {x: 0, y: 0, z: 0}
@@ -616,7 +691,7 @@ MonoBehaviour:
     matchableDeviceIds:
     - Right Hand OPENXR
     HasRayCastSupport: 1
-    CanDisplayPhysicalTracker: 0
+    CanDisplayPhysicalTracker: 1
     HasRayCastVisual: 1
     HasRayCastRedical: 1
     PositionRayCastOffset: {x: 0, y: 0, z: 0}
@@ -625,4 +700,79 @@ MonoBehaviour:
     AvatarRotationOffset: {x: -60, y: -30, z: 0}
     HasTrackedRole: 1
     TrackedRole: 19
+    HasInteractVisual: 1
+  - DeviceID: '{standable}/rendermodels/Estimated/sfbePelvis'
+    VersionNumber: 1
+    matchableDeviceIds:
+    - '{standable}/rendermodels/Estimated/sfbePelvis'
+    HasRayCastSupport: 1
+    CanDisplayPhysicalTracker: 0
+    HasRayCastVisual: 1
+    HasRayCastRedical: 1
+    PositionRayCastOffset: {x: 0, y: 0, z: 0}
+    RotationRaycastOffset: {x: 0, y: 0, z: 0}
+    AvatarPositionOffset: {x: 0, y: 0, z: 0}
+    AvatarRotationOffset: {x: 0, y: 0, z: 0}
+    HasTrackedRole: 0
+    TrackedRole: 0
+    HasInteractVisual: 1
+  - DeviceID: '{standable}/rendermodels/Estimated/sfbeFoot'
+    VersionNumber: 1
+    matchableDeviceIds:
+    - '{standable}/rendermodels/Estimated/sfbeFoot'
+    HasRayCastSupport: 1
+    CanDisplayPhysicalTracker: 0
+    HasRayCastVisual: 1
+    HasRayCastRedical: 1
+    PositionRayCastOffset: {x: 0, y: 0, z: 0}
+    RotationRaycastOffset: {x: 0, y: 0, z: 0}
+    AvatarPositionOffset: {x: 0, y: 0, z: 0}
+    AvatarRotationOffset: {x: 0, y: 0, z: 0}
+    HasTrackedRole: 0
+    TrackedRole: 0
+    HasInteractVisual: 1
+  - DeviceID: '{standable}/rendermodels/Estimated/sfbeChest'
+    VersionNumber: 1
+    matchableDeviceIds:
+    - '{standable}/rendermodels/Estimated/sfbeChest'
+    HasRayCastSupport: 1
+    CanDisplayPhysicalTracker: 0
+    HasRayCastVisual: 1
+    HasRayCastRedical: 1
+    PositionRayCastOffset: {x: 0, y: 0, z: 0}
+    RotationRaycastOffset: {x: 0, y: 0, z: 0}
+    AvatarPositionOffset: {x: 0, y: 0, z: 0}
+    AvatarRotationOffset: {x: 0, y: 0, z: 0}
+    HasTrackedRole: 0
+    TrackedRole: 0
+    HasInteractVisual: 1
+  - DeviceID: '{standable}/rendermodels/Estimated/sfbeElbow'
+    VersionNumber: 1
+    matchableDeviceIds:
+    - '{standable}/rendermodels/Estimated/sfbeElbow'
+    HasRayCastSupport: 1
+    CanDisplayPhysicalTracker: 0
+    HasRayCastVisual: 1
+    HasRayCastRedical: 1
+    PositionRayCastOffset: {x: 0, y: 0, z: 0}
+    RotationRaycastOffset: {x: 0, y: 0, z: 0}
+    AvatarPositionOffset: {x: 0, y: 0, z: 0}
+    AvatarRotationOffset: {x: 0, y: 0, z: 0}
+    HasTrackedRole: 0
+    TrackedRole: 0
+    HasInteractVisual: 1
+  - DeviceID: '{standable}/rendermodels/Estimated/sfbeKnee'
+    VersionNumber: 1
+    matchableDeviceIds:
+    - '{standable}/rendermodels/Estimated/sfbeKnee'
+    HasRayCastSupport: 1
+    CanDisplayPhysicalTracker: 0
+    HasRayCastVisual: 1
+    HasRayCastRedical: 1
+    PositionRayCastOffset: {x: 0, y: 0, z: 0}
+    RotationRaycastOffset: {x: 0, y: 0, z: 0}
+    AvatarPositionOffset: {x: 0, y: 0, z: 0}
+    AvatarRotationOffset: {x: 0, y: 0, z: 0}
+    HasTrackedRole: 0
+    TrackedRole: 0
     HasInteractVisual: 1
