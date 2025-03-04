@@ -1,7 +1,7 @@
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Device_Management.Devices.OpenXR;
 using Basis.Scripts.TransformBinders.BoneControl;
-using System;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using static BasisBaseMuscleDriver;
@@ -152,7 +152,17 @@ namespace Basis.Scripts.Device_Management.Devices.UnityInputSystem
             {
                 InputState.Trigger = Trigger.action.ReadValue<float>();
             }
+            if (hasRoleAssigned)
+            {
+                if (Control.HasTracked != BasisHasTracked.HasNoTracker)
+                {
+                    // Apply position offset using math.mul for quaternion-vector multiplication
+                    Control.IncomingData.position = FinalPosition - math.mul(FinalRotation, AvatarPositionOffset * BasisLocalPlayer.Instance.CurrentHeight.EyeRatioAvatarToAvatarDefaultScale);
 
+                    // Apply rotation offset using math.mul for quaternion multiplication
+                    Control.IncomingData.rotation = math.mul(FinalRotation, Quaternion.Euler(AvatarRotationOffset));
+                }
+            }
             CalculateFingerCurls();
             UpdatePlayerControl();
         }

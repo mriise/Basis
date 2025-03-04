@@ -9,7 +9,7 @@ using UnityEngine.InputSystem;
 namespace Basis.Scripts.Device_Management.Devices.UnityInputSystem
 {
     [Serializable]
-    public class BasisUnityInputManagement : BasisBaseTypeManagement
+    public class BasisOpenXRManagement : BasisBaseTypeManagement
     {
         public List<InputDevice> inputDevices = new List<InputDevice>();
         public Dictionary<string, InputDevice> TypicalDevices = new Dictionary<string, InputDevice>();
@@ -86,7 +86,7 @@ namespace Basis.Scripts.Device_Management.Devices.UnityInputSystem
             var basisXRInput = gameObject.AddComponent<BasisOpenXRControllerInput>();
             basisXRInput.ClassName = nameof(BasisOpenXRControllerInput);
             bool state = GetControllerOrHMD(device, out BasisBoneTrackedRole BasisBoneTrackedRole);
-            basisXRInput.Initialize(device, uniqueID, device.name + BasisBoneTrackedRole.ToString(), nameof(BasisUnityInputManagement), state, BasisBoneTrackedRole);
+            basisXRInput.Initialize(device, uniqueID, device.name + BasisBoneTrackedRole.ToString(), nameof(BasisOpenXRManagement), state, BasisBoneTrackedRole);
             BasisDeviceManagement.Instance.TryAdd(basisXRInput);
         }
 
@@ -144,7 +144,7 @@ namespace Basis.Scripts.Device_Management.Devices.UnityInputSystem
 
         public override string Type()
         {
-            return "UnityInputLoader";
+            return "OpenXRLoader";
         }
     }
 }
