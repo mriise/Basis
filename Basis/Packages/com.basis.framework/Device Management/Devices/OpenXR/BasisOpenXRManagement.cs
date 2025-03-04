@@ -2,18 +2,14 @@ using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.TransformBinders.BoneControl;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.XR;
-
 namespace Basis.Scripts.Device_Management.Devices.UnityInputSystem
 {
     [Serializable]
     public class BasisOpenXRManagement : BasisBaseTypeManagement
     {
         List<BasisInput> controls = new List<BasisInput>();
-        private void CreatePhysicalhandTracker(string device, string uniqueID, BasisBoneTrackedRole Role)
+        private void CreatePhysicalHandTracker(string device, string uniqueID, BasisBoneTrackedRole Role)
         {
             var gameObject = new GameObject(uniqueID)
             {
@@ -67,8 +63,8 @@ namespace Basis.Scripts.Device_Management.Devices.UnityInputSystem
             BasisDeviceManagement.Instance.SetCameraRenderState(true);
             BasisDebug.Log("Starting " + nameof(BasisOpenXRManagement));
             CreatePhysicalHeadTracker("Head OPENXR", "Head OPENXR");
-            CreatePhysicalhandTracker("Left Hand OPENXR", "Left Hand OPENXR", BasisBoneTrackedRole.LeftHand);
-            CreatePhysicalhandTracker("Right Hand OPENXR", "Right Hand OPENXR", BasisBoneTrackedRole.RightHand);
+            CreatePhysicalHandTracker("Left Hand OPENXR", "Left Hand OPENXR", BasisBoneTrackedRole.LeftHand);
+            CreatePhysicalHandTracker("Right Hand OPENXR", "Right Hand OPENXR", BasisBoneTrackedRole.RightHand);
         }
 
         public override string Type()

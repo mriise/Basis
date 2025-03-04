@@ -294,7 +294,7 @@ MonoBehaviour:
     matchableDeviceIds:
     - Left Hand OPENXR
     HasRayCastSupport: 1
-    CanDisplayPhysicalTracker: 0
+    CanDisplayPhysicalTracker: 1
     HasRayCastVisual: 1
     HasRayCastRedical: 1
     PositionRayCastOffset: {x: 0, y: 0, z: 0}
@@ -309,7 +309,7 @@ MonoBehaviour:
     matchableDeviceIds:
     - Right Hand OPENXR
     HasRayCastSupport: 1
-    CanDisplayPhysicalTracker: 0
+    CanDisplayPhysicalTracker: 1
     HasRayCastVisual: 1
     HasRayCastRedical: 1
     PositionRayCastOffset: {x: 0, y: 0, z: 0}
@@ -607,7 +607,7 @@ MonoBehaviour:
     PositionRayCastOffset: {x: 0, y: 0, z: 0}
     RotationRaycastOffset: {x: 0, y: 0, z: 0}
     AvatarPositionOffset: {x: 0, y: 0, z: 0}
-    AvatarRotationOffset: {x: 0, y: 0, z: 0}
+    AvatarRotationOffset: {x: -60, y: 30, z: 0}
     HasTrackedRole: 1
     TrackedRole: 18
     HasInteractVisual: 1
@@ -622,7 +622,7 @@ MonoBehaviour:
     PositionRayCastOffset: {x: 0, y: 0, z: 0}
     RotationRaycastOffset: {x: 0, y: 0, z: 0}
     AvatarPositionOffset: {x: 0, y: 0, z: 0}
-    AvatarRotationOffset: {x: 0, y: 0, z: 0}
+    AvatarRotationOffset: {x: -60, y: -30, z: 0}
     HasTrackedRole: 1
     TrackedRole: 19
     HasInteractVisual: 1

@@ -1,9 +1,11 @@
 using Basis.Scripts.BasisSdk.Players;
+using Basis.Scripts.Device_Management;
 using Basis.Scripts.Device_Management.Devices;
 using Basis.Scripts.Device_Management.Devices.OpenXR;
 using Basis.Scripts.TransformBinders.BoneControl;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using UnityEngine.InputSystem;
 
 public class BasisOpenXRHeadInput : BasisInput
@@ -63,5 +65,39 @@ public class BasisOpenXRHeadInput : BasisInput
         }
 
         UpdatePlayerControl();
+    }
+    public override void ShowTrackedVisual()
+    {
+        if (BasisVisualTracker == null && LoadedDeviceRequest == null)
+        {
+            BasisDeviceMatchSettings Match = BasisDeviceManagement.Instance.BasisDeviceNameMatcher.GetAssociatedDeviceMatchableNames(CommonDeviceIdentifier);
+            if (Match.CanDisplayPhysicalTracker)
+            {
+                var op = Addressables.LoadAssetAsync<GameObject>(Match.DeviceID);
+                GameObject go = op.WaitForCompletion();
+                GameObject gameObject = Object.Instantiate(go);
+                gameObject.name = CommonDeviceIdentifier;
+                gameObject.transform.parent = this.transform;
+                if (gameObject.TryGetComponent(out BasisVisualTracker))
+                {
+                    BasisVisualTracker.Initialization(this);
+                }
+            }
+            else
+            {
+                if (UseFallbackModel())
+                {
+                    UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<GameObject> op = Addressables.LoadAssetAsync<GameObject>(FallbackDeviceID);
+                    GameObject go = op.WaitForCompletion();
+                    GameObject gameObject = Object.Instantiate(go);
+                    gameObject.name = CommonDeviceIdentifier;
+                    gameObject.transform.parent = this.transform;
+                    if (gameObject.TryGetComponent(out BasisVisualTracker))
+                    {
+                        BasisVisualTracker.Initialization(this);
+                    }
+                }
+            }
+        }
     }
 }

@@ -44,7 +44,6 @@ namespace Basis.Scripts.Device_Management.Devices
         public BasisInputState InputState = new BasisInputState();
         [SerializeField]
         public BasisInputState LastState = new BasisInputState();
-        public BasisGeneralLocation GeneralLocation;
         public static BasisBoneTrackedRole[] CanHaveMultipleRoles = new BasisBoneTrackedRole[] { BasisBoneTrackedRole.LeftHand, BasisBoneTrackedRole.RightHand };
         public bool TryGetRole(out BasisBoneTrackedRole BasisBoneTrackedRole)
         {
@@ -396,40 +395,7 @@ namespace Basis.Scripts.Device_Management.Devices
         {
             InputState.CopyTo(LastState);
         }
-        public void ShowTrackedVisual()
-        {
-            if (BasisVisualTracker == null && LoadedDeviceRequest == null)
-            {
-                BasisDeviceMatchSettings Match = BasisDeviceManagement.Instance.BasisDeviceNameMatcher.GetAssociatedDeviceMatchableNames(CommonDeviceIdentifier);
-                if (Match.CanDisplayPhysicalTracker)
-                {
-                    var op = Addressables.LoadAssetAsync<GameObject>(Match.DeviceID);
-                    GameObject go = op.WaitForCompletion();
-                    GameObject gameObject = Object.Instantiate(go);
-                    gameObject.name = CommonDeviceIdentifier;
-                    gameObject.transform.parent = this.transform;
-                    if (gameObject.TryGetComponent(out BasisVisualTracker))
-                    {
-                        BasisVisualTracker.Initialization(this);
-                    }
-                }
-                else
-                {
-                    if (UseFallbackModel())
-                    {
-                        UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<GameObject> op = Addressables.LoadAssetAsync<GameObject>(FallbackDeviceID);
-                        GameObject go = op.WaitForCompletion();
-                        GameObject gameObject = Object.Instantiate(go);
-                        gameObject.name = CommonDeviceIdentifier;
-                        gameObject.transform.parent = this.transform;
-                        if (gameObject.TryGetComponent(out BasisVisualTracker))
-                        {
-                            BasisVisualTracker.Initialization(this);
-                        }
-                    }
-                }
-            }
-        }
+        public abstract void ShowTrackedVisual();
         public bool UseFallbackModel()
         {
             if (hasRoleAssigned == false)

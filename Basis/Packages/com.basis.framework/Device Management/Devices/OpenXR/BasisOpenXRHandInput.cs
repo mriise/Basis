@@ -5,13 +5,18 @@ using static BasisBaseMuscleDriver;
 using UnityEngine.InputSystem;
 using Unity.Mathematics;
 using Basis.Scripts.BasisSdk.Players;
-using System;
+using Basis.Scripts.Device_Management;
+using UnityEngine.AddressableAssets;
+using UnityEngine.XR;
+using System.Collections.Generic;
 
 public class BasisOpenXRHandInput : BasisInput
 {
     public FingerPose FingerCurls;
-    public InputActionProperty Position;
-    public InputActionProperty Rotation;
+    public InputActionProperty DevicePosition;
+    public InputActionProperty DeviceRotation;
+    public InputActionProperty PalmPosition;
+    public InputActionProperty PalmRotation;
     public InputActionProperty Trigger;
     public InputActionProperty Grip;
     public InputActionProperty PrimaryButton;
@@ -26,11 +31,17 @@ public class BasisOpenXRHandInput : BasisInput
         string devicePath = basisBoneTrackedRole == BasisBoneTrackedRole.LeftHand ? "<XRController>{LeftHand}" : "<XRController>{RightHand}";
         string DevicePalmPath = basisBoneTrackedRole == BasisBoneTrackedRole.LeftHand ? "<PalmPose>{LeftHand}" : "<PalmPose>{RightHand}";
         SetupInputActions(devicePath);
-        Position = new InputActionProperty(new InputAction($"{DevicePalmPath}/devicePosition", InputActionType.Value, $"{DevicePalmPath}/devicePosition", expectedControlType: "Vector3"));
-        Rotation = new InputActionProperty(new InputAction($"{DevicePalmPath}/deviceRotation", InputActionType.Value, $"{DevicePalmPath}/deviceRotation", expectedControlType: "Quaternion"));
+        PalmPosition = new InputActionProperty(new InputAction($"{DevicePalmPath}/devicePosition", InputActionType.Value, $"{DevicePalmPath}/devicePosition", expectedControlType: "Vector3"));
+        PalmRotation = new InputActionProperty(new InputAction($"{DevicePalmPath}/deviceRotation", InputActionType.Value, $"{DevicePalmPath}/deviceRotation", expectedControlType: "Quaternion"));
 
-        Position.action.Enable();
-        Rotation.action.Enable();
+        PalmPosition.action.Enable();
+        PalmRotation.action.Enable();
+
+        DevicePosition = new InputActionProperty(new InputAction($"{devicePath}/devicePosition", InputActionType.Value, $"{devicePath}/devicePosition", expectedControlType: "Vector3"));
+        DeviceRotation = new InputActionProperty(new InputAction($"{devicePath}/deviceRotation", InputActionType.Value, $"{devicePath}/deviceRotation", expectedControlType: "Quaternion"));
+
+        DevicePosition.action.Enable();
+        DeviceRotation.action.Enable();
     }
     private void SetupInputActions(string devicePath)
     {
@@ -53,8 +64,8 @@ public class BasisOpenXRHandInput : BasisInput
 
     private void EnableInputActions()
     {
-        EnableInputAction(Position);
-        EnableInputAction(Rotation);
+        EnableInputAction(PalmPosition);
+        EnableInputAction(PalmRotation);
         EnableInputAction(Trigger);
         EnableInputAction(Grip);
         EnableInputAction(PrimaryButton);
@@ -66,8 +77,8 @@ public class BasisOpenXRHandInput : BasisInput
 
     private void DisableInputActions()
     {
-        DisableInputAction(Position);
-        DisableInputAction(Rotation);
+        DisableInputAction(PalmPosition);
+        DisableInputAction(PalmRotation);
         DisableInputAction(Trigger);
         DisableInputAction(Grip);
         DisableInputAction(PrimaryButton);
@@ -85,11 +96,15 @@ public class BasisOpenXRHandInput : BasisInput
         DisableInputActions();
         base.OnDestroy();
     }
-
+    public Vector3 deviceposition;
+    public Quaternion deviceRotation;
     public override void DoPollData()
     {
-        LocalRawPosition = Position.action.ReadValue<Vector3>();
-         LocalRawRotation = Rotation.action.ReadValue<Quaternion>();
+        LocalRawPosition = PalmPosition.action.ReadValue<Vector3>();
+         LocalRawRotation = PalmRotation.action.ReadValue<Quaternion>();
+
+        deviceposition = DevicePosition.action.ReadValue<Vector3>();
+        deviceRotation = DeviceRotation.action.ReadValue<Quaternion>();
 
         FinalPosition = BasisLocalPlayer.Instance?.CurrentHeight != null
             ? LocalRawPosition * BasisLocalPlayer.Instance.CurrentHeight.EyeRatioAvatarToAvatarDefaultScale
@@ -128,5 +143,97 @@ public class BasisOpenXRHandInput : BasisInput
         FingerCurls.MiddlePercentage = new Vector2(InputState.PrimaryButtonGetState ? -1f : 0.7f, 0);
         FingerCurls.RingPercentage = new Vector2(InputState.SecondaryButtonGetState ? -1f : 0.7f, 0);
         FingerCurls.LittlePercentage = new Vector2(InputState.SystemOrMenuButton ? 1 - 1f : 0.7f, 0);
+    }
+    public override void ShowTrackedVisual()
+    {
+        if (BasisVisualTracker == null && LoadedDeviceRequest == null)
+        {
+            BasisDeviceMatchSettings Match = BasisDeviceManagement.Instance.BasisDeviceNameMatcher.GetAssociatedDeviceMatchableNames(CommonDeviceIdentifier);
+            if (Match.CanDisplayPhysicalTracker)
+            {
+                InputDeviceCharacteristics Hand = InputDeviceCharacteristics.None;
+                if (TryGetRole(out BasisBoneTrackedRole HandRole))
+                {
+                    switch (HandRole)
+                    {
+                        case BasisBoneTrackedRole.LeftHand:
+                            Hand = InputDeviceCharacteristics.Left;
+                            break;
+                        case BasisBoneTrackedRole.RightHand:
+                            Hand = InputDeviceCharacteristics.Right;
+                            break;
+                        default:
+                            useFallback();
+                            return;
+                    }
+                    InputDeviceCharacteristics input = Hand | InputDeviceCharacteristics.Controller;
+                    List<UnityEngine.XR.InputDevice> inputDevices = new List<UnityEngine.XR.InputDevice>();
+                    InputDevices.GetDevicesWithCharacteristics(input, inputDevices);
+                    if (inputDevices.Count != 0)
+                    {
+                        UnityEngine.XR.InputDevice Device = inputDevices[0];
+                        string LoadRequest;
+                        string HandString = Hand.ToString().ToLower();
+                        switch (Device.name)
+                        {
+                            case "Oculus Touch Controller OpenXR":
+                                LoadRequest = $"oculus_quest_plus_controller_{HandString}";
+                                break;
+                            case "Valve Index Controller OpenXR":
+                                LoadRequest = $"valve_controller_knu_{HandString}";
+                                break;
+                            case "Meta Quest Touch Pro Controller OpenXR":
+                                LoadRequest = $"oculus_quest_pro_controller_{HandString}";
+                                break;
+                            case "Meta Quest Touch Plus Controller OpenXR":
+                                LoadRequest = $"oculus_quest_plus_controller_{HandString}";
+                                break;
+                            default:
+                                LoadRequest = $"valve_controller_knu_{HandString}";
+                                break;
+                        }
+
+                        BasisDebug.Log("name was found to be "+ LoadRequest + " for device " + Device.name + " picked from " + inputDevices.Count, BasisDebug.LogTag.Device);
+
+                        var op = Addressables.LoadAssetAsync<GameObject>(LoadRequest);
+                        GameObject go = op.WaitForCompletion();
+                        GameObject gameObject = Object.Instantiate(go);
+                        gameObject.name = CommonDeviceIdentifier;
+                        gameObject.transform.parent = this.transform;
+                        if (gameObject.TryGetComponent(out BasisVisualTracker))
+                        {
+                            BasisVisualTracker.Initialization(this);
+                        }
+                    }
+                    else
+                    {
+                        useFallback();
+                    }
+                }
+                else
+                {
+                    useFallback();
+                }
+            }
+            else
+            {
+                if (UseFallbackModel())
+                {
+                    useFallback();
+                }
+            }
+        }
+    }
+    public void useFallback()
+    {
+        UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<GameObject> op = Addressables.LoadAssetAsync<GameObject>(FallbackDeviceID);
+        GameObject go = op.WaitForCompletion();
+        GameObject gameObject = Object.Instantiate(go);
+        gameObject.name = CommonDeviceIdentifier;
+        gameObject.transform.parent = this.transform;
+        if (gameObject.TryGetComponent(out BasisVisualTracker))
+        {
+            BasisVisualTracker.Initialization(this);
+        }
     }
 }
