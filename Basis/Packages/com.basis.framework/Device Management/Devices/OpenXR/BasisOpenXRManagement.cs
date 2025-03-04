@@ -5,76 +5,15 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.XR;
 
 namespace Basis.Scripts.Device_Management.Devices.UnityInputSystem
 {
     [Serializable]
     public class BasisOpenXRManagement : BasisBaseTypeManagement
     {
-        public List<InputDevice> inputDevices = new List<InputDevice>();
-        public Dictionary<string, InputDevice> TypicalDevices = new Dictionary<string, InputDevice>();
-        public bool HasEvents = false;
-
-        private void OnEnable()
-        {
-            InputSystem.onDeviceChange += OnDeviceChanged;
-        }
-
-        private void OnDisable()
-        {
-            InputSystem.onDeviceChange -= OnDeviceChanged;
-        }
-
-        private void OnDeviceChanged(InputDevice device, InputDeviceChange change)
-        {
-            switch (change)
-            {
-                case InputDeviceChange.Added:
-                    UpdateDeviceList();
-                    break;
-                case InputDeviceChange.Removed:
-                    UpdateDeviceList();
-                    break;
-                case InputDeviceChange.ConfigurationChanged:
-                    Debug.Log($"Device Configuration Changed: {device.name}");
-                    break;
-            }
-        }
-
-        private void UpdateDeviceList()
-        {
-            inputDevices = InputSystem.devices.ToList();
-
-            foreach (var device in inputDevices)
-            {
-                if (device != null)
-                {
-                    string id = GenerateID(device);
-                    if (id.Contains("OpenXR"))
-                    {
-                        if (!TypicalDevices.ContainsKey(id))
-                        {
-                            CreatePhysicalTrackedDevice(device, id);
-                            TypicalDevices[id] = device;
-                        }
-                    }
-                }
-            }
-
-            var keysToRemove = TypicalDevices.Keys.Where(id => !inputDevices.Contains(TypicalDevices[id])).ToList();
-            foreach (var key in keysToRemove)
-            {
-                DestroyPhysicalTrackedDevice(key);
-                TypicalDevices.Remove(key);
-            }
-        }
-
-        private string GenerateID(InputDevice device)
-        {
-            return $"{device.name}|{device.deviceId}";
-        }
-
-        private void CreatePhysicalTrackedDevice(InputDevice device, string uniqueID)
+        List<BasisInput> controls = new List<BasisInput>();
+        private void CreatePhysicalhandTracker(string device, string uniqueID, BasisBoneTrackedRole Role)
         {
             var gameObject = new GameObject(uniqueID)
             {
@@ -83,47 +22,40 @@ namespace Basis.Scripts.Device_Management.Devices.UnityInputSystem
                     parent = BasisLocalPlayer.Instance.LocalBoneDriver.transform
                 }
             };
-            var basisXRInput = gameObject.AddComponent<BasisOpenXRControllerInput>();
-            basisXRInput.ClassName = nameof(BasisOpenXRControllerInput);
-            bool state = GetControllerOrHMD(device, out BasisBoneTrackedRole BasisBoneTrackedRole);
-            basisXRInput.Initialize(device, uniqueID, device.name + BasisBoneTrackedRole.ToString(), nameof(BasisOpenXRManagement), state, BasisBoneTrackedRole);
+            BasisOpenXRHandInput basisXRInput = gameObject.AddComponent<BasisOpenXRHandInput>();
+            basisXRInput.ClassName = nameof(BasisOpenXRHandInput);
+            basisXRInput.Initialize(uniqueID, device, nameof(BasisOpenXRManagement), true, Role);
             BasisDeviceManagement.Instance.TryAdd(basisXRInput);
+            controls.Add(basisXRInput);
         }
-
-        private bool GetControllerOrHMD(InputDevice device, out BasisBoneTrackedRole BasisBoneTrackedRole)
+        private void CreatePhysicalHeadTracker(string device, string uniqueID)
         {
-            BasisBoneTrackedRole = BasisBoneTrackedRole.CenterEye;
-            if (device is UnityEngine.InputSystem.XR.XRController)
+            var gameObject = new GameObject(uniqueID)
             {
-                BasisBoneTrackedRole = device.description.manufacturer.Contains("Left") ? BasisBoneTrackedRole.LeftHand : BasisBoneTrackedRole.RightHand;
-                return true;
-            }
-            else if (device is UnityEngine.InputSystem.XR.XRHMD)
-            {
-                BasisBoneTrackedRole = BasisBoneTrackedRole.CenterEye;
-                return true;
-            }
-            return false;
+                transform =
+                {
+                    parent = BasisLocalPlayer.Instance.LocalBoneDriver.transform
+                }
+            };
+            BasisOpenXRHeadInput basisXRInput = gameObject.AddComponent<BasisOpenXRHeadInput>();
+            basisXRInput.ClassName = nameof(BasisOpenXRHeadInput);
+            basisXRInput.Initialize(uniqueID, device, nameof(BasisOpenXRManagement), true);
+            BasisDeviceManagement.Instance.TryAdd(basisXRInput);
+            controls.Add(basisXRInput);
         }
-
         public void DestroyPhysicalTrackedDevice(string id)
         {
-            TypicalDevices.Remove(id);
-            BasisDeviceManagement.Instance.RemoveDevicesFrom("BasisUnityInputManagement", id);
+            BasisDeviceManagement.Instance.RemoveDevicesFrom(nameof(BasisOpenXRManagement), id);
         }
 
         public override void StopSDK()
         {
-            BasisDebug.Log("Stopping BasisUnityInputManagement");
-            foreach (var device in TypicalDevices.Keys.ToList())
+            BasisDebug.Log("Stopping " + nameof(BasisOpenXRManagement));
+            foreach (var device in controls)
             {
-                DestroyPhysicalTrackedDevice(device);
+                DestroyPhysicalTrackedDevice(device.UniqueDeviceIdentifier);
             }
-            if (HasEvents)
-            {
-                InputSystem.onDeviceChange -= OnDeviceChanged;
-                HasEvents = false;
-            }
+            controls.Clear();
         }
 
         public override void BeginLoadSDK()
@@ -133,13 +65,10 @@ namespace Basis.Scripts.Device_Management.Devices.UnityInputSystem
         public override void StartSDK()
         {
             BasisDeviceManagement.Instance.SetCameraRenderState(true);
-            BasisDebug.Log("Starting BasisUnityInputManagement");
-            if (!HasEvents)
-            {
-                InputSystem.onDeviceChange += OnDeviceChanged;
-                HasEvents = true;
-            }
-            UpdateDeviceList();
+            BasisDebug.Log("Starting " + nameof(BasisOpenXRManagement));
+            CreatePhysicalHeadTracker("Head OPENXR", "Head OPENXR");
+            CreatePhysicalhandTracker("Left Hand OPENXR", "Left Hand OPENXR", BasisBoneTrackedRole.LeftHand);
+            CreatePhysicalhandTracker("Right Hand OPENXR", "Right Hand OPENXR", BasisBoneTrackedRole.RightHand);
         }
 
         public override string Type()
