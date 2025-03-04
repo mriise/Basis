@@ -7,7 +7,6 @@ using SteamAudio;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
-using UnityEngine.UI;
 using UnityEngine.XR;
 using Vector3 = UnityEngine.Vector3;
 using BattlePhaze.SettingsManager;

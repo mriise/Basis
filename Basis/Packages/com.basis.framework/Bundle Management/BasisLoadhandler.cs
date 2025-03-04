@@ -373,14 +373,5 @@ public static class BasisLoadHandler
         {
             File.Delete(bundle.LocalConnectorPath);
         }
-        /* here LD
-        BasisEncryptionToData.GenerateBundleFromFile(, bundle.LocalConnectorPath,bundle);
-
-        bundle.LocalConnectorPath
-        if (File.Exists(bundle.LocalBundleFile))
-        {
-            File.Delete(bundle.LocalBundleFile);
-        }
-        */
     }
 }

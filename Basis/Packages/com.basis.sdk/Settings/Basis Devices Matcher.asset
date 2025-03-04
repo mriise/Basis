@@ -139,36 +139,6 @@ MonoBehaviour:
     HasTrackedRole: 1
     TrackedRole: 0
     HasInteractVisual: 1
-  - DeviceID: Index Controller OpenXRLeftHand
-    VersionNumber: 1
-    matchableDeviceIds:
-    - Index Controller OpenXRLeftHand
-    HasRayCastSupport: 1
-    CanDisplayPhysicalTracker: 1
-    HasRayCastVisual: 1
-    HasRayCastRedical: 1
-    PositionRayCastOffset: {x: 0, y: 0, z: 0}
-    RotationRaycastOffset: {x: 0, y: 0, z: 0}
-    AvatarPositionOffset: {x: 0, y: 0, z: 0}
-    AvatarRotationOffset: {x: 0, y: 0, z: 0}
-    HasTrackedRole: 1
-    TrackedRole: 18
-    HasInteractVisual: 1
-  - DeviceID: Index Controller OpenXRRightHand
-    VersionNumber: 1
-    matchableDeviceIds:
-    - Index Controller OpenXRRightHand
-    HasRayCastSupport: 1
-    CanDisplayPhysicalTracker: 1
-    HasRayCastVisual: 1
-    HasRayCastRedical: 1
-    PositionRayCastOffset: {x: 0, y: 0, z: 0}
-    RotationRaycastOffset: {x: 0, y: 0, z: 0}
-    AvatarPositionOffset: {x: 0, y: 0, z: 0}
-    AvatarRotationOffset: {x: 0, y: 0, z: 0}
-    HasTrackedRole: 1
-    TrackedRole: 19
-    HasInteractVisual: 1
   - DeviceID: generic_hmd
     VersionNumber: 1
     matchableDeviceIds:
@@ -304,10 +274,10 @@ MonoBehaviour:
     HasTrackedRole: 1
     TrackedRole: 19
     HasInteractVisual: 1
-  - DeviceID: Head Tracking - OpenXRCenterEye
+  - DeviceID: Head OPENXR
     VersionNumber: 1
     matchableDeviceIds:
-    - Head Tracking - OpenXRCenterEye
+    - Head OPENXR
     HasRayCastSupport: 0
     CanDisplayPhysicalTracker: 0
     HasRayCastVisual: 0
@@ -319,14 +289,104 @@ MonoBehaviour:
     HasTrackedRole: 1
     TrackedRole: 0
     HasInteractVisual: 1
-  - DeviceID: Hand Interaction OpenXRCenterEye
+  - DeviceID: Left Hand OPENXR
     VersionNumber: 1
     matchableDeviceIds:
-    - Hand Interaction OpenXRCenterEye
-    HasRayCastSupport: 0
+    - Left Hand OPENXR
+    HasRayCastSupport: 1
+    CanDisplayPhysicalTracker: 1
+    HasRayCastVisual: 1
+    HasRayCastRedical: 1
+    PositionRayCastOffset: {x: 0, y: 0, z: 0}
+    RotationRaycastOffset: {x: 0, y: 0, z: 0}
+    AvatarPositionOffset: {x: 0, y: 0, z: 0}
+    AvatarRotationOffset: {x: -60, y: 30, z: 0}
+    HasTrackedRole: 1
+    TrackedRole: 18
+    HasInteractVisual: 1
+  - DeviceID: Right Hand OPENXR
+    VersionNumber: 1
+    matchableDeviceIds:
+    - Right Hand OPENXR
+    HasRayCastSupport: 1
+    CanDisplayPhysicalTracker: 1
+    HasRayCastVisual: 1
+    HasRayCastRedical: 1
+    PositionRayCastOffset: {x: 0, y: 0, z: 0}
+    RotationRaycastOffset: {x: 0, y: 0, z: 0}
+    AvatarPositionOffset: {x: 0, y: 0, z: 0}
+    AvatarRotationOffset: {x: -60, y: -30, z: 0}
+    HasTrackedRole: 1
+    TrackedRole: 19
+    HasInteractVisual: 1
+  - DeviceID: '{standable}/rendermodels/Estimated/sfbePelvis'
+    VersionNumber: 1
+    matchableDeviceIds:
+    - '{standable}/rendermodels/Estimated/sfbePelvis'
+    HasRayCastSupport: 1
     CanDisplayPhysicalTracker: 0
-    HasRayCastVisual: 0
-    HasRayCastRedical: 0
+    HasRayCastVisual: 1
+    HasRayCastRedical: 1
+    PositionRayCastOffset: {x: 0, y: 0, z: 0}
+    RotationRaycastOffset: {x: 0, y: 0, z: 0}
+    AvatarPositionOffset: {x: 0, y: 0, z: 0}
+    AvatarRotationOffset: {x: 0, y: 0, z: 0}
+    HasTrackedRole: 0
+    TrackedRole: 0
+    HasInteractVisual: 1
+  - DeviceID: '{standable}/rendermodels/Estimated/sfbeFoot'
+    VersionNumber: 1
+    matchableDeviceIds:
+    - '{standable}/rendermodels/Estimated/sfbeFoot'
+    HasRayCastSupport: 1
+    CanDisplayPhysicalTracker: 0
+    HasRayCastVisual: 1
+    HasRayCastRedical: 1
+    PositionRayCastOffset: {x: 0, y: 0, z: 0}
+    RotationRaycastOffset: {x: 0, y: 0, z: 0}
+    AvatarPositionOffset: {x: 0, y: 0, z: 0}
+    AvatarRotationOffset: {x: 0, y: 0, z: 0}
+    HasTrackedRole: 0
+    TrackedRole: 0
+    HasInteractVisual: 1
+  - DeviceID: '{standable}/rendermodels/Estimated/sfbeChest'
+    VersionNumber: 1
+    matchableDeviceIds:
+    - '{standable}/rendermodels/Estimated/sfbeChest'
+    HasRayCastSupport: 1
+    CanDisplayPhysicalTracker: 0
+    HasRayCastVisual: 1
+    HasRayCastRedical: 1
+    PositionRayCastOffset: {x: 0, y: 0, z: 0}
+    RotationRaycastOffset: {x: 0, y: 0, z: 0}
+    AvatarPositionOffset: {x: 0, y: 0, z: 0}
+    AvatarRotationOffset: {x: 0, y: 0, z: 0}
+    HasTrackedRole: 0
+    TrackedRole: 0
+    HasInteractVisual: 1
+  - DeviceID: '{standable}/rendermodels/Estimated/sfbeElbow'
+    VersionNumber: 1
+    matchableDeviceIds:
+    - '{standable}/rendermodels/Estimated/sfbeElbow'
+    HasRayCastSupport: 1
+    CanDisplayPhysicalTracker: 0
+    HasRayCastVisual: 1
+    HasRayCastRedical: 1
+    PositionRayCastOffset: {x: 0, y: 0, z: 0}
+    RotationRaycastOffset: {x: 0, y: 0, z: 0}
+    AvatarPositionOffset: {x: 0, y: 0, z: 0}
+    AvatarRotationOffset: {x: 0, y: 0, z: 0}
+    HasTrackedRole: 0
+    TrackedRole: 0
+    HasInteractVisual: 1
+  - DeviceID: '{standable}/rendermodels/Estimated/sfbeKnee'
+    VersionNumber: 1
+    matchableDeviceIds:
+    - '{standable}/rendermodels/Estimated/sfbeKnee'
+    HasRayCastSupport: 1
+    CanDisplayPhysicalTracker: 0
+    HasRayCastVisual: 1
+    HasRayCastRedical: 1
     PositionRayCastOffset: {x: 0, y: 0, z: 0}
     RotationRaycastOffset: {x: 0, y: 0, z: 0}
     AvatarPositionOffset: {x: 0, y: 0, z: 0}
@@ -461,36 +521,6 @@ MonoBehaviour:
     HasTrackedRole: 1
     TrackedRole: 0
     HasInteractVisual: 1
-  - DeviceID: Index Controller OpenXRLeftHand
-    VersionNumber: 1
-    matchableDeviceIds:
-    - Index Controller OpenXRLeftHand
-    HasRayCastSupport: 1
-    CanDisplayPhysicalTracker: 1
-    HasRayCastVisual: 1
-    HasRayCastRedical: 1
-    PositionRayCastOffset: {x: 0, y: 0, z: 0}
-    RotationRaycastOffset: {x: 0, y: 0, z: 0}
-    AvatarPositionOffset: {x: 0, y: 0, z: 0}
-    AvatarRotationOffset: {x: 0, y: 0, z: 0}
-    HasTrackedRole: 1
-    TrackedRole: 18
-    HasInteractVisual: 1
-  - DeviceID: Index Controller OpenXRRightHand
-    VersionNumber: 1
-    matchableDeviceIds:
-    - Index Controller OpenXRRightHand
-    HasRayCastSupport: 1
-    CanDisplayPhysicalTracker: 1
-    HasRayCastVisual: 1
-    HasRayCastRedical: 1
-    PositionRayCastOffset: {x: 0, y: 0, z: 0}
-    RotationRaycastOffset: {x: 0, y: 0, z: 0}
-    AvatarPositionOffset: {x: 0, y: 0, z: 0}
-    AvatarRotationOffset: {x: 0, y: 0, z: 0}
-    HasTrackedRole: 1
-    TrackedRole: 19
-    HasInteractVisual: 1
   - DeviceID: generic_hmd
     VersionNumber: 1
     matchableDeviceIds:
@@ -626,10 +656,10 @@ MonoBehaviour:
     HasTrackedRole: 1
     TrackedRole: 19
     HasInteractVisual: 1
-  - DeviceID: Head Tracking - OpenXRCenterEye
+  - DeviceID: Head OPENXR
     VersionNumber: 1
     matchableDeviceIds:
-    - Head Tracking - OpenXRCenterEye
+    - Head OPENXR
     HasRayCastSupport: 0
     CanDisplayPhysicalTracker: 0
     HasRayCastVisual: 0
@@ -641,14 +671,104 @@ MonoBehaviour:
     HasTrackedRole: 1
     TrackedRole: 0
     HasInteractVisual: 1
-  - DeviceID: Hand Interaction OpenXRCenterEye
+  - DeviceID: Left Hand OPENXR
     VersionNumber: 1
     matchableDeviceIds:
-    - Hand Interaction OpenXRCenterEye
-    HasRayCastSupport: 0
+    - Left Hand OPENXR
+    HasRayCastSupport: 1
+    CanDisplayPhysicalTracker: 1
+    HasRayCastVisual: 1
+    HasRayCastRedical: 1
+    PositionRayCastOffset: {x: 0, y: 0, z: 0}
+    RotationRaycastOffset: {x: 0, y: 0, z: 0}
+    AvatarPositionOffset: {x: 0, y: 0, z: 0}
+    AvatarRotationOffset: {x: -60, y: 30, z: 0}
+    HasTrackedRole: 1
+    TrackedRole: 18
+    HasInteractVisual: 1
+  - DeviceID: Right Hand OPENXR
+    VersionNumber: 1
+    matchableDeviceIds:
+    - Right Hand OPENXR
+    HasRayCastSupport: 1
+    CanDisplayPhysicalTracker: 1
+    HasRayCastVisual: 1
+    HasRayCastRedical: 1
+    PositionRayCastOffset: {x: 0, y: 0, z: 0}
+    RotationRaycastOffset: {x: 0, y: 0, z: 0}
+    AvatarPositionOffset: {x: 0, y: 0, z: 0}
+    AvatarRotationOffset: {x: -60, y: -30, z: 0}
+    HasTrackedRole: 1
+    TrackedRole: 19
+    HasInteractVisual: 1
+  - DeviceID: '{standable}/rendermodels/Estimated/sfbePelvis'
+    VersionNumber: 1
+    matchableDeviceIds:
+    - '{standable}/rendermodels/Estimated/sfbePelvis'
+    HasRayCastSupport: 1
     CanDisplayPhysicalTracker: 0
-    HasRayCastVisual: 0
-    HasRayCastRedical: 0
+    HasRayCastVisual: 1
+    HasRayCastRedical: 1
+    PositionRayCastOffset: {x: 0, y: 0, z: 0}
+    RotationRaycastOffset: {x: 0, y: 0, z: 0}
+    AvatarPositionOffset: {x: 0, y: 0, z: 0}
+    AvatarRotationOffset: {x: 0, y: 0, z: 0}
+    HasTrackedRole: 0
+    TrackedRole: 0
+    HasInteractVisual: 1
+  - DeviceID: '{standable}/rendermodels/Estimated/sfbeFoot'
+    VersionNumber: 1
+    matchableDeviceIds:
+    - '{standable}/rendermodels/Estimated/sfbeFoot'
+    HasRayCastSupport: 1
+    CanDisplayPhysicalTracker: 0
+    HasRayCastVisual: 1
+    HasRayCastRedical: 1
+    PositionRayCastOffset: {x: 0, y: 0, z: 0}
+    RotationRaycastOffset: {x: 0, y: 0, z: 0}
+    AvatarPositionOffset: {x: 0, y: 0, z: 0}
+    AvatarRotationOffset: {x: 0, y: 0, z: 0}
+    HasTrackedRole: 0
+    TrackedRole: 0
+    HasInteractVisual: 1
+  - DeviceID: '{standable}/rendermodels/Estimated/sfbeChest'
+    VersionNumber: 1
+    matchableDeviceIds:
+    - '{standable}/rendermodels/Estimated/sfbeChest'
+    HasRayCastSupport: 1
+    CanDisplayPhysicalTracker: 0
+    HasRayCastVisual: 1
+    HasRayCastRedical: 1
+    PositionRayCastOffset: {x: 0, y: 0, z: 0}
+    RotationRaycastOffset: {x: 0, y: 0, z: 0}
+    AvatarPositionOffset: {x: 0, y: 0, z: 0}
+    AvatarRotationOffset: {x: 0, y: 0, z: 0}
+    HasTrackedRole: 0
+    TrackedRole: 0
+    HasInteractVisual: 1
+  - DeviceID: '{standable}/rendermodels/Estimated/sfbeElbow'
+    VersionNumber: 1
+    matchableDeviceIds:
+    - '{standable}/rendermodels/Estimated/sfbeElbow'
+    HasRayCastSupport: 1
+    CanDisplayPhysicalTracker: 0
+    HasRayCastVisual: 1
+    HasRayCastRedical: 1
+    PositionRayCastOffset: {x: 0, y: 0, z: 0}
+    RotationRaycastOffset: {x: 0, y: 0, z: 0}
+    AvatarPositionOffset: {x: 0, y: 0, z: 0}
+    AvatarRotationOffset: {x: 0, y: 0, z: 0}
+    HasTrackedRole: 0
+    TrackedRole: 0
+    HasInteractVisual: 1
+  - DeviceID: '{standable}/rendermodels/Estimated/sfbeKnee'
+    VersionNumber: 1
+    matchableDeviceIds:
+    - '{standable}/rendermodels/Estimated/sfbeKnee'
+    HasRayCastSupport: 1
+    CanDisplayPhysicalTracker: 0
+    HasRayCastVisual: 1
+    HasRayCastRedical: 1
     PositionRayCastOffset: {x: 0, y: 0, z: 0}
     RotationRaycastOffset: {x: 0, y: 0, z: 0}
     AvatarPositionOffset: {x: 0, y: 0, z: 0}

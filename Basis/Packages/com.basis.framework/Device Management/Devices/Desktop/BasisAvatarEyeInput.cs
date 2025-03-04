@@ -5,6 +5,7 @@ using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Drivers;
 using Basis.Scripts.TransformBinders.BoneControl;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using UnityEngine.InputSystem;
 namespace Basis.Scripts.Device_Management.Devices.Desktop
 {
@@ -157,6 +158,41 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
                 UpdatePlayerControl();
             }
         }
+        public override void ShowTrackedVisual()
+        {
+            if (BasisVisualTracker == null && LoadedDeviceRequest == null)
+            {
+                BasisDeviceMatchSettings Match = BasisDeviceManagement.Instance.BasisDeviceNameMatcher.GetAssociatedDeviceMatchableNames(CommonDeviceIdentifier);
+                if (Match.CanDisplayPhysicalTracker)
+                {
+                    var op = Addressables.LoadAssetAsync<GameObject>(Match.DeviceID);
+                    GameObject go = op.WaitForCompletion();
+                    GameObject gameObject = Object.Instantiate(go);
+                    gameObject.name = CommonDeviceIdentifier;
+                    gameObject.transform.parent = this.transform;
+                    if (gameObject.TryGetComponent(out BasisVisualTracker))
+                    {
+                        BasisVisualTracker.Initialization(this);
+                    }
+                }
+                else
+                {
+                    if (UseFallbackModel())
+                    {
+                        UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<GameObject> op = Addressables.LoadAssetAsync<GameObject>(FallbackDeviceID);
+                        GameObject go = op.WaitForCompletion();
+                        GameObject gameObject = Object.Instantiate(go);
+                        gameObject.name = CommonDeviceIdentifier;
+                        gameObject.transform.parent = this.transform;
+                        if (gameObject.TryGetComponent(out BasisVisualTracker))
+                        {
+                            BasisVisualTracker.Initialization(this);
+                        }
+                    }
+                }
+            }
+        }
+
         public BasisVirtualSpineDriver BasisVirtualSpine = new BasisVirtualSpineDriver();
     }
 }

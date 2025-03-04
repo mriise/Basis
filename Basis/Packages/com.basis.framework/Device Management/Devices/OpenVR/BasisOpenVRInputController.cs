@@ -1,9 +1,9 @@
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Device_Management.Devices.OpenVR.Structs;
 using Basis.Scripts.TransformBinders.BoneControl;
-using System.Threading.Tasks;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using Valve.VR;
 
 namespace Basis.Scripts.Device_Management.Devices.OpenVR
@@ -127,5 +127,39 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
         public bool isValid { get { return poseAction[inputSource].poseIsValid; } }
         public bool isActive { get { return poseAction[inputSource].active; } }
         #endregion
+        public override void ShowTrackedVisual()
+        {
+            if (BasisVisualTracker == null && LoadedDeviceRequest == null)
+            {
+                BasisDeviceMatchSettings Match = BasisDeviceManagement.Instance.BasisDeviceNameMatcher.GetAssociatedDeviceMatchableNames(CommonDeviceIdentifier);
+                if (Match.CanDisplayPhysicalTracker)
+                {
+                    var op = Addressables.LoadAssetAsync<GameObject>(Match.DeviceID);
+                    GameObject go = op.WaitForCompletion();
+                    GameObject gameObject = Object.Instantiate(go);
+                    gameObject.name = CommonDeviceIdentifier;
+                    gameObject.transform.parent = this.transform;
+                    if (gameObject.TryGetComponent(out BasisVisualTracker))
+                    {
+                        BasisVisualTracker.Initialization(this);
+                    }
+                }
+                else
+                {
+                    if (UseFallbackModel())
+                    {
+                        UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<GameObject> op = Addressables.LoadAssetAsync<GameObject>(FallbackDeviceID);
+                        GameObject go = op.WaitForCompletion();
+                        GameObject gameObject = Object.Instantiate(go);
+                        gameObject.name = CommonDeviceIdentifier;
+                        gameObject.transform.parent = this.transform;
+                        if (gameObject.TryGetComponent(out BasisVisualTracker))
+                        {
+                            BasisVisualTracker.Initialization(this);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
