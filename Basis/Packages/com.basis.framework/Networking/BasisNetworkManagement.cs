@@ -317,7 +317,7 @@ namespace Basis.Scripts.Networking
                     }
                     catch (Exception ex)
                     {
-                        BasisDebug.LogError($"Error setting up the local player: {ex.Message}");
+                        BasisDebug.LogError($"Error setting up the local player: {ex.Message} {ex.StackTrace}");
                     }
                 }), null);
             });
