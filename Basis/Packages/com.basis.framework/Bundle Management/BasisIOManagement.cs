@@ -15,7 +15,7 @@ public static class BasisIOManagement
         long LengthOfSection = BitConverter.ToInt64(ConnectorSize, 0);
         byte[] ConnectorBytes = await DownloadFileRange(url, null, progressCallback, cancellationToken, HeaderSize, HeaderSize + LengthOfSection - 1, true);
 
-        BasisDebug.Log("Downloaded Connector file size is " + ConnectorBytes.Length + " trying to decode with " + vp);
+        BasisDebug.Log("Downloaded Connector file size is " + ConnectorBytes.Length);
         BasisBundleConnector Connector = await BasisEncryptionToData.GenerateMetaFromBytes(vp, ConnectorBytes, progressCallback);
 
         long previousEnd = HeaderSize + LengthOfSection - 1; // Correct start position after header
