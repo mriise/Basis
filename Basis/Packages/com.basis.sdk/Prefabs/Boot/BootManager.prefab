@@ -2018,7 +2018,7 @@ MonoBehaviour:
     PlatFormDefaultState:
     - Platform: 11
       GraphicsVendor: 0
-      SetString: 0
+      SetString: 0.5
     ExcludeFromThesePlatforms: []
     MasterQualityState: 0
     ParseController: 1
@@ -2663,6 +2663,7 @@ GameObject:
   - component: {fileID: -3061024371983229343}
   - component: {fileID: 8683862064975223899}
   - component: {fileID: 8988764245560573337}
+  - component: {fileID: 6910429841152494025}
   m_Layer: 0
   m_Name: BootManager
   m_TagString: Untagged
@@ -2760,7 +2761,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e66a79eb227d0d448870a4e95dc14eeb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  HasEvents: 0
 --- !u!114 &508802122937325065
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2830,10 +2830,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Selector: {fileID: 11400000, guid: 8393424ebf34934449c2d1309a700837, type: 2}
   DefaultScene:
-    UnlockPassword: 
+    UnlockPassword: 44da60a90e2ee4e202730e73541969a9c0639a643520dc739ff39af531ab9902
     BasisRemoteBundleEncrypted:
       IsLocal: 0
-      CombinedURL: 
+      CombinedURL: https://BasisFramework.b-cdn.net/Worlds/BEE/97feef6a63fd4ba790c15b4856fc90db20250305.BEE
     BasisLocalEncryptedBundle:
       LocalConnectorPath: 
     BasisBundleConnector:
@@ -2856,4 +2856,16 @@ MonoBehaviour:
         AssetBundleDescription: 
       BasisBundleGenerated: []
   UseAddressablesToLoadScene: 0
-  UseSceneProvidedHere: 0
+  UseSceneProvidedHere: 1
+--- !u!114 &6910429841152494025
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9135220577826176361}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d8279b0f691ed944a4b263282ed0bb7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

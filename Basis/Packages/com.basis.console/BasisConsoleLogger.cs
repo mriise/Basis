@@ -1,3 +1,4 @@
+using Basis.Scripts.BasisSdk.Helpers;
 using Basis.Scripts.UI.UI_Panels;
 using System.Text;
 using TMPro;
@@ -6,23 +7,27 @@ using UnityEngine.UI;
 public class BasisConsoleLogger : BasisUIBase
 {
     public TextMeshProUGUI logText;
-    public bool showAllLogsInOrder = true;
-    public bool showCollapsedLogs = false;
-    public LogType currentLogTypeFilter = LogType.Log;
+    public static bool showAllLogsInOrder = true;
+    public static bool showCollapsedLogs = false;
+    public static LogType currentLogTypeFilter = LogType.Log;
     public TMP_Dropdown Dropdown;
     public Button ClearButton;
     public Button CollapseButton;
     public Button StopButton;
     public RectTransform Transform;
-    public bool IsUpdating = true;
+    public static bool IsUpdating = true;
     public TextMeshProUGUI CollapseButtonText;
     public TextMeshProUGUI StopButtonText;
-    public float updateInterval = 0.1f; // 100 milliseconds
-    public float timeSinceLastUpdate = 0f;
     public BasisButtonHeldCallBack BasisButtonHeldCallBack;
     public Button MouseLock;
+    public static BasisConsoleLogger Instance;
+    public static bool IsActive = false;
     private void Awake()
     {
+        if (BasisHelpers.CheckInstance(Instance))
+        {
+            Instance = this;
+        }
         BasisLogManager.LoadLogsFromDisk();
         Dropdown.onValueChanged.AddListener(HandlePressed);
         ClearButton.onClick.AddListener(ClearLogs);
@@ -31,6 +36,7 @@ public class BasisConsoleLogger : BasisUIBase
         BasisButtonHeldCallBack.OnButtonReleased += OnButtonReleased;
         BasisButtonHeldCallBack.OnButtonPressed += OnButtonPressed;
         MouseLock.onClick.AddListener(ToggleMouse);
+        IsActive = true;
     }
     public Canvas Canvas;
     public void ToggleMouse()
@@ -91,17 +97,11 @@ public class BasisConsoleLogger : BasisUIBase
         }
         UpdateLogDisplay();
     }
-    private void Update()
+    public static void QueryLogDisplay()
     {
-        if (IsUpdating && BasisLogManager.LogChanged)
+        if (IsActive && IsUpdating && BasisLogManager.LogChanged)
         {
-            timeSinceLastUpdate += Time.deltaTime;
-
-            if (timeSinceLastUpdate >= updateInterval)
-            {
-                timeSinceLastUpdate = 0f; // Reset the timer
-                UpdateLogDisplay();
-            }
+            Instance.UpdateLogDisplay();
         }
     }
 
@@ -136,7 +136,7 @@ public class BasisConsoleLogger : BasisUIBase
     public void ClearLogs()
     {
         BasisLogManager.ClearLogs();
-        logText.text = "";
+        logText.text = string.Empty;
     }
 
     public override void DestroyEvent()
@@ -147,5 +147,9 @@ public class BasisConsoleLogger : BasisUIBase
     public override void InitalizeEvent()
     {
         BasisCursorManagement.UnlockCursor(nameof(BasisConsoleLogger));
+    }
+    public void OnDestroy()
+    {
+        IsActive = false;
     }
 }

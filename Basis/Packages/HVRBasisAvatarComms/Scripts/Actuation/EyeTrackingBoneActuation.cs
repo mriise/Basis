@@ -195,7 +195,7 @@ namespace HVR.Basis.Comms
         private void SetBuiltInEyeFollowDriverOverriden(bool value)
         {
             if (!_eyeFollowDriverLateInit) return;
-            _eyeFollowDriverLateInit.Override = value;
+            BasisLocalEyeFollowBase.Override = value;
         }
 
         private enum EyeSide

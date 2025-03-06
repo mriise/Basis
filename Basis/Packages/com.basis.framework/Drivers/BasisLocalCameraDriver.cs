@@ -315,18 +315,21 @@ namespace Basis.Scripts.Drivers
                 }
             }
         }
+        public bool IsNormalHead;
         public void ScaleHeadToNormal()
         {
-            if (LocalPlayer.AvatarDriver.References.head.localScale != LocalPlayer.AvatarDriver.HeadScale)
+            if (IsNormalHead == false)
             {
                 LocalPlayer.AvatarDriver.References.head.localScale = LocalPlayer.AvatarDriver.HeadScale;
+                IsNormalHead = true;
             }
         }
         public void ScaleheadToZero()
         {
-            if (LocalPlayer.AvatarDriver.References.head.localScale != LocalPlayer.AvatarDriver.HeadScaledDown)
+            if (IsNormalHead)
             {
                 LocalPlayer.AvatarDriver.References.head.localScale = LocalPlayer.AvatarDriver.HeadScaledDown;
+                IsNormalHead = false;
             }
         }
         // Function to calculate the position

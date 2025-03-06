@@ -149,6 +149,10 @@ namespace Basis.Scripts.Drivers
             Player.BasisAvatar.transform.SetLocalPositionAndRotation(-Hips.TposeLocal.position, Quaternion.identity);
             CalibrateOffsets();
             BuildBuilder();
+            if(BasisLocalCameraDriver.Instance != null)
+            {
+                BasisLocalCameraDriver.Instance.IsNormalHead = true;
+            }
         }
         public void OnDestroy()
         {
