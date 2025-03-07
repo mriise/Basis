@@ -128,7 +128,12 @@ namespace Basis.Scripts.Networking.Recievers
         {
             if (Player != null && Player.BasisAvatar != null && Player.BasisAvatar.Animator != null)
             {
-                return Player.BasisAvatar.Animator.transform.localScale;
+                Vector3 Scale = Player.BasisAvatar.Animator.transform.localScale;
+               if(Scale != Vector3.zero)
+                {
+                    return Scale;
+                }
+               else { return Vector3.one; }
             }
             else
             {
