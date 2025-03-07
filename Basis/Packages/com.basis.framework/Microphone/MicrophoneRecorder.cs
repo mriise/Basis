@@ -7,21 +7,21 @@ using Unity.Collections;
 using Unity.Jobs;
 public partial class MicrophoneRecorder : MicrophoneRecorderBase
 {
-    private int head = 0;
-    private int bufferLength;
-    public bool HasEvents = false;
-    public int PacketSize;
-    public bool UseDenoiser = false;
+    private static int head = 0;
+    private static int bufferLength;
+    public static bool HasEvents = false;
+    public static int PacketSize;
+    public static bool UseDenoiser = false;
     public static Action<bool> OnPausedAction;
-    private bool MicrophoneIsStarted = false;
-    private Thread processingThread;
-    public bool isRunning = true;
-    private ManualResetEvent processingEvent = new ManualResetEvent(false);
-    private object processingLock = new object();
-    private int position;
-    private NativeArray<float> PBA;
-    private LogarithmicVolumeAdjustmentJob VAJ;
-    private JobHandle handle;
+    private static bool MicrophoneIsStarted = false;
+    private static Thread processingThread;
+    public static bool isRunning = true;
+    private static ManualResetEvent processingEvent = new ManualResetEvent(false);
+    private static object processingLock = new object();
+    private static int position;
+    private static NativeArray<float> PBA;
+    private static LogarithmicVolumeAdjustmentJob VAJ;
+    private static JobHandle handle;
     public bool TryInitialize()
     {
         if (!IsInitialize)
@@ -177,12 +177,12 @@ public partial class MicrophoneRecorder : MicrophoneRecorderBase
             OnPausedAction?.Invoke(isPaused);
         }
     }
-    private bool ScheduleMainHasAudio;
-    private bool ScheduleMainHasSilence;
+    private static bool ScheduleMainHasAudio;
+    private static bool ScheduleMainHasSilence;
     public static Action MainThreadOnHasAudio;
     public static Action MainThreadOnHasSilence; // Event triggered when silence is detected
-    private readonly object _lock = new object();
-    public void LateUpdate()
+    private static readonly object _lock = new object();
+    public static void MicrophoneUpdate()
     {
         if (MicrophoneIsStarted)
         {

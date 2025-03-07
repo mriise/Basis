@@ -42,7 +42,8 @@ public class BasisSDKMirror : MonoBehaviour
 
     public bool allowXRRendering = true;
     public bool RenderPostProcessing = false;
-
+    public bool OcclusionCulling = false;
+    public bool renderShadows = false;
     [SerializeField]
     private LayerMask ReflectingLayers;
     public void Awake()
@@ -241,7 +242,7 @@ public class BasisSDKMirror : MonoBehaviour
         {
             name = "__MirrorReflection" + eye.ToString() + GetInstanceID(),
             isPowerOfTwo = true,
-            antiAliasing = Antialising
+            antiAliasing = Antialising,
         };
         string Property = "_ReflectionTex" + eye.ToString();
         Renderer.material = MirrorsMaterial;
@@ -266,10 +267,12 @@ public class BasisSDKMirror : MonoBehaviour
         newCamera.orthographicSize = currentCamera.orthographicSize;
         newCamera.depth = 2;
         newCamera.cullingMask = ReflectingLayers.value;
+        newCamera.useOcclusionCulling = OcclusionCulling;
         if (newCamera.TryGetComponent(out UniversalAdditionalCameraData CameraData))
         {
             CameraData.allowXRRendering = allowXRRendering;
             CameraData.renderPostProcessing = RenderPostProcessing;
+            CameraData.renderShadows = renderShadows;
         }
     }
     private void VisibilityFlag(bool IsVisible)

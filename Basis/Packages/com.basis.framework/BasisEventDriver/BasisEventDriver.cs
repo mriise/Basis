@@ -1,15 +1,26 @@
+using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Device_Management;
+using Basis.Scripts.Device_Management.Devices.Desktop;
 using Basis.Scripts.Eye_Follow;
+using Basis.Scripts.Networking;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class BasisEventDriver : MonoBehaviour
 {
-    public  float updateInterval = 0.1f; // 100 milliseconds
-    public  float timeSinceLastUpdate = 0f;
-
+    public float updateInterval = 0.1f; // 100 milliseconds
+    public float timeSinceLastUpdate = 0f;
+    public void OnEnable()
+    {
+        Application.onBeforeRender += OnBeforeRender;
+    }
+    public void OnDisable()
+    {
+        Application.onBeforeRender -= OnBeforeRender;
+    }
     public void Update()
     {
-
+        InputSystem.Update();
         timeSinceLastUpdate += Time.deltaTime;
 
         if (timeSinceLastUpdate >= updateInterval) // Use '>=' to avoid small errors
@@ -35,5 +46,15 @@ public class BasisEventDriver : MonoBehaviour
         {
             BasisLocalEyeFollowBase.Instance.Simulate();
         }
+        MicrophoneRecorder.MicrophoneUpdate();
+        BasisNetworkManagement.SimulateNetwork();
+    }
+    private void OnBeforeRender()
+    {
+        if (BasisLocalPlayer.PlayerReady)
+        {
+            BasisLocalPlayer.Instance.LocalBoneDriver.Simulate();
+        }
+        BasisLocalInputActions.AfterAvatarChanges?.Invoke();
     }
 }
