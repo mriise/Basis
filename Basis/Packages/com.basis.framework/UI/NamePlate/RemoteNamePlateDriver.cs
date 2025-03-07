@@ -97,9 +97,9 @@ namespace Basis.Scripts.UI.NamePlate
         public void LateUpdate()
         {
             Vector3 Position = BasisLocalCameraDriver.Position;
-            for (int i = 0; i < count; i++)
+            for (int Index = 0; Index < count; Index++)
             {
-                BasisNamePlate NamePlate =  basisRemotePlayers[i];
+                BasisNamePlate NamePlate =  basisRemotePlayers[Index];
                 NamePlate.cachedDirection = NamePlate.HipTarget.OutgoingWorldData.position;
                 NamePlate.cachedDirection.y += NamePlate.MouthTarget.TposeLocal.position.y / NamePlate.YHeightMultiplier;
                 NamePlate.dirToCamera = Position - NamePlate.cachedDirection;

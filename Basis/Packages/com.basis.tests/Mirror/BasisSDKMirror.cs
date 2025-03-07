@@ -8,6 +8,7 @@ using System;
 using Basis.Scripts.BasisSdk.Helpers;
 using Basis.Scripts.Device_Management;
 using System.Collections;
+using Basis.Scripts.BasisSdk.Players;
 public class BasisSDKMirror : MonoBehaviour
 {
     public Renderer Renderer;//only renders when this is visible
@@ -67,6 +68,7 @@ public class BasisSDKMirror : MonoBehaviour
         BasisMeshRendererCheck = BasisHelpers.GetOrAddComponent<BasisMeshRendererCheck>(this.Renderer.gameObject);
         BasisMeshRendererCheck.Check += VisibilityFlag;
     }
+    private int InstanceID;
     public void OnEnable()
     {
         if (BasisLocalCameraDriver.HasInstance)
@@ -75,6 +77,7 @@ public class BasisSDKMirror : MonoBehaviour
         }
         BasisLocalCameraDriver.InstanceExists += Initalize;
         RenderPipeline.beginCameraRendering += UpdateCamera;
+        InstanceID = gameObject.GetInstanceID();
     }
 
     public IEnumerator Start()
@@ -108,6 +111,7 @@ public class BasisSDKMirror : MonoBehaviour
         }
         BasisLocalCameraDriver.InstanceExists -= Initalize;
         RenderPipeline.beginCameraRendering -= UpdateCamera;
+        BasisLocalPlayer.Instance.AvatarDriver.RemoveActiveMatrixOverride(InstanceID);
     }
 
     private void BootModeChanged(string obj)
@@ -141,7 +145,9 @@ public class BasisSDKMirror : MonoBehaviour
         if (IsCameraAble(camera))
         {
             OnCamerasRenderering?.Invoke();
+
             BasisLocalCameraDriver.Instance.ScaleHeadToNormal();
+            BasisLocalPlayer.Instance.AvatarDriver.TryActiveMatrixOverride(InstanceID);
             ThisPosition = Renderer.transform.position;
             projectionMatrix = camera.projectionMatrix;
             normal = Renderer.transform.TransformDirection(projectionDirection);

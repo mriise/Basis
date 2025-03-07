@@ -5,6 +5,7 @@ using Basis.Scripts.Common;
 using Basis.Scripts.Device_Management;
 using Basis.Scripts.TransformBinders.BoneControl;
 using System;
+using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -35,6 +36,40 @@ namespace Basis.Scripts.Drivers
         public BasisPlayer Player;
         public bool CurrentlyTposing = false;
         public bool HasEvents = false;
+        public List<int> ActiveMatrixOverrides = new List<int>();
+        public void TryActiveMatrixOverride(int InstanceID)
+        {
+            if (ActiveMatrixOverrides.Contains(InstanceID) == false)
+            {
+                ActiveMatrixOverrides.Add(InstanceID);
+                SetAllMatrixRecalculation(true);
+            }
+        }
+        public void RemoveActiveMatrixOverride(int InstanceID)
+        {
+            if (ActiveMatrixOverrides.Remove(InstanceID))
+            {
+                if (ActiveMatrixOverrides.Count == 0)
+                {
+                    SetAllMatrixRecalculation(false);
+                }
+            }
+        }
+        public void SetMatrixOverride()
+        {
+#if UNITY_EDITOR
+            SetAllMatrixRecalculation(true);
+#else
+            if (ActiveMatrixOverrides.Count != 0)
+            {
+                SetAllMatrixRecalculation(true);
+            }
+            else
+            {
+                SetAllMatrixRecalculation(false);
+           }
+#endif
+        }
         public void Calibration(BasisAvatar Avatar)
         {
             FindSkinnedMeshRenders();
@@ -302,31 +337,24 @@ namespace Basis.Scripts.Drivers
                 BaseBoneDriver.CreateRotationalLock(AssignedToAddToBone, LockToBone, PositionLerpAmount, QuaternionLerpAmount);
             }
         }
+        public int SkinnedMeshRendererLength;
         public void FindSkinnedMeshRenders()
         {
             SkinnedMeshRenderer = Player.BasisAvatar.Animator.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+            SkinnedMeshRendererLength = SkinnedMeshRenderer.Length;
         }
         public void SetAllMatrixRecalculation(bool State)
         {
-            foreach (SkinnedMeshRenderer Render in SkinnedMeshRenderer)
+            for (int Index = 0; Index < SkinnedMeshRendererLength; Index++)
             {
+                SkinnedMeshRenderer Render = SkinnedMeshRenderer[Index];
                 Render.forceMatrixRecalculationPerRender = State;
             }
-        }
-        public void SetHeadMatrixRecalculation(bool State)
-        {
-            if (Player.BasisAvatar.FaceBlinkMesh != null)
-            {
-                Player.BasisAvatar.FaceBlinkMesh.forceMatrixRecalculationPerRender = State;
-            }
-            if (Player.BasisAvatar.FaceVisemeMesh != null)
-            {
-                Player.BasisAvatar.FaceVisemeMesh.forceMatrixRecalculationPerRender = State;
-            }
+            BasisDebug.Log("Matrix Recal State set to " + State);
         }
         public void updateWhenOffscreen(bool State)
         {
-            for (int Index = 0; Index < SkinnedMeshRenderer.Length; Index++)
+            for (int Index = 0; Index < SkinnedMeshRendererLength; Index++)
             {
                 SkinnedMeshRenderer Render = SkinnedMeshRenderer[Index];
                 Render.updateWhenOffscreen = State;

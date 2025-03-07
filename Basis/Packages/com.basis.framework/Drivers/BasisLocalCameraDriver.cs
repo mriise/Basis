@@ -10,6 +10,8 @@ using UnityEngine.Rendering.Universal;
 using UnityEngine.XR;
 using Vector3 = UnityEngine.Vector3;
 using BattlePhaze.SettingsManager;
+using System.Collections.Generic;
+using System;
 
 namespace Basis.Scripts.Drivers
 {
@@ -89,6 +91,7 @@ namespace Basis.Scripts.Drivers
             SpriteRendererIcon.gameObject.SetActive(true);
             SettingsManager.Instance.Initalize(true);
         }
+
         public void MicrophoneTransmitting()
         {
             SpriteRendererIcon.color = UnMutedMutedIconColorActive;
@@ -289,6 +292,7 @@ namespace Basis.Scripts.Drivers
                 HasEvents = false;
             }
         }
+
         public void BeginCameraRendering(ScriptableRenderContext context, Camera Camera)
         {
             if (LocalPlayer.HasAvatarDriver && LocalPlayer.AvatarDriver.References.Hashead)
@@ -305,7 +309,7 @@ namespace Basis.Scripts.Drivers
                     else
                     {
                         Vector3 worldPoint = Camera.ViewportToWorldPoint(DesktopMicrophoneViewportPosition);
-                        Vector3 localPos = this.transform.InverseTransformPoint(worldPoint);//asume this transform is also camera position
+                        Vector3 localPos = transform.InverseTransformPoint(worldPoint);//asume this transform is also camera position
                         CanvasTransform.localPosition = localPos;
                     }
                 }
