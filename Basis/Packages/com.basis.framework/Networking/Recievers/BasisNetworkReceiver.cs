@@ -87,7 +87,7 @@ namespace Basis.Scripts.Networking.Recievers
                     {
                         TargetVectors[0] = Last.Position; // Target position at index 0
                         OuputVectors[0] = First.Position; // Position at index 0
-                        Vector3 Scale = Player.BasisAvatar.Animator.transform.localScale;
+                        Vector3 Scale = GetScale();
                         OuputVectors[1] = Scale;    // Scale at index 1
                         TargetVectors[1] = Scale;    // Target scale at index 1
                     }
@@ -122,6 +122,22 @@ namespace Basis.Scripts.Networking.Recievers
                     oneEuroFilterJob.DeltaTime = interpolationTime;
                     EuroFilterHandle = oneEuroFilterJob.Schedule(LocalAvatarSyncMessage.StoredBones,64,musclesHandle);
                 }
+            }
+        }
+        public Vector3 GetScale()
+        {
+            if (Player != null && Player.BasisAvatar != null && Player.BasisAvatar.Animator != null)
+            {
+                Vector3 Scale = Player.BasisAvatar.Animator.transform.localScale;
+               if(Scale != Vector3.zero)
+                {
+                    return Scale;
+                }
+               else { return Vector3.one; }
+            }
+            else
+            {
+                return Vector3.one;
             }
         }
         public JobHandle EuroFilterHandle;
