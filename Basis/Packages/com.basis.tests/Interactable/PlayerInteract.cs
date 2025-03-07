@@ -89,7 +89,7 @@ public class PlayerInteract : MonoBehaviour
     private void OnInputChanged(BasisInput Input)
     {
         // TODO: need a different config value for can interact/pickup/grab. Mainly input action/trigger values
-        if (Input.HasRaycastSupport())
+        if (Input.HasRaycaster)
         {
             AddInput(Input);
         }

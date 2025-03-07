@@ -140,6 +140,10 @@ namespace Basis.Scripts.Device_Management.Devices
         }
         public bool HasRaycastSupport()
         {
+            if (BasisDeviceMatchSettings == null)
+            {
+                return false;
+            }
             return hasRoleAssigned && BasisDeviceMatchSettings.HasRayCastSupport;
         }
         /// <summary>
@@ -384,7 +388,7 @@ namespace Basis.Scripts.Device_Management.Devices
                 case BasisBoneTrackedRole.Mouth:
                     break;
             }
-            if (HasRaycastSupport())
+            if (HasRaycaster)
             {
                 BasisPointRaycaster.UpdateRaycast();
                 BasisUIRaycast.HandleUIRaycast();
@@ -430,6 +434,7 @@ namespace Basis.Scripts.Device_Management.Devices
             }
         }
         public GameObject BasisPointRaycasterRef;
+        public bool HasRaycaster = false;
         public void CreateRayCaster(BasisInput BaseInput)
         {
             BasisDebug.Log("Adding RayCaster " + BaseInput.UniqueDeviceIdentifier);
@@ -442,6 +447,7 @@ namespace Basis.Scripts.Device_Management.Devices
 
             BasisUIRaycast = new BasisUIRaycast();
             BasisUIRaycast.Initialize(BaseInput, BasisPointRaycaster);
+            HasRaycaster = true;
         }
     }
 }
