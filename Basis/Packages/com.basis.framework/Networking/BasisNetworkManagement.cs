@@ -71,6 +71,7 @@ namespace Basis.Scripts.Networking
         /// allows a local host to be the server
         /// </summary>
         public BasisNetworkServerRunner BasisNetworkServerRunner = null;
+        public static bool NetworkRunning = false;
         public static bool AddPlayer(BasisNetworkPlayer NetPlayer)
         {
             if (Instance != null)
@@ -127,6 +128,7 @@ namespace Basis.Scripts.Networking
             BasisScene.Ready += SetupSceneEvents;
             this.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
             OnEnableInstanceCreate?.Invoke();
+            NetworkRunning = true;
         }
         private void LogErrorOutput(string obj)
         {
@@ -146,6 +148,7 @@ namespace Basis.Scripts.Networking
             Shutdown();
             BasisAvatarBufferPool.Clear();
             BasisNetworkClient.Disconnect();
+            NetworkRunning = false;
         }
         public async void Shutdown()
         {
@@ -196,20 +199,23 @@ namespace Basis.Scripts.Networking
                     }
             }
         }
-        public void LateUpdate()
+        public static void SimulateNetwork()
         {
-            double TimeAsDouble = Time.timeAsDouble;
-            float deltaTime = Time.deltaTime;
-            if (float.IsNaN(deltaTime))
+            if (NetworkRunning)
             {
-                return;
-            }
-            // Complete tasks and apply results
-            for (int Index = 0; Index < ReceiverCount; Index++)
-            {
-                if (ReceiverArray[Index] != null)
+                double TimeAsDouble = Time.timeAsDouble;
+                float deltaTime = Time.deltaTime;
+                if (float.IsNaN(deltaTime))
                 {
-                    ReceiverArray[Index].Apply(TimeAsDouble, deltaTime);
+                    return;
+                }
+                // Complete tasks and apply results
+                for (int Index = 0; Index < ReceiverCount; Index++)
+                {
+                    if (ReceiverArray[Index] != null)
+                    {
+                        ReceiverArray[Index].Apply(TimeAsDouble, deltaTime);
+                    }
                 }
             }
         }
@@ -317,7 +323,7 @@ namespace Basis.Scripts.Networking
                     }
                     catch (Exception ex)
                     {
-                        BasisDebug.LogError($"Error setting up the local player: {ex.Message}");
+                        BasisDebug.LogError($"Error setting up the local player: {ex.Message} {ex.StackTrace}");
                     }
                 }), null);
             });

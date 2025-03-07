@@ -46,7 +46,7 @@ public class BasisUIRaycastProcess
             for (int Index = 0; Index < DevicesCount; Index++)
             {
                 BasisInput input = Inputs[Index];
-                if (input.HasRaycastSupport() && input.BasisUIRaycast.WasCorrectLayer)
+                if (input.HasRaycaster && input.BasisUIRaycast.WasCorrectLayer)
                 {
                     EffectiveMouseAction |= input.BasisUIRaycast.CurrentEventData.WasLastDown == false && input.InputState.Trigger == 1;
                     if (input.BasisUIRaycast.HadRaycastUITarget)
@@ -70,7 +70,7 @@ public class BasisUIRaycastProcess
             for (int Index = 0; Index < DevicesCount; Index++)
             {
                 BasisInput input = Inputs[Index];
-                if (input.HasRaycastSupport() && input.BasisUIRaycast.WasCorrectLayer)
+                if (input.HasRaycaster && input.BasisUIRaycast.WasCorrectLayer)
                 {
                     SendUpdateEventToSelectedObject(input.BasisUIRaycast.CurrentEventData); //needed if you want to use the keyboard
                 }

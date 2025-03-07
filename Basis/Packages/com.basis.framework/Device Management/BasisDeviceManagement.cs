@@ -48,7 +48,7 @@ namespace Basis.Scripts.Device_Management
         /// <returns></returns>
         public static bool IsUserInDesktop()
         {
-            if(BasisDeviceManagement.Instance == null)
+            if (BasisDeviceManagement.Instance == null)
             {
                 return false;
             }
@@ -159,7 +159,7 @@ namespace Basis.Scripts.Device_Management
         }
         public async Task Initialize()
         {
-            CommandLineArgs.Initialize(BakedInCommandLineArgs,out string ForcedDevicemanager);
+            CommandLineArgs.Initialize(BakedInCommandLineArgs, out string ForcedDevicemanager);
             LoadAndOrSaveDefaultDeviceConfigs();
             InstantiationParameters parameters = new InstantiationParameters();
             await BasisPlayerFactory.CreateLocalPlayer(parameters);
@@ -303,16 +303,25 @@ namespace Basis.Scripts.Device_Management
         {
             if (Instance != null && Mode != Instance.CurrentMode)
             {
-               Instance.SwitchMode(Mode);
+                Instance.SwitchMode(Mode);
             }
         }
         public static void ShowTrackers()
         {
-             ShowTrackersAsync();
+            ShowTrackersAsync();
         }
         public void SetCameraRenderState(bool state)
         {
             BasisLocalCameraDriver.Instance.CameraData.allowXRRendering = state;
+            if (state)
+            {
+                BasisLocalCameraDriver.Instance.Camera.stereoTargetEye = StereoTargetEyeMask.Both;
+            }
+            else
+            {
+                BasisLocalCameraDriver.Instance.Camera.stereoTargetEye = StereoTargetEyeMask.None;
+            }
+            BasisDebug.Log("Stero Set To " + BasisLocalCameraDriver.Instance.Camera.stereoTargetEye);
         }
         public static void ShowTrackersAsync()
         {
@@ -538,19 +547,6 @@ namespace Basis.Scripts.Device_Management
 
             UseAbleDeviceConfigs = deviceDictionary.Values.ToList();
         }
-        public void Update()
-        {
-            if (!hasPendingActions) return;
-
-            while (mainThreadActions.TryDequeue(out var action))
-            {
-                action.Invoke();
-            }
-
-            // Reset flag once all actions are executed
-            hasPendingActions = !mainThreadActions.IsEmpty;
-        }
-
         public static void EnqueueOnMainThread(Action action)
         {
             if (action == null) return;
@@ -558,7 +554,7 @@ namespace Basis.Scripts.Device_Management
             mainThreadActions.Enqueue(action);
             hasPendingActions = true;
         }
-        private static readonly ConcurrentQueue<Action> mainThreadActions = new ConcurrentQueue<Action>();
-        private static volatile bool hasPendingActions = false;
+        public static readonly ConcurrentQueue<Action> mainThreadActions = new ConcurrentQueue<Action>();
+        public static volatile bool hasPendingActions = false;
     }
 }

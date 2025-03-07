@@ -7,10 +7,11 @@ using SteamAudio;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
-using UnityEngine.UI;
 using UnityEngine.XR;
 using Vector3 = UnityEngine.Vector3;
 using BattlePhaze.SettingsManager;
+using System.Collections.Generic;
+using System;
 
 namespace Basis.Scripts.Drivers
 {
@@ -90,6 +91,7 @@ namespace Basis.Scripts.Drivers
             SpriteRendererIcon.gameObject.SetActive(true);
             SettingsManager.Instance.Initalize(true);
         }
+
         public void MicrophoneTransmitting()
         {
             SpriteRendererIcon.color = UnMutedMutedIconColorActive;
@@ -290,6 +292,7 @@ namespace Basis.Scripts.Drivers
                 HasEvents = false;
             }
         }
+
         public void BeginCameraRendering(ScriptableRenderContext context, Camera Camera)
         {
             if (LocalPlayer.HasAvatarDriver && LocalPlayer.AvatarDriver.References.Hashead)
@@ -306,7 +309,7 @@ namespace Basis.Scripts.Drivers
                     else
                     {
                         Vector3 worldPoint = Camera.ViewportToWorldPoint(DesktopMicrophoneViewportPosition);
-                        Vector3 localPos = this.transform.InverseTransformPoint(worldPoint);//asume this transform is also camera position
+                        Vector3 localPos = transform.InverseTransformPoint(worldPoint);//asume this transform is also camera position
                         CanvasTransform.localPosition = localPos;
                     }
                 }
@@ -316,18 +319,21 @@ namespace Basis.Scripts.Drivers
                 }
             }
         }
+        public bool IsNormalHead;
         public void ScaleHeadToNormal()
         {
-            if (LocalPlayer.AvatarDriver.References.head.localScale != LocalPlayer.AvatarDriver.HeadScale)
+            if (IsNormalHead == false)
             {
                 LocalPlayer.AvatarDriver.References.head.localScale = LocalPlayer.AvatarDriver.HeadScale;
+                IsNormalHead = true;
             }
         }
         public void ScaleheadToZero()
         {
-            if (LocalPlayer.AvatarDriver.References.head.localScale != LocalPlayer.AvatarDriver.HeadScaledDown)
+            if (IsNormalHead)
             {
                 LocalPlayer.AvatarDriver.References.head.localScale = LocalPlayer.AvatarDriver.HeadScaledDown;
+                IsNormalHead = false;
             }
         }
         // Function to calculate the position

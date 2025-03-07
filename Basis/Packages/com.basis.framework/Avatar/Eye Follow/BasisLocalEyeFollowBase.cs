@@ -1,3 +1,4 @@
+using Basis.Scripts.BasisSdk.Helpers;
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Common;
 using Basis.Scripts.Drivers;
@@ -12,7 +13,7 @@ namespace Basis.Scripts.Eye_Follow
         public quaternion leftEyeInitialRotation;
         public quaternion rightEyeInitialRotation;
         public bool HasEvents = false;
-        public bool Override = false;
+        public static bool Override = false;
         public float lookSpeed; // Speed of looking
                                 // Adjustable parameters
         public float MinlookAroundInterval = 1; // Interval between each look around in seconds
@@ -32,7 +33,7 @@ namespace Basis.Scripts.Eye_Follow
 
         public bool HasLeftEye = false;
         public bool HasRightEye = false;
-        public bool HasHead = false;
+        public static bool HasHead = false;
         public bool LeftEyeHasGizmo;
         public bool RightEyeHasGizmo;
         public int LeftEyeGizmoIndex;
@@ -46,8 +47,11 @@ namespace Basis.Scripts.Eye_Follow
         public float CurrentlookAroundInterval;
         public float timer; // Timer to track look-around interval
         public float DistanceBeforeTeleport = 30;
+        public static BasisLocalEyeFollowBase Instance;
         public void OnDestroy()
         {
+            HasHead = false;
+            Instance = null;
             if (HasEvents)
             {
                 if (LinkedPlayer.IsLocal)
@@ -111,6 +115,7 @@ namespace Basis.Scripts.Eye_Follow
                     HasRendererCheckWiredUp = true;
                 }
             }
+            Instance = this;
         }
         private void UpdateFaceVisibility(bool State)
         {
@@ -140,13 +145,12 @@ namespace Basis.Scripts.Eye_Follow
         }
         public void AfterTeleport()
         {
-            Simulate();
+            if (RequiresUpdate())
+            {
+                Simulate();
+            }
             CenterTargetWorld = RandomizedPosition;//will be caught up
 
-        }
-        public void LateUpdate()
-        {
-            Simulate();
         }
         public void OnDisable()
         {
@@ -161,69 +165,71 @@ namespace Basis.Scripts.Eye_Follow
             }
             CenterTargetWorld = RandomizedPosition;
             wasDisabled = true;
+            HasHead = false;
         }
         bool wasDisabled = false;
+        public static bool RequiresUpdate()
+        {
+            return Override == false && HasHead;
+        }
         public void Simulate()
         {
-            if (Override == false && HasHead)
+            // Update timer using DeltaTime
+            timer += Time.deltaTime;
+
+            // Check if it's time to look around
+            if (timer > CurrentlookAroundInterval)
             {
-                // Update timer using DeltaTime
-                timer += Time.deltaTime;
+                CurrentlookAroundInterval = UnityEngine.Random.Range(MinlookAroundInterval, MaxlookAroundInterval);
+                AppliedOffset = UnityEngine.Random.insideUnitSphere * MaximumLookDistance;
 
-                // Check if it's time to look around
-                if (timer > CurrentlookAroundInterval)
-                {
-                    CurrentlookAroundInterval = UnityEngine.Random.Range(MinlookAroundInterval, MaxlookAroundInterval);
-                    AppliedOffset = UnityEngine.Random.insideUnitSphere * MaximumLookDistance;
+                // Reset timer and randomize look speed
+                timer = 0f;
+                lookSpeed = UnityEngine.Random.Range(minLookSpeed, maxLookSpeed);
+            }
 
-                    // Reset timer and randomize look speed
-                    timer = 0f;
-                    lookSpeed = UnityEngine.Random.Range(minLookSpeed, maxLookSpeed);
-                }
+            HeadTransform.GetPositionAndRotation(out Vector3 headPosition, out Quaternion headRotation);
+            float3 float3headPosition = headPosition;
+            quaternion QheadRotation = headRotation;
+            quaternion InversedHeadRotation = math.inverse(headRotation);
+            // Calculate the randomized target position using float3 for optimized math operations
+            float3 targetPosition = float3headPosition + math.mul(QheadRotation, EyeFowards) + AppliedOffset;
 
-                HeadTransform.GetPositionAndRotation(out Vector3 headPosition, out Quaternion headRotation);
-                float3 float3headPosition = headPosition;
-                quaternion QheadRotation = headRotation;
-                quaternion InversedHeadRotation = math.inverse(headRotation);
-                // Calculate the randomized target position using float3 for optimized math operations
-                float3 targetPosition = float3headPosition + math.mul(QheadRotation, EyeFowards) + AppliedOffset;
-
-                // Check distance for teleporting, otherwise smooth move
-                if (math.distance(targetPosition, CenterTargetWorld) > DistanceBeforeTeleport || wasDisabled)
+            // Check distance for teleporting, otherwise smooth move
+            if (math.distance(targetPosition, CenterTargetWorld) > DistanceBeforeTeleport || wasDisabled)
+            {
+                CenterTargetWorld = targetPosition;
+                wasDisabled = false;
+            }
+            else
+            {
+                CenterTargetWorld = Vector3.MoveTowards(CenterTargetWorld, targetPosition, lookSpeed);
+            }
+            // Set eye rotations using optimized float3 and quaternion operations
+            if (HasLeftEye)
+            {
+                LeftEyeTargetWorld = CenterTargetWorld + LeftEyeInitallocalSpace.position;
+                leftEyeTransform.rotation = LookAtTarget(leftEyeTransform.position, LeftEyeTargetWorld, math.mul(LeftEyeInitallocalSpace.rotation, InversedHeadRotation), HeadTransform.up);
+            }
+            if (HasRightEye)
+            {
+                RightEyeTargetWorld = CenterTargetWorld + RightEyeInitallocalSpace.position;
+                rightEyeTransform.rotation = LookAtTarget(rightEyeTransform.position, RightEyeTargetWorld, math.mul(RightEyeInitallocalSpace.rotation, InversedHeadRotation), HeadTransform.up);
+            }
+            if (BasisGizmoManager.UseGizmos)
+            {
+                if (RightEyeHasGizmo)
                 {
-                    CenterTargetWorld = targetPosition;
-                    wasDisabled = false;
-                }
-                else
-                {
-                    CenterTargetWorld = Vector3.MoveTowards(CenterTargetWorld, targetPosition, lookSpeed);
-                }
-                // Set eye rotations using optimized float3 and quaternion operations
-                if (HasLeftEye)
-                {
-                    LeftEyeTargetWorld = CenterTargetWorld + LeftEyeInitallocalSpace.position;
-                    leftEyeTransform.rotation = LookAtTarget(leftEyeTransform.position, LeftEyeTargetWorld, math.mul(LeftEyeInitallocalSpace.rotation, InversedHeadRotation), HeadTransform.up);
-                }
-                if (HasRightEye)
-                {
-                    RightEyeTargetWorld = CenterTargetWorld + RightEyeInitallocalSpace.position;
-                    rightEyeTransform.rotation = LookAtTarget(rightEyeTransform.position, RightEyeTargetWorld, math.mul(RightEyeInitallocalSpace.rotation, InversedHeadRotation), HeadTransform.up);
-                }
-                if (BasisGizmoManager.UseGizmos)
-                {
-                    if (RightEyeHasGizmo)
+                    if (BasisGizmoManager.UpdateSphereGizmo(RightEyeGizmoIndex, RightEyeTargetWorld) == false)
                     {
-                        if (BasisGizmoManager.UpdateSphereGizmo(RightEyeGizmoIndex, RightEyeTargetWorld) == false)
-                        {
-                            RightEyeHasGizmo = false;
-                        }
+                        RightEyeHasGizmo = false;
                     }
-                    if (LeftEyeHasGizmo)
+                }
+                if (LeftEyeHasGizmo)
+                {
+                    if (BasisGizmoManager.UpdateSphereGizmo(LeftEyeGizmoIndex, LeftEyeTargetWorld) == false)
                     {
-                        if (BasisGizmoManager.UpdateSphereGizmo(LeftEyeGizmoIndex, LeftEyeTargetWorld) == false)
-                        {
-                            LeftEyeHasGizmo = false;
-                        }
+                        LeftEyeHasGizmo = false;
                     }
                 }
             }

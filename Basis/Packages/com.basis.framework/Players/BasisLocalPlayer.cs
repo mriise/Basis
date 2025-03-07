@@ -74,7 +74,6 @@ namespace Basis.Scripts.BasisSdk.Players
             {
                 Instance = this;
             }
-            Instance = this;
             MicrophoneRecorder.OnPausedAction += OnPausedEvent;
             OnLocalPlayerCreated?.Invoke();
             IsLocal = true;

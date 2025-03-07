@@ -156,16 +156,16 @@ namespace HVR.Basis.Comms
             {
                 var xDeg = Mathf.Asin(x) * Mathf.Rad2Deg * multiplyX;
                 var yDeg = Mathf.Asin(-y) * Mathf.Rad2Deg * multiplyY;
-                var euler = Quaternion.Euler(yDeg, xDeg, 0);
+                Quaternion Euler = Quaternion.Euler(yDeg, xDeg, 0);
                 switch (side)
                 {
                     // FIXME: This wrongly assumes that eye bone transforms are oriented the same.
                     // This needs to be fixed later by using the work-in-progress normalized muscle system instead.
                     case EyeSide.Left:
-                        _eyeFollowDriverLateInit.leftEyeTransform.localRotation = math.mul(_eyeFollowDriverLateInit.leftEyeInitialRotation, euler);
+                        _eyeFollowDriverLateInit.leftEyeTransform.localRotation = math.mul(_eyeFollowDriverLateInit.leftEyeInitialRotation, Euler);
                         break;
                     case EyeSide.Right:
-                        _eyeFollowDriverLateInit.rightEyeTransform.localRotation = math.mul(_eyeFollowDriverLateInit.rightEyeInitialRotation, euler);
+                        _eyeFollowDriverLateInit.rightEyeTransform.localRotation = math.mul(_eyeFollowDriverLateInit.rightEyeInitialRotation, Euler);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(side), side, null);
@@ -173,17 +173,21 @@ namespace HVR.Basis.Comms
             }
             else
             {
-                if(_basisRemotePlayer != null)
+                if (_basisRemotePlayer != null)
                 {
                     switch (side)
                     {
                         case EyeSide.Left:
-                            _basisRemotePlayer.NetworkReceiver.Eyes[0] = y;
-                            _basisRemotePlayer.NetworkReceiver.Eyes[1] = x;
+                            float result0 = (y + 1) / 2;
+                            float result1 = (x + 1) / 2;
+                            _basisRemotePlayer.NetworkReceiver.Eyes[0] = result0;
+                            _basisRemotePlayer.NetworkReceiver.Eyes[1] = result1;
                             break;
                         case EyeSide.Right:
-                            _basisRemotePlayer.NetworkReceiver.Eyes[2] = y;
-                            _basisRemotePlayer.NetworkReceiver.Eyes[3] = x;
+                            result0 = (y + 1) / 2;
+                            result1 = (x + 1) / 2;
+                            _basisRemotePlayer.NetworkReceiver.Eyes[2] = result0;
+                            _basisRemotePlayer.NetworkReceiver.Eyes[3] = result1;
                             break;
                         default:
                             throw new ArgumentOutOfRangeException(nameof(side), side, null);
@@ -191,11 +195,10 @@ namespace HVR.Basis.Comms
                 }
             }
         }
-
         private void SetBuiltInEyeFollowDriverOverriden(bool value)
         {
             if (!_eyeFollowDriverLateInit) return;
-            _eyeFollowDriverLateInit.Override = value;
+            BasisLocalEyeFollowBase.Override = value;
         }
 
         private enum EyeSide

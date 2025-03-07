@@ -2018,7 +2018,7 @@ MonoBehaviour:
     PlatFormDefaultState:
     - Platform: 11
       GraphicsVendor: 0
-      SetString: 0
+      SetString: 0.5
     ExcludeFromThesePlatforms: []
     MasterQualityState: 0
     ParseController: 1
@@ -2663,6 +2663,7 @@ GameObject:
   - component: {fileID: -3061024371983229343}
   - component: {fileID: 8683862064975223899}
   - component: {fileID: 8988764245560573337}
+  - component: {fileID: 6910429841152494025}
   m_Layer: 0
   m_Name: BootManager
   m_TagString: Untagged
@@ -2760,7 +2761,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e66a79eb227d0d448870a4e95dc14eeb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  HasEvents: 0
 --- !u!114 &508802122937325065
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2857,3 +2857,17 @@ MonoBehaviour:
       BasisBundleGenerated: []
   UseAddressablesToLoadScene: 0
   UseSceneProvidedHere: 0
+--- !u!114 &6910429841152494025
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9135220577826176361}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d8279b0f691ed944a4b263282ed0bb7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  updateInterval: 0.1
+  timeSinceLastUpdate: 0

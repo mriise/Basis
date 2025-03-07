@@ -87,9 +87,9 @@ namespace Basis.Scripts.Networking.Recievers
                     {
                         TargetVectors[0] = Last.Position; // Target position at index 0
                         OuputVectors[0] = First.Position; // Position at index 0
-
-                        OuputVectors[1] = First.Scale;    // Scale at index 1
-                        TargetVectors[1] = Last.Scale;    // Target scale at index 1
+                        Vector3 Scale = Player.BasisAvatar.Animator.transform.localScale;
+                        OuputVectors[1] = Scale;    // Scale at index 1
+                        TargetVectors[1] = Scale;    // Target scale at index 1
                     }
                     catch (Exception ex)
                     {

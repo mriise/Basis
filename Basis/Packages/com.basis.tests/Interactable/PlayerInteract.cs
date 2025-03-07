@@ -89,7 +89,7 @@ public class PlayerInteract : MonoBehaviour
     private void OnInputChanged(BasisInput Input)
     {
         // TODO: need a different config value for can interact/pickup/grab. Mainly input action/trigger values
-        if (Input.HasRaycastSupport())
+        if (Input.HasRaycaster)
         {
             AddInput(Input);
         }
@@ -376,7 +376,7 @@ public class PlayerInteract : MonoBehaviour
         }
         else
         {
-            BasisDebug.LogError("Interact Inputs has multiple inputs of the same UID. Please report this bug.");
+            BasisDebug.LogError($"Interact Inputs has multiple inputs of the same UID {uid}. Please report this bug.");
         }
     }
 

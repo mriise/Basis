@@ -60,18 +60,6 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
                 AddCallback();
                 HasEvents = true;
             }
-            Application.onBeforeRender += OnBeforeRender;
-        }
-
-        private void OnBeforeRender()
-        {
-            BasisLocalPlayer.Instance.LocalBoneDriver.Simulate();
-            AfterAvatarChanges?.Invoke();
-        }
-
-        public void Update()
-        {
-            InputSystem.Update();
         }
         public void SetupCamera()
         {
@@ -91,7 +79,6 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
                 RemoveCallback();
                 HasEvents = false;
             }
-            Application.onBeforeRender -= OnBeforeRender;
         }
         public void Initialize(BasisLocalPlayer localPlayer)
         {

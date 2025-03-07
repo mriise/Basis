@@ -47,9 +47,9 @@ namespace Basis.Scripts.Networking.Transmitters
                         MicrophoneRecorder.OnHasSilence += SendSilenceOverNetwork;
                         HasEvents = true;
                         // Ensure the output buffer is properly initialized and matches the packet size
-                        if (Recorder.PacketSize != AudioSegmentData.TotalLength)
+                        if (MicrophoneRecorder.PacketSize != AudioSegmentData.TotalLength)
                         {
-                            AudioSegmentData = new AudioSegmentDataMessage(new byte[Recorder.PacketSize]);
+                            AudioSegmentData = new AudioSegmentDataMessage(new byte[MicrophoneRecorder.PacketSize]);
                         }
                     }
                 }
@@ -78,12 +78,12 @@ namespace Basis.Scripts.Networking.Transmitters
             if (NetworkedPlayer.HasReasonToSendAudio)
             {
                 // UnityEngine.BasisDebug.Log("Sending out Audio");
-                if (Recorder.PacketSize != AudioSegmentData.TotalLength)
+                if (MicrophoneRecorder.PacketSize != AudioSegmentData.TotalLength)
                 {
-                    AudioSegmentData = new AudioSegmentDataMessage(new byte[Recorder.PacketSize]);
+                    AudioSegmentData = new AudioSegmentDataMessage(new byte[MicrophoneRecorder.PacketSize]);
                 }
                 // Encode the audio data from the microphone recorder's buffer
-                AudioSegmentData.LengthUsed = encoder.Encode(Recorder.processBufferArray, LocalOpusSettings.SampleRate(), AudioSegmentData.buffer, AudioSegmentData.TotalLength);
+                AudioSegmentData.LengthUsed = encoder.Encode(MicrophoneRecorder.processBufferArray, LocalOpusSettings.SampleRate(), AudioSegmentData.buffer, AudioSegmentData.TotalLength);
                 NetDataWriter writer = new NetDataWriter();
                 AudioSegmentData.Serialize(writer);
                 BasisNetworkProfiler.AudioSegmentDataMessageCounter.Sample(AudioSegmentData.LengthUsed);
