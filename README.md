@@ -44,9 +44,9 @@ Please help shape the future of Basis and leave your mark on its foundation.
 
  ## Installation
  
-This project is currently using Unity 6 (6000.0.33f1)
+This project is currently using Unity 6 (6000.0.41f1)
 Other Unity versions may work but will require changes and adaptations.
-Currently, only OPENXR and SteamVR are supported.
+Currently, OPENXR and SteamVR are supported as well as OPENXR Quest.
 
 1. Make sure you have the correct Unity version installed.
 2. Clone the repository
@@ -76,7 +76,8 @@ This would not be possible without the following:
 - [OdinSerializer](https://github.com/TeamSirenix/odin-serializer)
 - [ULipSync](https://github.com/hecomi/uLipSync)
 - [UnityJigglePhysics](https://github.com/naelstrof/UnityJigglePhysics)
-- [UnityOpus](https://github.com/TyounanMOTI/UnityOpus)
+- [opussharp](https://github.com/AvionBlock/OpusSharp)
+- [opus](https://github.com/xiph/opus)
 - [Settings Manager](https://assetstore.unity.com/packages/tools/gui/settings-manager-158458)
 - [Steam Audio](https://github.com/ValveSoftware/steam-audio)
 - [Kevin Iglesias Animations](https://www.keviniglesias.com/)
