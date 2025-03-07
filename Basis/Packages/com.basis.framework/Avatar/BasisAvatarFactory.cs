@@ -121,7 +121,7 @@ namespace Basis.Scripts.Avatar
                         ChecksRequired Required = new ChecksRequired
                         {
                             UseContentRemoval = false,
-                            DisableAnimatorEvents = false
+                            DisableAnimatorEvents = false,
                         };
                         var Para = new UnityEngine.ResourceManagement.ResourceProviders.InstantiationParameters(Player.transform.position, Quaternion.identity, null);
                         (List<GameObject> GameObjects, AddressableGenericResource resource) = await AddressableResourceProcess.LoadAsGameObjectsAsync(BasisLoadableBundle.BasisRemoteBundleEncrypted.CombinedURL, Para, Required);

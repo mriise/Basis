@@ -2,7 +2,6 @@ using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Device_Management.Devices;
 using System;
 using UnityEngine;
-using UnityEngine.Events;
 
 namespace Basis.Scripts.Device_Management
 {
