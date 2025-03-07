@@ -22,7 +22,27 @@ public class BasisSceneFactory : MonoBehaviour
         {
             Instance = this;
         }
-        BasisScene.Ready.AddListener(Initalize);
+        BasisScene.Ready += Initalize;
+        BasisScene.Destroyed += BasisSceneDestroyed;
+    }
+    public void BasisSceneDestroyed(BasisScene UnloadingScene)
+    {
+        if(UnloadingScene != BasisScene)
+        {
+            return;
+        }
+        else
+        {
+            BasisScene[] Scenes = FindObjectsByType<BasisScene>( FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            foreach(BasisScene PotentialMainScene in Scenes)
+            {
+                if(PotentialMainScene != UnloadingScene)
+                {
+                    Initalize(PotentialMainScene);
+                    return;
+                }
+            }
+        }
     }
     public void Initalize(BasisScene scene)
     {
@@ -42,18 +62,20 @@ public class BasisSceneFactory : MonoBehaviour
         }
         List<GameObject> MainCameras = new List<GameObject>();
         GameObject.FindGameObjectsWithTag("MainCamera", MainCameras);
-        foreach (GameObject PotentialCamera in MainCameras)
+        int Count = MainCameras.Count;
+        for (int Index = 0; Index < Count; Index++)
         {
-            if (PotentialCamera.TryGetComponent(out Camera camera))
+            GameObject PC = MainCameras[Index];
+            if (PC.TryGetComponent(out Camera camera))
             {
                 if (camera != BasisLocalCameraDriver.Instance.Camera)
                 {
-                    LoadCameraPropertys(camera);
+                //    LoadCameraPropertys(camera);
                     GameObject.DestroyImmediate(camera.gameObject);
                 }
                 else
                 {
-                    BasisDebug.Log("No New main Camera Found");
+                  //  BasisDebug.Log("No New main Camera Found");
                 }
             }
         }
@@ -68,6 +90,7 @@ public class BasisSceneFactory : MonoBehaviour
     }
     public void LoadCameraPropertys(Camera Camera)
     {
+        BNL.Log("Loading Camera Propertys From Camera "+ Camera.gameObject.name);  
         Camera RealCamera = BasisLocalCameraDriver.Instance.Camera;
         RealCamera.useOcclusionCulling = Camera.useOcclusionCulling;
         RealCamera.backgroundColor = Camera.backgroundColor;
@@ -89,11 +112,7 @@ public class BasisSceneFactory : MonoBehaviour
     public void AttachMixerToAllSceneAudioSources()
     {
         // Check if mixerGroup is assigned
-        if (BasisScene.Group == null)
-        {
-            BasisScene.Group = WorldDefaultMixer;
-        }
-
+        BasisScene.Group = WorldDefaultMixer;
 
         // Get all active and inactive AudioSources in the scene
         AudioSource[] sources = FindObjectsByType<AudioSource>(FindObjectsInactive.Include, FindObjectsSortMode.None);

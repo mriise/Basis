@@ -1,237 +1,250 @@
 using System.IO;
 using System.Threading.Tasks;
 using System.Threading;
-using System;
 using UnityEngine;
 using UnityEngine.Networking;
+using System;
 
 public static class BasisIOManagement
 {
-    // Define chunk size (in bytes) for reading and writing.
-    private static int chunkSize = 81920; // 80 KB
-    /// <summary>
-    /// downloads a file in chunks
-    /// </summary>
-    /// <param name="url"></param>
-    /// <param name="localFilePath"></param>
-    /// <param name="progressCallback"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    public static async Task DownloadFile(string url, string localFilePath, BasisProgressReport progressCallback, CancellationToken cancellationToken = default)
+    public static int HeaderSize = 8; // 8 bytes
+
+    public static async Task<(BasisBundleConnector, string, byte[])> DownloadBEE(string url, string vp, BasisProgressReport progressCallback, CancellationToken cancellationToken = default)
     {
-        BasisDebug.Log($"Starting file download from {url}");
+        byte[] ConnectorSize = await DownloadFileRange(url, null, progressCallback, cancellationToken, 0, HeaderSize, true);
+        long LengthOfSection = BitConverter.ToInt64(ConnectorSize, 0);
+        byte[] ConnectorBytes = await DownloadFileRange(url, null, progressCallback, cancellationToken, HeaderSize, HeaderSize + LengthOfSection - 1, true);
 
-        // Null or empty URL check
-        if (string.IsNullOrWhiteSpace(url))
-        {
-            BasisDebug.LogError("The provided URL is null or empty.");
-            return;
-        }
+        BasisDebug.Log("Downloaded Connector file size is " + ConnectorBytes.Length);
+        BasisBundleConnector Connector = await BasisEncryptionToData.GenerateMetaFromBytes(vp, ConnectorBytes, progressCallback);
 
-        // Null or empty file path check
-        if (string.IsNullOrWhiteSpace(localFilePath))
-        {
-            BasisDebug.LogError("The provided local file path is null or empty.");
-            return;
-        }
+        long previousEnd = HeaderSize + LengthOfSection - 1; // Correct start position after header
+        byte[] lastSectionData = null;
 
-        // Ensure directory exists
-        string directory = Path.GetDirectoryName(localFilePath);
-        if (!Directory.Exists(directory))
+        // Download all necessary sections
+        for (int Index = 0; Index < Connector.BasisBundleGenerated.Length; Index++)
         {
-            Directory.CreateDirectory(directory);
-        }
+            BasisBundleGenerated pair = Connector.BasisBundleGenerated[Index];
 
-        using (UnityWebRequest request = UnityWebRequest.Get(url))
-        {
-            // Stream the download directly to the file
-            request.downloadHandler = new DownloadHandlerFile(localFilePath)
+            long startPosition = previousEnd + 1;
+            long sectionLength = pair.EndByte;
+            long endPosition = startPosition + sectionLength - 1;
+
+            if (BasisBundleConnector.IsPlatform(pair))
             {
-                removeFileOnAbort = true // Ensure incomplete downloads are cleaned up
-            };
-            UnityWebRequestAsyncOperation asyncOperation = request.SendWebRequest();
-            // Track download progress and handle the download
-            while (!asyncOperation.isDone)
-            {
-                // Check if cancellation is requested
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    BasisDebug.Log("Download cancelled.");
-                    request.Abort(); // Abort request on cancellation
-                    return;
-                }
+                Console.WriteLine($"Downloading from {startPosition} to {endPosition}");
 
-                // Report progress (0% to 100%)
-                progressCallback.ReportProgress(asyncOperation.webRequest.downloadProgress * 100, "downloading data");
-                // BasisDebug.Log("downloading file " + asyncOperation.webRequest.downloadProgress);
-                await Task.Yield();
+                lastSectionData = await DownloadFileRange(url, null, progressCallback, cancellationToken, startPosition, endPosition, true);
+                BasisDebug.Log("Section length is " + lastSectionData.Length);
             }
-
-            // Handle potential download errors
-            if (request.result != UnityWebRequest.Result.Success)
-            {
-                BasisDebug.LogError($"Failed to download file: {request.error} for URL {url}");
-                return;
-            }
-
-            // Check if the file has been written successfully
-            if (!File.Exists(localFilePath))
-            {
-                BasisDebug.LogError("The file was not created.");
-                return;
-            }
-
-            BasisDebug.Log($"Successfully downloaded file from {url} to {localFilePath}");
-        }
-    }
-    public static async Task<byte[]> LoadLocalFile(string filePath, BasisProgressReport progressCallback, CancellationToken cancellationToken = default)
-    {
-        BasisDebug.Log($"Starting file load from {filePath}");
-
-        // Check if the file exists
-        if (!File.Exists(filePath))
-        {
-            BasisDebug.LogError($"File does not exist: {filePath}");
-            return null;
+            previousEnd = endPosition;
         }
 
-        long fileSize = new FileInfo(filePath).Length;
-        byte[] fileData = new byte[fileSize];
+        string BEEPath = BasisIOManagement.GenerateFilePath($"{Connector.UniqueVersion}{BasisBundleManagement.BasisEncryptedExtension}", BasisBundleManagement.AssetBundlesFolder);
 
-        // Open the file stream for reading
-        using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, useAsync: true))
-        {
-            long totalBytesRead = 0;
-            int bytesRead;
+        await SaveFileDataToDiscAsync(BEEPath, ConnectorBytes, lastSectionData);
 
-            // Read the file in chunks
-            while ((bytesRead = await fileStream.ReadAsync(fileData, (int)totalBytesRead, (int)(fileSize - totalBytesRead), cancellationToken)) > 0)
-            {
-                totalBytesRead += bytesRead;
-
-                // Check if cancellation is requested
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    BasisDebug.Log("Load cancelled.");
-                    return null;
-                }
-
-                // Report progress (0% to 100%)
-                //  progressCallback?.Invoke((float)totalBytesRead / fileSize * 100);
-            }
-        }
-
-        BasisDebug.Log($"Successfully loaded file from {filePath}");
-        return fileData;
+        return new(Connector, BEEPath, lastSectionData);
     }
 
-    private static async Task WriteToFileAsync(string filePath, byte[] data, BasisProgressReport progressCallback, CancellationToken cancellationToken)
+    public static async Task SaveFileDataToDiscAsync(string BEEPath, byte[] ConnectorBytes, byte[] lastSectionData)
     {
-        // Ensure the directory exists
-        string directory = Path.GetDirectoryName(filePath);
-        if (!Directory.Exists(directory))
-        {
-            Directory.CreateDirectory(directory);
-        }
-        // Write the file data asynchronously on a separate thread
-        await Task.Run(async () =>
-        {
-            using (FileStream fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true))
-            {
-                int totalBytes = data.Length;
-                int bytesWritten = 0;
-
-                while (bytesWritten < totalBytes)
-                {
-                    // Check for cancellation
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        Debug.LogWarning("File write operation cancelled.");
-                        return;
-                    }
-
-                    int bytesToWrite = Math.Min(chunkSize, totalBytes - bytesWritten);
-                    await fileStream.WriteAsync(data, bytesWritten, bytesToWrite, cancellationToken);
-                    bytesWritten += bytesToWrite;
-
-                    // Report file write progress (from 50% to 100%)
-                    float progress = 50 + ((float)bytesWritten / totalBytes) * 50;
-                }
-            }
-        });
-    }
-
-    public static async Task<bool> CopyFileAsync(string sourceFilePath, string destinationFilePath, BasisProgressReport Report, CancellationToken cancellationToken = default)
-    {
-        if (!File.Exists(sourceFilePath))
-        {
-            BasisDebug.LogError($"Source file not found: {sourceFilePath}");
-            return false;
-        }
+        byte[] connectorSizeBytes = BitConverter.GetBytes(ConnectorBytes.Length);
+        if (!BitConverter.IsLittleEndian)
+            Array.Reverse(connectorSizeBytes); // Ensure little-endian format
 
         try
         {
-            long totalBytes = new FileInfo(sourceFilePath).Length;
-            long totalBytesCopied = 0;
-
-            // Open the source and destination file streams
-            using (FileStream sourceStream = new FileStream(sourceFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-            using (FileStream destinationStream = new FileStream(destinationFilePath, FileMode.Create, FileAccess.Write, FileShare.None))
+            using (FileStream fileStream = new FileStream(BEEPath, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true))
             {
-                byte[] buffer = new byte[chunkSize];
-                int bytesRead;
-
-                // Read and write chunks asynchronously
-                while ((bytesRead = await sourceStream.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) > 0)
-                {
-                    await destinationStream.WriteAsync(buffer, 0, bytesRead, cancellationToken);
-                    totalBytesCopied += bytesRead;
-
-                    // Calculate and report progress
-                    float progress = (float)totalBytesCopied / totalBytes;
-                    Report.ReportProgress(progress * 100, "copying data");
-
-                    // Allow other tasks to run
-                    await Task.Yield();
-                }
+                await fileStream.WriteAsync(connectorSizeBytes, 0, connectorSizeBytes.Length);
+                await fileStream.WriteAsync(ConnectorBytes, 0, ConnectorBytes.Length);
+                await fileStream.WriteAsync(lastSectionData, 0, lastSectionData.Length);
             }
 
-            // After copying, delete the source file
-            BasisDebug.Log($"Successfully copied file from {sourceFilePath} to {destinationFilePath}");
-            return true;
-        }
-        catch (OperationCanceledException)
-        {
-            Debug.LogWarning("File move operation was canceled.");
-            return false;
+            long expectedSize = connectorSizeBytes.Length + ConnectorBytes.Length + lastSectionData.Length;
+            long actualSize = new FileInfo(BEEPath).Length;
+
+            BasisDebug.Log($"Expected File Size: {expectedSize} bytes");
+            BasisDebug.Log($"Actual File Size on Disk: {actualSize} bytes");
+
+            if (expectedSize == actualSize)
+            {
+                BasisDebug.Log("File size is correct.");
+            }
+            else
+            {
+                BasisDebug.LogError("File size does not match expected size!");
+            }
         }
         catch (Exception ex)
         {
-            BasisDebug.LogError($"Error moving file: {ex.Message}");
-            return false;
+            BasisDebug.LogError($"Error writing file: {ex.Message}");
         }
     }
+
+    public static async Task<(BasisBundleConnector, byte[])> ReadBEEFile(string filePath, string vp, BasisProgressReport progressCallback, CancellationToken cancellationToken = default)
+    {
+        BasisBundleConnector connector;
+        byte[] sectionData;
+        if (!File.Exists(filePath))
+        {
+            BasisDebug.LogError($"File not found: {filePath}");
+            return (null, null);
+        }
+
+        using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true))
+        using (BinaryReader reader = new BinaryReader(fileStream))
+        {
+            long fileSize = reader.BaseStream.Length;
+            //   BasisDebug.Log($"Total Size of File: {fileSize} bytes");
+
+            byte[] sizeBytes = reader.ReadBytes(sizeof(int));
+            //   BasisDebug.Log($"Raw size bytes: {BitConverter.ToString(sizeBytes)}");
+
+            if (sizeBytes.Length < sizeof(int))
+            {
+                BasisDebug.LogError("Failed to read the connector size - file might be corrupted.");
+                return (null, null);
+            }
+
+            if (!BitConverter.IsLittleEndian)
+                Array.Reverse(sizeBytes);
+
+            int connectorSize = BitConverter.ToInt32(sizeBytes, 0);
+            //  BasisDebug.Log($"Connector size read: {connectorSize}");
+
+            if (connectorSize <= 0 || connectorSize > fileSize - reader.BaseStream.Position)
+            {
+                BasisDebug.LogError("Invalid connector size detected! Possible corruption or incorrect file format.");
+                return (null, null);
+            }
+
+            byte[] connectorBytes = reader.ReadBytes(connectorSize);
+            //  BasisDebug.Log($"Read Connector file size: {connectorBytes.Length}");
+
+            connector = await BasisEncryptionToData.GenerateMetaFromBytes(vp, connectorBytes, progressCallback);
+
+            long remainingBytes = fileSize - reader.BaseStream.Position;
+            sectionData = reader.ReadBytes((int)remainingBytes);
+            //  BasisDebug.Log($"Read section length: {sectionData.Length}");
+        }
+        return (connector, sectionData);
+    }
+    public static async Task<byte[]> DownloadFileRange(string url, string localFilePath, BasisProgressReport progressCallback, CancellationToken cancellationToken = default,long startByte = 0, long? endByte = null, bool loadToMemory = false)
+    {
+        BasisDebug.Log($"Starting file download from {url} (Range: {startByte}-{(endByte.HasValue ? endByte.ToString() : "end")})");
+        string uniqueID = BasisGenerateUniqueID.GenerateUniqueID();
+
+        localFilePath = loadToMemory ? "memory" : localFilePath;
+
+        if (!ValidateInputs(url, localFilePath))
+        {
+            return null;
+        }
+
+        using (UnityWebRequest request = CreateRequest(url, startByte, endByte, loadToMemory ? null : localFilePath))
+        {
+            return await ProcessDownload(request, uniqueID, progressCallback, cancellationToken, url, localFilePath, startByte, endByte, loadToMemory);
+        }
+    }
+
+    private static bool ValidateInputs(string url, string localFilePath)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            BasisDebug.LogError("The provided URL is null or empty.");
+            return false;
+        }
+        if (string.IsNullOrWhiteSpace(localFilePath))
+        {
+            BasisDebug.LogError("The provided local file path is null or empty.");
+            return false;
+        }
+        return true;
+    }
+
+    private static UnityWebRequest CreateRequest(string url, long startByte, long? endByte, string localFilePath = null)
+    {
+        UnityWebRequest request = UnityWebRequest.Get(url);
+        string rangeHeader = endByte.HasValue ? $"bytes={startByte}-{endByte}" : $"bytes={startByte}-";
+        request.SetRequestHeader("Range", rangeHeader);
+
+        if (localFilePath != null)
+        {
+            request.downloadHandler = new DownloadHandlerFile(localFilePath, true) { removeFileOnAbort = true };
+        }
+        else
+        {
+            request.downloadHandler = new DownloadHandlerBuffer();
+        }
+
+        return request;
+    }
+
+    private static async Task<byte[]> ProcessDownload(UnityWebRequest request, string uniqueID, BasisProgressReport progressCallback, CancellationToken cancellationToken,string url, string localFilePath, long startByte, long? endByte, bool loadToMemory)
+    {
+        UnityWebRequestAsyncOperation asyncOperation = request.SendWebRequest();
+
+        while (!asyncOperation.isDone)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                BasisDebug.Log("Download cancelled.");
+                request.Abort();
+                return null;
+            }
+            progressCallback.ReportProgress(uniqueID, asyncOperation.webRequest.downloadProgress * 100, "Downloading data...");
+            await Task.Yield();
+        }
+
+        if (request.result != UnityWebRequest.Result.Success)
+        {
+            BasisDebug.LogError($"Failed to download file: {request.error} for URL {url}");
+            return null;
+        }
+
+        long responseCode = request.responseCode;
+        if (responseCode != 206 && responseCode != 200)
+        {
+            BasisDebug.LogError($"Server did not support range requests. Response code: {responseCode}.");
+            return null;
+        }
+
+        if (loadToMemory)
+        {
+            BasisDebug.Log($"Successfully downloaded range {startByte}-{(endByte.HasValue ? endByte.ToString() : "end")} to memory");
+            return request.downloadHandler.data;  // Return as byte array
+        }
+        else
+        {
+            if (!File.Exists(localFilePath))
+            {
+                BasisDebug.LogError("The file was not created.");
+                return null;
+            }
+            BasisDebug.Log($"Successfully downloaded range {startByte}-{(endByte.HasValue ? endByte.ToString() : "end")} from {url} to {localFilePath}");
+            return null;  // No data returned for file-based download
+        }
+    }
+
     public static string GenerateFilePath(string fileName, string subFolder)
     {
         BasisDebug.Log($"Generating folder path for {fileName} in subfolder {subFolder}");
 
-        // Create the full folder path
         string folderPath = GenerateFolderPath(subFolder);
-        // Create the full file path
         string localPath = Path.Combine(folderPath, fileName);
         BasisDebug.Log($"Generated folder path: {localPath}");
 
-        // Return the local path
         return localPath;
     }
+
     public static string GenerateFolderPath(string subFolder)
     {
         BasisDebug.Log($"Generating folder path in subfolder {subFolder}");
 
-        // Create the full folder path
         string folderPath = Path.Combine(Application.persistentDataPath, subFolder);
 
-        // Check if the directory exists, and create it if it doesn't
         if (!Directory.Exists(folderPath))
         {
             BasisDebug.Log($"Directory {folderPath} does not exist. Creating directory.");

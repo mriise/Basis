@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -41,6 +41,10 @@ public class AvatarSDKVisemes
         ManualAvatarVisemesvisualElement.Clear();
         if (basisAvatarSDKInspector.Avatar.FaceVisemeMesh != null)
         {
+            if (basisAvatarSDKInspector.Avatar.FaceVisemeMovement == null || basisAvatarSDKInspector.Avatar.FaceVisemeMovement.Length != 15)
+            {
+                basisAvatarSDKInspector.Avatar.FaceVisemeMovement = new int[] { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
+            }
             // Get the list of blend shape names from the Avatar
             List<string> MouthNames = AvatarHelper.FindAllNames(basisAvatarSDKInspector.Avatar.FaceVisemeMesh);
             // Add "None" to the list of names to represent the -1 case
@@ -95,6 +99,10 @@ public class AvatarSDKVisemes
         }
         if (basisAvatarSDKInspector.Avatar.FaceBlinkMesh != null)
         {
+            if (basisAvatarSDKInspector.Avatar.BlinkViseme == null || basisAvatarSDKInspector.Avatar.BlinkViseme.Length == 0)
+            {
+                basisAvatarSDKInspector.Avatar.BlinkViseme = new int[1] { -1 };
+            }
             VisualElement manualassignBlinkDetection = basisAvatarSDKInspector.rootElement.Q<VisualElement>("manualassignBlinkDetection");
 
             manualassignBlinkDetection.Clear();

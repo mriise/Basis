@@ -8,6 +8,7 @@ using System;
 using Basis.Scripts.BasisSdk.Helpers;
 using Basis.Scripts.Device_Management;
 using System.Collections;
+using Basis.Scripts.BasisSdk.Players;
 public class BasisSDKMirror : MonoBehaviour
 {
     public Renderer Renderer;//only renders when this is visible
@@ -41,13 +42,34 @@ public class BasisSDKMirror : MonoBehaviour
 
     public bool allowXRRendering = true;
     public bool RenderPostProcessing = false;
+    public bool OcclusionCulling = false;
+    public bool renderShadows = false;
+    [SerializeField]
+    private LayerMask ReflectingLayers;
     public void Awake()
     {
         IsActive = false;
         IsAbleToRender = false;
+        if (ReflectingLayers == 0)
+        {
+            int remotePlayerLayer = LayerMask.NameToLayer("RemotePlayerAvatar");
+            int localPlayerLayer = LayerMask.NameToLayer("LocalPlayerAvatar");
+            int defaultLayer = LayerMask.NameToLayer("Default");
+
+            if (remotePlayerLayer == -1 || localPlayerLayer == -1 || defaultLayer == -1)
+            {
+                Debug.LogError("One or more layers do not exist. Please verify the layer names.");
+            }
+            else
+            {
+                // Combine the layers into a single LayerMask
+                ReflectingLayers = (1 << remotePlayerLayer) | (1 << localPlayerLayer) | (1 << defaultLayer);
+            }
+        }
         BasisMeshRendererCheck = BasisHelpers.GetOrAddComponent<BasisMeshRendererCheck>(this.Renderer.gameObject);
         BasisMeshRendererCheck.Check += VisibilityFlag;
     }
+    private int InstanceID;
     public void OnEnable()
     {
         if (BasisLocalCameraDriver.HasInstance)
@@ -56,6 +78,7 @@ public class BasisSDKMirror : MonoBehaviour
         }
         BasisLocalCameraDriver.InstanceExists += Initalize;
         RenderPipeline.beginCameraRendering += UpdateCamera;
+        InstanceID = gameObject.GetInstanceID();
     }
 
     public IEnumerator Start()
@@ -89,6 +112,7 @@ public class BasisSDKMirror : MonoBehaviour
         }
         BasisLocalCameraDriver.InstanceExists -= Initalize;
         RenderPipeline.beginCameraRendering -= UpdateCamera;
+        BasisLocalPlayer.Instance.AvatarDriver.RemoveActiveMatrixOverride(InstanceID);
     }
 
     private void BootModeChanged(string obj)
@@ -122,7 +146,9 @@ public class BasisSDKMirror : MonoBehaviour
         if (IsCameraAble(camera))
         {
             OnCamerasRenderering?.Invoke();
+
             BasisLocalCameraDriver.Instance.ScaleHeadToNormal();
+            BasisLocalPlayer.Instance.AvatarDriver.TryActiveMatrixOverride(InstanceID);
             ThisPosition = Renderer.transform.position;
             projectionMatrix = camera.projectionMatrix;
             normal = Renderer.transform.TransformDirection(projectionDirection);
@@ -216,7 +242,7 @@ public class BasisSDKMirror : MonoBehaviour
         {
             name = "__MirrorReflection" + eye.ToString() + GetInstanceID(),
             isPowerOfTwo = true,
-            antiAliasing = Antialising
+            antiAliasing = Antialising,
         };
         string Property = "_ReflectionTex" + eye.ToString();
         Renderer.material = MirrorsMaterial;
@@ -240,10 +266,13 @@ public class BasisSDKMirror : MonoBehaviour
         newCamera.aspect = currentCamera.aspect;
         newCamera.orthographicSize = currentCamera.orthographicSize;
         newCamera.depth = 2;
+        newCamera.cullingMask = ReflectingLayers.value;
+        newCamera.useOcclusionCulling = OcclusionCulling;
         if (newCamera.TryGetComponent(out UniversalAdditionalCameraData CameraData))
         {
             CameraData.allowXRRendering = allowXRRendering;
             CameraData.renderPostProcessing = RenderPostProcessing;
+            CameraData.renderShadows = renderShadows;
         }
     }
     private void VisibilityFlag(bool IsVisible)

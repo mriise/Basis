@@ -31,7 +31,7 @@ namespace Basis.Scripts.Virtual_keyboard
         public static InputField InputField;
         public static TMP_InputField TMPInputField;
         public LanguageStyle CurrentSelectedLanguage;
-        public static string VirtualKeyboard = "Assets/Prefabs/Loadins/Virtual Keyboard.prefab";
+        public static string VirtualKeyboard = "Virtual Keyboard";
         public static void CreateMenu(InputField inputField, TMP_InputField tMP_InputField)
         {
             AddressableGenericResource resource = new AddressableGenericResource(VirtualKeyboard, AddressableExpectedResult.SingleItem);
@@ -60,7 +60,7 @@ namespace Basis.Scripts.Virtual_keyboard
         }
         public void Callback(BasisVirtualKeyboardButton KeyInformation)
         {
-            if (KeyInformation.BasisVirtualKeyboardSpecialKey == BasisVirtualKeyboardSpecialKey.IsEnterKey)
+            if (KeyInformation.BasisVirtualKeyboardSpecialKey == BasisVirtualKeyboardSpecialKey.IsEnterKey || KeyInformation.BasisVirtualKeyboardSpecialKey == BasisVirtualKeyboardSpecialKey.IsCloseKey)
             {
                 CloseThisMenu();
             }

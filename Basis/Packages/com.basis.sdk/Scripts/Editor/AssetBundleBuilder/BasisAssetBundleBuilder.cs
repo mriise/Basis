@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-
 using System.IO;
 using System.Threading.Tasks;
 using UnityEditor;
@@ -8,142 +6,151 @@ using UnityEngine;
 using static BasisEncryptionWrapper;
 public static class AssetBundleBuilder
 {
-    public static async Task<List<BasisBundleInformation>> BuildAssetBundle(BasisAssetBundleObject settings, string assetBundleName, BasisBundleInformation BasisBundleInformation, string Mode, string Password)
+    public static async Task<(BasisBundleGenerated, InformationHash)> BuildAssetBundle(string targetDirectory, BasisAssetBundleObject settings, string assetBundleName, string mode, string password, BuildTarget buildTarget, bool isEncrypted = true)
     {
-        AssetBundleManifest manifest = BuildPipeline.BuildAssetBundles(
-            settings.AssetBundleDirectory,
-            settings.BuildAssetBundleOptions,
-            settings.BuildTarget
-        );
-        List<BasisBundleInformation> basisBundleInformation = new List<BasisBundleInformation>();
+        InformationHash Hash = new InformationHash();
+        BasisBundleGenerated BasisBundleGenerated = new BasisBundleGenerated();
+        EnsureDirectoryExists(targetDirectory);
+        EditorUtility.DisplayProgressBar("Building Asset Bundles", "Initializing...", 0f);
+        AssetBundleManifest manifest = BuildPipeline.BuildAssetBundles(targetDirectory, settings.BuildAssetBundleOptions, buildTarget);
         if (manifest != null)
         {
-            string[] Files = manifest.GetAllAssetBundles();
-            for (int Index = 0; Index < Files.Length; Index++)
+            Hash = await ProcessAssetBundles(targetDirectory, settings, manifest, password, isEncrypted);
+            BasisBundleGenerated = new BasisBundleGenerated(Hash.bundleHash.ToString(), mode, assetBundleName, Hash.CRC, true, password, buildTarget.ToString(),Hash.Length);
+            DeleteManifestFiles(targetDirectory, buildTarget.ToString());
+
+
+        }
+        else
+        {
+            BasisDebug.LogError("AssetBundle build failed.");
+        }
+        EditorUtility.ClearProgressBar();
+        return new (BasisBundleGenerated, Hash);
+    }
+    private static async Task<InformationHash> ProcessAssetBundles(string targetDirectory,BasisAssetBundleObject settings,AssetBundleManifest manifest,string password,bool isEncrypted)
+    {
+        string[] files = manifest.GetAllAssetBundles();
+        int totalFiles = files.Length;
+        List<InformationHash> InformationHashes = new List<InformationHash>();
+        for (int index = 0; index < totalFiles; index++)
+        {
+            string fileOutput = files[index];
+            string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileOutput);
+            Hash128 bundleHash = manifest.GetAssetBundleHash(fileOutput);
+            BuildPipeline.GetCRCForAssetBundle(fileOutput, out uint crc);
+            string actualFilePath = $"{Path.Combine(targetDirectory, fileNameWithoutExtension)}";
+            InformationHash informationHash = new InformationHash
             {
-                string FileOutput = Files[Index];
-                string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(FileOutput);
-                Hash128 bundleHash = manifest.GetAssetBundleHash(FileOutput);
-                BuildPipeline.GetCRCForAssetBundle(FileOutput, out uint CRC);
-                InformationHash informationHash = new InformationHash
-                {
-                    File = fileNameWithoutExtension,//excludes extension
-                    bundleHash = bundleHash,
-                    CRC = CRC,
-                };
-                string actualFilePath = Path.Combine(settings.AssetBundleDirectory, informationHash.File);
-                actualFilePath += ".bundle";
-                // Create bundle information and add it to the list
-                BasisBundleInformation Output = await BasisBasisBundleInformationHandler.CreateInformation(settings, BasisBundleInformation, informationHash, Mode, assetBundleName, settings.AssetBundleDirectory, Password);
-                if(Output == null)
-                {
-                    new Exception("Check Console for Error Message!");
-                }
-                basisBundleInformation.Add(Output);
-
-                // Encrypt the bundle asynchronously
-                string EncryptedFilePath = await EncryptBundle(Password, actualFilePath, settings, manifest);
-
-                // Delete the bundle file if it exists
-                if (File.Exists(actualFilePath))
-                {
-                    File.Delete(actualFilePath);
-                }
-                string Pathout = Path.GetDirectoryName(actualFilePath);
-
-                await SaveFileAsync(Pathout, "dontuploadmepassword", "txt", Password);
-
-                OpenRelativePath(Pathout);
+                bundleHash = bundleHash,
+                CRC = crc,
+            };
+            float progress = (float)(index + 1) / totalFiles;
+            EditorUtility.DisplayProgressBar("Building Asset Bundles", $"Processing {fileOutput}...", progress);
+            string encryptedFilePath = await HandleEncryption(actualFilePath, password, settings, manifest, isEncrypted);
+            CleanupOriginalFile(actualFilePath);
+            informationHash.EncyptedPath = encryptedFilePath;
+            FileInfo FileInfo = new FileInfo(encryptedFilePath);
+            informationHash.Length = FileInfo.Length;
+            InformationHashes.Add(informationHash);
+        }
+        if (InformationHashes.Count == 1)
+        {
+            return InformationHashes[0];
+        }
+        else
+        {
+            if (InformationHashes.Count > 1)
+            {
+                BasisDebug.LogError("More then a single Bundle is being built, please check what bundles your additionally building");
+                return InformationHashes[0];
             }
-            // Find and delete all .manifest files in the AssetBundle directory
-            string[] manifestFiles = Directory.GetFiles(settings.AssetBundleDirectory, "*.manifest");
-            foreach (string manifestFile in manifestFiles)
+            else
+            {
+                BasisDebug.LogError("No bundles where built, this is a massive issue!");
+                return new InformationHash();
+            }
+        }
+    }
+
+    private static async Task<string> HandleEncryption(string filePath,string password,BasisAssetBundleObject settings,AssetBundleManifest manifest, bool isEncrypted)
+    {
+        if (isEncrypted)
+        {
+            return await EncryptBundle(password, filePath, settings, manifest);
+        }
+        else
+        {
+            string decryptedFilePath = Path.ChangeExtension(filePath, settings.BasisBundleDecryptedExtension);
+            File.Copy(filePath, decryptedFilePath);
+            return decryptedFilePath;
+        }
+    }
+
+    private static void CleanupOriginalFile(string filePath)
+    {
+        if (File.Exists(filePath))
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    private static void DeleteManifestFiles(string targetDirectory, string Platform, bool DeleteManifestFiles = true)
+    {
+        if (DeleteManifestFiles)
+        {
+            string[] Files = Directory.GetFiles(targetDirectory, "*.manifest");
+            foreach (string manifestFile in Files)
             {
                 if (File.Exists(manifestFile))
                 {
                     File.Delete(manifestFile);
-                    Debug.Log("Deleted manifest file: " + manifestFile);
+                    BasisDebug.Log("Deleted manifest file: " + manifestFile);
                 }
             }
-            string[] AssetFiles = Directory.GetFiles(settings.AssetBundleDirectory);
-            foreach (string manifestFile in AssetFiles)
-            {
-                // Get the file name without its extension
-                string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(manifestFile);
 
-                // Check if the file name is exactly "AssetBundles"
-                if (fileNameWithoutExtension == "AssetBundles")
+
+            string[] BundlesFiles = Directory.GetFiles(targetDirectory);
+            foreach (string assetFile in BundlesFiles)
+            {
+                if (Path.GetFileNameWithoutExtension(assetFile) == "AssetBundles")
                 {
-                    // Delete the file
-                    File.Delete(manifestFile);
-                    Debug.Log("Deleted manifest file: " + manifestFile);
+                    File.Delete(assetFile);
+                    BasisDebug.Log("Deleted AssetBundles file: " + assetFile);
+                }
+                if (Path.GetFileNameWithoutExtension(assetFile) == Platform)
+                {
+                    File.Delete(assetFile);
+                    BasisDebug.Log("Deleted Platform file: " + assetFile);
                 }
             }
         }
-        else
-        {
-            Debug.LogError("AssetBundle build failed.");
-        }
-        return basisBundleInformation;
     }
-    public static async Task SaveFileAsync(string directoryPath, string fileName, string fileExtension, string fileContent)
+    public static async Task SaveFileAsync(string directoryPath, string fileName, string fileExtension, string fileContent,int BufferSize = 256)
     {
         // Combine directory path, file name, and extension
         string fullPath = Path.Combine(directoryPath, $"{fileName}.{fileExtension}");
         // Use asynchronous file writing
-        using (FileStream fileStream = new FileStream(fullPath, FileMode.Create, FileAccess.Write, FileShare.None, 256, true))
-        using (StreamWriter writer = new StreamWriter(fileStream))
+        using (FileStream fileStream = new FileStream(fullPath, FileMode.Create, FileAccess.Write, FileShare.None, BufferSize, true))
         {
-            await writer.WriteAsync(fileContent);
+            using (StreamWriter writer = new StreamWriter(fileStream))
+            {
+                await writer.WriteAsync(fileContent);
+            }
         }
 
-        Debug.Log($"File saved asynchronously at: {fullPath}");
-    }
-
-    // Convert a Unity path to a Windows-compatible path and open it in File Explorer
-    public static void OpenFolderInExplorer(string folderPath)
-    {
-        // Convert Unity-style file path (forward slashes) to Windows-style (backslashes)
-        string windowsPath = folderPath.Replace("/", "\\");
-
-        // Check if the path exists
-        if (Directory.Exists(windowsPath) || File.Exists(windowsPath))
-        {
-            // On Windows, use 'explorer' to open the folder or highlight the file
-            System.Diagnostics.Process.Start("explorer.exe", windowsPath);
-        }
-        else
-        {
-            Debug.LogError("Path does not exist: " + windowsPath);
-        }
-    }
-
-    // Example usage to convert relative paths like './AssetBundles/...'
-    public static string OpenRelativePath(string relativePath)
-    {
-        // Get the root path of the project (up to the Assets folder)
-        string projectRoot = Application.dataPath.Replace("/Assets", "");
-
-        // If the relative path starts with './', remove it
-        if (relativePath.StartsWith("./"))
-        {
-            relativePath = relativePath.Substring(2); // Remove './'
-        }
-
-        // Combine the root with the relative path
-        string fullPath = Path.Combine(projectRoot, relativePath);
-
-        // Open the folder or file in explorer
-        OpenFolderInExplorer(fullPath);
-        return fullPath;
+        BasisDebug.Log($"File saved asynchronously at: {fullPath}");
     }
     public struct InformationHash
     {
-        public string File;
+        public string EncyptedPath;
         public Hash128 bundleHash;
         public uint CRC;
+        public long Length;
     }
+
     private static BasisProgressReport Report = new BasisProgressReport();
+
     // Method to encrypt a file using a password
     public static async Task<string> EncryptBundle(string password, string actualFilePath, BasisAssetBundleObject buildSettings, AssetBundleManifest assetBundleManifest)
     {
@@ -153,30 +160,32 @@ public static class AssetBundleBuilder
         string[] bundles = assetBundleManifest.GetAllAssetBundles();
         if (bundles.Length == 0)
         {
-            Debug.LogError("No asset bundles found in manifest.");
+            BasisDebug.LogError("No asset bundles found in manifest.");
             return string.Empty;
         }
-        string EncryptedPath = Path.ChangeExtension(actualFilePath, buildSettings.BasisBundleEncyptedExtension);
+        string EncryptedPath = Path.ChangeExtension(actualFilePath, buildSettings.BasisBundleEncryptedExtension);
 
         // Delete existing encrypted file if present
         if (File.Exists(EncryptedPath))
         {
             File.Delete(EncryptedPath);
         }
-        Debug.Log("Encrypting " + actualFilePath);
+        BasisDebug.Log("Encrypting " + actualFilePath);
         BasisPassword BasisPassword = new BasisPassword
         {
             VP = password
         };
-        await BasisEncryptionWrapper.EncryptFileAsync(BasisPassword, actualFilePath, EncryptedPath, Report);
+        string UniqueID = BasisGenerateUniqueID.GenerateUniqueID();
+        await BasisEncryptionWrapper.EncryptFileAsync(UniqueID, BasisPassword, actualFilePath, EncryptedPath, Report);
         encryptionTimer.Stop();
-        Debug.Log("Encryption took " + encryptionTimer.ElapsedMilliseconds + " ms for " + EncryptedPath);
+        BasisDebug.Log("Encryption took " + encryptionTimer.ElapsedMilliseconds + " ms for " + EncryptedPath);
         return EncryptedPath;
     }
+
     public static string SetAssetBundleName(string assetPath, string uniqueID, BasisAssetBundleObject settings)
     {
         AssetImporter assetImporter = AssetImporter.GetAtPath(assetPath);
-        string assetBundleName = $"{uniqueID}{settings.BundleExtension}";
+        string assetBundleName = $"{uniqueID}";
 
         if (assetImporter != null)
         {
@@ -185,7 +194,7 @@ public static class AssetBundleBuilder
         }
         else
         {
-            Debug.LogError("Missing Asset Import for path " + assetPath);
+            BasisDebug.LogError("Missing Asset Import for path " + assetPath);
         }
 
         return null;
@@ -199,4 +208,12 @@ public static class AssetBundleBuilder
             assetImporter.assetBundleName = null;
         }
     }
+    private static void EnsureDirectoryExists(string targetDirectory)
+    {
+        if (!Directory.Exists(targetDirectory))
+        {
+            Directory.CreateDirectory(targetDirectory);
+        }
+    }
+
 }

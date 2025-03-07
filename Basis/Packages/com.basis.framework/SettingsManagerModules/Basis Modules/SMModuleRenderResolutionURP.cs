@@ -1,11 +1,13 @@
 #if SETTINGS_MANAGER_UNIVERSAL
 using Basis.Scripts.Device_Management;
 using BattlePhaze.SettingsManager;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.XR;
 public class SMModuleRenderResolutionURP : SettingsManagerOption
 {
+    List<XRDisplaySubsystem> xrDisplays = new List<XRDisplaySubsystem>();
     public void Start()
     {
         BasisDeviceManagement.Instance.OnBootModeChanged += OnBootModeChanged;
@@ -24,8 +26,12 @@ public class SMModuleRenderResolutionURP : SettingsManagerOption
     {
         if (NameReturn(0, Option))
         {
-            BasisDebug.Log("Render Resolution");
+            // BasisDebug.Log("Render Resolution");
             UniversalRenderPipelineAsset Asset = (UniversalRenderPipelineAsset)QualitySettings.renderPipeline;
+            if (XRSettings.useOcclusionMesh == false)
+            {
+                XRSettings.useOcclusionMesh = true;
+            }
             if (SliderReadOption(Option, Manager, out float Value))
             {
                 SetRenderResolution(Value);
@@ -37,11 +43,43 @@ public class SMModuleRenderResolutionURP : SettingsManagerOption
             {
                 SetUpscaler(Option.SelectedValue);
             }
+            else
+            {
+                if (NameReturn(2, Option))
+                {
+                   // BasisDebug.Log("Changing Foveated Rendering");
+                    SubsystemManager.GetSubsystems<XRDisplaySubsystem>(xrDisplays);
+
+                    if (xrDisplays.Count  == 0)
+                    {
+                   //     BasisDebug.LogError("No XR display subsystems found.");
+                        return;
+                    }
+                    foreach (var subsystem in xrDisplays)
+                    {
+                        if (subsystem.running)
+                        {
+                            xrDisplaySubsystem = subsystem;
+                            break;
+                        }
+                    }
+                    xrDisplaySubsystem.foveatedRenderingFlags = XRDisplaySubsystem.FoveatedRenderingFlags.GazeAllowed;
+                    if (SliderReadOption(Option, Manager, out float Value))
+                    {
+                      //  BasisDebug.Log("Changing Foveated Rendering to " + Value);
+                        xrDisplaySubsystem.foveatedRenderingLevel = Value;
+                    }
+                }
+            }
         }
     }
     public float RenderScale = 1;
+    private XRDisplaySubsystem xrDisplaySubsystem;
+
     public void SetRenderResolution(float renderScale)
     {
+#if UNITY_ANDROID
+#else
         RenderScale = renderScale;
         if (BasisDeviceManagement.Instance.CurrentMode == BasisDeviceManagement.Desktop)
         {
@@ -53,27 +91,23 @@ public class SMModuleRenderResolutionURP : SettingsManagerOption
         }
         else
         {
-            if (XRSettings.useOcclusionMesh == false)
-            {
-                XRSettings.useOcclusionMesh = true;
-            }
             UniversalRenderPipelineAsset Asset = (UniversalRenderPipelineAsset)QualitySettings.renderPipeline;
-            if (Asset.renderScale != 1)
-            {
-                Asset.renderScale = 1;
-            }
             if (XRSettings.eyeTextureResolutionScale != renderScale)
             {
                 XRSettings.eyeTextureResolutionScale = RenderScale;
             }
-            if (XRSettings.renderViewportScale != 1)
+            /// the system allows us to scale the render resolution correctly, however gpu culling does not know about this
+            if (Asset.renderScale != 1)
             {
-                XRSettings.renderViewportScale = 1;
+                Asset.renderScale = 1;
             }
         }
+#endif
     }
     public void SetUpscaler(string Using)
     {
+#if UNITY_ANDROID
+#else
         UniversalRenderPipelineAsset Asset = (UniversalRenderPipelineAsset)QualitySettings.renderPipeline;
         switch (Using)
         {
@@ -93,6 +127,7 @@ public class SMModuleRenderResolutionURP : SettingsManagerOption
                 Asset.upscalingFilter = UpscalingFilterSelection.STP;
                 break;
         }
+#endif
     }
 }
 #endif

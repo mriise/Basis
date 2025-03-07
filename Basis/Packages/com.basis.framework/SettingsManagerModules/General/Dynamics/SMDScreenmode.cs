@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace BattlePhaze.SettingsManager.Intergrations
 {
@@ -13,10 +13,14 @@ namespace BattlePhaze.SettingsManager.Intergrations
 
         public override void ReceiveOption(SettingsMenuInput Option, SettingsManager Manager = null)
         {
+#if UNITY_ANDROID
+            return;
+#else
             if (!NameReturn(0, Option))
             {
                 return;
             }
+
             SettingsManagerDropDown.Clear(Manager, Option.OptionIndex);
             Option.SelectableValueList.Clear();
 
@@ -66,6 +70,7 @@ namespace BattlePhaze.SettingsManager.Intergrations
                     }
                 }
             }
+#endif
         }
     }
 }

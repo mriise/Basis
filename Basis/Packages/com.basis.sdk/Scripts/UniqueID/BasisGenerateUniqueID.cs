@@ -1,18 +1,17 @@
 using System;
-using UnityEngine;
 
 public static class BasisGenerateUniqueID
 {
     /// <summary>
-    /// This will generate a new unique ID for the prefab, scene, or asset bundle.
+    /// Generates a unique ID using a GUID and the current UTC date (yyyyMMdd).
     /// </summary>
-    /// <returns>A unique identifier combining a GUID and UTC ticks.</returns>
+    /// <returns>A unique identifier combining a GUID and UTC date.</returns>
     public static string GenerateUniqueID()
     {
         Guid newGuid = Guid.NewGuid();  // Generate a new GUID
-        long utcTicks = DateTime.UtcNow.Ticks;  // Get the current UTC ticks
+        string utcDate = DateTime.UtcNow.ToString("yyyyMMdd");  // Get the current UTC date (YYYYMMDD)
+        string guid = newGuid.ToString("N"); // Remove dashes from GUID
 
-        // Format the GUID and ticks into a proper string
-        return $"{newGuid}_{utcTicks}";
+        return $"{guid}{utcDate}";
     }
 }

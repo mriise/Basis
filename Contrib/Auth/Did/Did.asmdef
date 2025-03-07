@@ -1,0 +1,20 @@
+{
+    "name": "Basis.Contrib.Auth.DecentralizedIds",
+    "rootNamespace": "",
+    "references": [
+        "GUID:b02b12758fb9942cda32715ba18e00b0"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Base128.dll",
+        "SimpleBase.dll",
+        "Newtonsoft.Json.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}

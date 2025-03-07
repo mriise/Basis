@@ -2,12 +2,14 @@ using Basis.Scripts.Addressable_Driver.Resource;
 using Basis.Scripts.BasisSdk.Helpers;
 using Basis.Scripts.Command_Line_Args;
 using Basis.Scripts.Device_Management.Devices;
+using Basis.Scripts.Device_Management.Devices.Desktop;
 using Basis.Scripts.Drivers;
 using Basis.Scripts.Player;
 using Basis.Scripts.TransformBinders;
 using Basis.Scripts.TransformBinders.BoneControl;
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -20,7 +22,7 @@ namespace Basis.Scripts.Device_Management
     public partial class BasisDeviceManagement : MonoBehaviour
     {
         public bool FireOffNetwork = true;
-        public bool HasEvents = false;
+        public static bool HasEvents = false;
         public const string InvalidConst = "Invalid";
         public string[] BakedInCommandLineArgs = new string[] { };
         public static string NetworkManagement = "NetworkManagement";
@@ -46,7 +48,7 @@ namespace Basis.Scripts.Device_Management
         /// <returns></returns>
         public static bool IsUserInDesktop()
         {
-            if(BasisDeviceManagement.Instance == null)
+            if (BasisDeviceManagement.Instance == null)
             {
                 return false;
             }
@@ -57,11 +59,10 @@ namespace Basis.Scripts.Device_Management
             return false;
         }
         public static BasisDeviceManagement Instance;
-        public BasisOpusSettings BasisOpusSettings;
         public event Action<string> OnBootModeChanged;
         public event Action<string> OnBootModeStopped;
         public delegate Task InitializationCompletedHandler();
-        public event InitializationCompletedHandler OnInitializationCompleted;
+        public static event InitializationCompletedHandler OnInitializationCompleted;
         public BasisDeviceNameMatcher BasisDeviceNameMatcher;
         [SerializeField]
         public BasisObservableList<BasisInput> AllInputDevices = new BasisObservableList<BasisInput>();
@@ -75,6 +76,8 @@ namespace Basis.Scripts.Device_Management
         public List<StoredPreviousDevice> PreviouslyConnectedDevices = new List<StoredPreviousDevice>();
         [SerializeField]
         public List<BasisDeviceMatchSettings> UseAbleDeviceConfigs = new List<BasisDeviceMatchSettings>();
+        [SerializeField]
+        public BasisLocalInputActions InputActions;
         async void Start()
         {
             if (BasisHelpers.CheckInstance<BasisDeviceManagement>(Instance))
@@ -106,6 +109,7 @@ namespace Basis.Scripts.Device_Management
                 BasisXRManagement.CheckForPass -= CheckForPass;
 
                 OnInitializationCompleted -= RunAfterInitialized;
+                HasEvents = false;
             }
         }
         public static void UnassignFBTrackers()
@@ -115,25 +119,47 @@ namespace Basis.Scripts.Device_Management
                 Input.UnAssignFBTracker();
             }
         }
-        public bool TryFindBasisBaseTypeManagement(string Name, out List<BasisBaseTypeManagement> Match)
+        public bool TryFindBasisBaseTypeManagement(string name, out List<BasisBaseTypeManagement> match)
         {
-            Match = new List<BasisBaseTypeManagement>();
-            foreach (BasisBaseTypeManagement Type in BaseTypes)
+            match = new List<BasisBaseTypeManagement>();
+
+            if (string.IsNullOrEmpty(name))
             {
-                if (Type.Type() == Name)
-                {
-                    Match.Add(Type);
-                }
-            }
-            if (Match.Count == 0)
-            {
+                BasisDebug.LogError("Name parameter is null or empty.", BasisDebug.LogTag.Device);
                 return false;
             }
+
+            if (BaseTypes == null)
+            {
+                BasisDebug.LogError("BaseTypes list is null.", BasisDebug.LogTag.Device);
+                return false;
+            }
+
+            foreach (BasisBaseTypeManagement type in BaseTypes)
+            {
+                if (type == null)
+                {
+                    BasisDebug.LogWarning("Null entry found in BaseTypes list.", BasisDebug.LogTag.Device);
+                    continue;
+                }
+
+                if (type.Type() == name)
+                {
+                    match.Add(type);
+                }
+            }
+
+            if (match.Count == 0)
+            {
+                BasisDebug.LogWarning($"No matches found for name '{name}'.", BasisDebug.LogTag.Device);
+                return false;
+            }
+
             return true;
         }
         public async Task Initialize()
         {
-            CommandLineArgs.Initialize(BakedInCommandLineArgs,out string ForcedDevicemanager);
+            CommandLineArgs.Initialize(BakedInCommandLineArgs, out string ForcedDevicemanager);
             LoadAndOrSaveDefaultDeviceConfigs();
             InstantiationParameters parameters = new InstantiationParameters();
             await BasisPlayerFactory.CreateLocalPlayer(parameters);
@@ -277,16 +303,25 @@ namespace Basis.Scripts.Device_Management
         {
             if (Instance != null && Mode != Instance.CurrentMode)
             {
-               Instance.SwitchMode(Mode);
+                Instance.SwitchMode(Mode);
             }
         }
         public static void ShowTrackers()
         {
-             ShowTrackersAsync();
+            ShowTrackersAsync();
         }
         public void SetCameraRenderState(bool state)
         {
             BasisLocalCameraDriver.Instance.CameraData.allowXRRendering = state;
+            if (state)
+            {
+                BasisLocalCameraDriver.Instance.Camera.stereoTargetEye = StereoTargetEyeMask.Both;
+            }
+            else
+            {
+                BasisLocalCameraDriver.Instance.Camera.stereoTargetEye = StereoTargetEyeMask.None;
+            }
+            BasisDebug.Log("Stero Set To " + BasisLocalCameraDriver.Instance.Camera.stereoTargetEye);
         }
         public static void ShowTrackersAsync()
         {
@@ -323,18 +358,52 @@ namespace Basis.Scripts.Device_Management
         }
         private void CheckForPass(string type)
         {
-            BasisDebug.Log("Loading " + type, BasisDebug.LogTag.Device);
-            if (TryFindBasisBaseTypeManagement("SimulateXR", out List<BasisBaseTypeManagement> Matched))
+            if (string.IsNullOrEmpty(type))
             {
-                foreach (var m in Matched)
+                BasisDebug.LogError("Type parameter is null or empty.", BasisDebug.LogTag.Device);
+                return;
+            }
+
+            BasisDebug.Log("Loading " + type, BasisDebug.LogTag.Device);
+
+            if (!TryFindBasisBaseTypeManagement("SimulateXR", out List<BasisBaseTypeManagement> matchedSimulateXR))
+            {
+                BasisDebug.LogWarning("No BasisBaseTypeManagement found for 'SimulateXR'.", BasisDebug.LogTag.Device);
+            }
+            else if (matchedSimulateXR == null || matchedSimulateXR.Count == 0)
+            {
+                BasisDebug.LogWarning("'SimulateXR' list is null or empty.", BasisDebug.LogTag.Device);
+            }
+            else
+            {
+                foreach (var m in matchedSimulateXR)
                 {
+                    if (m == null)
+                    {
+                        BasisDebug.LogWarning("Null entry found in 'SimulateXR' list.", BasisDebug.LogTag.Device);
+                        continue;
+                    }
                     m.StartSDK();
                 }
             }
-            if (TryFindBasisBaseTypeManagement(type, out Matched))
+
+            if (!TryFindBasisBaseTypeManagement(type, out List<BasisBaseTypeManagement> matchedType))
             {
-                foreach (var m in Matched)
+                BasisDebug.LogWarning($"No BasisBaseTypeManagement found for type '{type}'.", BasisDebug.LogTag.Device);
+            }
+            else if (matchedType == null || matchedType.Count == 0)
+            {
+                BasisDebug.LogWarning($"List for type '{type}' is null or empty.", BasisDebug.LogTag.Device);
+            }
+            else
+            {
+                foreach (var m in matchedType)
                 {
+                    if (m == null)
+                    {
+                        BasisDebug.LogWarning($"Null entry found in list for type '{type}'.", BasisDebug.LogTag.Device);
+                        continue;
+                    }
                     m.StartSDK();
                 }
             }
@@ -478,5 +547,14 @@ namespace Basis.Scripts.Device_Management
 
             UseAbleDeviceConfigs = deviceDictionary.Values.ToList();
         }
+        public static void EnqueueOnMainThread(Action action)
+        {
+            if (action == null) return;
+
+            mainThreadActions.Enqueue(action);
+            hasPendingActions = true;
+        }
+        public static readonly ConcurrentQueue<Action> mainThreadActions = new ConcurrentQueue<Action>();
+        public static volatile bool hasPendingActions = false;
     }
 }

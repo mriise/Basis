@@ -44,7 +44,7 @@ namespace Basis.Scripts.Common
             }
             else
             {
-                Debug.LogWarning("File not found at " + filePath);
+                BasisDebug.LogWarning("File not found at " + filePath);
                 BasisSavedAvatar = null;
                 return false;
             }

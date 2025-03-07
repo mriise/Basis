@@ -108,7 +108,7 @@ namespace Basis.Scripts.Drivers
             BasisLocalEyeFollowDriver = BasisHelpers.GetOrAddComponent<BasisLocalEyeFollowBase>(Player.BasisAvatar.gameObject);
             BasisLocalEyeFollowDriver.Initalize(this,Player);
             HeadScaledDown = Vector3.zero;
-            SetAllMatrixRecalculation(true);
+            SetMatrixOverride();
             updateWhenOffscreen(true);
             if (References.Hashead)
             {
@@ -146,9 +146,13 @@ namespace Basis.Scripts.Drivers
             }
             StoredRolesTransforms = BasisAvatarIKStageCalibration.GetAllRolesAsTransform();
             Player.BasisAvatar.transform.parent = Hips.BoneTransform;
-            Player.BasisAvatar.transform.SetLocalPositionAndRotation(-Hips.TposeLocal.position,Quaternion.identity);
+            Player.BasisAvatar.transform.SetLocalPositionAndRotation(-Hips.TposeLocal.position, Quaternion.identity);
             CalibrateOffsets();
             BuildBuilder();
+            if(BasisLocalCameraDriver.Instance != null)
+            {
+                BasisLocalCameraDriver.Instance.IsNormalHead = true;
+            }
         }
         public void OnDestroy()
         {
@@ -390,8 +394,23 @@ namespace Basis.Scripts.Drivers
         private void SetupHeadRig(BasisLocalBoneDriver driver)
         {
             GameObject HeadRig = CreateRig("Chest, Neck, Head", true, out RigHeadRig, out RigHeadLayer);
-            CreateTwoBone(driver, HeadRig, References.chest, References.neck, References.head, BasisBoneTrackedRole.Head, BasisBoneTrackedRole.Chest, true, out HeadTwoBoneIK, true, true);
+            if (References.HasUpperchest)
+            {
+                CreateTwoBone(driver, HeadRig, References.Upperchest, References.neck, References.head, BasisBoneTrackedRole.Head, BasisBoneTrackedRole.Chest, true, out HeadTwoBoneIK, true, true);
+            }
+            else
+            {
+                if (References.Haschest)
+                {
+                    CreateTwoBone(driver, HeadRig, References.chest, References.neck, References.head, BasisBoneTrackedRole.Head, BasisBoneTrackedRole.Chest, true, out HeadTwoBoneIK, true, true);
 
+                }
+                else
+                {
+                    CreateTwoBone(driver, HeadRig, References.neck, References.neck, References.head, BasisBoneTrackedRole.Head, BasisBoneTrackedRole.Chest, true, out HeadTwoBoneIK, true, true);
+
+                }
+            }
             List<BasisBoneControl> controls = new List<BasisBoneControl>();
             if (driver.FindBone(out BasisBoneControl Head, BasisBoneTrackedRole.Head))
             {
@@ -577,7 +596,7 @@ namespace Basis.Scripts.Drivers
             foreach (var control in Controls)
             {
                 // Add event listener for each control to update Layer's active state when HasRigLayer changes
-                control.OnHasRigChanged.AddListener(delegate { UpdateLayerActiveState(Controls, Layer); });
+                control.OnHasRigChanged += delegate { UpdateLayerActiveState(Controls, Layer); };
                 control.HasEvents = true;
             }
 

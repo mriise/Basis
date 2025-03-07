@@ -1,9 +1,7 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace Basis.Scripts.UI
-{
-public partial class BasisPointRaycaster
 {
     [System.Serializable]
     public struct RaycastHitData
@@ -27,5 +25,4 @@ public partial class BasisPointRaycaster
         [SerializeField]
         public int displayIndex;
     }
-}
 }

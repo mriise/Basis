@@ -43,7 +43,9 @@ namespace Basis.Scripts.TransformBinders.BoneControl
         public int TposeGizmoReference = -1;
         public bool TposeHasGizmo = false;
         public Action VirtualRun;
+        public Action VirtualInverseOffsetRun;
         public bool HasVirtualOverride;
+        public bool HasInverseOffsetOverride;
         public float trackersmooth = 25;
 
         public bool IsHintRoleIgnoreRotation = false;
@@ -57,19 +59,32 @@ namespace Basis.Scripts.TransformBinders.BoneControl
             }
             if (HasTracked == BasisHasTracked.HasTracker)
             {
+
+                ///this needs to be refactored to understand each part of the body and a generic mode.
+                ///start off with a distance limiter for the hips.
+                ///could also be a step at the end for every targeted type
                 if (InverseOffsetFromBone.Use)
                 {
-                    if (IsHintRoleIgnoreRotation == false)
-                    {                    // Update the position of the secondary transform to maintain the initial offset
-                        OutGoingData.position = Vector3.Lerp(OutGoingData.position, IncomingData.position + math.mul(IncomingData.rotation, InverseOffsetFromBone.position), trackersmooth);
-                        // Update the rotation of the secondary transform to maintain the initial offset
-                        OutGoingData.rotation = Quaternion.Slerp(OutGoingData.rotation, math.mul(IncomingData.rotation, InverseOffsetFromBone.rotation), trackersmooth);
+
+                    if (HasInverseOffsetOverride)
+                    {
+                        VirtualInverseOffsetRun?.Invoke();
                     }
                     else
                     {
-                        OutGoingData.rotation = Quaternion.identity;
-                        // Update the position of the secondary transform to maintain the initial offset
-                        OutGoingData.position = Vector3.Lerp(OutGoingData.position, IncomingData.position + math.mul(IncomingData.rotation, InverseOffsetFromBone.position), trackersmooth);
+                        if (IsHintRoleIgnoreRotation == false)
+                        {
+                            // Update the position of the secondary transform to maintain the initial offset
+                            OutGoingData.position = Vector3.Lerp(OutGoingData.position, IncomingData.position + math.mul(IncomingData.rotation, InverseOffsetFromBone.position), trackersmooth);
+                            // Update the rotation of the secondary transform to maintain the initial offset
+                            OutGoingData.rotation = Quaternion.Slerp(OutGoingData.rotation, math.mul(IncomingData.rotation, InverseOffsetFromBone.rotation), trackersmooth);
+                        }
+                        else
+                        {
+                            OutGoingData.rotation = Quaternion.identity;
+                            // Update the position of the secondary transform to maintain the initial offset
+                            OutGoingData.position = Vector3.Lerp(OutGoingData.position, IncomingData.position + math.mul(IncomingData.rotation, InverseOffsetFromBone.position), trackersmooth);
+                        }
                     }
                 }
                 else
@@ -190,9 +205,9 @@ namespace Basis.Scripts.TransformBinders.BoneControl
         [HideInInspector]
         public bool NotProcessing = false;
         // Events for property changes
-        public UnityEvent OnHasRigChanged = new UnityEvent();
+        public Action OnHasRigChanged;
 
-        public UnityEvent<float, float> WeightsChanged = new UnityEvent<float, float>();
+        public Action<float, float> WeightsChanged;
         // Backing fields for the properties
         [SerializeField]
         private BasisHasRigLayer hasRigLayer = BasisHasRigLayer.HasNoRigLayer;
@@ -205,7 +220,7 @@ namespace Basis.Scripts.TransformBinders.BoneControl
                 if (hasRigLayer != value)
                 {
                     hasRigLayer = value;
-                    OnHasRigChanged.Invoke();
+                    OnHasRigChanged?.Invoke();
                 }
             }
         }

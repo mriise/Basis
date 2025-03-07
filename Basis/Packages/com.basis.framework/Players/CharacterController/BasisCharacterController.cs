@@ -136,7 +136,6 @@ namespace Basis.Scripts.BasisCharacterController
 
             float HeightOffset = (characterController.height / 2) - characterController.radius;
             bottomPointLocalspace = FinalRotation + (characterController.center - new Vector3(0, HeightOffset, 0));
-
             ReadyToRead?.Invoke();
         }
 

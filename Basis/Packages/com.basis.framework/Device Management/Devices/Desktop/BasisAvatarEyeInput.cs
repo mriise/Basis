@@ -1,9 +1,11 @@
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Basis.Scripts.BasisSdk.Helpers;
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Drivers;
 using Basis.Scripts.TransformBinders.BoneControl;
-using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using UnityEngine.InputSystem;
 namespace Basis.Scripts.Device_Management.Devices.Desktop
 {
@@ -25,14 +27,15 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
         public float InjectedX = 0;
         public float InjectedZ = 0;
         public bool HasEyeEvents = false;
-        public bool PauseLook = false;
+        [SerializeField]
+        private List<string> headPauseRequests = new();
         public void Initalize(string ID = "Desktop Eye", string subSystems = "BasisDesktopManagement")
         {
             BasisDebug.Log("Initalizing Avatar Eye", BasisDebug.LogTag.Input);
             if (BasisLocalPlayer.Instance.AvatarDriver != null)
             {
-                BasisDebug.Log("Using Configured Height " + BasisLocalPlayer.Instance.PlayerEyeHeight, BasisDebug.LogTag.Input);
-                LocalRawPosition = new Vector3(InjectedX, BasisLocalPlayer.Instance.PlayerEyeHeight, InjectedZ);
+                BasisDebug.Log("Using Configured Height " + BasisLocalPlayer.Instance.CurrentHeight.PlayerEyeHeight, BasisDebug.LogTag.Input);
+                LocalRawPosition = new Vector3(InjectedX, BasisLocalPlayer.Instance.CurrentHeight.PlayerEyeHeight, InjectedZ);
                 LocalRawRotation = Quaternion.identity;
             }
             else
@@ -43,7 +46,7 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
             }
             FinalPosition = LocalRawPosition;
             FinalRotation = LocalRawRotation;
-            InitalizeTracking(ID, ID, subSystems, true, BasisBoneTrackedRole.CenterEye);
+             InitalizeTracking(ID, ID, subSystems, true, BasisBoneTrackedRole.CenterEye);
             if (BasisHelpers.CheckInstance(Instance))
             {
                 Instance = this;
@@ -61,16 +64,24 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
                 HasEyeEvents = true;
             }
         }
+        public void PauseHead(string requestName)
+        {
+            headPauseRequests.Add(requestName);
+        }
+        public bool UnPauseHead(string requestName)
+        {
+            return headPauseRequests.Remove(requestName);
+        }
         private void OnCursorStateChange(CursorLockMode cursor, bool newCursorVisible)
         {
             BasisDebug.Log("cursor changed to : " + cursor.ToString() + " | Cursor Visible : " + newCursorVisible, BasisDebug.LogTag.Input);
             if (cursor == CursorLockMode.Locked)
             {
-                PauseLook = false;
+                UnPauseHead(nameof(BasisCursorManagement));
             }
             else
             {
-                PauseLook = true;
+                PauseHead(nameof(BasisCursorManagement));
             }
         }
         public new void OnDestroy()
@@ -88,11 +99,7 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
         }
         private void BasisLocalPlayer_OnPlayersHeightChanged()
         {
-            //   Vector3 Pos = new Vector3(0, BasisLocalPlayer.Instance.AvatarDriver.ActiveAvatarEyeHeight(), 0);
-            //  BasisLocalPlayer.Instance.AvatarDriver.GetWorldSpaceRotAndPos(() => Pos, out quaternion rot, out float3 position);
-            //  BasisLocalPlayer.Instance.PlayerEyeHeight = -position.y;
-          // float avatarHeight = BasisLocalPlayer.Instance.AvatarDriver?.ActiveAvatarEyeHeight() ?? 0;
-            BasisLocalPlayer.Instance.PlayerEyeHeight = BasisLocalPlayer.Instance.AvatarEyeHeight;
+            BasisLocalPlayer.Instance.CurrentHeight.PlayerEyeHeight = BasisLocalPlayer.Instance.CurrentHeight.AvatarEyeHeight;
         }
         public void PlayerInitialized()
         {
@@ -118,7 +125,7 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
         public void HandleMouseRotation(Vector2 lookVector)
         {
             BasisPointRaycaster.ScreenPoint = Mouse.current.position.value;
-            if (!isActiveAndEnabled || PauseLook)
+            if (!isActiveAndEnabled || headPauseRequests.Count > 0)
             {
                 return;
             }
@@ -138,7 +145,7 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
                 // Clamp rotationY to stay within the specified range
                 rotationY = Mathf.Clamp(rotationY, minimumY, maximumY);
                 LocalRawRotation = Quaternion.Euler(rotationY, rotationX, InjectedZRot);
-                Vector3 adjustedHeadPosition = new Vector3(InjectedX, BasisLocalPlayer.Instance.PlayerEyeHeight, InjectedZ);
+                Vector3 adjustedHeadPosition = new Vector3(InjectedX, BasisLocalPlayer.Instance.CurrentHeight.PlayerEyeHeight, InjectedZ);
                 if (BasisLocalInputActions.Crouching)
                 {
                     adjustedHeadPosition.y -= Control.TposeLocal.position.y * crouchPercentage;
@@ -151,6 +158,41 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
                 UpdatePlayerControl();
             }
         }
+        public override void ShowTrackedVisual()
+        {
+            if (BasisVisualTracker == null && LoadedDeviceRequest == null)
+            {
+                BasisDeviceMatchSettings Match = BasisDeviceManagement.Instance.BasisDeviceNameMatcher.GetAssociatedDeviceMatchableNames(CommonDeviceIdentifier);
+                if (Match.CanDisplayPhysicalTracker)
+                {
+                    var op = Addressables.LoadAssetAsync<GameObject>(Match.DeviceID);
+                    GameObject go = op.WaitForCompletion();
+                    GameObject gameObject = Object.Instantiate(go);
+                    gameObject.name = CommonDeviceIdentifier;
+                    gameObject.transform.parent = this.transform;
+                    if (gameObject.TryGetComponent(out BasisVisualTracker))
+                    {
+                        BasisVisualTracker.Initialization(this);
+                    }
+                }
+                else
+                {
+                    if (UseFallbackModel())
+                    {
+                        UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<GameObject> op = Addressables.LoadAssetAsync<GameObject>(FallbackDeviceID);
+                        GameObject go = op.WaitForCompletion();
+                        GameObject gameObject = Object.Instantiate(go);
+                        gameObject.name = CommonDeviceIdentifier;
+                        gameObject.transform.parent = this.transform;
+                        if (gameObject.TryGetComponent(out BasisVisualTracker))
+                        {
+                            BasisVisualTracker.Initialization(this);
+                        }
+                    }
+                }
+            }
+        }
+
         public BasisVirtualSpineDriver BasisVirtualSpine = new BasisVirtualSpineDriver();
     }
 }

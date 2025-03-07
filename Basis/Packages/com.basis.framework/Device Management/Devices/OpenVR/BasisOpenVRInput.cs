@@ -1,8 +1,10 @@
-﻿using Basis.Scripts.BasisSdk.Players;
+using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Device_Management.Devices.OpenVR.Structs;
 using Basis.Scripts.TransformBinders.BoneControl;
+using System.Threading.Tasks;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using Valve.VR;
 
 namespace Basis.Scripts.Device_Management.Devices.OpenVR
@@ -36,14 +38,14 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
                         LocalRawPosition = deviceTransform.pos;
                         LocalRawRotation = deviceTransform.rot;
 
-                        FinalPosition = LocalRawPosition * BasisLocalPlayer.Instance.EyeRatioAvatarToAvatarDefaultScale;
+                        FinalPosition = LocalRawPosition * BasisLocalPlayer.Instance.CurrentHeight.EyeRatioAvatarToAvatarDefaultScale;
                         FinalRotation = LocalRawRotation;
                         if (hasRoleAssigned)
                         {
                             if (Control.HasTracked != BasisHasTracked.HasNoTracker)
                             {
                                 // Apply the position offset using math.mul for quaternion-vector multiplication
-                                Control.IncomingData.position = FinalPosition - math.mul(FinalRotation, AvatarPositionOffset * BasisLocalPlayer.Instance.EyeRatioAvatarToAvatarDefaultScale);
+                                Control.IncomingData.position = FinalPosition - math.mul(FinalRotation, AvatarPositionOffset * BasisLocalPlayer.Instance.CurrentHeight.EyeRatioAvatarToAvatarDefaultScale);
 
                                 // Apply the rotation offset using math.mul for quaternion multiplication
                                 Control.IncomingData.rotation = math.mul(FinalRotation, Quaternion.Euler(AvatarRotationOffset));
@@ -62,6 +64,40 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
                 else
                 {
                     BasisDebug.LogError("Error getting device pose: " + result);
+                }
+            }
+        }
+        public override void ShowTrackedVisual()
+        {
+            if (BasisVisualTracker == null && LoadedDeviceRequest == null)
+            {
+                BasisDeviceMatchSettings Match = BasisDeviceManagement.Instance.BasisDeviceNameMatcher.GetAssociatedDeviceMatchableNames(CommonDeviceIdentifier);
+                if (Match.CanDisplayPhysicalTracker)
+                {
+                    var op = Addressables.LoadAssetAsync<GameObject>(Match.DeviceID);
+                    GameObject go = op.WaitForCompletion();
+                    GameObject gameObject = Object.Instantiate(go);
+                    gameObject.name = CommonDeviceIdentifier;
+                    gameObject.transform.parent = this.transform;
+                    if (gameObject.TryGetComponent(out BasisVisualTracker))
+                    {
+                        BasisVisualTracker.Initialization(this);
+                    }
+                }
+                else
+                {
+                    if (UseFallbackModel())
+                    {
+                        UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<GameObject> op = Addressables.LoadAssetAsync<GameObject>(FallbackDeviceID);
+                        GameObject go = op.WaitForCompletion();
+                        GameObject gameObject = Object.Instantiate(go);
+                        gameObject.name = CommonDeviceIdentifier;
+                        gameObject.transform.parent = this.transform;
+                        if (gameObject.TryGetComponent(out BasisVisualTracker))
+                        {
+                            BasisVisualTracker.Initialization(this);
+                        }
+                    }
                 }
             }
         }

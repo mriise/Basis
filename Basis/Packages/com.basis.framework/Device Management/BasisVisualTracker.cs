@@ -1,14 +1,14 @@
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Device_Management.Devices;
+using System;
 using UnityEngine;
-using UnityEngine.Events;
 
 namespace Basis.Scripts.Device_Management
 {
     public class BasisVisualTracker : MonoBehaviour
     {
         public BasisInput BasisInput;
-        public UnityEvent TrackedSetup = new UnityEvent();
+        public Action TrackedSetup;
         public Quaternion ModelRotationOffset = Quaternion.identity;
         public Vector3 ModelPositionOffset = Vector3.zero;
         public bool HasEvents = false;
@@ -25,7 +25,7 @@ namespace Basis.Scripts.Device_Management
                     BasisLocalPlayer.Instance.OnPlayersHeightChanged += StartWaitAndSetUILocation;
                     HasEvents = true;
                 }
-                TrackedSetup.Invoke();
+                TrackedSetup?.Invoke();
             }
         }
         public void OnDestroy()
@@ -43,8 +43,8 @@ namespace Basis.Scripts.Device_Management
         }
         public void UpdateVisualSizeAndOffset()
         {
-            gameObject.transform.localScale = ScaleOfModel * BasisLocalPlayer.Instance.EyeRatioAvatarToAvatarDefaultScale;
-            gameObject.transform.SetLocalPositionAndRotation(ModelPositionOffset * BasisLocalPlayer.Instance.EyeRatioPlayerToDefaultScale, ModelRotationOffset);
+            gameObject.transform.localScale = ScaleOfModel * BasisLocalPlayer.Instance.CurrentHeight.EyeRatioAvatarToAvatarDefaultScale;
+            gameObject.transform.SetLocalPositionAndRotation(ModelPositionOffset * BasisLocalPlayer.Instance.CurrentHeight.EyeRatioPlayerToDefaultScale, ModelRotationOffset);
         }
     }
 }

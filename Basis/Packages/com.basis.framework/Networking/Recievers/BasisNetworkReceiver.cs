@@ -87,9 +87,9 @@ namespace Basis.Scripts.Networking.Recievers
                     {
                         TargetVectors[0] = Last.Position; // Target position at index 0
                         OuputVectors[0] = First.Position; // Position at index 0
-
-                        OuputVectors[1] = First.Scale;    // Scale at index 1
-                        TargetVectors[1] = Last.Scale;    // Target scale at index 1
+                        Vector3 Scale = Player.BasisAvatar.Animator.transform.localScale;
+                        OuputVectors[1] = Scale;    // Scale at index 1
+                        TargetVectors[1] = Scale;    // Target scale at index 1
                     }
                     catch (Exception ex)
                     {
@@ -125,6 +125,7 @@ namespace Basis.Scripts.Networking.Recievers
             }
         }
         public JobHandle EuroFilterHandle;
+        public Vector3 PositionOffset;
         public void Apply(double TimeAsDouble, float DeltaTime)
         {
             if (PoseHandler != null)
@@ -138,12 +139,12 @@ namespace Basis.Scripts.Networking.Recievers
                         // Complete the jobs and apply the results
                         EuroFilterHandle.Complete();
 
+
                         ApplyPoseData(Player.BasisAvatar.Animator, OuputVectors[1], OuputVectors[0], OutputRotation, enableEuroFilter ? EuroValuesOutput : musclesPreEuro);
                         PoseHandler.SetHumanPose(ref HumanPose);
 
                         RemotePlayer.RemoteBoneDriver.SimulateAndApply(DeltaTime);
-
-                        //come back to this later!  RemotePlayer.Avatar.FaceVisemeMesh.transform.position = RemotePlayer.MouthControl.OutgoingWorldData.position;
+                     //   RemotePlayer.BasisAvatar.FaceVisemeMesh.transform.position = RemotePlayer.RemoteBoneDriver.Hips.OutgoingWorldData.position;
                     }
                     if (interpolationTime >= 1 && PayloadQueue.TryDequeue(out AvatarBuffer result))
                     {
@@ -250,7 +251,7 @@ namespace Basis.Scripts.Networking.Recievers
             if (AudioReceiverModule.decoder != null)
             {
                 BasisNetworkProfiler.ServerAudioSegmentMessageCounter.Sample(audioSegment.audioSegmentData.LengthUsed);
-                AudioReceiverModule.decoder.OnDecode(audioSegment.audioSegmentData.buffer, audioSegment.audioSegmentData.LengthUsed);
+                AudioReceiverModule.OnDecode(audioSegment.audioSegmentData.buffer, audioSegment.audioSegmentData.LengthUsed);
                 Player.AudioReceived?.Invoke(true);
             }
         }
@@ -258,13 +259,13 @@ namespace Basis.Scripts.Networking.Recievers
         {
             if (AudioReceiverModule.decoder != null)
             {
-                if (silentData == null || silentData.Length != AudioReceiverModule.decoder.FakepcmLength)
+                if (silentData == null || silentData.Length != RemoteOpusSettings.Pcmlength)
                 {
-                    silentData = new float[AudioReceiverModule.decoder.FakepcmLength];
+                    silentData = new float[RemoteOpusSettings.Pcmlength];
                     Array.Fill(silentData, 0f);
                 }
                 BasisNetworkProfiler.ServerAudioSegmentMessageCounter.Sample(1);
-                AudioReceiverModule.OnDecoded(silentData, AudioReceiverModule.decoder.FakepcmLength);
+                AudioReceiverModule.OnDecoded(silentData, RemoteOpusSettings.Pcmlength);
                 Player.AudioReceived?.Invoke(false);
             }
         }
@@ -331,35 +332,30 @@ namespace Basis.Scripts.Networking.Recievers
                 DerivativeFilters = derivativeFilters,
             };
         }
-        private float Alpha(float cutoff)
-        {
-            float te = 1.0f / (1.0f / interpolationTime);
-            float tau = 1.0f / (2.0f * Mathf.PI * cutoff);
-            return 1.0f / (1.0f + tau / te);
-        }
         public void OnCalibration()
         {
             AudioReceiverModule.OnCalibration(this);
         }
         public override void DeInitialize()
         {
-            if (OuputVectors.IsCreated) OuputVectors.Dispose();
-            if (TargetVectors.IsCreated) TargetVectors.Dispose();
-            if (musclesPreEuro.IsCreated) musclesPreEuro.Dispose();
-            if (targetMuscles.IsCreated) targetMuscles.Dispose();
-            if(EuroValuesOutput.IsCreated) EuroValuesOutput.Dispose();
-            if (positionFilters.IsCreated) positionFilters.Dispose();
-            if (derivativeFilters.IsCreated) derivativeFilters.Dispose();
+            // Dispose vector data if initialized
+            if (OuputVectors != null && OuputVectors.IsCreated) OuputVectors.Dispose();
+            if (TargetVectors != null && TargetVectors.IsCreated) TargetVectors.Dispose();
+            if (musclesPreEuro != null && musclesPreEuro.IsCreated) musclesPreEuro.Dispose();
+            if (targetMuscles != null && targetMuscles.IsCreated) targetMuscles.Dispose();
+            if (EuroValuesOutput != null && EuroValuesOutput.IsCreated) EuroValuesOutput.Dispose();
+            if (positionFilters != null && positionFilters.IsCreated) positionFilters.Dispose();
+            if (derivativeFilters != null && derivativeFilters.IsCreated) derivativeFilters.Dispose();
 
-            if (HasEvents && RemotePlayer != null && RemotePlayer.RemoteAvatarDriver != null)
+            // Unsubscribe from events if required
+            if (HasEvents && RemotePlayer?.RemoteAvatarDriver != null)
             {
                 RemotePlayer.RemoteAvatarDriver.CalibrationComplete -= OnCalibration;
                 HasEvents = false;
             }
-            if (AudioReceiverModule != null)
-            {
-                AudioReceiverModule.OnDestroy();
-            }
+
+            // Handle audio receiver module cleanup
+            AudioReceiverModule?.OnDestroy();
         }
     }
 }

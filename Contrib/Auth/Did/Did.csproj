@@ -14,8 +14,8 @@
 
   <!--Third-party dependencies-->
   <ItemGroup>
-    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.3.0" />
-    <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
+    <ProjectReference Include="..\..\Crypto\Crypto.csproj" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="SimpleBase" Version="4.0.2" />
     <PackageReference Include="VarInt" Version="1.2.2" />
   </ItemGroup>

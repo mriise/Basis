@@ -1,4 +1,4 @@
-﻿using BasisSerializer.OdinSerializer;
+using BasisSerializer.OdinSerializer;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -14,7 +14,7 @@ namespace Basis.Scripts.UI.UI_Panels
             public string Url;
             public string Pass;
         }
-        public static string FilePath = Path.Combine(Application.persistentDataPath, "VerySafePasswordStore.json");
+        public static string FilePath = Path.Combine(Application.persistentDataPath, "KeyStore.json");
 
         [SerializeField]
         private static List<AvatarKey> keys = new List<AvatarKey>();
@@ -25,7 +25,7 @@ namespace Basis.Scripts.UI.UI_Panels
             {
                 keys.Add(newKey);
                 await SaveKeysToFile();
-                BasisDebug.Log($"Key added: {newKey}");
+                BasisDebug.Log($"Key added: {newKey.Url}");
             }
         }
 
@@ -36,7 +36,7 @@ namespace Basis.Scripts.UI.UI_Panels
             {
                 keys.Remove(key);
                 await SaveKeysToFile();
-                BasisDebug.Log($"Key removed: {keyToRemove}");
+                BasisDebug.Log($"Key removed: {keyToRemove.Url}");
             }
             else
             {

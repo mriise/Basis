@@ -1,11 +1,9 @@
 using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.ResourceManagement.ResourceProviders;
 using UnityEngine.SceneManagement;
 using System;
 using Basis.Scripts.Drivers;
 using Basis.Scripts.BasisSdk.Helpers;
-using Basis.Scripts.Device_Management.Devices.Desktop;
 using Basis.Scripts.Device_Management;
 using Basis.Scripts.Avatar;
 using Basis.Scripts.Common;
@@ -16,6 +14,7 @@ namespace Basis.Scripts.BasisSdk.Players
     public class BasisLocalPlayer : BasisPlayer
     {
         public static BasisLocalPlayer Instance;
+        public static bool PlayerReady = false;
         public static Action OnLocalPlayerCreatedAndReady;
         public static Action OnLocalPlayerCreated;
         public BasisCharacterController.BasisCharacterController Move;
@@ -24,11 +23,30 @@ namespace Basis.Scripts.BasisSdk.Players
 
         public static float DefaultPlayerEyeHeight = 1.64f;
         public static float DefaultAvatarEyeHeight = 1.64f;
-        public float PlayerEyeHeight = 1.64f;
-        public float AvatarEyeHeight = 1.64f;
-        public float RatioPlayerToAvatarScale = 1f;
-        public float EyeRatioPlayerToDefaultScale = 1f;
-        public float EyeRatioAvatarToAvatarDefaultScale = 1f;//should be used for the player
+        public LocalHeightInformation CurrentHeight;
+        public LocalHeightInformation LastHeight;
+        [System.Serializable]
+        public class LocalHeightInformation
+        {
+            public string AvatarName;
+            public float PlayerEyeHeight = 1.64f;
+            public float AvatarEyeHeight = 1.64f;
+            public float RatioPlayerToAvatarScale = 1f;
+            public float EyeRatioPlayerToDefaultScale = 1f;
+            public float EyeRatioAvatarToAvatarDefaultScale = 1f; // should be used for the player
+
+            public void CopyTo(LocalHeightInformation target)
+            {
+                if (target == null) return;
+
+                target.AvatarName  = this.AvatarName;
+                target.PlayerEyeHeight = this.PlayerEyeHeight;
+                target.AvatarEyeHeight = this.AvatarEyeHeight;
+                target.RatioPlayerToAvatarScale = this.RatioPlayerToAvatarScale;
+                target.EyeRatioPlayerToDefaultScale = this.EyeRatioPlayerToDefaultScale;
+                target.EyeRatioAvatarToAvatarDefaultScale = this.EyeRatioAvatarToAvatarDefaultScale;
+            }
+        }
 
         /// <summary>
         /// the bool when true is the final size
@@ -36,16 +54,18 @@ namespace Basis.Scripts.BasisSdk.Players
         /// use the bool to 
         /// </summary>
         public Action OnPlayersHeightChanged;
+
         public BasisLocalBoneDriver LocalBoneDriver;
         public BasisLocalAvatarDriver AvatarDriver;
         //   public BasisFootPlacementDriver FootPlacementDriver;
         public BasisAudioAndVisemeDriver VisemeDriver;
+        public BasisLocalCameraDriver CameraDriver;
+
         [SerializeField]
         public LayerMask GroundMask;
         public static string LoadFileNameAndExtension = "LastUsedAvatar.BAS";
         public bool HasEvents = false;
         public MicrophoneRecorder MicrophoneRecorder;
-        public static string MainCamera = "Assets/Prefabs/Loadins/Main Camera.prefab";
         public bool SpawnPlayerOnSceneLoad = true;
         public const string DefaultAvatar = "LoadingAvatar";
         public async Task LocalInitialize()
@@ -54,13 +74,12 @@ namespace Basis.Scripts.BasisSdk.Players
             {
                 Instance = this;
             }
-            Instance = this;
             MicrophoneRecorder.OnPausedAction += OnPausedEvent;
             OnLocalPlayerCreated?.Invoke();
             IsLocal = true;
             LocalBoneDriver.CreateInitialArrays(LocalBoneDriver.transform, true);
-            await BasisLocalInputActions.CreateInputAction(this);
-            await BasisDeviceManagement.LoadGameobject(MainCamera, new InstantiationParameters());
+            BasisDeviceManagement.Instance.InputActions.Initialize(this);
+            CameraDriver.gameObject.SetActive(true);  
             //  FootPlacementDriver = BasisHelpers.GetOrAddComponent<BasisFootPlacementDriver>(this.gameObject);
             //  FootPlacementDriver.Initialize();
             Move.Initialize();
@@ -84,6 +103,7 @@ namespace Basis.Scripts.BasisSdk.Players
                 MicrophoneRecorder = BasisHelpers.GetOrAddComponent<MicrophoneRecorder>(this.gameObject);
             }
             MicrophoneRecorder.TryInitialize();
+            PlayerReady = true;
             OnLocalPlayerCreatedAndReady?.Invoke();
             BasisSceneFactory BasisSceneFactory = FindFirstObjectByType<BasisSceneFactory>(FindObjectsInactive.Exclude);
             if (BasisSceneFactory != null)
@@ -102,6 +122,7 @@ namespace Basis.Scripts.BasisSdk.Players
             {
                 BasisDebug.LogError("Cant Find Scene Factory");
             }
+            BasisUILoadingBar.Initalize();
         }
         public async Task LoadInitalAvatar(BasisDataStore.BasisSavedAvatar LastUsedAvatar)
         {
@@ -116,11 +137,7 @@ namespace Basis.Scripts.BasisSdk.Players
                         BasisLoadableBundle bundle = new BasisLoadableBundle
                         {
                             BasisRemoteBundleEncrypted = info.StoredRemote,
-                            BasisBundleInformation = new BasisBundleInformation
-                            {
-                                BasisBundleDescription = new BasisBundleDescription(),
-                                BasisBundleGenerated = new BasisBundleGenerated()
-                            },
+                             BasisBundleConnector = new BasisBundleConnector("1", new BasisBundleDescription("Loading Avatar", "Loading Avatar"),new BasisBundleGenerated[] { new BasisBundleGenerated()}),
                             BasisLocalEncryptedBundle = info.StoredLocal,
                             UnlockPassword = Key.Pass
                         };
@@ -163,7 +180,7 @@ namespace Basis.Scripts.BasisSdk.Players
         public async Task CreateAvatar(byte mode, BasisLoadableBundle BasisLoadableBundle)
         {
             await BasisAvatarFactory.LoadAvatarLocal(this, mode, BasisLoadableBundle);
-            BasisDataStore.SaveAvatar(BasisLoadableBundle.BasisRemoteBundleEncrypted.MetaURL, mode, LoadFileNameAndExtension);
+            BasisDataStore.SaveAvatar(BasisLoadableBundle.BasisRemoteBundleEncrypted.CombinedURL, mode, LoadFileNameAndExtension);
             OnLocalAvatarChanged?.Invoke();
         }
         public void OnCalibration()
@@ -201,6 +218,7 @@ namespace Basis.Scripts.BasisSdk.Players
             }
             MicrophoneRecorder.OnPausedAction -= OnPausedEvent;
             LocalBoneDriver.DeInitalzeGizmos();
+            BasisUILoadingBar.DeInitalize();
         }
         public void DriveAudioToViseme()
         {

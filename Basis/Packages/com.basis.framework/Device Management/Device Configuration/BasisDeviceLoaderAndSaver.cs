@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -91,11 +92,20 @@ public class BasisDeviceLoaderAndSaver
                 continue;
             }
 
-            string filePath = Path.Combine(directoryPath, device.DeviceID + JsonIdentifier);
+
+            string filePath = Path.Combine(directoryPath, MakeDeviceSafeForSave(device.DeviceID) + JsonIdentifier);
             Task.Run(() => SaveDeviceAsync(filePath, device));
         }
     }
+    public static string MakeDeviceSafeForSave(string fileName)
+    {
+        // Define a regex pattern to match invalid filename characters
+        string invalidChars = new string(Path.GetInvalidFileNameChars()) + "{}";
+        string pattern = $"[{Regex.Escape(invalidChars)}]";
 
+        // Replace invalid characters with an underscore
+        return Regex.Replace(fileName, pattern, "_");
+    }
     public static void SaveDeviceAsync(string filePath, BasisDeviceMatchSettings device)
     {
         try

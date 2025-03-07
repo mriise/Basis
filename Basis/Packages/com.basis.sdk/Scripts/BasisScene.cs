@@ -1,6 +1,6 @@
 using LiteNetLib;
+using System;
 using UnityEngine;
-using UnityEngine.Events;
 
 namespace Basis.Scripts.BasisSdk
 {
@@ -9,10 +9,13 @@ namespace Basis.Scripts.BasisSdk
         public Transform SpawnPoint;
         public float RespawnHeight = -100;
         public float RespawnCheckTimer = 0.1f;
+        [HideInInspector]
         public UnityEngine.Audio.AudioMixerGroup Group;
         public static BasisScene Instance;
-        public static UnityEvent<BasisScene> Ready = new UnityEvent<BasisScene>();
+        public static Action<BasisScene> Ready;
+        public static Action<BasisScene> Destroyed;
         public Camera MainCamera;
+        [HideInInspector]
         public bool IsReady;
         public void Awake()
         {
@@ -23,6 +26,7 @@ namespace Basis.Scripts.BasisSdk
         public void OnDestroy()
         {
             IsReady = false;
+            Destroyed?.Invoke(this);
         }
         public static SceneNetworkMessageReceiveEvent OnNetworkMessageReceived;
         public static SceneNetworkMessageSendEvent OnNetworkMessageSend;

@@ -1,11 +1,8 @@
-using Basis.Scripts.Addressable_Driver.Resource;
 using Basis.Scripts.BasisSdk.Helpers;
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Drivers;
 using Basis.Scripts.UI.UI_Panels;
 using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -27,6 +24,9 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
 
         public InputActionReference LeftMousePressed;
         public InputActionReference RightMousePressed;
+
+        public InputActionReference MiddleMouseScroll;
+        public InputActionReference MiddleMouseScrollClick;
 
         [SerializeField] public static bool Crouching;
         [SerializeField] public static Vector2 LookDirection;
@@ -60,38 +60,6 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
                 AddCallback();
                 HasEvents = true;
             }
-            Application.onBeforeRender += OnBeforeRender;
-        }
-
-        private void OnBeforeRender()
-        {
-            BasisLocalPlayer.Instance.LocalBoneDriver.Simulate();
-            AfterAvatarChanges?.Invoke();
-        }
-
-        public void Update()
-        {
-            InputSystem.Update();
-        }
-        public static async Task CreateInputAction(BasisLocalPlayer Local)
-        {
-            ChecksRequired Required = new ChecksRequired
-            {
-                UseContentRemoval = false,
-                DisableAnimatorEvents = false
-            };
-            var data = await AddressableResourceProcess.LoadAsGameObjectsAsync(InputActions, new UnityEngine.ResourceManagement.ResourceProviders.InstantiationParameters(), Required);
-            List<GameObject> Gameobjects = data.Item1;
-            if (Gameobjects.Count != 0)
-            {
-                foreach (GameObject gameObject in Gameobjects)
-                {
-                    if (gameObject.TryGetComponent(out BasisLocalInputActions CharacterInputActions))
-                    {
-                        CharacterInputActions.Initialize(Local);
-                    }
-                }
-            }
         }
         public void SetupCamera()
         {
@@ -111,11 +79,11 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
                 RemoveCallback();
                 HasEvents = false;
             }
-            Application.onBeforeRender -= OnBeforeRender;
         }
         public void Initialize(BasisLocalPlayer localPlayer)
         {
             basisLocalPlayer = localPlayer;
+            this.gameObject.SetActive(true);
         }
         public void AddCallback()
         {
@@ -149,6 +117,22 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
 
             LeftMousePressed.action.canceled += ctx => LeftMouse(ctx.ReadValue<float>());
             RightMousePressed.action.canceled += ctx => RightMouse(ctx.ReadValue<float>());
+
+            MiddleMouseScroll.action.performed += ctx => MouseScroll(ctx.ReadValue<Vector2>());
+            MiddleMouseScrollClick.action.performed += ctx => MouseScrollClick(ctx.ReadValue<float>());
+
+            MiddleMouseScroll.action.canceled += ctx => MouseScroll(ctx.ReadValue<Vector2>());
+            MiddleMouseScrollClick.action.canceled += ctx => MouseScrollClick(ctx.ReadValue<float>());
+        }
+        public void MouseScroll(Vector2 state)
+        {
+           // Debug.Log($"MouseScroll {state}");
+              InputState.Secondary2DAxis = state;
+        }
+        public void MouseScrollClick(float state)
+        {
+            InputState.Secondary2DAxisClick = state == 1;
+            //  Debug.Log($"MouseScroll Click {state}");
         }
         public void PrimaryGet()
         {
@@ -190,6 +174,12 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
 
             LeftMousePressed.action.canceled -= ctx => LeftMouse(ctx.ReadValue<float>());
             RightMousePressed.action.canceled -= ctx => RightMouse(ctx.ReadValue<float>());
+
+            MiddleMouseScroll.action.performed -= ctx => MouseScroll(ctx.ReadValue<Vector2>());
+            MiddleMouseScrollClick.action.performed -= ctx => MouseScrollClick(ctx.ReadValue<float>());
+
+            MiddleMouseScroll.action.canceled -= ctx => MouseScroll(ctx.ReadValue<Vector2>());
+            MiddleMouseScrollClick.action.canceled -= ctx => MouseScrollClick(ctx.ReadValue<float>());
         }
         public void LeftMouse(float state)
         {

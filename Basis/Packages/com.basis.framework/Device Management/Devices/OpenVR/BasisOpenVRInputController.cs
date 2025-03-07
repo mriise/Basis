@@ -3,6 +3,7 @@ using Basis.Scripts.Device_Management.Devices.OpenVR.Structs;
 using Basis.Scripts.TransformBinders.BoneControl;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using Valve.VR;
 
 namespace Basis.Scripts.Device_Management.Devices.OpenVR
@@ -24,7 +25,7 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
             }
             inputSource = SteamVR_Input_Sources;
             Device = device;
-            InitalizeTracking(UniqueID, UnUniqueID, subSystems, AssignTrackedRole, basisBoneTrackedRole);
+           InitalizeTracking(UniqueID, UnUniqueID, subSystems, AssignTrackedRole, basisBoneTrackedRole);
             if (poseAction != null)
             {
                 if (HasOnUpate == false)
@@ -58,10 +59,16 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
         {
             if (SteamVR.active)
             {
-                InputState.Primary2DAxis = SteamVR_Actions._default.Joystick.GetAxis(inputSource);
+                InputState.GripButton = SteamVR_Actions._default.Grip.GetState(inputSource);
+                InputState.SystemOrMenuButton = SteamVR_Actions._default.System.GetState(inputSource);
                 InputState.PrimaryButtonGetState = SteamVR_Actions._default.A_Button.GetState(inputSource);
                 InputState.SecondaryButtonGetState = SteamVR_Actions._default.B_Button.GetState(inputSource);
+                InputState.Primary2DAxisClick = SteamVR_Actions._default.JoyStickClick.GetState(inputSource);
+                InputState.Primary2DAxis = SteamVR_Actions._default.Joystick.GetAxis(inputSource);
                 InputState.Trigger = SteamVR_Actions._default.Trigger.GetAxis(inputSource);
+                InputState.SecondaryTrigger = SteamVR_Actions._default.HandTrigger.GetAxis(inputSource);
+                InputState.Secondary2DAxis = SteamVR_Actions._default.TrackPad.GetAxis(inputSource);
+                InputState.Secondary2DAxisClick = SteamVR_Actions._default.TrackPadTouched.GetState(inputSource);
                 UpdatePlayerControl();
             }
         }
@@ -73,14 +80,14 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
                 LocalRawPosition = poseAction[inputSource].localPosition;
                 LocalRawRotation = poseAction[inputSource].localRotation;
             }
-            FinalPosition = LocalRawPosition * BasisLocalPlayer.Instance.EyeRatioAvatarToAvatarDefaultScale;
+            FinalPosition = LocalRawPosition * BasisLocalPlayer.Instance.CurrentHeight.EyeRatioAvatarToAvatarDefaultScale;
             FinalRotation = LocalRawRotation;
             if (hasRoleAssigned)
             {
                 if (Control.HasTracked != BasisHasTracked.HasNoTracker)
                 {
                     // Apply position offset using math.mul for quaternion-vector multiplication
-                    Control.IncomingData.position = FinalPosition - math.mul(FinalRotation, AvatarPositionOffset * BasisLocalPlayer.Instance.EyeRatioAvatarToAvatarDefaultScale);
+                    Control.IncomingData.position = FinalPosition - math.mul(FinalRotation, AvatarPositionOffset * BasisLocalPlayer.Instance.CurrentHeight.EyeRatioAvatarToAvatarDefaultScale);
 
                     // Apply rotation offset using math.mul for quaternion multiplication
                     Control.IncomingData.rotation = math.mul(FinalRotation, Quaternion.Euler(AvatarRotationOffset));
@@ -120,5 +127,39 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
         public bool isValid { get { return poseAction[inputSource].poseIsValid; } }
         public bool isActive { get { return poseAction[inputSource].active; } }
         #endregion
+        public override void ShowTrackedVisual()
+        {
+            if (BasisVisualTracker == null && LoadedDeviceRequest == null)
+            {
+                BasisDeviceMatchSettings Match = BasisDeviceManagement.Instance.BasisDeviceNameMatcher.GetAssociatedDeviceMatchableNames(CommonDeviceIdentifier);
+                if (Match.CanDisplayPhysicalTracker)
+                {
+                    var op = Addressables.LoadAssetAsync<GameObject>(Match.DeviceID);
+                    GameObject go = op.WaitForCompletion();
+                    GameObject gameObject = Object.Instantiate(go);
+                    gameObject.name = CommonDeviceIdentifier;
+                    gameObject.transform.parent = this.transform;
+                    if (gameObject.TryGetComponent(out BasisVisualTracker))
+                    {
+                        BasisVisualTracker.Initialization(this);
+                    }
+                }
+                else
+                {
+                    if (UseFallbackModel())
+                    {
+                        UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<GameObject> op = Addressables.LoadAssetAsync<GameObject>(FallbackDeviceID);
+                        GameObject go = op.WaitForCompletion();
+                        GameObject gameObject = Object.Instantiate(go);
+                        gameObject.name = CommonDeviceIdentifier;
+                        gameObject.transform.parent = this.transform;
+                        if (gameObject.TryGetComponent(out BasisVisualTracker))
+                        {
+                            BasisVisualTracker.Initialization(this);
+                        }
+                    }
+                }
+            }
+        }
     }
 }

@@ -54,7 +54,7 @@ public class BasisHeightEditor : Editor
         }
 
         // Save the current player height
-        BasisHeightDriver.SaveHeight(basisPlayer.PlayerEyeHeight);
-        BasisDebug.Log($"Player height saved: {basisPlayer.PlayerEyeHeight}");
+        BasisHeightDriver.SaveHeight(basisPlayer.CurrentHeight.PlayerEyeHeight);
+        BasisDebug.Log($"Player height saved: {basisPlayer.CurrentHeight.PlayerEyeHeight}");
     }
 }
