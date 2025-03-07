@@ -2830,10 +2830,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Selector: {fileID: 11400000, guid: 8393424ebf34934449c2d1309a700837, type: 2}
   DefaultScene:
-    UnlockPassword: 44da60a90e2ee4e202730e73541969a9c0639a643520dc739ff39af531ab9902
+    UnlockPassword: 
     BasisRemoteBundleEncrypted:
       IsLocal: 0
-      CombinedURL: https://BasisFramework.b-cdn.net/Worlds/BEE/97feef6a63fd4ba790c15b4856fc90db20250305.BEE
+      CombinedURL: 
     BasisLocalEncryptedBundle:
       LocalConnectorPath: 
     BasisBundleConnector:
@@ -2856,7 +2856,7 @@ MonoBehaviour:
         AssetBundleDescription: 
       BasisBundleGenerated: []
   UseAddressablesToLoadScene: 0
-  UseSceneProvidedHere: 1
+  UseSceneProvidedHere: 0
 --- !u!114 &6910429841152494025
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2869,3 +2869,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d8279b0f691ed944a4b263282ed0bb7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  updateInterval: 0.1
+  timeSinceLastUpdate: 0
