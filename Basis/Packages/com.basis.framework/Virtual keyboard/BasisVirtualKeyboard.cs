@@ -2,6 +2,7 @@ using Basis.Scripts.Addressable_Driver;
 using Basis.Scripts.Addressable_Driver.Enums;
 using Basis.Scripts.UI;
 using Basis.Scripts.UI.UI_Panels;
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -87,6 +88,18 @@ namespace Basis.Scripts.Virtual_keyboard
                             {
                                 InputField.text += KeyInformation.Text.text;
                             }
+                            else
+                            {
+                                if (KeyInformation.BasisVirtualKeyboardSpecialKey == BasisVirtualKeyboardSpecialKey.IsPasteKey)
+                                {
+                                    string copiedText = GUIUtility.systemCopyBuffer; // Get the clipboard text
+
+                                    if (Uri.IsWellFormedUriString(copiedText, UriKind.RelativeOrAbsolute))
+                                    {
+                                        InputField.text += copiedText;
+                                    }
+                                }
+                            }
                         }
                     }
                     if (TMPInputField != null)
@@ -103,6 +116,18 @@ namespace Basis.Scripts.Virtual_keyboard
                             if (KeyInformation.BasisVirtualKeyboardSpecialKey == BasisVirtualKeyboardSpecialKey.NotSpecial)
                             {
                                 TMPInputField.text += KeyInformation.Text.text;
+                            }
+                            else
+                            {
+                                if (KeyInformation.BasisVirtualKeyboardSpecialKey == BasisVirtualKeyboardSpecialKey.IsPasteKey)
+                                {
+                                    string copiedText = GUIUtility.systemCopyBuffer; // Get the clipboard text
+
+                                    if (Uri.IsWellFormedUriString(copiedText, UriKind.RelativeOrAbsolute))
+                                    {
+                                        TMPInputField.text += copiedText;
+                                    }
+                                }
                             }
                         }
                     }
