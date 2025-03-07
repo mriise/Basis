@@ -27,6 +27,10 @@ MonoBehaviour:
       - 8
       - 9
       - 0
+      - '?'
+      - '@'
+      - (
+      - )
     - innerCollection:
       - q
       - w
@@ -38,6 +42,10 @@ MonoBehaviour:
       - i
       - o
       - p
+      - '&'
+      - ~
+      - '#'
+      - ^
     - innerCollection:
       - a
       - s
@@ -48,6 +56,11 @@ MonoBehaviour:
       - j
       - k
       - l
+      - ':'
+      - '!'
+      - '-'
+      - '`'
+      - '*'
     - innerCollection:
       - z
       - x
@@ -56,12 +69,19 @@ MonoBehaviour:
       - b
       - n
       - m
+      - .
+      - /
+      - \
+      - +
+      - =
+      - _
+      - '%'
     - innerCollection:
       - ' '
       - enter
       - delete
       - caps
-      - Close
+      - close
     SpecialKeys:
     - Match: ' '
       WidthSize: 150
