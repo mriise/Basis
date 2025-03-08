@@ -17,10 +17,10 @@ MonoBehaviour:
   perspectiveCorrection: 0
   perspectiveCorrectionFactor: 1
   hrtfVolumeGainDB: 1
-  hrtfNormalizationType: 0
+  hrtfNormalizationType: 1
   SOFAFiles: []
   defaultMaterial: {fileID: 11400000, guid: a086f686223eed942816c70be67841b0, type: 2}
-  sceneType: 2
+  sceneType: 0
   layerMask:
     serializedVersion: 2
     m_Bits: 459
@@ -47,7 +47,7 @@ MonoBehaviour:
   bakingPathRange: 1000
   bakedPathingCPUCoresPercentage: 50
   simulationUpdateInterval: 0.1
-  reflectionEffectType: 3
+  reflectionEffectType: 0
   hybridReverbTransitionTime: 1
   hybridReverbOverlapPercent: 25
   deviceType: 0
