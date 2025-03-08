@@ -20,17 +20,17 @@ MonoBehaviour:
   hrtfNormalizationType: 0
   SOFAFiles: []
   defaultMaterial: {fileID: 11400000, guid: a086f686223eed942816c70be67841b0, type: 2}
-  sceneType: 0
+  sceneType: 2
   layerMask:
     serializedVersion: 2
-    m_Bits: 0
-  maxOcclusionSamples: 128
+    m_Bits: 459
+  maxOcclusionSamples: 64
   realTimeRays: 4096
   realTimeBounces: 4
   realTimeDuration: 1
   realTimeAmbisonicOrder: 1
   realTimeMaxSources: 128
-  realTimeCPUCoresPercentage: 5
+  realTimeCPUCoresPercentage: 10
   realTimeIrradianceMinDistance: 1
   bakeConvolution: 1
   bakeParametric: 1
@@ -47,10 +47,10 @@ MonoBehaviour:
   bakingPathRange: 1000
   bakedPathingCPUCoresPercentage: 50
   simulationUpdateInterval: 0.1
-  reflectionEffectType: 0
+  reflectionEffectType: 3
   hybridReverbTransitionTime: 1
   hybridReverbOverlapPercent: 25
-  deviceType: 2
+  deviceType: 0
   maxReservedComputeUnits: 8
   fractionComputeUnitsForIRUpdate: 0.5
   bakingBatchSize: 8
