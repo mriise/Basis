@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Basis.Scripts.BasisSdk.Helpers;
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Drivers;
@@ -52,7 +51,7 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
                 Instance = this;
             }
             PlayerInitialized();
-            BasisCursorManagement.OverrideableLock(nameof(BasisAvatarEyeInput));
+            BasisCursorManagement.OverrideAbleLock(nameof(BasisAvatarEyeInput));
             if (HasEyeEvents == false)
             {
                 BasisLocalPlayer.Instance.OnLocalAvatarChanged += PlayerInitialized;

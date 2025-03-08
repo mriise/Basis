@@ -82,8 +82,8 @@ MonoBehaviour:
       - enter
       - delete
       - caps
-      - close
       - paste
+      - close
     SpecialKeys:
     - Match: ' '
       WidthSize: 150
