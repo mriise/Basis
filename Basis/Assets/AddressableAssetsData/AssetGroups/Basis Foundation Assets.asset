@@ -15,11 +15,6 @@ MonoBehaviour:
   m_GroupName: Basis Foundation Assets
   m_GUID: 37c75a6cf72db324eb01200602299fc8
   m_SerializeEntries:
-  - m_GUID: 015b3d7344ee29b41acd36bac09baf03
-    m_Address: BasisUIAvatarSelection
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 04d8d7db6114a384aaabeb1d02dd2013
     m_Address: Packages/com.hecomi.ulipsync/Assets/Profiles/uLipSync-Profile-Sample-Female.asset
     m_ReadOnly: 0
@@ -65,6 +60,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2ef52735e20e99c45ae63c674e0727cb
+    m_Address: BasisUIAvatarSelection
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 356a8bb117010ea4084b0dd6463d28b0
     m_Address: LoggerUI
     m_ReadOnly: 0
@@ -102,6 +102,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 411cf3d73f4e3dc46a7ae9e13da44f03
     m_Address: oculus_quest_pro_controller_right
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 42ead3513149d52499d31b37cb1530ec
+    m_Address: BasisUIAddAvatar
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
