@@ -81,7 +81,7 @@ namespace Basis.Scripts.UI.UI_Panels
             ErrorMessage.gameObject.SetActive(false);
         }
 
-        private async void TaskOne()
+        private void TaskOne()
         {
             try
             {
