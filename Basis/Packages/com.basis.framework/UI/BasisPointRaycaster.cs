@@ -22,6 +22,7 @@ namespace Basis.Scripts.UI
         /// </summary>
         public Vector2 ScreenPoint { get; set; }
         public Ray ray { get; private set; }
+        public RaycastHit ClosestRayCastHit { get; private set; }
         public RaycastHit[] PhysicHits { get; private set; }
         public int PhysicHitCount { get; private set; }
         // NOTE: this needs to be >= max number of colliders it can potentiall hit a scene, otherwise it will behave oddly
@@ -93,10 +94,36 @@ namespace Basis.Scripts.UI
             }
 
             PhysicHitCount = Physics.RaycastNonAlloc(ray, PhysicHits, MaxDistance, Mask, TriggerInteraction);
-            // order from raycast is undefined, sort by distance
-            Array.Sort(PhysicHits, (a, b) => a.distance.CompareTo(b.distance));
+
+            if (PhysicHitCount > 1)
+            {
+                int closestIndex = 0;
+                float minDistance = PhysicHits[0].distance;
+
+                for (int i = 1; i < PhysicHitCount; i++)
+                {
+                    if (PhysicHits[i].distance < minDistance)
+                    {
+                        minDistance = PhysicHits[i].distance;
+                        closestIndex = i;
+                    }
+                }
+
+                // Swap the closest hit to the first position, if needed
+                if (closestIndex != 0)
+                {
+                    (PhysicHits[0], PhysicHits[closestIndex]) = (PhysicHits[closestIndex], PhysicHits[0]);
+                }
+                ClosestRayCastHit = PhysicHits[0];
+            }
+            else
+            {
+                ClosestRayCastHit = new RaycastHit();
+            }
             if (EnableDebug)
+            {
                 UpdateDebug();
+            }
         }
 
         // get a span of valid hits sorted by distance
