@@ -41,8 +41,9 @@ public static class RemoteOpusSettings
     public static int Channels { get; private set; } = 1;
     public static int SampleLength => NetworkSampleRate * Channels;
     public static int Pcmlength => CalculatePCMSize();
-    public static int RecieverLength => Pcmlength * 2;
-    public static int RecieverLengthCapacity => RecieverLength * 2;
+    public static int RecieverLength => Pcmlength * Capacity;
+    public static int RecieverLengthCapacity => RecieverLength * Capacity;
+    public static int Capacity = 4;
     /// <summary>
     /// 960 by default
     /// </summary>
