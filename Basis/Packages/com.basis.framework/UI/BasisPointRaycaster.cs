@@ -94,31 +94,37 @@ namespace Basis.Scripts.UI
             }
 
             PhysicHitCount = Physics.RaycastNonAlloc(ray, PhysicHits, MaxDistance, Mask, TriggerInteraction);
-
-            if (PhysicHitCount > 1)
+            if (PhysicHitCount == 0)
             {
-                int closestIndex = 0;
-                float minDistance = PhysicHits[0].distance;
-
-                for (int i = 1; i < PhysicHitCount; i++)
-                {
-                    if (PhysicHits[i].distance < minDistance)
-                    {
-                        minDistance = PhysicHits[i].distance;
-                        closestIndex = i;
-                    }
-                }
-
-                // Swap the closest hit to the first position, if needed
-                if (closestIndex != 0)
-                {
-                    (PhysicHits[0], PhysicHits[closestIndex]) = (PhysicHits[closestIndex], PhysicHits[0]);
-                }
-                ClosestRayCastHit = PhysicHits[0];
+                ClosestRayCastHit = new RaycastHit();
             }
             else
             {
-                ClosestRayCastHit = new RaycastHit();
+                if (PhysicHitCount > 1)
+                {
+                    int closestIndex = 0;
+                    float minDistance = PhysicHits[0].distance;
+
+                    for (int i = 1; i < PhysicHitCount; i++)
+                    {
+                        if (PhysicHits[i].distance < minDistance)
+                        {
+                            minDistance = PhysicHits[i].distance;
+                            closestIndex = i;
+                        }
+                    }
+
+                    // Swap the closest hit to the first position, if needed
+                    if (closestIndex != 0)
+                    {
+                        (PhysicHits[0], PhysicHits[closestIndex]) = (PhysicHits[closestIndex], PhysicHits[0]);
+                    }
+                    ClosestRayCastHit = PhysicHits[0];
+                }
+                else
+                {
+                    ClosestRayCastHit = PhysicHits[0];
+                }
             }
             if (EnableDebug)
             {
