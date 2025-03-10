@@ -8,7 +8,7 @@ namespace Basis.Network.Core.Serializable
     {
         /// Consistes of a ushort length, followed by byte array (of same length)
         [System.Serializable]
-        public struct AuthenticationMessage
+        public struct BytesMessage
         {
             public byte[] bytes;
             public void Deserialize(NetDataReader Reader)

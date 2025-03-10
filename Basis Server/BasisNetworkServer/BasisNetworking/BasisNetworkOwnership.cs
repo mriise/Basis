@@ -49,7 +49,7 @@ namespace Basis.Network.Server.Ownership
                         {
                             NetDataWriter Writer = new NetDataWriter(true);
                             ownershipTransferMessage.Serialize(Writer);
-                            BasisNetworkServer.BroadcastMessageToClients(Writer, BasisNetworkCommons.RemoveCurrentOwnerRequest, BasisPlayerArray.GetSnapshot(), DeliveryMethod.ReliableSequenced);
+                            NetworkServer.BroadcastMessageToClients(Writer, BasisNetworkCommons.RemoveCurrentOwnerRequest, BasisPlayerArray.GetSnapshot(), DeliveryMethod.ReliableSequenced);
                         }
                         else
                         {
@@ -85,7 +85,7 @@ namespace Basis.Network.Server.Ownership
                 ownershipTransferMessage.Serialize(Writer);
 
                 BNL.Log("OwnershipResponse " + ownershipTransferMessage.ownershipID + " for " + ownershipTransferMessage.playerIdMessage);
-                BasisNetworkServer.BroadcastMessageToClients(Writer, BasisNetworkCommons.ChangeCurrentOwnerRequest, BasisPlayerArray.GetSnapshot(), DeliveryMethod.ReliableSequenced);
+                NetworkServer.BroadcastMessageToClients(Writer, BasisNetworkCommons.ChangeCurrentOwnerRequest, BasisPlayerArray.GetSnapshot(), DeliveryMethod.ReliableSequenced);
             }
             else
             {

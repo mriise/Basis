@@ -1,13 +1,14 @@
 using Basis.Network.Core;
 using Basis.Network.Server;
 using Basis.Network.Server.Auth;
+using BasisDidLink;
 using BasisServerHandle;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-public static partial class BasisNetworkServer
+public static class NetworkServer
 {
     public static EventBasedNetListener listener;
     public static NetManager server;
@@ -15,18 +16,19 @@ public static partial class BasisNetworkServer
     public static ChunkedNetPeerArray chunkedNetPeerArray = new ChunkedNetPeerArray();
     public static Configuration Configuration;
     public static IAuth auth;
+    public static IAuthIdentity authIdentity;
     public static void StartServer(Configuration configuration)
     {
         Configuration = configuration;
         BasisServerReductionSystem.Configuration = configuration;
         auth = new PasswordAuth(configuration.Password ?? string.Empty);
-
+        authIdentity = new BasisDIDAuthIdentity.DidAuthIdentity();
         SetupServer(configuration);
         BasisServerHandleEvents.SubscribeServerEvents();
 
         if (configuration.EnableStatistics)
         {
-            BasisStatistics.StartWorkerThread(BasisNetworkServer.server);
+            BasisStatistics.StartWorkerThread(NetworkServer.server);
         }
         BNL.Log("Server Worker Threads Booted");
 

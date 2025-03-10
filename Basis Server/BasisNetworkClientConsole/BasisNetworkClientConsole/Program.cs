@@ -74,7 +74,7 @@ namespace Basis
                         hasAdditionalAvatarData = false,
                        AdditionalAvatarDatas = null,
                     };
-                    AuthenticationMessage Authmessage = new AuthenticationMessage
+                    BytesMessage Authmessage = new BytesMessage
                     {
                         bytes = Encoding.UTF8.GetBytes(Password)
                     };

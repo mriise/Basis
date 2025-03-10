@@ -11,7 +11,7 @@ public static class BasisNetworkClient
     public static EventBasedNetListener listener;
     private static NetPeer peer;
     private static bool IsInUse;
-    public static AuthenticationMessage AuthenticationMessage = new AuthenticationMessage();
+    public static BytesMessage AuthenticationMessage = new BytesMessage();
     /// <summary>
     /// inital data is typically the 
     /// </summary> 
