@@ -56,6 +56,7 @@ namespace Basis.Scripts.Networking.Recievers
                     Interlocked.Add(ref tail, itemsToRemove);
                     Interlocked.Add(ref size, -itemsToRemove);
                     tail %= Capacity;
+                    BasisDebug.Log($"Overwriting {itemsToRemove} elements due to lack of space in the Audio buffer.");
                 }
 
                 // Add the new segment to the buffer

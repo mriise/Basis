@@ -123,36 +123,52 @@ namespace Basis.Scripts.Networking.Recievers
             if (RingBuffer.IsEmpty)
             {
                 // No voice data, fill with silence
+             //   BasisDebug.Log("No Data Filling with Silence");
                 Array.Fill(data, 0);
                 return length;
             }
+
             int outputSampleRate = RemoteOpusSettings.PlayBackSampleRate;
 
-            // If no resampling is needed, process as usual
             if (RemoteOpusSettings.NetworkSampleRate == outputSampleRate)
             {
-                RingBuffer.Remove(frames, out float[] segment);
-                for (int i = 0; i < frames; i++)
-                {
-                    float sample = segment[i]; // Single-channel sample from the RingBuffer
-                    for (int c = 0; c < channels; c++)
-                    {
-                        int index = i * channels + c;
-                        data[index] *= sample;
-                    }
-                }
-                RingBuffer.BufferedReturn.Enqueue(segment);
-                return length;
+                ProcessAudioWithoutResampling(data, frames, channels);
+            }
+            else
+            {
+                ProcessAudioWithResampling(data, frames, channels, outputSampleRate);
             }
 
-            // Resampling required
+            return length;
+        }
+
+        private void ProcessAudioWithoutResampling(float[] data, int frames, int channels)
+        {
+            RingBuffer.Remove(frames, out float[] segment);
+
+            for (int i = 0; i < frames; i++)
+            {
+                float sample = segment[i]; // Single-channel sample from the RingBuffer
+                for (int c = 0; c < channels; c++)
+                {
+                    int index = i * channels + c;
+                    data[index] *= sample;
+                }
+            }
+
+            RingBuffer.BufferedReturn.Enqueue(segment);
+        }
+
+        private void ProcessAudioWithResampling(float[] data, int frames, int channels, int outputSampleRate)
+        {
             float resampleRatio = (float)RemoteOpusSettings.NetworkSampleRate / outputSampleRate;
             int neededFrames = Mathf.CeilToInt(frames * resampleRatio);
 
             RingBuffer.Remove(neededFrames, out float[] inputSegment);
 
-            // Resampling using linear interpolation
             float[] resampledSegment = new float[frames];
+
+            // Resampling using linear interpolation
             for (int i = 0; i < frames; i++)
             {
                 float srcIndex = i * resampleRatio;
@@ -178,7 +194,6 @@ namespace Basis.Scripts.Networking.Recievers
             }
 
             RingBuffer.BufferedReturn.Enqueue(inputSegment);
-            return length;
         }
     }
 }

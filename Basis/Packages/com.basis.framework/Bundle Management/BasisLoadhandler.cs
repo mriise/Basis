@@ -166,7 +166,7 @@ public static class BasisLoadHandler
     {
         bool IsMetaOnDisc = IsMetaDataOnDisc(wrapper.LoadableBundle.BasisRemoteBundleEncrypted.CombinedURL, out OnDiscInformation MetaInfo);
 
-        (BasisBundleGenerated, byte[]) output = new(null, null);
+        (BasisBundleGenerated, byte[],string) output = new(null, null,string.Empty);
         if (IsMetaOnDisc)
         {
             BasisDebug.Log("Process On Disc Meta Data Async", BasisDebug.LogTag.Event);
@@ -177,9 +177,9 @@ public static class BasisLoadHandler
             BasisDebug.Log("Download Store Meta And Bundle", BasisDebug.LogTag.Event);
             output = await BasisBundleManagement.DownloadStoreMetaAndBundle(wrapper, report, cancellationToken);
         }
-        if(output.Item1 == null)
+        if(output.Item1 == null || output.Item3 != string.Empty)
         {
-            new Exception("missing Bundle Bytes Array");
+            new Exception("missing Bundle Bytes Array Error Message " + output.Item3);
         }
         IEnumerable<AssetBundle> AssetBundles = AssetBundle.GetAllLoadedAssetBundles();
         foreach (AssetBundle assetBundle in AssetBundles)

@@ -52,12 +52,12 @@ namespace Basis.Scripts.Drivers
         }
         public void OnDestroy()
         {
-            if (HasRendererCheckWiredUp  && LinkedPlayer != null && LinkedPlayer.FaceRenderer != null)
+            if (HasRendererCheckWiredUp && LinkedPlayer != null && LinkedPlayer.FaceRenderer != null)
             {
                 LinkedPlayer.FaceRenderer.Check -= UpdateFaceVisibility;
             }
         }
-        private void UpdateFaceVisibility(bool State)
+        public void UpdateFaceVisibility(bool State)
         {
             enabled = State;
         }
@@ -82,15 +82,16 @@ namespace Basis.Scripts.Drivers
             }
             return false;
         }
-        void Update()
+        public void Update()
         {
-            if (!isBlinking && Time.time >= nextBlinkTime)
+            float CurrentTIme = Time.time;
+            if (!isBlinking && CurrentTIme >= nextBlinkTime)
             {
                 StartBlink();
             }
             else if (isBlinking)
             {
-                float Time = (UnityEngine.Time.time - blinkStartTime) / blinkDuration;
+                float Time = (CurrentTIme - blinkStartTime) / blinkDuration;
                 float blendWeight = math.lerp(0, 100, Time);
                 for (int Index = 0; Index < blendShapeCount; Index++)
                 {
@@ -103,7 +104,7 @@ namespace Basis.Scripts.Drivers
             }
             else if (isVisemeClosing)
             {
-                float Time = (UnityEngine.Time.time - visemeStartTime) / visemeTransitionDuration;
+                float Time = (CurrentTIme - visemeStartTime) / visemeTransitionDuration;
                 float blendWeight = Mathf.Lerp(100, 0, Time);
                 for (int Index = 0; Index < blendShapeCount; Index++)
                 {
@@ -116,12 +117,12 @@ namespace Basis.Scripts.Drivers
             }
         }
 
-        void SetNextBlinkTime()
+        public void SetNextBlinkTime()
         {
             nextBlinkTime = Time.time + UnityEngine.Random.Range(minBlinkInterval, maxBlinkInterval);
         }
 
-        void StartBlink()
+        public void StartBlink()
         {
             isBlinking = true;
             blinkStartTime = Time.time;
@@ -134,7 +135,7 @@ namespace Basis.Scripts.Drivers
             visemeStartTime = Time.time;
         }
 
-        void FinishBlink()
+        public void FinishBlink()
         {
             isBlinking = false;
             SetNextBlinkTime(); // Set next blink time after eyes open
