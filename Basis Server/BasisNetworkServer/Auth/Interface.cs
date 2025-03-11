@@ -1,4 +1,5 @@
 using LiteNetLib;
+using System.Threading.Tasks;
 using BytesMessage = Basis.Network.Core.Serializable.SerializableBasis.BytesMessage;
 
 namespace Basis.Network.Server.Auth
@@ -19,6 +20,6 @@ namespace Basis.Network.Server.Auth
         /// </summary>
         /// <param name="msg"></param>
         /// <returns></returns>
-        public bool IsUserIdentifiable(BytesMessage msg, NetPeer NetPeer, out string UUID);
+        public Task<bool> IsUserIdentifiable(BytesMessage msg, NetPeer NetPeer, out string UUID);
     }
 }

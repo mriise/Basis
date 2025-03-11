@@ -114,7 +114,7 @@ namespace BasisServerHandle
         #endregion
 
         #region Connection Handling
-        public static void HandleConnectionRequest(ConnectionRequest ConReq)
+        public static async void HandleConnectionRequest(ConnectionRequest ConReq)
         {
             try
             {
@@ -154,13 +154,18 @@ namespace BasisServerHandle
                     BytesMessage authMessage = new BytesMessage();
                     authMessage.Deserialize(ConReq.Data);
                 }
+
+                BNL.Log("Player approved. Current count: " + ServerCount);
+
+                NetPeer newPeer = ConReq.Accept();//can do both way communciation
+
                 string UUID = string.Empty;
                 bool HasAuthID = false;
                 if (NetworkServer.Configuration.UseAuthIdentity)
                 {
                     BytesMessage authIdentityMessage = new BytesMessage();
                     authIdentityMessage.Deserialize(ConReq.Data);
-                    if (NetworkServer.authIdentity.IsUserIdentifiable(authIdentityMessage, out UUID) == false)
+                    if (await NetworkServer.authIdentity.IsUserIdentifiable(authIdentityMessage, ConReq, out UUID) == false)
                     {
                         RejectWithReason(ConReq, "User Authentication failed, Identity rejected");
                         return;
@@ -176,58 +181,59 @@ namespace BasisServerHandle
                     BytesMessage authIdentityMessage = new BytesMessage();
                     authIdentityMessage.Deserialize(ConReq.Data);
                 }
-
-                BNL.Log("Player approved. Current count: " + ServerCount);
-
-                NetPeer newPeer = ConReq.Accept();
-                ushort PeerId = (ushort)newPeer.Id;
-                if (NetworkServer.Peers.TryAdd(PeerId, newPeer))
-                {
-                    NetworkServer.chunkedNetPeerArray.SetPeer(PeerId, newPeer);
-                    BasisPlayerArray.AddPlayer(newPeer);
-                    BNL.Log($"Peer connected: {newPeer.Id}");
-
-                    ReadyMessage readyMessage = ThreadSafeMessagePool<ReadyMessage>.Rent();
-                    readyMessage.Deserialize(ConReq.Data, false);
-                    if (readyMessage.WasDeserializedCorrectly())
-                    {
-                        if (HasAuthID)
-                        {
-                            //never ever assume the UUID provided by the user is good always recalc on the server.
-                            //this means that as long as they pass auth but locally have a bad UUID that only they locally are effected.
-                            //there is no way to force a user locally to be a certain UUID, thats not how the internet works.
-                            //instead we can make sure all additional clients have them correct.
-                            //this only occurs if the server is doing Auth checks.
-                            readyMessage.playerMetaDataMessage.playerUUID = UUID;
-                        }
-                        ServerNetIDMessage[] SUIM = BasisNetworkIDDatabase.GetAllNetworkID();
-                        ServerUniqueIDMessages ServerUniqueIDMessageArray = ThreadSafeMessagePool<ServerUniqueIDMessages>.Rent();
-                        ServerUniqueIDMessageArray.Messages = SUIM;
-
-                        NetDataWriter Writer = new NetDataWriter(true, 4);
-                        ServerUniqueIDMessageArray.Serialize(Writer);
-                        newPeer.Send(Writer, BasisNetworkCommons.NetIDAssigns, DeliveryMethod.ReliableOrdered);
-                        SendRemoteSpawnMessage(newPeer, readyMessage);
-                        BasisNetworkResourceManagement.SendOutAllResources(newPeer);
-                        ThreadSafeMessagePool<ServerUniqueIDMessages>.Return(ServerUniqueIDMessageArray);
-                    }
-                    else
-                    {
-                        NetworkServer.Peers.Remove(PeerId, out _);
-                        BasisPlayerArray.RemovePlayer(newPeer);
-                        RejectWithReason(ConReq, "Payload Provided was invalid!");
-                    }
-                    ThreadSafeMessagePool<ReadyMessage>.Return(readyMessage);
-                }
-                else
-                {
-                    RejectWithReason(ConReq, "Peer already exists.");
-                }
+                //as soon as this runs everyone knows about this person.
+                OnNetworkAccepted(newPeer,ConReq,UUID,HasAuthID);
             }
             catch (Exception e)
             {
                 RejectWithReason(ConReq, "Fatal Connection Issue stacktrace on server " + e.Message);
                 BNL.LogError(e.StackTrace);
+            }
+        }
+        public static void OnNetworkAccepted(NetPeer newPeer, ConnectionRequest ConReq, string UUID, bool HasAuthID)
+        {
+            ushort PeerId = (ushort)newPeer.Id;
+            if (NetworkServer.Peers.TryAdd(PeerId, newPeer))
+            {
+                NetworkServer.chunkedNetPeerArray.SetPeer(PeerId, newPeer);
+                BasisPlayerArray.AddPlayer(newPeer);
+                BNL.Log($"Peer connected: {newPeer.Id}");
+
+                ReadyMessage readyMessage = ThreadSafeMessagePool<ReadyMessage>.Rent();
+                readyMessage.Deserialize(ConReq.Data, false);
+                if (readyMessage.WasDeserializedCorrectly())
+                {
+                    if (HasAuthID)
+                    {
+                        //never ever assume the UUID provided by the user is good always recalc on the server.
+                        //this means that as long as they pass auth but locally have a bad UUID that only they locally are effected.
+                        //there is no way to force a user locally to be a certain UUID, thats not how the internet works.
+                        //instead we can make sure all additional clients have them correct.
+                        //this only occurs if the server is doing Auth checks.
+                        readyMessage.playerMetaDataMessage.playerUUID = UUID;
+                    }
+                    ServerNetIDMessage[] SUIM = BasisNetworkIDDatabase.GetAllNetworkID();
+                    ServerUniqueIDMessages ServerUniqueIDMessageArray = ThreadSafeMessagePool<ServerUniqueIDMessages>.Rent();
+                    ServerUniqueIDMessageArray.Messages = SUIM;
+
+                    NetDataWriter Writer = new NetDataWriter(true, 4);
+                    ServerUniqueIDMessageArray.Serialize(Writer);
+                    newPeer.Send(Writer, BasisNetworkCommons.NetIDAssigns, DeliveryMethod.ReliableOrdered);
+                    SendRemoteSpawnMessage(newPeer, readyMessage);
+                    BasisNetworkResourceManagement.SendOutAllResources(newPeer);
+                    ThreadSafeMessagePool<ServerUniqueIDMessages>.Return(ServerUniqueIDMessageArray);
+                }
+                else
+                {
+                    NetworkServer.Peers.Remove(PeerId, out _);
+                    BasisPlayerArray.RemovePlayer(newPeer);
+                    RejectWithReason(ConReq, "Payload Provided was invalid!");
+                }
+                ThreadSafeMessagePool<ReadyMessage>.Return(readyMessage);
+            }
+            else
+            {
+                RejectWithReason(ConReq, "Peer already exists.");
             }
         }
         #endregion

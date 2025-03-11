@@ -1,11 +1,10 @@
 using Basis.Network.Core;
-using BasisNetworkCore;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using static Basis.Network.Core.Serializable.SerializableBasis;
 using static SerializableBasis;
 
-public static class BasisNetworkClient
+public static class NetworkClient
 {
     public static NetManager client;
     public static EventBasedNetListener listener;

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="$(ProjectDir)..\.props" />
   
   <PropertyGroup>
@@ -15,6 +15,8 @@
   <ItemGroup>
 	  <ProjectReference Include="..\BasisNetworkCore\BasisNetworkCore.csproj" />
 	<ProjectReference Include="..\LiteNetLib\LiteNetLib.csproj" />
+	  <ProjectReference Include="..\..\Contrib\Auth\Did\Did.csproj" />
+	  <ProjectReference Include="..\..\Contrib\Crypto\Crypto.csproj" />
   </ItemGroup>
 	<PropertyGroup>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
