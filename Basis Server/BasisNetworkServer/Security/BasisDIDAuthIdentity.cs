@@ -1,16 +1,18 @@
 using System;
 using System.Collections.Concurrent;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Basis.Contrib.Auth.DecentralizedIds;
 using Basis.Contrib.Auth.DecentralizedIds.Newtypes;
 using Basis.Contrib.Crypto;
+using Basis.Network.Core;
 using Basis.Network.Server.Auth;
+using BasisServerHandle;
 using LiteNetLib;
+using LiteNetLib.Utils;
+using Org.BouncyCastle.Asn1.Cmp;
 using static Basis.Network.Core.Serializable.SerializableBasis;
+using Challenge = Basis.Contrib.Auth.DecentralizedIds.Challenge;
 using CryptoRng = System.Security.Cryptography.RandomNumberGenerator;
-using SerializableBasis = Basis.Network.Core.Serializable.SerializableBasis;
-#nullable enable
 namespace BasisDidLink
 {
     public class BasisDIDAuthIdentity
@@ -46,28 +48,45 @@ namespace BasisDidLink
                 var rng = CryptoRng.Create();
                 Config cfg = new Config { Rng = rng };
                 DidAuth = new DidAuthentication(cfg);
+                BasisServerHandleEvents.OnAuthReceived += OnAuthReceived;
+            }
+            /// <summary>
+            /// in this case we use this to get the signed challenge
+            /// </summary>
+            /// <param name="reader"></param>
+            /// <param name="peer"></param>
+            private async void OnAuthReceived(NetPacketReader reader, NetPeer newPeer)
+            {
+                BytesMessage BytesMessage = new BytesMessage();
+                BytesMessage.Deserialize(reader);
+                Signature Sig = new Signature(BytesMessage.bytes);
+                DidUrlFragment Fragment = new DidUrlFragment("");
+                Response response = new Response(Sig, Fragment);
+                if (AuthIdentity.TryGetValue(newPeer, out var authIdentity))
+                {
+                    Challenge challenge = new Challenge(authIdentity, );
+                    bool isAuthenticated = await RecvChallengeResponse(response, challenge);
+                }
             }
 
-            public Task<bool> IsUserIdentifiable(BytesMessage msg, NetPeer newPeer, out string UUID)
+            public void IsUserIdentifiable(BytesMessage msg, NetPeer newPeer, out string UUID)
             {
-
                 PubKey Key = new PubKey(msg.bytes);
                 Did playerDid = DidKeyResolver.EncodePubkeyAsDid(Key);
 
                 if (AuthIdentity.TryAdd(newPeer, playerDid))
                 {
-                    UUID = playerDid.V;
-                    Basis.Contrib.Auth.DecentralizedIds.Challenge challenge = SendChallenge(playerDid);
+                     UUID = playerDid.V;
+                    Challenge challenge = SendChallenge(playerDid);
                     BytesMessage NetworkMessage = new BytesMessage();
                     NetworkMessage.bytes = challenge.Nonce.V;
-              //      LiteNetLib.
-                    newPeer.Send(, DeliveryMethod.ReliableOrdered);
-                    return true;
+                    NetDataWriter Writer = new NetDataWriter();
+                    NetworkMessage.Serialize(Writer);
+                    newPeer.Send(Writer, BasisNetworkCommons.AuthIdentityMessage, DeliveryMethod.ReliableOrdered);
                 }
                 else
                 {
                     UUID = "ERROR";
-                    return false;
                 }
             }
             public Challenge SendChallenge(Did Did)

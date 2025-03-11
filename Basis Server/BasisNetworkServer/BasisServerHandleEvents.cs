@@ -165,7 +165,7 @@ namespace BasisServerHandle
                 {
                     BytesMessage authIdentityMessage = new BytesMessage();
                     authIdentityMessage.Deserialize(ConReq.Data);
-                    if (await NetworkServer.authIdentity.IsUserIdentifiable(authIdentityMessage, ConReq, out UUID) == false)
+                    if (await NetworkServer.authIdentity.IsUserIdentifiable(authIdentityMessage, newPeer, out UUID) == false)
                     {
                         RejectWithReason(ConReq, "User Authentication failed, Identity rejected");
                         return;
@@ -180,9 +180,9 @@ namespace BasisServerHandle
                     //we still want to read the data to move the needle along
                     BytesMessage authIdentityMessage = new BytesMessage();
                     authIdentityMessage.Deserialize(ConReq.Data);
+                    //as soon as this runs everyone knows about this person.
+                    OnNetworkAccepted(newPeer, ConReq, UUID, HasAuthID);
                 }
-                //as soon as this runs everyone knows about this person.
-                OnNetworkAccepted(newPeer,ConReq,UUID,HasAuthID);
             }
             catch (Exception e)
             {
@@ -266,6 +266,9 @@ namespace BasisServerHandle
                                 reader.Recycle();
                             }
                             break;
+                        case BasisNetworkCommons.AuthIdentityMessage:
+                            HandleAuth(reader, peer);
+                            break;
                         case BasisNetworkCommons.MovementChannel:
                             HandleAvatarMovement(reader, peer);
                             break;
@@ -322,7 +325,15 @@ namespace BasisServerHandle
             });
         }
         #endregion
+        // Define the delegate type
+        public delegate void AuthEventHandler(NetPacketReader reader, NetPeer peer);
 
+        // Declare an event of the delegate type
+        public static event AuthEventHandler OnAuthReceived;
+        public static void HandleAuth(NetPacketReader Reader, NetPeer Peer)
+        {
+            OnAuthReceived?.Invoke(Reader, Peer);
+        }
         #region Avatar and Voice Handling
         public static void SendAvatarMessageToClients(NetPacketReader Reader, NetPeer Peer)
         {
