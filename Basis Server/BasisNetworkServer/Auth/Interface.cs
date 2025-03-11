@@ -20,6 +20,6 @@ namespace Basis.Network.Server.Auth
         /// </summary>
         /// <param name="msg"></param>
         /// <returns></returns>
-        public Task<bool> IsUserIdentifiable(BytesMessage msg, NetPeer NetPeer, out string UUID);
+        public void IsUserIdentifiable(BytesMessage msg, NetPeer NetPeer, out string UUID);
     }
 }

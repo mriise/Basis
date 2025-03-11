@@ -60,11 +60,14 @@ namespace BasisDidLink
                 BytesMessage BytesMessage = new BytesMessage();
                 BytesMessage.Deserialize(reader);
                 Signature Sig = new Signature(BytesMessage.bytes);
-                DidUrlFragment Fragment = new DidUrlFragment("");
+                DidUrlFragment Fragment = new DidUrlFragment("");//where is this coming from?
                 Response response = new Response(Sig, Fragment);
                 if (AuthIdentity.TryGetValue(newPeer, out var authIdentity))
                 {
-                    Challenge challenge = new Challenge(authIdentity, );
+                    BytesMessage NonceMessage = new BytesMessage();
+                    NonceMessage.Deserialize(reader);
+                    Nonce Nonce = new Nonce(NonceMessage.bytes);//where is this conig from?
+                    Challenge challenge = new Challenge(authIdentity, Nonce);
                     bool isAuthenticated = await RecvChallengeResponse(response, challenge);
                 }
             }

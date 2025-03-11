@@ -165,7 +165,7 @@ namespace BasisServerHandle
                 {
                     BytesMessage authIdentityMessage = new BytesMessage();
                     authIdentityMessage.Deserialize(ConReq.Data);
-                    if (await NetworkServer.authIdentity.IsUserIdentifiable(authIdentityMessage, newPeer, out UUID) == false)
+                    if (NetworkServer.authIdentity.IsUserIdentifiable(authIdentityMessage, newPeer, out UUID) == false)
                     {
                         RejectWithReason(ConReq, "User Authentication failed, Identity rejected");
                         return;
