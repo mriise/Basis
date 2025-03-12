@@ -1,6 +1,4 @@
 using System;
-using System.IO.Compression;
-using System.IO;
 using System.Text;
 using Basis.Contrib.Auth.DecentralizedIds;
 using Basis.Contrib.Auth.DecentralizedIds.Newtypes;
@@ -28,15 +26,7 @@ namespace BasisNetworkClient
         }
         public static byte[] CompressString(string str)
         {
-            byte[] inputBytes = Encoding.UTF8.GetBytes(str);
-            using (var outputStream = new MemoryStream())
-            {
-                using (var gzipStream = new GZipStream(outputStream, CompressionMode.Compress))
-                {
-                    gzipStream.Write(inputBytes, 0, inputBytes.Length);
-                }
-                return outputStream.ToArray();
-            }
+            return Encoding.UTF8.GetBytes(str);
         }
     }
 }
