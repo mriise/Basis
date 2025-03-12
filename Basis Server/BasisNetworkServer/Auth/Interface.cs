@@ -18,7 +18,7 @@ namespace Basis.Network.Server.Auth
         /// </summary>
         /// <param name="msg"></param>
         /// <returns></returns>
-        public void IsUserIdentifiable(ConnectionRequest ConnectionRequest, NetPeer NetPeer, out string UUID);
+        public void ProcessConnection(ConnectionRequest ConnectionRequest, NetPeer NetPeer);
         public void DeInitalize();
     }
 }

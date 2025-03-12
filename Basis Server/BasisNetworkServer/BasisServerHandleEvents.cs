@@ -100,7 +100,7 @@ namespace BasisServerHandle
         {
             NetDataWriter writer = new NetDataWriter(true, 2);
             writer.Put(reason);
-            NetworkServer.Peers.Remove((ushort)request.Id, out _);
+            NetworkServer.Peers.TryRemove((ushort)request.Id, out _);
             BasisPlayerArray.RemovePlayer(request);
             request.Disconnect();
             BNL.LogError($"Rejected after accept with reason: {reason}");
@@ -122,7 +122,7 @@ namespace BasisServerHandle
         #endregion
 
         #region Connection Handling
-        public static async void HandleConnectionRequest(ConnectionRequest ConReq)
+        public static void HandleConnectionRequest(ConnectionRequest ConReq)
         {
             try
             {
@@ -165,23 +165,17 @@ namespace BasisServerHandle
 
                 BNL.Log("Player approved. Current count: " + ServerCount);
 
-                NetPeer newPeer = ConReq.Accept();//can do both way communciation
+                NetPeer newPeer = ConReq.Accept();//can do both way Communication from here on
 
-                string UUID = string.Empty;
-                bool HasAuthID = false;
                 if (NetworkServer.Configuration.UseAuthIdentity)
                 {
-                    NetworkServer.authIdentity.IsUserIdentifiable(ConReq.Data, newPeer, out UUID);
-                    //    HasAuthID = true;
+                    NetworkServer.authIdentity.ProcessConnection(ConReq, newPeer);
                 }
                 else
                 {
                     /*
-                    //we still want to read the data to move the needle along
-                    BytesMessage authIdentityMessage = new BytesMessage();
-                    authIdentityMessage.Deserialize(ConReq.Data);
-
-                    //as soon as this runs everyone knows about this person.
+                    we need a way to stop sending or skip over sign in payloads here.
+                    as soon as this runs everyone knows about this person.
                     OnNetworkAccepted(newPeer, ConReq, UUID, HasAuthID);
                     ThreadSafeMessagePool<ReadyMessage>.Return(readyMessage);
                     */
