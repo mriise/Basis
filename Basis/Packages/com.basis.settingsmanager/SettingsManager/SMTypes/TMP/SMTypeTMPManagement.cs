@@ -1,4 +1,4 @@
-﻿using TMPro;
+using TMPro;
 using BattlePhaze.SettingsManager.Types;
 using UnityEngine;
 namespace BattlePhaze.SettingsManager.TypeModule
@@ -96,7 +96,7 @@ namespace BattlePhaze.SettingsManager.TypeModule
 
         public override void FindActiveObject(SettingsManager Manager, ref Object Object, out bool HasValue)
         {
-            Object = GameObject.FindObjectOfType<Canvas>();
+            Object = GameObject.FindFirstObjectByType<Canvas>();
             if (Object != null)
             {
                 HasValue = true;
