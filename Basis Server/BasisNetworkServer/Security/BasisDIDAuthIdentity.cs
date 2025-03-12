@@ -15,6 +15,9 @@ using LiteNetLib.Utils;
 using static Basis.Network.Core.Serializable.SerializableBasis;
 using Challenge = Basis.Contrib.Auth.DecentralizedIds.Challenge;
 using CryptoRng = System.Security.Cryptography.RandomNumberGenerator;
+using static SerializableBasis;
+using System.Collections.Generic;
+using BasisNetworkCore;
 namespace BasisDidLink
 {
     public class BasisDIDAuthIdentity
@@ -22,8 +25,7 @@ namespace BasisDidLink
         public class DidAuthIdentity : IAuthIdentity
         {
             internal readonly DidAuthentication DidAuth;
-            public ConcurrentDictionary<NetPeer, Did> AuthIdentity = new ConcurrentDictionary<NetPeer, Did>();
-            public ConcurrentDictionary<NetPeer, Nonce> Nonces = new ConcurrentDictionary<NetPeer, Nonce>();
+            public ConcurrentDictionary<NetPeer, OnAuth> AuthIdentity = new ConcurrentDictionary<NetPeer, OnAuth>();
             public DidAuthIdentity()
             {
                 var rng = CryptoRng.Create();
@@ -45,42 +47,71 @@ namespace BasisDidLink
                     return Encoding.UTF8.GetString(outputStream.ToArray());
                 }
             }
+            public struct OnAuth
+            {
+                public ReadyMessage ReadyMessage;
+                public Challenge Challenge;
+                public Did Did;
+            }
             private async void OnAuthReceived(NetPacketReader reader, NetPeer newPeer)
             {
                 BytesMessage SignatureBytes = new BytesMessage();
                 SignatureBytes.Deserialize(reader);
                 Signature Sig = new Signature(SignatureBytes.bytes);
 
-                BytesMessage NonceMessage = new BytesMessage();
-                NonceMessage.Deserialize(reader);
-                string FragmentAsString = DecompressString(NonceMessage.bytes);
+                BytesMessage FragementBytes = new BytesMessage();
+                FragementBytes.Deserialize(reader);
+                string FragmentAsString = DecompressString(FragementBytes.bytes);
                 DidUrlFragment Fragment = new DidUrlFragment(FragmentAsString);//where is this coming from?s
 
                 Response response = new Response(Sig, Fragment);
-                if (AuthIdentity.TryGetValue(newPeer, out Did authIdentity))
+                if (AuthIdentity.TryGetValue(newPeer, out OnAuth authIdentity))
                 {
-                    if (Nonces.TryGetValue(newPeer, out Nonce Nonce))
+                    Challenge challenge = authIdentity.Challenge;
+                    bool isAuthenticated = await RecvChallengeResponse(response, challenge);
+                    if (isAuthenticated)
                     {
-                        Challenge challenge = new Challenge(authIdentity, Nonce);
-                        bool isAuthenticated = await RecvChallengeResponse(response, challenge);
-                        if (isAuthenticated)
-                        {
-                            BasisServerHandleEvents.OnNetworkAccepted(newPeer, ConReq, UUID, HasAuthID);
-                        }
+                        BasisServerHandleEvents.OnNetworkAccepted(newPeer, authIdentity.ReadyMessage, authIdentity.Did.V);
                     }
                 }
             }
-            public void IsUserIdentifiable(BytesMessage msg, NetPeer newPeer, out string UUID)
+            public void IsUserIdentifiable(ConnectionRequest ConnectionRequest, NetPeer newPeer, out string UUID)
             {
-                PubKey Key = new PubKey(msg.bytes);
+                ushort PeerId = (ushort)newPeer.Id;
+
+                BytesMessage authIdentityMessage = new BytesMessage();
+                authIdentityMessage.Deserialize(ConnectionRequest.Data);
+                PubKey Key = new PubKey(authIdentityMessage.bytes);
                 Did playerDid = DidKeyResolver.EncodePubkeyAsDid(Key);
 
-                if (AuthIdentity.TryAdd(newPeer, playerDid))
+
+
+
+                ReadyMessage readyMessage = ThreadSafeMessagePool<ReadyMessage>.Rent();
+                readyMessage.Deserialize(ConnectionRequest.Data, false);
+                if (readyMessage.WasDeserializedCorrectly())
+                {
+                }
+                else
+                {
+                    NetworkServer.Peers.Remove(PeerId, out _);
+                    BasisPlayerArray.RemovePlayer(newPeer);
+                    BasisServerHandleEvents.RejectWithReason(ConnectionRequest, "Payload Provided was invalid!");
+                }
+
+                OnAuth OnAuth = new OnAuth
+                {
+                    Did = playerDid,
+                    Challenge = MakeChallenge(playerDid),
+                    ReadyMessage = readyMessage
+                };
+                if (AuthIdentity.TryAdd(newPeer, OnAuth))
                 {
                     UUID = playerDid.V;
-                    Challenge challenge = SendChallenge(playerDid);
-                    BytesMessage NetworkMessage = new BytesMessage();
-                    NetworkMessage.bytes = challenge.Nonce.V;
+                    BytesMessage NetworkMessage = new BytesMessage
+                    {
+                        bytes = OnAuth.Challenge.Nonce.V
+                    };
                     NetDataWriter Writer = new NetDataWriter();
                     NetworkMessage.Serialize(Writer);
                     newPeer.Send(Writer, BasisNetworkCommons.AuthIdentityMessage, DeliveryMethod.ReliableOrdered);
@@ -90,11 +121,10 @@ namespace BasisDidLink
                     UUID = "ERROR";
                 }
             }
-            public Challenge SendChallenge(Did Did)
+            public Challenge MakeChallenge(Did ChallengingDID)
             {
-                return DidAuth.MakeChallenge(Did ?? throw new Exception("call RecvDid first"));
+                return DidAuth.MakeChallenge(ChallengingDID ?? throw new Exception("call RecvDid first"));
             }
-
             /// Returns false if connection should be terminated
             public async Task<bool> RecvChallengeResponse(Response response, Challenge Challenge)
             {
