@@ -11,6 +11,8 @@ public static class NetworkClient
     private static NetPeer peer;
     private static bool IsInUse;
     public static BytesMessage AuthenticationMessage = new BytesMessage();
+
+    public static BytesMessage AuthenticationIdentityMessage = new BytesMessage();
     /// <summary>
     /// inital data is typically the 
     /// </summary> 
@@ -41,6 +43,7 @@ public static class NetworkClient
             //this is the only time we dont put key!
             Writer.Put(BasisNetworkVersion.ServerVersion);
             AuthenticationMessage.Serialize(Writer);
+            AuthenticationIdentityMessage.Serialize(Writer);
             ReadyMessage.Serialize(Writer,false);
             peer = client.Connect(IP, port, Writer);
             return peer;
