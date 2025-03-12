@@ -1,5 +1,8 @@
 using System;
 using System.Collections.Concurrent;
+using System.IO.Compression;
+using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Basis.Contrib.Auth.DecentralizedIds;
 using Basis.Contrib.Auth.DecentralizedIds.Newtypes;
@@ -9,7 +12,6 @@ using Basis.Network.Server.Auth;
 using BasisServerHandle;
 using LiteNetLib;
 using LiteNetLib.Utils;
-using Org.BouncyCastle.Asn1.Cmp;
 using static Basis.Network.Core.Serializable.SerializableBasis;
 using Challenge = Basis.Contrib.Auth.DecentralizedIds.Challenge;
 using CryptoRng = System.Security.Cryptography.RandomNumberGenerator;
@@ -17,32 +19,11 @@ namespace BasisDidLink
 {
     public class BasisDIDAuthIdentity
     {
-        /*
-        // Server 
-        RandomNumberGenerator ServerRNG =
-        Config cfg = new Config { Rng = new RandomNumberGenerator() };
-        Server server = new(didAuth: new DidAuthentication(cfg));
-        ConnectionState conn = server.OnConnection(playerIp);
-      // Debug.Assert(conn.RecvDid(playerDid));
-        Basis.Contrib.Auth.DecentralizedIds.Challenge challenge = DidAuthIdentity.SendChallenge(playerDid);
-
-        // payload from server to client
-        Payload payloadToSign = new Payload(challenge.Nonce.V);
-      //  Debug.Assert(Ed25519.Sign(privKey, payloadToSign, out Signature? sig), "signing with a valid privkey should always succeed");
-      //  Debug.Assert(sig is not null, "signing with a valid privkey should always succeed");
-      //  Debug.Assert(Ed25519.Verify(pubKey, sig, payloadToSign), "sanity check: verifying sig");
-        // for simplicity, use an empty fragment since the client only has one pubkey
-
-        //payload from client to server
-        Response response = new Response(sig, new DidUrlFragment(string.Empty));
-
-        // Server
-        bool isAuthenticated = await DidAuthIdentity.RecvChallengeResponse(response,challenge);
-        */
         public class DidAuthIdentity : IAuthIdentity
         {
             internal readonly DidAuthentication DidAuth;
             public ConcurrentDictionary<NetPeer, Did> AuthIdentity = new ConcurrentDictionary<NetPeer, Did>();
+            public ConcurrentDictionary<NetPeer, Nonce> Nonces = new ConcurrentDictionary<NetPeer, Nonce>();
             public DidAuthIdentity()
             {
                 var rng = CryptoRng.Create();
@@ -50,28 +31,45 @@ namespace BasisDidLink
                 DidAuth = new DidAuthentication(cfg);
                 BasisServerHandleEvents.OnAuthReceived += OnAuthReceived;
             }
-            /// <summary>
-            /// in this case we use this to get the signed challenge
-            /// </summary>
-            /// <param name="reader"></param>
-            /// <param name="peer"></param>
-            private async void OnAuthReceived(NetPacketReader reader, NetPeer newPeer)
+            public void DeInitalize()
             {
-                BytesMessage BytesMessage = new BytesMessage();
-                BytesMessage.Deserialize(reader);
-                Signature Sig = new Signature(BytesMessage.bytes);
-                DidUrlFragment Fragment = new DidUrlFragment("");//where is this coming from?
-                Response response = new Response(Sig, Fragment);
-                if (AuthIdentity.TryGetValue(newPeer, out var authIdentity))
+                BasisServerHandleEvents.OnAuthReceived -= OnAuthReceived;
+            }
+            public static string DecompressString(byte[] compressedBytes)
+            {
+                using (var inputStream = new MemoryStream(compressedBytes))
+                using (var gzipStream = new GZipStream(inputStream, CompressionMode.Decompress))
+                using (var outputStream = new MemoryStream())
                 {
-                    BytesMessage NonceMessage = new BytesMessage();
-                    NonceMessage.Deserialize(reader);
-                    Nonce Nonce = new Nonce(NonceMessage.bytes);//where is this conig from?
-                    Challenge challenge = new Challenge(authIdentity, Nonce);
-                    bool isAuthenticated = await RecvChallengeResponse(response, challenge);
+                    gzipStream.CopyTo(outputStream);
+                    return Encoding.UTF8.GetString(outputStream.ToArray());
                 }
             }
+            private async void OnAuthReceived(NetPacketReader reader, NetPeer newPeer)
+            {
+                BytesMessage SignatureBytes = new BytesMessage();
+                SignatureBytes.Deserialize(reader);
+                Signature Sig = new Signature(SignatureBytes.bytes);
 
+                BytesMessage NonceMessage = new BytesMessage();
+                NonceMessage.Deserialize(reader);
+                string FragmentAsString = DecompressString(NonceMessage.bytes);
+                DidUrlFragment Fragment = new DidUrlFragment(FragmentAsString);//where is this coming from?s
+
+                Response response = new Response(Sig, Fragment);
+                if (AuthIdentity.TryGetValue(newPeer, out Did authIdentity))
+                {
+                    if (Nonces.TryGetValue(newPeer, out Nonce Nonce))
+                    {
+                        Challenge challenge = new Challenge(authIdentity, Nonce);
+                        bool isAuthenticated = await RecvChallengeResponse(response, challenge);
+                        if (isAuthenticated)
+                        {
+                            BasisServerHandleEvents.OnNetworkAccepted(newPeer, ConReq, UUID, HasAuthID);
+                        }
+                    }
+                }
+            }
             public void IsUserIdentifiable(BytesMessage msg, NetPeer newPeer, out string UUID)
             {
                 PubKey Key = new PubKey(msg.bytes);
@@ -79,7 +77,7 @@ namespace BasisDidLink
 
                 if (AuthIdentity.TryAdd(newPeer, playerDid))
                 {
-                     UUID = playerDid.V;
+                    UUID = playerDid.V;
                     Challenge challenge = SendChallenge(playerDid);
                     BytesMessage NetworkMessage = new BytesMessage();
                     NetworkMessage.bytes = challenge.Nonce.V;
@@ -98,7 +96,7 @@ namespace BasisDidLink
             }
 
             /// Returns false if connection should be terminated
-            public async Task<bool> RecvChallengeResponse(Response response,Challenge Challenge)
+            public async Task<bool> RecvChallengeResponse(Response response, Challenge Challenge)
             {
                 if (!response.DidUrlFragment.V.Equals(string.Empty))
                 {

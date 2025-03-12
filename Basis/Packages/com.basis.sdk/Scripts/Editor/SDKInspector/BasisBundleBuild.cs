@@ -141,7 +141,16 @@ public static class BasisBundleBuild
                 int totalFiles = bundlePaths.Count;
 
                 // Write header length and EncryptedConnector to the output stream
-                await outputStream.WriteAsync(BitConverter.GetBytes(headerLength), 0, 8);
+                //headerLength is byte[],long Value
+                // Convert the long value to an 8-byte array
+                byte[] headerBytes = BitConverter.GetBytes(headerLength);
+
+                // Ensure the byte array is the correct size
+                if (headerBytes.Length != 8)
+                {
+                    throw new Exception($"Header byte conversion failed! {headerBytes.Length} was not 8 bytes!");
+                }
+                await outputStream.WriteAsync(headerBytes, 0, 8);
                 await outputStream.WriteAsync(EncryptedConnector, 0, EncryptedConnector.Length);
 
                 for (int i = 0; i < totalFiles; i++)
