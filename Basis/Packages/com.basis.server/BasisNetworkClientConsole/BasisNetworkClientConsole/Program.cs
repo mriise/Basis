@@ -74,12 +74,12 @@ namespace Basis
                         hasAdditionalAvatarData = false,
                        AdditionalAvatarDatas = null,
                     };
-                    AuthenticationMessage Authmessage = new AuthenticationMessage
+                    BytesMessage Authmessage = new BytesMessage
                     {
                         bytes = Encoding.UTF8.GetBytes(Password)
                     };
-                    BasisNetworkClient.AuthenticationMessage = Authmessage;
-                    LocalPLayer = BasisNetworkClient.StartClient(Ip, Port, RM, true);
+                    NetworkClient.AuthenticationMessage = Authmessage;
+                    LocalPLayer = NetworkClient.StartClient(Ip, Port, RM, true);
                     //   BasisNetworkClient.listener.NetworkReceiveEvent += NetworkReceiveEvent;
                     BNL.Log($"Connecting! Player Name: {randomPlayerName}, UUID: {randomUUID}");
                 }

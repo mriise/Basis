@@ -25,7 +25,7 @@ public class BasisNetworkServerRunner
             try
             {
                 Configuration Configuration = new Configuration();
-                BasisNetworkServer.StartServer(Configuration);
+                NetworkServer.StartServer(Configuration);
             }
             catch (Exception ex)
             {

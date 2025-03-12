@@ -147,7 +147,7 @@ namespace Basis.Scripts.Networking
             Players.Clear();
             Shutdown();
             BasisAvatarBufferPool.Clear();
-            BasisNetworkClient.Disconnect();
+            NetworkClient.Disconnect();
             NetworkRunning = false;
         }
         public async void Shutdown()
@@ -272,16 +272,16 @@ namespace Basis.Scripts.Networking
             };
             BasisNetworkAvatarCompressor.InitalAvatarData(BasisLocalPlayer.Instance.BasisAvatar.Animator, out readyMessage.localAvatarSyncMessage);
             BasisDebug.Log("Network Starting Client");
-            BasisNetworkClient.AuthenticationMessage = new Network.Core.Serializable.SerializableBasis.AuthenticationMessage
+            NetworkClient.AuthenticationMessage = new Network.Core.Serializable.SerializableBasis.BytesMessage()
             {
                  bytes = Encoding.UTF8.GetBytes(PrimitivePassword)
             };
            // BasisDebug.Log("Size is " + BasisNetworkClient.AuthenticationMessage.Message.Length);
-            LocalPlayerPeer = BasisNetworkClient.StartClient(IpString, Port, readyMessage);
+            LocalPlayerPeer = NetworkClient.StartClient(IpString, Port, readyMessage);
             BasisDebug.Log("Network Client Started " + LocalPlayerPeer.RemoteId);
-            BasisNetworkClient.listener.PeerConnectedEvent += PeerConnectedEvent;
-            BasisNetworkClient.listener.PeerDisconnectedEvent += PeerDisconnectedEvent;
-            BasisNetworkClient.listener.NetworkReceiveEvent += NetworkReceiveEvent;
+            NetworkClient.listener.PeerConnectedEvent += PeerConnectedEvent;
+            NetworkClient.listener.PeerDisconnectedEvent += PeerDisconnectedEvent;
+            NetworkClient.listener.NetworkReceiveEvent += NetworkReceiveEvent;
         }
         private async void PeerConnectedEvent(NetPeer peer)
         {

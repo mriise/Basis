@@ -1,17 +1,16 @@
 using Basis.Network.Core;
-using BasisNetworkCore;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using static Basis.Network.Core.Serializable.SerializableBasis;
 using static SerializableBasis;
 
-public static class BasisNetworkClient
+public static class NetworkClient
 {
     public static NetManager client;
     public static EventBasedNetListener listener;
     private static NetPeer peer;
     private static bool IsInUse;
-    public static AuthenticationMessage AuthenticationMessage = new AuthenticationMessage();
+    public static BytesMessage AuthenticationMessage = new BytesMessage();
     /// <summary>
     /// inital data is typically the 
     /// </summary> 

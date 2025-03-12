@@ -41,7 +41,7 @@ namespace Basis
             {
                 try
                 {
-                    BasisNetworkServer.StartServer(config);
+                    NetworkServer.StartServer(config);
                     BasisLoadableLoader.LoadXML("initalresources");
                 }
                 catch (Exception ex)
