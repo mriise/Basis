@@ -17,12 +17,12 @@ namespace BasisNetworkClient
             var pubKey = Ed25519.ConvertPrivkeyToPubkey(privKey) ?? throw new Exception("privkey was invalid");
             return (pubKey, privKey);
         }
-        public static void ClientKeyCreation()
+        public static void ClientKeyCreation(out (PubKey, PrivKey) Keys,out Did Did)
         {
             // Client
             CryptoRng rng = CryptoRng.Create();
-            (PubKey pubKey, PrivKey privKey) = RandomKeyPair(rng);
-            Did playerDid = DidKeyResolver.EncodePubkeyAsDid(pubKey);
+            Keys = RandomKeyPair(rng);
+            Did = DidKeyResolver.EncodePubkeyAsDid(Keys.Item1);
         }
         public static byte[] CompressString(string str)
         {
