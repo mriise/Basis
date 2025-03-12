@@ -46,8 +46,6 @@ namespace BasisDidLink
             }
             public void ProcessConnection(ConnectionRequest ConnectionRequest, NetPeer newPeer)
             {
-                ushort PeerId = (ushort)newPeer.Id;
-
                 BytesMessage authIdentityMessage = new BytesMessage();
                 authIdentityMessage.Deserialize(ConnectionRequest.Data);
 
