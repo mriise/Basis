@@ -7,7 +7,6 @@ using Basis.Scripts.Networking.Recievers;
 using Basis.Scripts.Networking.Transmitters;
 using Basis.Scripts.Profiler;
 using Basis.Scripts.TransformBinders.BoneControl;
-using BasisDidLink;
 using BasisNetworkClient;
 using LiteNetLib;
 using LiteNetLib.Utils;
@@ -20,7 +19,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using static Basis.Network.Core.Serializable.SerializableBasis;
 using static BasisNetworkGenericMessages;
 using static DarkRift.Basis_Common.Serializable.SerializableBasis;
 using static SerializableBasis;
@@ -409,8 +407,22 @@ namespace Basis.Scripts.Networking
                     }
                     break;
                 case BasisNetworkCommons.AuthIdentityMessage:
-                    IdentityMessage(peer,Reader);
-                    Reader.Recycle();
+                    if (BasisDIDAuthIdentityClient.IdentityMessage(peer, Reader, out NetDataWriter Writer))
+                    {
+                        LocalPlayerPeer.Send(Writer, BasisNetworkCommons.AuthIdentityMessage, DeliveryMethod.ReliableSequenced); Reader.Recycle();
+                        Reader.Recycle();
+                    }
+                    else
+                    {
+                        Reader.Recycle();
+                        DisconnectInfo info = new DisconnectInfo
+                        {
+                            Reason = DisconnectReason.ConnectionRejected,
+                            SocketErrorCode = System.Net.Sockets.SocketError.AccessDenied,
+                            AdditionalData = null
+                        };
+                        PeerDisconnectedEvent(peer, info);
+                    }
                     break;
                 case BasisNetworkCommons.Disconnection:
                     BasisNetworkHandleRemoval.HandleDisconnection(Reader);
@@ -506,23 +518,6 @@ namespace Basis.Scripts.Networking
                     Reader.Recycle();
                     break;
             }
-        }
-        public static void IdentityMessage(NetPeer peer, NetPacketReader Reader)
-        {
-            BytesMessage ChallengeBytes = new BytesMessage();
-            ChallengeBytes.Deserialize(Reader);
-            byte[] Bytes = ChallengeBytes.bytes;
-          // BasisDIDAuthIdentityClient.RandomKeyPair
-
-            NetDataWriter Writer = new NetDataWriter();
-
-            BytesMessage SignatureBytes = new BytesMessage();
-            BytesMessage FragmentBytes = new BytesMessage();
-
-            SignatureBytes.Serialize(Writer);
-            FragmentBytes.Serialize(Writer);
-
-            LocalPlayerPeer.Send(Writer, BasisNetworkCommons.AuthIdentityMessage, DeliveryMethod.ReliableSequenced);
         }
         public static void RemoveOwnership(string UniqueNetworkId)
         {
