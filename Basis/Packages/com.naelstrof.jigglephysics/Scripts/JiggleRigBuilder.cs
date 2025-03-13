@@ -370,7 +370,6 @@ namespace JigglePhysics
 
         private double accumulation;
         private float settleTimer;
-        private bool wasLODActive = true;
         private void Awake()
         {
             Initialize();

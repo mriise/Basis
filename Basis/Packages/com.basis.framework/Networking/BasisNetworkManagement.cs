@@ -7,6 +7,8 @@ using Basis.Scripts.Networking.Recievers;
 using Basis.Scripts.Networking.Transmitters;
 using Basis.Scripts.Profiler;
 using Basis.Scripts.TransformBinders.BoneControl;
+using BasisDidLink;
+using BasisNetworkClient;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using System;
@@ -18,6 +20,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using static Basis.Network.Core.Serializable.SerializableBasis;
 using static BasisNetworkGenericMessages;
 using static DarkRift.Basis_Common.Serializable.SerializableBasis;
 using static SerializableBasis;
@@ -276,7 +279,7 @@ namespace Basis.Scripts.Networking
             {
                  bytes = Encoding.UTF8.GetBytes(PrimitivePassword)
             };
-           // BasisDebug.Log("Size is " + BasisNetworkClient.AuthenticationMessage.Message.Length);
+            // BasisDebug.Log("Size is " + BasisNetworkClient.AuthenticationMessage.Message.Length);
             LocalPlayerPeer = NetworkClient.StartClient(IpString, Port, readyMessage);
             BasisDebug.Log("Network Client Started " + LocalPlayerPeer.RemoteId);
             NetworkClient.listener.PeerConnectedEvent += PeerConnectedEvent;
@@ -405,6 +408,10 @@ namespace Basis.Scripts.Networking
                         Reader.Recycle();
                     }
                     break;
+                case BasisNetworkCommons.AuthIdentityMessage:
+                    IdentityMessage(peer,Reader);
+                    Reader.Recycle();
+                    break;
                 case BasisNetworkCommons.Disconnection:
                     BasisNetworkHandleRemoval.HandleDisconnection(Reader);
                     Reader.Recycle();
@@ -499,6 +506,23 @@ namespace Basis.Scripts.Networking
                     Reader.Recycle();
                     break;
             }
+        }
+        public static void IdentityMessage(NetPeer peer, NetPacketReader Reader)
+        {
+            BytesMessage ChallengeBytes = new BytesMessage();
+            ChallengeBytes.Deserialize(Reader);
+            byte[] Bytes = ChallengeBytes.bytes;
+          // BasisDIDAuthIdentityClient.RandomKeyPair
+
+            NetDataWriter Writer = new NetDataWriter();
+
+            BytesMessage SignatureBytes = new BytesMessage();
+            BytesMessage FragmentBytes = new BytesMessage();
+
+            SignatureBytes.Serialize(Writer);
+            FragmentBytes.Serialize(Writer);
+
+            LocalPlayerPeer.Send(Writer, BasisNetworkCommons.AuthIdentityMessage, DeliveryMethod.ReliableSequenced);
         }
         public static void RemoveOwnership(string UniqueNetworkId)
         {

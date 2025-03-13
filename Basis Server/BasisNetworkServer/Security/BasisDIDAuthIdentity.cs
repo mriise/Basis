@@ -25,7 +25,7 @@ namespace BasisDidLink
             public ConcurrentDictionary<NetPeer, OnAuth> AuthIdentity = new ConcurrentDictionary<NetPeer, OnAuth>();
             public DidAuthIdentity()
             {
-                var rng = CryptoRng.Create();
+                CryptoRng rng = CryptoRng.Create();
                 Config cfg = new Config { Rng = rng };
                 DidAuth = new DidAuthentication(cfg);
                 BasisServerHandleEvents.OnAuthReceived += OnAuthReceived;
@@ -48,17 +48,12 @@ namespace BasisDidLink
             {
                 try
                 {
-                    BytesMessage authIdentityMessage = new BytesMessage();
-                    authIdentityMessage.Deserialize(ConnectionRequest.Data);
-
-                    string DeCompression = UnpackString(authIdentityMessage.bytes);
-                    Did playerDid = new Did(DeCompression);
-
-
                     ReadyMessage readyMessage = ThreadSafeMessagePool<ReadyMessage>.Rent();
                     readyMessage.Deserialize(ConnectionRequest.Data, false);
                     if (readyMessage.WasDeserializedCorrectly())
                     {
+                        string UUID = readyMessage.playerMetaDataMessage.playerUUID;
+                        Did playerDid = new Did(UUID);
                         OnAuth OnAuth = new OnAuth
                         {
                             Did = playerDid,
