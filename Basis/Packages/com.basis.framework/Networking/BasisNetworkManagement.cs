@@ -238,25 +238,27 @@ namespace Basis.Scripts.Networking
         {
             Connect(Port, Ip, Password, IsHostMode);
         }
-        public void Connect(ushort Port, string IpString,string PrimitivePassword,bool IsHostMode)
+        public void Connect(ushort Port, string IpString, string PrimitivePassword, bool IsHostMode)
         {
             BNL.LogOutput += LogOutput;
             BNL.LogWarningOutput += LogWarningOutput;
             BNL.LogErrorOutput += LogErrorOutput;
 
-            if(IsHostMode)
+            if (IsHostMode)
             {
                 IpString = "localhost";
                 BasisNetworkServerRunner = new BasisNetworkServerRunner();
-                Configuration ServerConfig =   new Configuration() { IPv4Address = IpString };
+                Configuration ServerConfig = new Configuration() { IPv4Address = IpString };
                 ServerConfig.UsingLoggingFile = false;
-                BasisNetworkServerRunner.Initalize(ServerConfig,string.Empty);
+                BasisNetworkServerRunner.Initalize(ServerConfig, string.Empty);
             }
 
             BasisDebug.Log("Connecting with Port " + Port + " IpString " + IpString);
             //   string result = BasisNetworkIPResolve.ResolveHosttoIP(IpString);
             //   BasisDebug.Log($"DNS call: {IpString} resolves to {result}");
             BasisLocalPlayer BasisLocalPlayer = BasisLocalPlayer.Instance;
+           string UUID = BasisDIDAuthIdentityClient.GetOrSaveDID();
+            BasisLocalPlayer.UUID = UUID;
             byte[] Information = BasisBundleConversionNetwork.ConvertBasisLoadableBundleToBytes(BasisLocalPlayer.AvatarMetaData);
             ReadyMessage readyMessage = new ReadyMessage
             {
@@ -275,7 +277,7 @@ namespace Basis.Scripts.Networking
             BasisDebug.Log("Network Starting Client");
             NetworkClient.AuthenticationMessage = new Network.Core.Serializable.SerializableBasis.BytesMessage()
             {
-                 bytes = Encoding.UTF8.GetBytes(PrimitivePassword)
+                bytes = Encoding.UTF8.GetBytes(PrimitivePassword)
             };
             // BasisDebug.Log("Size is " + BasisNetworkClient.AuthenticationMessage.Message.Length);
             LocalPlayerPeer = NetworkClient.StartClient(IpString, Port, readyMessage);

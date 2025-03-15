@@ -10,11 +10,13 @@ using LiteNetLib.Utils;
 using System;
 using System.Collections.Concurrent;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using static Basis.Network.Core.Serializable.SerializableBasis;
 using static SerializableBasis;
 using Challenge = Basis.Contrib.Auth.DecentralizedIds.Challenge;
 using CryptoRng = System.Security.Cryptography.RandomNumberGenerator;
+
 namespace BasisDidLink
 {
     public class BasisDIDAuthIdentity
@@ -23,115 +25,152 @@ namespace BasisDidLink
         {
             internal readonly DidAuthentication DidAuth;
             public ConcurrentDictionary<NetPeer, OnAuth> AuthIdentity = new ConcurrentDictionary<NetPeer, OnAuth>();
+            private readonly ConcurrentDictionary<NetPeer, CancellationTokenSource> _timeouts = new ConcurrentDictionary<NetPeer, CancellationTokenSource>();
+
             public DidAuthIdentity()
             {
                 CryptoRng rng = CryptoRng.Create();
                 Config cfg = new Config { Rng = rng };
                 DidAuth = new DidAuthentication(cfg);
                 BasisServerHandleEvents.OnAuthReceived += OnAuthReceived;
+                BNL.Log("DidAuthIdentity initialized.");
             }
+
             public void DeInitalize()
             {
                 BasisServerHandleEvents.OnAuthReceived -= OnAuthReceived;
+                BNL.Log("DidAuthIdentity deinitialized.");
             }
+
             public static string UnpackString(byte[] compressedBytes)
             {
-               return Encoding.UTF8.GetString(compressedBytes, 0, compressedBytes.Length);
+                return Encoding.UTF8.GetString(compressedBytes, 0, compressedBytes.Length);
             }
+
             public struct OnAuth
             {
                 public ReadyMessage ReadyMessage;
                 public Challenge Challenge;
                 public Did Did;
             }
+
             public void ProcessConnection(ConnectionRequest ConnectionRequest, NetPeer newPeer)
             {
                 try
                 {
+                    BNL.Log($"Processing connection from peer {newPeer.Id}.");
                     ReadyMessage readyMessage = ThreadSafeMessagePool<ReadyMessage>.Rent();
                     readyMessage.Deserialize(ConnectionRequest.Data, false);
+
                     if (readyMessage.WasDeserializedCorrectly())
                     {
                         string UUID = readyMessage.playerMetaDataMessage.playerUUID;
                         Did playerDid = new Did(UUID);
+                        BNL.Log($"Received valid ReadyMessage for player {UUID}.");
+
                         OnAuth OnAuth = new OnAuth
                         {
                             Did = playerDid,
                             Challenge = MakeChallenge(playerDid),
                             ReadyMessage = readyMessage
                         };
+
                         if (AuthIdentity.TryAdd(newPeer, OnAuth))
                         {
+                            BNL.Log($"Challenge created and stored for {UUID}.");
                             readyMessage.playerMetaDataMessage.playerUUID = playerDid.V;
-                            BytesMessage NetworkMessage = new BytesMessage
-                            {
-                                bytes = OnAuth.Challenge.Nonce.V
-                            };
+                            BytesMessage NetworkMessage = new BytesMessage { bytes = OnAuth.Challenge.Nonce.V };
                             NetDataWriter Writer = new NetDataWriter();
                             NetworkMessage.Serialize(Writer);
-                            //request from the client its auth
                             newPeer.Send(Writer, BasisNetworkCommons.AuthIdentityMessage, DeliveryMethod.ReliableOrdered);
+
+                            var cts = new CancellationTokenSource();
+                            _timeouts[newPeer] = cts;
+
+                            Task.Run(async () =>
+                            {
+                                try
+                                {
+                                    await Task.Delay(TimeSpan.FromSeconds(30), cts.Token);
+                                    if (!_timeouts.ContainsKey(newPeer)) return;
+                                    AuthIdentity.TryRemove(newPeer, out _);
+                                    _timeouts.TryRemove(newPeer, out _);
+                                    BNL.Log($"Authentication timeout for {UUID}.");
+                                    BasisServerHandleEvents.RejectWithReason(newPeer, "Authentication timeout");
+                                    newPeer.Disconnect();
+                                }
+                                catch (TaskCanceledException) { }
+                            });
                         }
                         else
                         {
+                            BNL.Log($"Failed to add authentication data for {UUID}.");
                             BasisServerHandleEvents.RejectWithReason(newPeer, "Payload Provided was invalid!");
                         }
                     }
                     else
                     {
+                        BNL.Log("Invalid ReadyMessage received.");
                         BasisServerHandleEvents.RejectWithReason(newPeer, "Payload Provided was invalid!");
                     }
                 }
                 catch (Exception e)
                 {
+                    BNL.Log($"Error processing connection: {e.Message} {e.StackTrace}");
                     BasisServerHandleEvents.RejectWithReason(newPeer, $"{e.Message} {e.StackTrace}");
                 }
             }
-            /// <summary>
-            /// response from client with the challenge
-            /// </summary>
-            /// <param name="reader"></param>
-            /// <param name="newPeer"></param>
+
             private async void OnAuthReceived(NetPacketReader reader, NetPeer newPeer)
             {
                 try
                 {
+                    BNL.Log($"Authentication response received from {newPeer.Id}.");
+                    if (_timeouts.TryRemove(newPeer, out var cts))
+                    {
+                        cts.Cancel();
+                    }
+
                     BytesMessage SignatureBytes = new BytesMessage();
                     SignatureBytes.Deserialize(reader);
                     BytesMessage FragmentBytes = new BytesMessage();
                     FragmentBytes.Deserialize(reader);
 
-
                     Signature Sig = new Signature(SignatureBytes.bytes);
-
                     string FragmentAsString = UnpackString(FragmentBytes.bytes);
-                    DidUrlFragment Fragment = new DidUrlFragment(FragmentAsString);//where is this coming from?s
-
+                    DidUrlFragment Fragment = new DidUrlFragment(FragmentAsString);
                     Response response = new Response(Sig, Fragment);
+
                     if (AuthIdentity.TryGetValue(newPeer, out OnAuth authIdentity))
                     {
+                        BNL.Log($"Verifying authentication response for {authIdentity.Did.V}.");
                         Challenge challenge = authIdentity.Challenge;
                         bool isAuthenticated = await RecvChallengeResponse(response, challenge);
+
                         if (isAuthenticated)
                         {
+                            BNL.Log($"Authentication successful for {authIdentity.Did.V}.");
                             BasisServerHandleEvents.OnNetworkAccepted(newPeer, authIdentity.ReadyMessage, authIdentity.Did.V);
                         }
                         else
                         {
+                            BNL.Log($"Authentication failed for {authIdentity.Did.V}.");
                             BasisServerHandleEvents.RejectWithReason(newPeer, "was unable to authenticate!");
                         }
                     }
                 }
                 catch (Exception e)
                 {
+                    BNL.Log($"Error during authentication: {e.Message} {e.StackTrace}");
                     BasisServerHandleEvents.RejectWithReason(newPeer, $"{e.Message} {e.StackTrace}");
                 }
             }
+
             public Challenge MakeChallenge(Did ChallengingDID)
             {
                 return DidAuth.MakeChallenge(ChallengingDID ?? throw new Exception("call RecvDid first"));
             }
-            /// Returns false if connection should be terminated
+
             public async Task<bool> RecvChallengeResponse(Response response, Challenge Challenge)
             {
                 if (!response.DidUrlFragment.V.Equals(string.Empty))
