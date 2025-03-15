@@ -18,7 +18,7 @@ namespace Basis.Network.Server.Auth
         /// </summary>
         /// <param name="msg"></param>
         /// <returns></returns>
-        public void ProcessConnection(ConnectionRequest ConnectionRequest, NetPeer NetPeer);
+        public void ProcessConnection(Configuration Configuration, ConnectionRequest ConnectionRequest, NetPeer NetPeer);
         public void DeInitalize();
     }
 }

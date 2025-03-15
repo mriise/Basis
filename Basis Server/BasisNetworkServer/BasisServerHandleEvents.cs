@@ -169,7 +169,7 @@ namespace BasisServerHandle
 
                 if (NetworkServer.Configuration.UseAuthIdentity)
                 {
-                    NetworkServer.authIdentity.ProcessConnection(ConReq, newPeer);
+                    NetworkServer.authIdentity.ProcessConnection(NetworkServer.Configuration, ConReq, newPeer);
                 }
                 else
                 {

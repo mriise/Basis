@@ -53,8 +53,20 @@ namespace BasisDidLink
                 public Challenge Challenge;
                 public Did Did;
             }
+            public int CheckForDuplicates(Did Did)
+            {
+                int Count = 0;
+                foreach(var key in AuthIdentity.Values)
+                {
+                    if(key.Did.V == Did.V)
+                    {
+                        Count++;
+                    }
+                }
+                return Count;
+            }
 
-            public void ProcessConnection(ConnectionRequest ConnectionRequest, NetPeer newPeer)
+            public void ProcessConnection(Configuration Configuration, ConnectionRequest ConnectionRequest, NetPeer newPeer)
             {
                 try
                 {
@@ -67,6 +79,13 @@ namespace BasisDidLink
                         string UUID = readyMessage.playerMetaDataMessage.playerUUID;
                         Did playerDid = new Did(UUID);
                         BNL.Log($"Received valid ReadyMessage for player {UUID}.");
+
+
+                        if (Configuration.HowManyDuplicateAuthCanExist < CheckForDuplicates(playerDid))
+                        {
+                            BasisServerHandleEvents.RejectWithReason(newPeer, "To Many Auths From this DID!");
+                            return;
+                        }
 
                         OnAuth OnAuth = new OnAuth
                         {
@@ -91,7 +110,7 @@ namespace BasisDidLink
                             {
                                 try
                                 {
-                                    await Task.Delay(TimeSpan.FromSeconds(30), cts.Token);
+                                    await Task.Delay(NetworkServer.Configuration.AuthValidationTimeOutMiliseconds, cts.Token);
                                     if (!_timeouts.ContainsKey(newPeer)) return;
                                     AuthIdentity.TryRemove(newPeer, out _);
                                     _timeouts.TryRemove(newPeer, out _);
@@ -104,14 +123,12 @@ namespace BasisDidLink
                         }
                         else
                         {
-                            BNL.Log($"Failed to add authentication data for {UUID}.");
-                            BasisServerHandleEvents.RejectWithReason(newPeer, "Payload Provided was invalid!");
+                            BasisServerHandleEvents.RejectWithReason(newPeer, "Payload Provided was invalid! potential Duplication");
                         }
                     }
                     else
                     {
-                        BNL.Log("Invalid ReadyMessage received.");
-                        BasisServerHandleEvents.RejectWithReason(newPeer, "Payload Provided was invalid!");
+                        BasisServerHandleEvents.RejectWithReason(newPeer, "Invalid ReadyMessage received.");
                     }
                 }
                 catch (Exception e)
@@ -154,7 +171,7 @@ namespace BasisDidLink
                         }
                         else
                         {
-                            BNL.Log($"Authentication failed for {authIdentity.Did.V}.");
+                            BNL.LogError($"Authentication failed for {authIdentity.Did.V}.");
                             BasisServerHandleEvents.RejectWithReason(newPeer, "was unable to authenticate!");
                         }
                     }
@@ -165,6 +182,7 @@ namespace BasisDidLink
                     BasisServerHandleEvents.RejectWithReason(newPeer, $"{e.Message} {e.StackTrace}");
                 }
             }
+
 
             public Challenge MakeChallenge(Did ChallengingDID)
             {
