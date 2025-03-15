@@ -1,44 +1,51 @@
 using LiteNetLib.Utils;
 using System;
+
 public static partial class SerializableBasis
 {
     public struct AdditionalAvatarData
     {
         public byte messageIndex;
         public byte[] array;
-        public void Deserialize(NetDataReader Writer)
-        {
-            int Bytes = Writer.AvailableBytes;
-            if (Bytes != 0)
-            {
-                messageIndex = Writer.GetByte();
 
-                byte PayloadSize = Writer.GetByte();
-                if (array == null || array.Length != PayloadSize)
+        public void Deserialize(NetDataReader reader)
+        {
+            int bytesAvailable = reader.AvailableBytes;
+            if (bytesAvailable > 0)
+            {
+                messageIndex = reader.GetByte();
+
+                byte payloadSize = reader.GetByte();
+
+                if (payloadSize > 0)
                 {
-                    array = new byte[PayloadSize];
+                    if (array == null || array.Length != payloadSize)
+                    {
+                        array = new byte[payloadSize];
+                    }
+                    reader.GetBytes(array, payloadSize);
                 }
-                Writer.GetBytes(array, PayloadSize);
-                //89 * 2 = 178 + 12 + 14 = 204
-                //now 178 for muscles, 3*4 for position 12, 4*4 for rotation 16-2 (W is half) = 204
+                else
+                {
+                    array = new byte[0]; // Ensure it's not null
+                }
             }
             else
             {
-                BNL.LogError($"Unable to read Remaing bytes where {Bytes}");
+                BNL.LogError($"Unable to read remaining bytes, available: {bytesAvailable}");
             }
         }
-        public void Serialize(NetDataWriter Writer)
+
+        public void Serialize(NetDataWriter writer)
         {
-            if (array == null)
+            writer.Put(messageIndex);
+
+            byte size = (array != null) ? (byte)array.Length : (byte)0;
+            writer.Put(size);
+
+            if (size > 0)
             {
-                BNL.LogError("array was null!!");
-            }
-            else
-            {
-                Writer.Put(messageIndex);
-                byte Size = (byte)array.Length;
-                Writer.Put(Size);
-                Writer.Put(array);
+                writer.Put(array);
             }
         }
     }
