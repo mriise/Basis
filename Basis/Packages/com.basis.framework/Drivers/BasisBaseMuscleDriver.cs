@@ -268,7 +268,7 @@ public abstract class BasisBaseMuscleDriver : MonoBehaviour
             GetClosestValue(RightFinger.LittlePercentage, out RightLittleAdditional);
             LastRightLittlePercentage = RightFinger.LittlePercentage;
         }
-        UpdateFingerPoses(Map.RightLittle, RightLittleAdditional.PoseData.RightLittle, ref Current.RightLittle, Map.HasRightRing, Rotation);
+        UpdateFingerPoses(Map.RightLittle, RightLittleAdditional.PoseData.RightLittle, ref Current.RightLittle, Map.HasRightLittle, Rotation);
     }
     public void UpdateFingerPoses(Transform[] proximal, MuscleLocalPose[] poses, ref MuscleLocalPose[] currentPoses, bool[] hasProximal, float rotation)
     {
