@@ -1,19 +1,23 @@
-using LiteNetLib.Utils;
+﻿using LiteNetLib.Utils;
+
 public static partial class SerializableBasis
 {
-    public struct ServerAudioSegmentMessage
+    public struct ServerSceneDataMessage
     {
         public PlayerIdMessage playerIdMessage;
-        public AudioSegmentDataMessage audioSegmentData;
+        public RemoteSceneDataMessage sceneDataMessage;
+
         public void Deserialize(NetDataReader Writer)
         {
+            // Read the playerIdMessage
             playerIdMessage.Deserialize(Writer);
-            audioSegmentData.Deserialize(Writer);
+            sceneDataMessage.Deserialize(Writer);
         }
         public void Serialize(NetDataWriter Writer)
         {
+            // Write the playerIdMessage and sceneDataMessage
             playerIdMessage.Serialize(Writer);
-            audioSegmentData.Serialize(Writer);
+            sceneDataMessage.Serialize(Writer);
         }
     }
 }
