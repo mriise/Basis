@@ -42,8 +42,8 @@ namespace Basis.Network.Core.Serializable
                     Writer.Put((ushort)0);
                     return;
                 }
-
-                Writer.Put(checked((ushort)bytes.Length));
+                ushort Length = (ushort)bytes.Length;
+                Writer.Put(Length);
                 Writer.Put(bytes);
             }
         }

@@ -9,7 +9,7 @@ namespace BasisNetworkServer.Security
 {
     public class BasisWhiteList
     {
-        private readonly ConcurrentDictionary<string, byte> whitelistedPlayers = new();
+        private readonly ConcurrentDictionary<string, byte> whitelistedPlayers = new ConcurrentDictionary<string, byte>();
         private readonly string filePath;
 
         public BasisWhiteList(string path = "BasisWhiteList.txt")

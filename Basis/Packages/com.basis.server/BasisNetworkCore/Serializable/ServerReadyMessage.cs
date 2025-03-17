@@ -8,7 +8,7 @@ public static partial class SerializableBasis
         public void Deserialize(NetDataReader Writer, bool AttemptAdditionalData)
         {
             playerIdMessage.Deserialize(Writer);
-             localReadyMessage.Deserialize(Writer, AttemptAdditionalData);
+            localReadyMessage.Deserialize(Writer, AttemptAdditionalData);
         }
         public void Serialize(NetDataWriter Writer, bool AttemptAdditionalData)
         {

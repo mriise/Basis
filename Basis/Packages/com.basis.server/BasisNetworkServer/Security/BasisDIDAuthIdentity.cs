@@ -80,8 +80,7 @@ namespace BasisDidLink
                         Did playerDid = new Did(UUID);
                         BNL.Log($"Received valid ReadyMessage for player {UUID}.");
 
-
-                        if (Configuration.HowManyDuplicateAuthCanExist < CheckForDuplicates(playerDid))
+                        if (Configuration.HowManyDuplicateAuthCanExist <= CheckForDuplicates(playerDid))
                         {
                             BasisServerHandleEvents.RejectWithReason(newPeer, "To Many Auths From this DID!");
                             return;
