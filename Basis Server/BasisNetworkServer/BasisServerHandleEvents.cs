@@ -202,7 +202,7 @@ namespace BasisServerHandle
                 //this only occurs if the server is doing Auth checks.
                 ReadyMessage.playerMetaDataMessage.playerUUID = UUID;
                 ServerNetIDMessage[] SUIM = BasisNetworkIDDatabase.GetAllNetworkID();
-                ServerUniqueIDMessages ServerUniqueIDMessageArray = ThreadSafeMessagePool<ServerUniqueIDMessages>.Rent();
+                ServerUniqueIDMessages ServerUniqueIDMessageArray = new ServerUniqueIDMessages();
                 ServerUniqueIDMessageArray.Messages = SUIM;
 
                 NetDataWriter Writer = new NetDataWriter(true, 4);
@@ -210,8 +210,6 @@ namespace BasisServerHandle
                 newPeer.Send(Writer, BasisNetworkCommons.NetIDAssigns, DeliveryMethod.ReliableOrdered);
                 SendRemoteSpawnMessage(newPeer, ReadyMessage);
                 BasisNetworkResourceManagement.SendOutAllResources(newPeer);
-                ThreadSafeMessagePool<ServerUniqueIDMessages>.Return(ServerUniqueIDMessageArray);
-                ThreadSafeMessagePool<ReadyMessage>.Return(ReadyMessage);
             }
             else
             {
@@ -460,7 +458,10 @@ namespace BasisServerHandle
             ServerReadyMessage serverReadyMessage = new ServerReadyMessage
             {
                 localReadyMessage = readyMessage,
-                playerIdMessage = new PlayerIdMessage() { playerID = (ushort)authClient.Id }
+                playerIdMessage = new PlayerIdMessage()
+                {
+                    playerID = (ushort)authClient.Id
+                }
             };
             BasisSavedState.AddLastData(authClient, readyMessage);
             return serverReadyMessage;
@@ -472,7 +473,7 @@ namespace BasisServerHandle
         /// <param name="authClient"></param>
         public static void NotifyExistingClients(ServerReadyMessage serverSideSyncPlayerMessage, NetPeer authClient)
         {
-            NetDataWriter Writer = new NetDataWriter(true, 2);
+            NetDataWriter Writer = new NetDataWriter(true);
             serverSideSyncPlayerMessage.Serialize(Writer, false);
             ReadOnlySpan<NetPeer> Peers = BasisPlayerArray.GetSnapshot();
 
@@ -506,7 +507,7 @@ namespace BasisServerHandle
                         Message.Serialize(writer, true);
                         authClient.Send(writer, BasisNetworkCommons.CreateRemotePlayer, DeliveryMethod.ReliableOrdered);
                     }
-                    writer.Reset();
+                  //  writer.Reset();
                 }
             }
             catch (Exception ex)
@@ -521,16 +522,19 @@ namespace BasisServerHandle
                 if (!BasisSavedState.GetLastAvatarChangeState(peer, out var changeState))
                 {
                     changeState = new ClientAvatarChangeMessage();
+                    BNL.LogError("Unable to get avatar Change Request!");
                 }
 
                 if (!BasisSavedState.GetLastAvatarSyncState(peer, out var syncState))
                 {
                     syncState = new LocalAvatarSyncMessage() { array = new byte[386], hasAdditionalAvatarData = false, AdditionalAvatarDatas = null };
+                    BNL.LogError("Unable to get Last Player Avatar Data! Using Error Fallback");
                 }
 
                 if (!BasisSavedState.GetLastPlayerMetaData(peer, out var metaData))
                 {
                     metaData = new PlayerMetaDataMessage() { playerDisplayName = "Error", playerUUID = string.Empty };
+                    BNL.LogError("Unable to get Last Player Meta Data! Using Error Fallback");
                 }
                 ServerReadyMessage = new ServerReadyMessage
                 {
@@ -540,7 +544,10 @@ namespace BasisServerHandle
                         clientAvatarChangeMessage = changeState,
                         playerMetaDataMessage = metaData
                     },
-                    playerIdMessage = new PlayerIdMessage { playerID = (ushort)peer.Id }
+                    playerIdMessage = new PlayerIdMessage
+                    {
+                        playerID = (ushort)peer.Id
+                    },
                 };
                 return true;
             }

@@ -71,7 +71,7 @@ namespace BasisDidLink
                 try
                 {
                     BNL.Log($"Processing connection from peer {newPeer.Id}.");
-                    ReadyMessage readyMessage = ThreadSafeMessagePool<ReadyMessage>.Rent();
+                    ReadyMessage readyMessage = new ReadyMessage();
                     readyMessage.Deserialize(ConnectionRequest.Data, false);
 
                     if (readyMessage.WasDeserializedCorrectly())
