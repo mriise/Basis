@@ -56,9 +56,9 @@ namespace BasisDidLink
             public int CheckForDuplicates(Did Did)
             {
                 int Count = 0;
-                foreach(var key in AuthIdentity.Values)
+                foreach (var key in AuthIdentity.Values)
                 {
-                    if(key.Did.V == Did.V)
+                    if (key.Did.V == Did.V)
                     {
                         Count++;
                     }
@@ -197,6 +197,11 @@ namespace BasisDidLink
                 var challenge = Challenge ?? throw new Exception("call SendChallenge first");
                 var result = await DidAuth.VerifyResponse(response, challenge);
                 return result.IsOk;
+            }
+
+            public void RemoveConnection(NetPeer NetPeer)
+            {
+                AuthIdentity.TryRemove(NetPeer, out var authIdentity);
             }
         }
     }

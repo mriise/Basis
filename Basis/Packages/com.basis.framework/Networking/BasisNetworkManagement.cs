@@ -444,6 +444,15 @@ namespace Basis.Scripts.Networking
                         Reader.Recycle();
                     }, null);
                     break;
+                case BasisNetworkCommons.CreateRemotePlayersForNewPeer:
+                    //same as remote player but just used at the start
+                    BasisNetworkManagement.MainThreadContext.Post(async _ =>
+                    {
+                        //this one is called first and is also generally where the issues are.
+                        await BasisNetworkHandleRemote.HandleCreateRemotePlayer(Reader, this.transform);
+                        Reader.Recycle();
+                    }, null);
+                    break;
                 case BasisNetworkCommons.GetCurrentOwnerRequest:
                     BasisNetworkManagement.MainThreadContext.Post(_ =>
                     {

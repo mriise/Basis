@@ -66,6 +66,7 @@ namespace BasisServerHandle
                 {
                     BNL.LogError($"Failed to remove peer: {id}");
                 }
+                NetworkServer.authIdentity.RemoveConnection(peer);
                 NetworkServer.chunkedNetPeerArray.SetPeer(id, null);
                 CleanupPlayerData(id, peer);
             }
@@ -201,15 +202,22 @@ namespace BasisServerHandle
                 //instead we can make sure all additional clients have them correct.
                 //this only occurs if the server is doing Auth checks.
                 ReadyMessage.playerMetaDataMessage.playerUUID = UUID;
-                ServerNetIDMessage[] SUIM = BasisNetworkIDDatabase.GetAllNetworkID();
-                ServerUniqueIDMessages ServerUniqueIDMessageArray = new ServerUniqueIDMessages();
-                ServerUniqueIDMessageArray.Messages = SUIM;
 
-                NetDataWriter Writer = new NetDataWriter(true, 4);
-                ServerUniqueIDMessageArray.Serialize(Writer);
-                newPeer.Send(Writer, BasisNetworkCommons.NetIDAssigns, DeliveryMethod.ReliableOrdered);
+                if (BasisNetworkIDDatabase.GetAllNetworkID(out List<ServerNetIDMessage> ServerNetIDMessages))
+                {
+                    ServerUniqueIDMessages ServerUniqueIDMessageArray = new ServerUniqueIDMessages
+                    {
+                        Messages = ServerNetIDMessages.ToArray(),
+                    };
+
+                    NetDataWriter Writer = new NetDataWriter(true, 4);
+                    ServerUniqueIDMessageArray.Serialize(Writer);
+                    newPeer.Send(Writer, BasisNetworkCommons.NetIDAssigns, DeliveryMethod.ReliableOrdered);
+                }
+
                 SendRemoteSpawnMessage(newPeer, ReadyMessage);
-                BasisNetworkResourceManagement.SendOutAllResources(newPeer);
+
+                // BasisNetworkResourceManagement.SendOutAllResources(newPeer);
             }
             else
             {
@@ -476,7 +484,7 @@ namespace BasisServerHandle
             NetDataWriter Writer = new NetDataWriter(true);
             serverSideSyncPlayerMessage.Serialize(Writer, false);
             ReadOnlySpan<NetPeer> Peers = BasisPlayerArray.GetSnapshot();
-
+          //  BNL.LogError("Writing Data with size Size " + Writer.Length);
             foreach (NetPeer client in Peers)
             {
                 if (client != authClient)
@@ -502,12 +510,14 @@ namespace BasisServerHandle
                     {
                         continue;
                     }
+                    writer.Reset();
                     if (CreateServerReadyMessageForPeer(peer, out ServerReadyMessage Message))
                     {
                         Message.Serialize(writer, true);
-                        authClient.Send(writer, BasisNetworkCommons.CreateRemotePlayer, DeliveryMethod.ReliableOrdered);
+                       BNL.LogError("Writing Data with size Size " + writer.Length);
+                    //
+                        authClient.Send(writer, BasisNetworkCommons.CreateRemotePlayersForNewPeer, DeliveryMethod.ReliableOrdered);
                     }
-                  //  writer.Reset();
                 }
             }
             catch (Exception ex)

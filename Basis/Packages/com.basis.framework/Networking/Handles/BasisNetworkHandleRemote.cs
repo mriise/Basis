@@ -3,7 +3,6 @@ using Basis.Scripts.Networking.NetworkedAvatar;
 using Basis.Scripts.Networking.Recievers;
 using Basis.Scripts.Player;
 using Basis.Scripts.TransformBinders.BoneControl;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.ResourceManagement.ResourceProviders;
@@ -16,8 +15,14 @@ namespace Basis.Scripts.Networking
         public static async Task HandleCreateRemotePlayer(LiteNetLib.NetPacketReader reader,Transform Parent)
         {
             BasisDebug.Log("Handling Create Remote Player!");
+            if(reader.AvailableBytes == 0)
+            {
+                BasisDebug.LogError("Missing Remote Player Data!!");
+            }
+            BasisDebug.Log("remaining bytes " + reader.AvailableBytes);
             ServerReadyMessage ServerReadyMessage = new ServerReadyMessage();
             ServerReadyMessage.Deserialize(reader, true);
+
             await CreateRemotePlayer(ServerReadyMessage, Parent);
         }
         public static async Task<BasisNetworkPlayer> CreateRemotePlayer(ServerReadyMessage ServerReadyMessage, InstantiationParameters instantiationParameters)

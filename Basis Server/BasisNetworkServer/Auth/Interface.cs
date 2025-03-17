@@ -20,5 +20,6 @@ namespace Basis.Network.Server.Auth
         /// <returns></returns>
         public void ProcessConnection(Configuration Configuration, ConnectionRequest ConnectionRequest, NetPeer NetPeer);
         public void DeInitalize();
+        public void RemoveConnection(NetPeer NetPeer);
     }
 }

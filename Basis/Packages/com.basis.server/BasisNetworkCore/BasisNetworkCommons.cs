@@ -7,7 +7,7 @@ namespace Basis.Network.Core
         /// when adding a new message we need to increase this
         /// will function up to 64
         /// </summary>
-        public const byte TotalChannels = 18;
+        public const byte TotalChannels = 19;
         /// <summary>
         /// channel zero is only used for unreliable methods
         /// we fall it through to stop bugs
@@ -38,48 +38,52 @@ namespace Basis.Network.Core
         /// </summary>
         public const byte CreateRemotePlayer = 6;
         /// <summary>
+        /// Message to create a remote player entity
+        /// </summary>
+        public const byte CreateRemotePlayersForNewPeer = 7;
+        /// <summary>
         /// message to swap to a different avatar
         /// </summary>
-        public const byte AvatarChangeMessage = 7;
+        public const byte AvatarChangeMessage = 8;
         /// <summary>
         /// Ownership Response is when we get the current owner
         /// </summary>
-        public const byte GetCurrentOwnerRequest = 8;
+        public const byte GetCurrentOwnerRequest = 9;
         /// <summary>
         /// changes current owner of a string
         /// </summary>
-        public const byte ChangeCurrentOwnerRequest = 9;
+        public const byte ChangeCurrentOwnerRequest = 10;
         /// <summary>
         /// Remove Current Ownership
         /// </summary>
-        public const byte RemoveCurrentOwnerRequest = 10;
+        public const byte RemoveCurrentOwnerRequest = 11;
         /// <summary>
         /// the audio recipients that can here
         /// </summary>
-        public const byte AudioRecipients = 11;
+        public const byte AudioRecipients = 12;
         /// <summary>
         /// Removes a players entity
         /// </summary>
-        public const byte Disconnection = 12;
+        public const byte Disconnection = 13;
         /// <summary>
         /// assign a net id (string to ushort)
         /// </summary>
-        public const byte netIDAssign = 13;
+        public const byte netIDAssign = 14;
         /// <summary>
         /// assign a array of net id (string to ushort)
         /// </summary>
-        public const byte NetIDAssigns = 14;
+        public const byte NetIDAssigns = 15;
         /// <summary>
         /// load a resource (scene,gameobject,script,asset) whatever the implementation is
         /// </summary>
-        public const byte LoadResourceMessage = 15;
+        public const byte LoadResourceMessage = 16;
         /// <summary>
         /// Unload a Resource
         /// </summary>
-        public const byte UnloadResourceMessage = 16;
+        public const byte UnloadResourceMessage = 17;
         /// <summary>
         /// A Message Delivered by the server that relates to a internal error but does not disconnect the end user.
         /// </summary>
-        public const byte ErrorMessage = 17;
+        public const byte ErrorMessage = 18;
     }
 }

@@ -65,10 +65,10 @@ namespace BasisNetworkCore
             }
         }
 
-        public static ServerNetIDMessage[] GetAllNetworkID()
+        public static bool GetAllNetworkID(out List<ServerNetIDMessage> ServerUniqueIDMessages)
         {
             BNL.Log("Fetching all network IDs...");
-            List<ServerNetIDMessage> ServerUniqueIDMessages = new List<ServerNetIDMessage>();
+            ServerUniqueIDMessages = new List<ServerNetIDMessage>();
             foreach (KeyValuePair<string, ushort> pair in UshortNetworkDatabase)
             {
                 ServerNetIDMessage SUIM = new ServerNetIDMessage
@@ -78,10 +78,10 @@ namespace BasisNetworkCore
                 };
                 ServerUniqueIDMessages.Add(SUIM);
             }
-            BNL.Log($"Total network IDs fetched: {ServerUniqueIDMessages.Count}");
-            return ServerUniqueIDMessages.ToArray();
+            int Count = ServerUniqueIDMessages.Count;
+            BNL.Log($"Total network IDs fetched: {Count}");
+            return Count != 0;
         }
-
         public static void RemoveUshortNetworkID(ushort netID)
         {
             BNL.Log($"Attempting to remove NetID: {netID}");
