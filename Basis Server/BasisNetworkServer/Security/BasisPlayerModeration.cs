@@ -16,19 +16,23 @@ namespace BasisNetworkServer.Security
         /// </summary>
         public static string Ban(string UUID, string reason)
         {
-            if (peer == null || UUID == null)
-                throw new ArgumentNullException("Peer or UUID cannot be null.");
+            if (NetworkServer.authIdentity.UUIDToNetID(UUID, out LiteNetLib.NetPeer peer))
+            {
+                if (IsBanned(peer.Address, UUID))
+                    return "Already banned!";
 
-            if (IsBanned(peer.Address, UUID))
-                return "Already banned!";
+                BannedDids.Add(UUID); // Only banning the UUID.
 
-            BannedDids.Add(UUID); // Only banning the UUID.
+                byte[] reasonBytes = Encoding.UTF8.GetBytes(reason);
+                NetworkServer.server.DisconnectPeer(peer, reasonBytes);
 
-            byte[] reasonBytes = Encoding.UTF8.GetBytes(reason);
-            NetworkServer.server.DisconnectPeer(peer, reasonBytes);
-
-            LogBan(peer.Address, UUID, reason);
-            return "Banned successfully!";
+                LogBan(peer.Address, UUID, reason);
+                return "Banned successfully!";
+            }
+            else
+            {
+                return $"Unable to find {UUID}";    
+            }
         }
 
         /// <summary>
@@ -36,20 +40,24 @@ namespace BasisNetworkServer.Security
         /// </summary>
         public static string IpBan(string UUID, string reason)
         {
-            if (peer == null || UUID == null)
-                throw new ArgumentNullException("Peer or UUID cannot be null.");
+            if (NetworkServer.authIdentity.UUIDToNetID(UUID, out LiteNetLib.NetPeer peer))
+            {
+                if (IsBanned(peer.Address, UUID))
+                    return "Already banned!";
 
-            if (IsBanned(peer.Address, UUID))
-                return "Already banned!";
+                BannedIps.TryAdd(peer.Address, UUID);
+                BannedDids.Add(UUID);
 
-            BannedIps.TryAdd(peer.Address, UUID);
-            BannedDids.Add(UUID);
+                byte[] reasonBytes = Encoding.UTF8.GetBytes(reason);
+                NetworkServer.server.DisconnectPeer(peer, reasonBytes);
 
-            byte[] reasonBytes = Encoding.UTF8.GetBytes(reason);
-            NetworkServer.server.DisconnectPeer(peer, reasonBytes);
-
-            LogBan(peer.Address, UUID, reason);
-            return "IP and UUID banned successfully!";
+                LogBan(peer.Address, UUID, reason);
+                return "IP and UUID banned successfully!";
+            }
+            else
+            {
+                return $"Unable to find {UUID}";
+            }
         }
 
         /// <summary>
@@ -57,16 +65,19 @@ namespace BasisNetworkServer.Security
         /// </summary>
         public static string Kick(string UUID, string reason)
         {
-            if (peer == null)
+            if (NetworkServer.authIdentity.UUIDToNetID(UUID, out LiteNetLib.NetPeer peer))
             {
-                throw new ArgumentNullException("Peer cannot be null.");
+                byte[] reasonBytes = Encoding.UTF8.GetBytes(reason);
+                NetworkServer.server.DisconnectPeer(peer, reasonBytes);
+
+                return "Player kicked.";
             }
-            byte[] reasonBytes = Encoding.UTF8.GetBytes(reason);
-            NetworkServer.server.DisconnectPeer(peer, reasonBytes);
+            else
+            {
+                return $"Unable to find {UUID}";
 
-            return "Player kicked.";
+            }
         }
-
         /// <summary>
         /// Checks if an IP address or UUID is banned.
         /// </summary>

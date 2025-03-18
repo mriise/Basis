@@ -22,7 +22,7 @@ public static class NetworkServer
         Configuration = configuration;
         BasisServerReductionSystem.Configuration = configuration;
         auth = new PasswordAuth(configuration.Password ?? string.Empty);
-        authIdentity = new BasisDIDAuthIdentity.DidAuthIdentity();
+        authIdentity = new BasisDIDAuthIdentity();
         SetupServer(configuration);
         BasisServerHandleEvents.SubscribeServerEvents();
 

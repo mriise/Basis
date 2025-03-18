@@ -289,46 +289,88 @@ namespace BasisServerHandle
                             netIDAssign(reader, peer);
                             break;
                         case BasisNetworkCommons.LoadResourceMessage:
-                            LoadResource(reader, peer);
+                            if (NetworkServer.authIdentity.NetIDToUUID(peer, out string UUID))
+                            {
+                                if (NetworkServer.authIdentity.IsNetPeerAdmin(UUID))
+                                {
+                                    LoadResource(reader, peer);
+                                }
+                                else
+                                {
+                                    BNL.LogError("Admin was not found! for " + UUID);
+                                }
+                            }
+                            else
+                            {
+                                BNL.LogError("User " + UUID + " does not exist!");
+                            }
                             break;
                         case BasisNetworkCommons.UnloadResourceMessage:
-                            UnloadResource(reader, peer);
+                            if (NetworkServer.authIdentity.NetIDToUUID(peer, out UUID))
+                            {
+                                if (NetworkServer.authIdentity.IsNetPeerAdmin(UUID))
+                                {
+                                    UnloadResource(reader, peer);
+                                }
+                                else
+                                {
+                                    BNL.LogError("Admin was not found! for " + UUID);
+                                }
+                            }
+                            else
+                            {
+                                BNL.LogError("User " + UUID + " does not exist!");
+                            }
                             break;
                         case BasisNetworkCommons.ServerMessage:
-
+                            reader.Recycle();
                             break;
                         case BasisNetworkCommons.AdminMessage:
-
-                            AdminRequest AdminRequest = new AdminRequest();
-                            AdminRequest.Deserialize(reader);
-                            AdminRequestMode Mode = AdminRequest.GetAdminRequestMode();
-                            switch (Mode)
+                            if (NetworkServer.authIdentity.NetIDToUUID(peer, out UUID))
                             {
-                                case AdminRequestMode.Ban:
-                                    BasisPlayerModeration.Ban(reader.GetString(), reader.GetString());
-                                    break;
-                                case AdminRequestMode.Kick:
-                                    BasisPlayerModeration.Kick(reader.GetString(), reader.GetString());
-                                    break;
-                                case AdminRequestMode.IpAndBan:
-                                    BasisPlayerModeration.IpBan(reader.GetString(), reader.GetString());
-                                    break;
-                                case AdminRequestMode.Message:
-                                    break;
-                                case AdminRequestMode.MessageAll:
-                                    break;
-                                case AdminRequestMode.UnBan:
-                                    break;
-                                case AdminRequestMode.RequestBannedPlayers:
-                                    break;
-                                case AdminRequestMode.TeleportTo:
-                                    break;
-                                case AdminRequestMode.TeleportAll:
-                                    break;
-                                default:
-                                    BNL.LogError("Missing Mode!");
-                                    break;
+                                if (NetworkServer.authIdentity.IsNetPeerAdmin(UUID))
+                                {
+                                    AdminRequest AdminRequest = new AdminRequest();
+                                    AdminRequest.Deserialize(reader);
+                                    AdminRequestMode Mode = AdminRequest.GetAdminRequestMode();
+                                    switch (Mode)
+                                    {
+                                        case AdminRequestMode.Ban:
+                                            BasisPlayerModeration.Ban(reader.GetString(), reader.GetString());
+                                            break;
+                                        case AdminRequestMode.Kick:
+                                            BasisPlayerModeration.Kick(reader.GetString(), reader.GetString());
+                                            break;
+                                        case AdminRequestMode.IpAndBan:
+                                            BasisPlayerModeration.IpBan(reader.GetString(), reader.GetString());
+                                            break;
+                                        case AdminRequestMode.Message:
+                                            break;
+                                        case AdminRequestMode.MessageAll:
+                                            break;
+                                        case AdminRequestMode.UnBan:
+                                            break;
+                                        case AdminRequestMode.RequestBannedPlayers:
+                                            break;
+                                        case AdminRequestMode.TeleportTo:
+                                            break;
+                                        case AdminRequestMode.TeleportAll:
+                                            break;
+                                        default:
+                                            BNL.LogError("Missing Mode!");
+                                            break;
+                                    }
+                                }
+                                else
+                                {
+
+                                }
                             }
+                            else
+                            {
+
+                            }
+                            reader.Recycle();
                             break;
                         default:
                             BNL.LogError($"Unknown channel: {channel} " + reader.AvailableBytes);
