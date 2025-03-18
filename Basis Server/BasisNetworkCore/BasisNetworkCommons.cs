@@ -7,7 +7,7 @@ namespace Basis.Network.Core
         /// when adding a new message we need to increase this
         /// will function up to 64
         /// </summary>
-        public const byte TotalChannels = 19;
+        public const byte TotalChannels = 20;
         /// <summary>
         /// channel zero is only used for unreliable methods
         /// we fall it through to stop bugs
@@ -83,7 +83,13 @@ namespace Basis.Network.Core
         public const byte UnloadResourceMessage = 17;
         /// <summary>
         /// A Message Delivered by the server that relates to a internal error but does not disconnect the end user.
+        /// or
+        /// text from the server stating something
         /// </summary>
-        public const byte ErrorMessage = 18;
+        public const byte ServerMessage = 18;
+        /// <summary>
+        /// Client sends a admin message and the server needs to respond accordingly
+        /// </summary>
+        public const byte AdminMessage = 19;
     }
 }

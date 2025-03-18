@@ -9,6 +9,7 @@ using LiteNetLib;
 using LiteNetLib.Utils;
 using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -202,6 +203,35 @@ namespace BasisDidLink
             public void RemoveConnection(NetPeer NetPeer)
             {
                 AuthIdentity.TryRemove(NetPeer, out var authIdentity);
+            }
+            public bool FindNetPeerByDid(string didString,out NetPeer NetPeer)
+            {
+                foreach (var entry in AuthIdentity)
+                {
+                    if (entry.Value.Did.V == didString)
+                    {
+                        return entry.Key;
+                    }
+                }
+                return null;
+            }
+
+            public bool FindNetPeerByDid(Did did, out NetPeer NetPeer)
+            {
+                if (FindNetPeerByDid(did.V, out NetPeer))
+                {
+                    return true;
+                }
+                return false;
+            }
+            public bool HasDid(string didString)
+            {
+                return AuthIdentity.Values.Any(auth => auth.Did.V == didString);
+            }
+
+            public bool HasDid(Did did)
+            {
+                return HasDid(did.V);
             }
         }
     }
