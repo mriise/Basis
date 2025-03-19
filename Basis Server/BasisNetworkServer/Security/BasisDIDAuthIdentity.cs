@@ -272,5 +272,18 @@ namespace BasisDidLink
             Peer = null;
             return false;
         }
+
+        public bool RemoveNetPeerAsAdmin(string UUID)
+        {
+            if (Admins.Remove(UUID))
+            {
+                SaveAdmins(Admins.ToArray(), FilePath);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 }

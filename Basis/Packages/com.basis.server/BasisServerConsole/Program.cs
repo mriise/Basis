@@ -8,6 +8,11 @@ namespace Basis
     {
         public static BasisNetworkHealthCheck Check;
 
+        private const string ConfigFileName = "config.xml";
+        private const string LogsFolderName = "Logs";
+        private const string InitialResources = "initalresources";
+        private const int ThreadSleepTime = 15000;
+
         public static void Main(string[] args)
         {
             // Set up global exception handlers
@@ -15,7 +20,7 @@ namespace Basis
             TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
 
             // Get the path to the config.xml file in the application's directory
-            string configFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.xml");
+            string configFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ConfigFileName);
 
             // Load configuration from the XML file
             Configuration config = Configuration.LoadFromXml(configFilePath);
@@ -23,8 +28,9 @@ namespace Basis
 
             ThreadPool.SetMinThreads(config.MinThreadPoolThreads, config.MinThreadPoolThreads);
             ThreadPool.SetMaxThreads(config.MaxThreadPoolThreads, config.MaxThreadPoolThreads);
+
             // Initialize server-side logging
-            string folderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
+            string folderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, LogsFolderName);
             BasisServerSideLogging.Initialize(config, folderPath);
 
             BNL.Log("Server Booting");
@@ -42,7 +48,7 @@ namespace Basis
                 try
                 {
                     NetworkServer.StartServer(config);
-                    BasisLoadableLoader.LoadXML("initalresources");
+                    BasisLoadableLoader.LoadXML(InitialResources);
                 }
                 catch (Exception ex)
                 {
@@ -50,6 +56,7 @@ namespace Basis
                     // Optionally, handle server restart or log critical errors
                 }
             }, cancellationToken);
+
             // Register a shutdown hook to clean up resources when the application is terminated
             AppDomain.CurrentDomain.ProcessExit += async (sender, eventArgs) =>
             {
@@ -67,7 +74,6 @@ namespace Basis
                     BNL.LogError($"Error during server shutdown: {ex.Message}");
                 }
 
-                // BasisPrometheus.StopPrometheus();
                 if (config.EnableStatistics)
                 {
                     BasisStatistics.StopWorkerThread();
@@ -79,7 +85,7 @@ namespace Basis
             // Keep the application running
             while (true)
             {
-                Thread.Sleep(15000);
+                Thread.Sleep(ThreadSleepTime);
             }
         }
 

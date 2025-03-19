@@ -2,6 +2,7 @@ using Basis.Network.Core;
 using Basis.Network.Server;
 using Basis.Network.Server.Auth;
 using BasisDidLink;
+using BasisNetworkServer.Security;
 using BasisServerHandle;
 using LiteNetLib;
 using LiteNetLib.Utils;
@@ -22,10 +23,10 @@ public static class NetworkServer
         Configuration = configuration;
         BasisServerReductionSystem.Configuration = configuration;
         auth = new PasswordAuth(configuration.Password ?? string.Empty);
-        authIdentity = new BasisDIDAuthIdentity.DidAuthIdentity();
+        authIdentity = new BasisDIDAuthIdentity();
         SetupServer(configuration);
         BasisServerHandleEvents.SubscribeServerEvents();
-
+        BasisPlayerModeration.LoadBannedPlayers();
         if (configuration.EnableStatistics)
         {
             BasisStatistics.StartWorkerThread(NetworkServer.server);
@@ -73,30 +74,30 @@ public static class NetworkServer
         }
     }
     #endregion
-    public static void BroadcastMessageToClients(NetDataWriter Reader, byte channel, NetPeer sender, ReadOnlySpan<NetPeer> authenticatedClients, DeliveryMethod deliveryMethod = DeliveryMethod.Sequenced)
+    public static void BroadcastMessageToClients(NetDataWriter NetDataWriter, byte channel, NetPeer sender, ReadOnlySpan<NetPeer> authenticatedClients, DeliveryMethod deliveryMethod = DeliveryMethod.Sequenced)
     {
         foreach (NetPeer client in authenticatedClients)
         {
             if (client.Id != sender.Id)
             {
-                client.Send(Reader, channel, deliveryMethod);
+                client.Send(NetDataWriter, channel, deliveryMethod);
             }
         }
     }
-    public static void BroadcastMessageToClients(NetDataWriter Reader, byte channel, ReadOnlySpan<NetPeer> authenticatedClients, DeliveryMethod deliveryMethod = DeliveryMethod.Sequenced)
+    public static void BroadcastMessageToClients(NetDataWriter NetDataWriter, byte channel, ReadOnlySpan<NetPeer> authenticatedClients, DeliveryMethod deliveryMethod = DeliveryMethod.Sequenced)
     {
         int count = authenticatedClients.Length;
         for (int index = 0; index < count; index++)
         {
-            authenticatedClients[index].Send(Reader, channel, deliveryMethod);
+            authenticatedClients[index].Send(NetDataWriter, channel, deliveryMethod);
         }
     }
-    public static void BroadcastMessageToClients(NetDataWriter Reader, byte channel, ref List<NetPeer> authenticatedClients, DeliveryMethod deliveryMethod = DeliveryMethod.Sequenced)
+    public static void BroadcastMessageToClients(NetDataWriter NetDataWriter, byte channel, ref List<NetPeer> authenticatedClients, DeliveryMethod deliveryMethod = DeliveryMethod.Sequenced)
     {
         int count = authenticatedClients.Count;
         for (int index = 0; index < count; index++)
         {
-            authenticatedClients[index].Send(Reader, channel, deliveryMethod);
+            authenticatedClients[index].Send(NetDataWriter, channel, deliveryMethod);
         }
     }
 }

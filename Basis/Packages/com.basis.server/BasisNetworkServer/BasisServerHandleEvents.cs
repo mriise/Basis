@@ -2,6 +2,7 @@ using Basis.Network.Core;
 using Basis.Network.Server.Generic;
 using Basis.Network.Server.Ownership;
 using BasisNetworkCore;
+using BasisNetworkServer.Security;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using System;
@@ -288,10 +289,45 @@ namespace BasisServerHandle
                             netIDAssign(reader, peer);
                             break;
                         case BasisNetworkCommons.LoadResourceMessage:
-                            LoadResource(reader, peer);
+                            if (NetworkServer.authIdentity.NetIDToUUID(peer, out string UUID))
+                            {
+                                if (NetworkServer.authIdentity.IsNetPeerAdmin(UUID))
+                                {
+                                    LoadResource(reader, peer);
+                                }
+                                else
+                                {
+                                    BNL.LogError("Admin was not found! for " + UUID);
+                                }
+                            }
+                            else
+                            {
+                                BNL.LogError("User " + UUID + " does not exist!");
+                            }
                             break;
                         case BasisNetworkCommons.UnloadResourceMessage:
-                            UnloadResource(reader, peer);
+                            if (NetworkServer.authIdentity.NetIDToUUID(peer, out UUID))
+                            {
+                                if (NetworkServer.authIdentity.IsNetPeerAdmin(UUID))
+                                {
+                                    UnloadResource(reader, peer);
+                                }
+                                else
+                                {
+                                    BNL.LogError("Admin was not found! for " + UUID);
+                                }
+                            }
+                            else
+                            {
+                                BNL.LogError("User " + UUID + " does not exist!");
+                            }
+                            break;
+                        case BasisNetworkCommons.ServerMessage:
+                            reader.Recycle();
+                            break;
+                        case BasisNetworkCommons.AdminMessage:
+                            BasisPlayerModeration.OnAdminMessage(peer, reader);
+                            reader.Recycle();
                             break;
                         default:
                             BNL.LogError($"Unknown channel: {channel} " + reader.AvailableBytes);

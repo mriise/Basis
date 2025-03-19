@@ -15,11 +15,13 @@ namespace Basis.Network.Server.Auth
         /// <summary>
         /// class we use to get the users identity
         /// the UUID of a player will become this.
-        /// </summary>
-        /// <param name="msg"></param>
-        /// <returns></returns>
         public void ProcessConnection(Configuration Configuration, ConnectionRequest ConnectionRequest, NetPeer NetPeer);
         public void DeInitalize();
         public void RemoveConnection(NetPeer NetPeer);
+        public bool IsNetPeerAdmin(string UUID);
+        public bool AddNetPeerAsAdmin(string UUID);
+        public bool RemoveNetPeerAsAdmin(string UUID);
+        public bool NetIDToUUID(NetPeer Peer, out string UUID);
+        public bool UUIDToNetID(string UUID, out NetPeer Peer);
     }
 }
