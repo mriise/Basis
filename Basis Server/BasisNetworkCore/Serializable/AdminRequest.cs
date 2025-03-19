@@ -41,6 +41,8 @@ namespace BasisNetworkCore.Serializable
           //  RequestBannedPlayers,// gets a list of banned players
            // TeleportTo,// teleport to a player
             TeleportAll,// teleports everyone
+            AddAdmin,
+            RemoveAdmin,
         }
     }
 }

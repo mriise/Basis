@@ -268,6 +268,12 @@ namespace BasisNetworkServer.Security
                     Writer.Put((ushort)peer.Id);
                     NetworkServer.BroadcastMessageToClients(Writer, BasisNetworkCommons.AdminMessage, peer, BasisPlayerArray.GetSnapshot(), DeliveryMethod.ReliableOrdered);
                     break;
+                case AdminRequestMode.AddAdmin:
+                    NetworkServer.authIdentity.AddNetPeerAsAdmin(reader.GetString());
+                    break;
+                case AdminRequestMode.RemoveAdmin:
+                    NetworkServer.authIdentity.RemoveNetPeerAsAdmin(reader.GetString());
+                    break;
                 default:
                     BNL.LogError("Missing Mode!");
                     ReturnMessage = "Missing mode";
