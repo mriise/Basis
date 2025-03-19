@@ -322,9 +322,6 @@ namespace BasisServerHandle
                                 BNL.LogError("User " + UUID + " does not exist!");
                             }
                             break;
-                        case BasisNetworkCommons.ServerMessage:
-                            reader.Recycle();
-                            break;
                         case BasisNetworkCommons.AdminMessage:
                             BasisPlayerModeration.OnAdminMessage(peer, reader);
                             reader.Recycle();

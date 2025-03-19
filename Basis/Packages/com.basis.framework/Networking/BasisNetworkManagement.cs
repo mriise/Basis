@@ -524,6 +524,13 @@ namespace Basis.Scripts.Networking
                         Reader.Recycle();
                     }, null);
                     break;
+                case BasisNetworkCommons.AdminMessage:
+                    BasisNetworkManagement.MainThreadContext.Post(_ =>
+                    {
+                        BasisNetworkModeration.AdminMessage(Reader);
+                        Reader.Recycle();
+                    }, null);
+                    break;
                 default:
                     BNL.LogError($"this Channel was not been implemented {channel}");
                     Reader.Recycle();
