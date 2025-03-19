@@ -36,9 +36,10 @@ namespace BasisNetworkCore.Serializable
             IpAndBan,// bans and ip bans a player
             Message,// sends a message to a user
             MessageAll,// sends a message to all users
-            UnBan,// unbans a user and unbans a associated ip
-            RequestBannedPlayers,// gets a list of banned players
-            TeleportTo,// teleport to a player
+            UnBanIP,// unbans a user and unbans a associated ip
+            UnBan,// unbans a user
+          //  RequestBannedPlayers,// gets a list of banned players
+           // TeleportTo,// teleport to a player
             TeleportAll,// teleports everyone
         }
     }

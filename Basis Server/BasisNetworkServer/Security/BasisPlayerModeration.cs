@@ -1,113 +1,287 @@
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Net;
+using System;
+using System.IO;
+using System.Linq;
 using System.Text;
+using System.Xml.Serialization;
+using LiteNetLib;
+using LiteNetLib.Utils;
+using static BasisNetworkCore.Serializable.SerializableBasis;
+using Basis.Network.Core;
+using BasisNetworkCore;
 
 namespace BasisNetworkServer.Security
 {
     public static class BasisPlayerModeration
     {
-        private static readonly ConcurrentDictionary<IPAddress, string> BannedIps = new ConcurrentDictionary<IPAddress, string>();
-        private static readonly HashSet<string> BannedDids = new HashSet<string>();
+        private static readonly ConcurrentDictionary<string, BannedPlayer> BannedPlayers = new ConcurrentDictionary<string, BannedPlayer>();
+        private static readonly HashSet<string> BannedUUIDs = new();
+        private static readonly string BanFilePath = "banned_players.xml";
 
-        /// <summary>
-        /// Bans a player by UUID (does not IP ban).
-        /// </summary>
+        public class BannedPlayer
+        {
+            public string UUID { get; set; }
+            public string BannedIp { get; set; }
+            public string Reason { get; set; }
+            public bool HasBannedIp { get; set; }
+            public string TimeOfBan { get; set; }
+        }
+        public static void SaveBannedPlayers()
+        {
+            try
+            {
+                using FileStream fs = new(BanFilePath, FileMode.Create);
+                new XmlSerializer(typeof(List<BannedPlayer>)).Serialize(fs, BannedPlayers.Values.ToList());
+            }
+            catch (Exception ex)
+            {
+                BNL.LogError($"[Error] Failed to save banned players: {ex.Message}");
+            }
+        }
+
+        public static void LoadBannedPlayers()
+        {
+            if (File.Exists(BanFilePath) == false)
+            {
+                SaveBannedPlayers();
+            }
+            try
+            {
+                using FileStream fs = new(BanFilePath, FileMode.Open);
+                var serializer = new XmlSerializer(typeof(List<BannedPlayer>));
+                var loadedList = (List<BannedPlayer>)serializer.Deserialize(fs);
+
+                BannedPlayers.Clear();
+                BannedUUIDs.Clear();
+
+                foreach (var player in loadedList)
+                {
+                    BannedPlayers[player.UUID] = player;
+                    BannedUUIDs.Add(player.UUID);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Error] Failed to load banned players: {ex.Message}");
+            }
+        }
+
         public static string Ban(string UUID, string reason)
         {
-            if (NetworkServer.authIdentity.UUIDToNetID(UUID, out LiteNetLib.NetPeer peer))
+            if (string.IsNullOrEmpty(UUID))
+                return "[Error] UUID cannot be null or empty.";
+            if (string.IsNullOrEmpty(reason))
+                return "[Error] Reason cannot be null or empty.";
+
+            if (!NetworkServer.authIdentity.UUIDToNetID(UUID, out NetPeer peer))
             {
-                if (IsBanned(peer.Address, UUID))
-                    return "Already banned!";
-
-                BannedDids.Add(UUID); // Only banning the UUID.
-
-                byte[] reasonBytes = Encoding.UTF8.GetBytes(reason);
-                NetworkServer.server.DisconnectPeer(peer, reasonBytes);
-
-                LogBan(peer.Address, UUID, reason);
-                return "Banned successfully!";
+                return $"[Error] Unable to find player: {UUID}";
             }
-            else
+
+            NetworkServer.server.DisconnectPeer(peer, Encoding.UTF8.GetBytes(reason));
+
+            if (!BannedUUIDs.Contains(UUID))
             {
-                return $"Unable to find {UUID}";    
+                var bannedPlayer = new BannedPlayer
+                {
+                    UUID = UUID,
+                    Reason = reason,
+                    HasBannedIp = false,
+                    TimeOfBan = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")
+                };
+
+                BannedPlayers[UUID] = bannedPlayer;
+                BannedUUIDs.Add(UUID);
+                SaveBannedPlayers();
             }
+
+            return $"Player {UUID} banned successfully for reason: {reason}";
         }
 
-        /// <summary>
-        /// Bans a player by both IP and UUID.
-        /// </summary>
         public static string IpBan(string UUID, string reason)
         {
-            if (NetworkServer.authIdentity.UUIDToNetID(UUID, out LiteNetLib.NetPeer peer))
+            if (string.IsNullOrEmpty(UUID))
+                return "[Error] UUID cannot be null or empty.";
+            if (string.IsNullOrEmpty(reason))
+                return "[Error] Reason cannot be null or empty.";
+
+            if (!NetworkServer.authIdentity.UUIDToNetID(UUID, out NetPeer peer))
+                return $"[Error] Unable to find player: {UUID}";
+
+            NetworkServer.server.DisconnectPeer(peer, Encoding.UTF8.GetBytes(reason));
+            string ip = peer.Address.ToString();
+
+            if (BannedUUIDs.Contains(UUID))
+                return $"[Info] Player {UUID} is already banned.";
+
+            var bannedPlayer = new BannedPlayer
             {
-                if (IsBanned(peer.Address, UUID))
-                    return "Already banned!";
+                UUID = UUID,
+                BannedIp = ip,
+                Reason = reason,
+                HasBannedIp = true,
+                TimeOfBan = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")
+            };
 
-                BannedIps.TryAdd(peer.Address, UUID);
-                BannedDids.Add(UUID);
+            BannedPlayers[UUID] = bannedPlayer;
+            BannedUUIDs.Add(UUID);
+            SaveBannedPlayers();
 
-                byte[] reasonBytes = Encoding.UTF8.GetBytes(reason);
-                NetworkServer.server.DisconnectPeer(peer, reasonBytes);
-
-                LogBan(peer.Address, UUID, reason);
-                return "IP and UUID banned successfully!";
-            }
-            else
-            {
-                return $"Unable to find {UUID}";
-            }
+            return $"Player {UUID} and IP {ip} banned successfully for reason: {reason}";
         }
 
-        /// <summary>
-        /// Kicks a player without banning.
-        /// </summary>
         public static string Kick(string UUID, string reason)
         {
-            if (NetworkServer.authIdentity.UUIDToNetID(UUID, out LiteNetLib.NetPeer peer))
-            {
-                byte[] reasonBytes = Encoding.UTF8.GetBytes(reason);
-                NetworkServer.server.DisconnectPeer(peer, reasonBytes);
+            if (string.IsNullOrEmpty(UUID))
+                return "[Error] UUID cannot be null or empty.";
+            if (string.IsNullOrEmpty(reason))
+                return "[Error] Reason cannot be null or empty.";
 
-                return "Player kicked.";
+            if (!NetworkServer.authIdentity.UUIDToNetID(UUID, out NetPeer peer))
+                return $"[Error] Unable to find player: {UUID}";
+
+            NetworkServer.server.DisconnectPeer(peer, Encoding.UTF8.GetBytes(reason));
+            return $"Player {UUID} kicked successfully.";
+        }
+
+        public static bool IsBanned(string UUID)
+        {
+            if (string.IsNullOrEmpty(UUID))
+                throw new ArgumentException("[Error] UUID cannot be null or empty.");
+
+            return BannedUUIDs.Contains(UUID);
+        }
+
+        public static bool Unban(string UUID)
+        {
+            if (string.IsNullOrEmpty(UUID))
+                throw new ArgumentException("[Error] UUID cannot be null or empty.");
+
+            if (!BannedUUIDs.Contains(UUID))
+                return false;
+
+            BannedPlayers.TryRemove(UUID, out _);
+            BannedUUIDs.Remove(UUID);
+            SaveBannedPlayers();
+            return true;
+        }
+
+        public static bool UnbanIp(string ip)
+        {
+            if (string.IsNullOrEmpty(ip))
+                throw new ArgumentException("[Error] IP address cannot be null or empty.");
+
+            var toRemoveList = BannedPlayers.Values.Where(bp => bp.HasBannedIp && bp.BannedIp == ip).ToList();
+            if (!toRemoveList.Any())
+                return false;
+
+            foreach (var player in toRemoveList)
+            {
+                BannedPlayers.TryRemove(player.UUID, out _);
+                BannedUUIDs.Remove(player.UUID);
+            }
+
+            SaveBannedPlayers();
+            return true;
+        }
+        public static void OnAdminMessage(NetPeer peer, NetDataReader reader)
+        {
+            if (NetworkServer.authIdentity.NetIDToUUID(peer, out string UUID))
+            {
+
             }
             else
             {
-                return $"Unable to find {UUID}";
+                BNL.LogError($"Netpeer was not in database {peer.Address}");
+                return;
+            }
+            if (NetworkServer.authIdentity.IsNetPeerAdmin(UUID))
+            {
 
             }
-        }
-        /// <summary>
-        /// Checks if an IP address or UUID is banned.
-        /// </summary>
-        public static bool IsBanned(IPAddress ip, string did)
-        {
-            return BannedIps.ContainsKey(ip) || BannedDids.Contains(did);
-        }
+            else
+            {
+                BNL.LogError($"Was not admin! {UUID}");
+                return;
+            }
+            string ReturnMessage = string.Empty;
+            AdminRequest AdminRequest = new AdminRequest();
+            AdminRequest.Deserialize(reader);
+            AdminRequestMode Mode = AdminRequest.GetAdminRequestMode();
+            switch (Mode)
+            {
+                case AdminRequestMode.Ban:
+                    ReturnMessage = Ban(reader.GetString(), reader.GetString());
+                    SendBackMessage(peer, ReturnMessage);
+                    break;
+                case AdminRequestMode.Kick:
+                    ReturnMessage = Kick(reader.GetString(), reader.GetString());
+                    SendBackMessage(peer, ReturnMessage);
+                    break;
+                case AdminRequestMode.IpAndBan:
+                    ReturnMessage = IpBan(reader.GetString(), reader.GetString());
+                    SendBackMessage(peer, ReturnMessage);
+                    break;
+                case AdminRequestMode.Message:
+                    ushort RemoteplayerIndex = reader.GetUShort();
+                    NetPeer RemotePeer = NetworkServer.chunkedNetPeerArray.GetPeer(RemoteplayerIndex);
+                    SendBackMessage(RemotePeer, reader.GetString());
+                    break;
+                case AdminRequestMode.MessageAll:
+                    NetDataWriter Writer = new NetDataWriter(true, 4);
+                    AdminRequest OutAdminRequest = new AdminRequest();
+                    OutAdminRequest.Serialize(Writer, AdminRequestMode.MessageAll);
+                    string Message = reader.GetString();
+                    Writer.Put(Message);
+                    NetworkServer.BroadcastMessageToClients(Writer, BasisNetworkCommons.AdminMessage, peer, BasisPlayerArray.GetSnapshot(), DeliveryMethod.ReliableOrdered);
+                    break;
+                case AdminRequestMode.UnBanIP:
+                    if (UnbanIp(reader.GetString()))
+                    {
+                        ReturnMessage = "Successfully Unbanned";
+                    }
+                    else
+                    {
+                        ReturnMessage = "failed to unban no ban existed!";
+                    }
+                    break;
+                case AdminRequestMode.UnBan:
+                    if (Unban(reader.GetString()))
+                    {
+                        ReturnMessage = "Successfully Unbanned";
+                    }
+                    else
+                    {
+                        ReturnMessage = "failed to unban";
+                    }
+                    break;
+                //  case AdminRequestMode.RequestBannedPlayers:
+                //      break;
+                // case AdminRequestMode.TeleportTo:
+                //    break;
+                case AdminRequestMode.TeleportAll:
 
-        /// <summary>
-        /// Unbans a player by IP.
-        /// </summary>
-        public static bool Unban(IPAddress ip)
-        {
-            return BannedIps.TryRemove(ip, out _);
+                    Writer = new NetDataWriter(true, 4);
+                    OutAdminRequest = new AdminRequest();
+                    OutAdminRequest.Serialize(Writer, AdminRequestMode.TeleportAll);
+                    Writer.Put((ushort)peer.Id);
+                    NetworkServer.BroadcastMessageToClients(Writer, BasisNetworkCommons.AdminMessage, peer, BasisPlayerArray.GetSnapshot(), DeliveryMethod.ReliableOrdered);
+                    break;
+                default:
+                    BNL.LogError("Missing Mode!");
+                    ReturnMessage = "Missing mode";
+                    SendBackMessage(peer, ReturnMessage);
+                    break;
+            }
         }
-
-        /// <summary>
-        /// Unbans a player by UUID.
-        /// </summary>
-        public static bool Unban(string did)
+        public static void SendBackMessage(NetPeer Peer, string ReturnMessage)
         {
-            return BannedDids.Remove(did);
-        }
-
-        /// <summary>
-        /// Logs ban details.
-        /// </summary>
-        private static void LogBan(IPAddress ip, string did, string reason)
-        {
-            BNL.Log($"[BAN] IP: {ip}, DID: {did}, Reason: {reason}");
+            NetDataWriter Writer = new NetDataWriter(true, 4);
+            AdminRequest OutAdminRequest = new AdminRequest();
+            OutAdminRequest.Serialize(Writer, AdminRequestMode.Message);
+            Writer.Put(ReturnMessage);
+            Peer.Send(Writer, BasisNetworkCommons.AdminMessage, DeliveryMethod.ReliableOrdered);
         }
     }
 }

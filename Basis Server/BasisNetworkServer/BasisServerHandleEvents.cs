@@ -326,50 +326,7 @@ namespace BasisServerHandle
                             reader.Recycle();
                             break;
                         case BasisNetworkCommons.AdminMessage:
-                            if (NetworkServer.authIdentity.NetIDToUUID(peer, out UUID))
-                            {
-                                if (NetworkServer.authIdentity.IsNetPeerAdmin(UUID))
-                                {
-                                    AdminRequest AdminRequest = new AdminRequest();
-                                    AdminRequest.Deserialize(reader);
-                                    AdminRequestMode Mode = AdminRequest.GetAdminRequestMode();
-                                    switch (Mode)
-                                    {
-                                        case AdminRequestMode.Ban:
-                                            BasisPlayerModeration.Ban(reader.GetString(), reader.GetString());
-                                            break;
-                                        case AdminRequestMode.Kick:
-                                            BasisPlayerModeration.Kick(reader.GetString(), reader.GetString());
-                                            break;
-                                        case AdminRequestMode.IpAndBan:
-                                            BasisPlayerModeration.IpBan(reader.GetString(), reader.GetString());
-                                            break;
-                                        case AdminRequestMode.Message:
-                                            break;
-                                        case AdminRequestMode.MessageAll:
-                                            break;
-                                        case AdminRequestMode.UnBan:
-                                            break;
-                                        case AdminRequestMode.RequestBannedPlayers:
-                                            break;
-                                        case AdminRequestMode.TeleportTo:
-                                            break;
-                                        case AdminRequestMode.TeleportAll:
-                                            break;
-                                        default:
-                                            BNL.LogError("Missing Mode!");
-                                            break;
-                                    }
-                                }
-                                else
-                                {
-
-                                }
-                            }
-                            else
-                            {
-
-                            }
+                            BasisPlayerModeration.OnAdminMessage(peer, reader);
                             reader.Recycle();
                             break;
                         default:

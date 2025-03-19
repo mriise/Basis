@@ -233,13 +233,21 @@ namespace BasisDidLink
 
         static string[] LoadAdmins(string filePath)
         {
-            XmlSerializer serializer = new XmlSerializer(typeof(string[]));
-            using (StreamReader reader = new StreamReader(filePath))
+            if (File.Exists(filePath))
             {
-                return (string[])serializer.Deserialize(reader);
+                XmlSerializer serializer = new XmlSerializer(typeof(string[]));
+                using (StreamReader reader = new StreamReader(filePath))
+                {
+                    return (string[])serializer.Deserialize(reader);
+                }
+            }
+            else
+            {
+                string[] Admins = new string[] { };
+                SaveAdmins(Admins, filePath);
+                return Admins;
             }
         }
-
         public bool NetIDToUUID(NetPeer Peer, out string UUID)
         {
             if (AuthIdentity.TryGetValue(Peer, out OnAuth OnAuth))
