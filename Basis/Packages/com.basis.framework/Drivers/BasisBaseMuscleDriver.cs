@@ -408,10 +408,7 @@ public abstract class BasisBaseMuscleDriver : MonoBehaviour
         for (int i = 0; i < length; i++)
         {
             hasProximalArray[i] = allHasProximal[i];
-            if (allTransforms[i] != null)
-            {
-                transformAccessArray.Add(allTransforms[i]);
-            }
+            transformAccessArray.Add(allTransforms[i]);
         }
 
         // Create and schedule the job
