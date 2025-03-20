@@ -1,39 +1,69 @@
+using Basis.Network.Core;
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Networking;
 using LiteNetLib;
 using LiteNetLib.Utils;
+using System.Drawing;
 using UnityEngine;
 using static BasisNetworkCore.Serializable.SerializableBasis;
 
 public static class BasisNetworkModeration
 {
-    public static void SendBan()
+    public static void SendBan(string UUID, string Reason)
     {
-
+        AdminRequest AdminRequest = new AdminRequest();
+        NetDataWriter netDataWriter = new NetDataWriter();
+        AdminRequest.Serialize(netDataWriter, AdminRequestMode.Ban);
+        netDataWriter.Put(UUID);
+        netDataWriter.Put(Reason);
+        BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter, BasisNetworkCommons.AdminMessage, DeliveryMethod.ReliableSequenced);
     }
-    public static void SendIPBan()
+    public static void SendIPBan(string UUID, string Reason)
     {
-
+        AdminRequest AdminRequest = new AdminRequest();
+        NetDataWriter netDataWriter = new NetDataWriter();
+        AdminRequest.Serialize(netDataWriter, AdminRequestMode.IpAndBan);
+        netDataWriter.Put(UUID);
+        netDataWriter.Put(Reason);
+        BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter, BasisNetworkCommons.AdminMessage, DeliveryMethod.ReliableSequenced);
     }
-    public static void SendKick()
+    public static void SendKick(string UUID, string Reason)
     {
-
+        AdminRequest AdminRequest = new AdminRequest();
+        NetDataWriter netDataWriter = new NetDataWriter();
+        AdminRequest.Serialize(netDataWriter, AdminRequestMode.Kick);
+        netDataWriter.Put(UUID);
+        netDataWriter.Put(Reason);
+        BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter, BasisNetworkCommons.AdminMessage, DeliveryMethod.ReliableSequenced);
     }
-    public static void UnBan()
+    public static void UnBan(string UUID)
     {
-
+        AdminRequest AdminRequest = new AdminRequest();
+        NetDataWriter netDataWriter = new NetDataWriter();
+        AdminRequest.Serialize(netDataWriter, AdminRequestMode.UnBan);
+        netDataWriter.Put(UUID);
+        BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter, BasisNetworkCommons.AdminMessage, DeliveryMethod.ReliableSequenced);
     }
-    public static void UnIpBan()
+    public static void UnIpBan(string UUID)
     {
-
+        AdminRequest AdminRequest = new AdminRequest();
+        NetDataWriter netDataWriter = new NetDataWriter();
+        AdminRequest.Serialize(netDataWriter, AdminRequestMode.UnBanIP);
+        netDataWriter.Put(UUID);
+        BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter, BasisNetworkCommons.AdminMessage, DeliveryMethod.ReliableSequenced);
     }
-    public static void TeleportAll()
+    public static void TeleportAll(uint DestinationPlayer)
     {
+        AdminRequest AdminRequest = new AdminRequest();
+        NetDataWriter netDataWriter = new NetDataWriter();
+        AdminRequest.Serialize(netDataWriter, AdminRequestMode.TeleportAll);
+        netDataWriter.Put(DestinationPlayer);
+        BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter, BasisNetworkCommons.AdminMessage, DeliveryMethod.ReliableSequenced);
 
     }
     public static void DisplayMessage(string Message)
     {
-        BasisUINotification.OpenNotification(Message);
+        BasisUINotification.OpenNotification(Message, false, Vector3.zero);
     }
     public static void AdminMessage(NetDataReader reader)
     {

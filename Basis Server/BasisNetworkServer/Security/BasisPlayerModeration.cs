@@ -265,7 +265,8 @@ namespace BasisNetworkServer.Security
                     Writer = new NetDataWriter(true, 4);
                     OutAdminRequest = new AdminRequest();
                     OutAdminRequest.Serialize(Writer, AdminRequestMode.TeleportAll);
-                    Writer.Put((ushort)peer.Id);
+                    ushort PlayerDestination = reader.GetUShort();
+                    Writer.Put(PlayerDestination);
                     NetworkServer.BroadcastMessageToClients(Writer, BasisNetworkCommons.AdminMessage, peer, BasisPlayerArray.GetSnapshot(), DeliveryMethod.ReliableOrdered);
                     break;
                 case AdminRequestMode.AddAdmin:

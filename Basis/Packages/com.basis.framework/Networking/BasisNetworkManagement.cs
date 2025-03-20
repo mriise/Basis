@@ -281,10 +281,17 @@ namespace Basis.Scripts.Networking
             };
             // BasisDebug.Log("Size is " + BasisNetworkClient.AuthenticationMessage.Message.Length);
             LocalPlayerPeer = NetworkClient.StartClient(IpString, Port, readyMessage);
-            BasisDebug.Log("Network Client Started " + LocalPlayerPeer.RemoteId);
             NetworkClient.listener.PeerConnectedEvent += PeerConnectedEvent;
             NetworkClient.listener.PeerDisconnectedEvent += PeerDisconnectedEvent;
             NetworkClient.listener.NetworkReceiveEvent += NetworkReceiveEvent;
+            if (LocalPlayerPeer != null)
+            {
+                BasisDebug.Log("Network Client Started " + LocalPlayerPeer.RemoteId);
+            }
+            else
+            {
+                ForceShutdown();
+            }
         }
         private async void PeerConnectedEvent(NetPeer peer)
         {
@@ -358,32 +365,71 @@ namespace Basis.Scripts.Networking
                 await Task.Run(() =>
                 {
                     BasisNetworkManagement.MainThreadContext.Post(async _ =>
-                {
-                    if (BasisNetworkManagement.Players.TryGetValue((ushort)LocalPlayerPeer.RemoteId, out BasisNetworkPlayer NetworkedPlayer))
                     {
-                        BasisNetworkManagement.OnLocalPlayerLeft?.Invoke(NetworkedPlayer, (Basis.Scripts.BasisSdk.Players.BasisLocalPlayer)NetworkedPlayer.Player);
-                    }
-                    if (disconnectInfo.Reason == DisconnectReason.RemoteConnectionClose)
-                    {
-                        if (disconnectInfo.AdditionalData.TryGetString(out string Reason))
+                        if (LocalPlayerPeer != null)
                         {
-                            BasisDebug.LogError(Reason);
+                            if (BasisNetworkManagement.Players.TryGetValue((ushort)LocalPlayerPeer.RemoteId, out BasisNetworkPlayer NetworkedPlayer))
+                            {
+                                BasisNetworkManagement.OnLocalPlayerLeft?.Invoke(NetworkedPlayer, (Basis.Scripts.BasisSdk.Players.BasisLocalPlayer)NetworkedPlayer.Player);
+                            }
                         }
-                    }
-                    if(BasisNetworkServerRunner != null)
-                    {
-                        BasisNetworkServerRunner.Stop();
-                        BasisNetworkServerRunner = null;
-                    }
-                    Players.Clear();
-                    OwnershipPairing.Clear();
-                    ReceiverCount = 0;
-                    BasisDebug.Log($"Client disconnected from server [{peer.RemoteId}] [{disconnectInfo.Reason}]");
-                    SceneManager.LoadScene(0, LoadSceneMode.Single);//reset
-                    await Boot_Sequence.BootSequence.OnAddressablesInitializationComplete();
-                }, null);
+                        if (BasisNetworkServerRunner != null)
+                        {
+                            BasisNetworkServerRunner.Stop();
+                            BasisNetworkServerRunner = null;
+                        }
+                        Players.Clear();
+                        OwnershipPairing.Clear();
+                        ReceiverCount = 0;
+                        BasisDebug.Log($"Client disconnected from server [{peer.RemoteId}] [{disconnectInfo.Reason}]");
+                        SceneManager.LoadScene(0, LoadSceneMode.Single);//reset
+                        await Boot_Sequence.BootSequence.OnAddressablesInitializationComplete();
+                        HandleDisconnectionReason(disconnectInfo);
+                    }, null);
                 });
             }
+        }
+        public void HandleDisconnectionReason(DisconnectInfo disconnectInfo)
+        {
+            if (disconnectInfo.Reason == DisconnectReason.RemoteConnectionClose)
+            {
+                if (disconnectInfo.AdditionalData.TryGetString(out string Reason))
+                {
+                    BasisUINotification.OpenNotification(Reason, true, new Vector3(0, 0, 0.9f));
+                    BasisDebug.LogError(Reason);
+                }
+            }
+            else
+            {
+                BasisUINotification.OpenNotification(disconnectInfo.Reason.ToString(), true, new Vector3(0, 0, 0.9f));
+            }
+        }
+        public async void ForceShutdown()
+        {
+                await Task.Run(() =>
+                {
+                    BasisNetworkManagement.MainThreadContext.Post(async _ =>
+                    {
+                        if (LocalPlayerPeer != null)
+                        {
+                            if (BasisNetworkManagement.Players.TryGetValue((ushort)LocalPlayerPeer.RemoteId, out BasisNetworkPlayer NetworkedPlayer))
+                            {
+                                BasisNetworkManagement.OnLocalPlayerLeft?.Invoke(NetworkedPlayer, (Basis.Scripts.BasisSdk.Players.BasisLocalPlayer)NetworkedPlayer.Player);
+                            }
+                        }
+                        if (BasisNetworkServerRunner != null)
+                        {
+                            BasisNetworkServerRunner.Stop();
+                            BasisNetworkServerRunner = null;
+                        }
+                        Players.Clear();
+                        OwnershipPairing.Clear();
+                        ReceiverCount = 0;
+                        SceneManager.LoadScene(0, LoadSceneMode.Single);//reset
+                        await Boot_Sequence.BootSequence.OnAddressablesInitializationComplete();
+                        BasisUINotification.OpenNotification("Unable to connect to Address!",true, new Vector3(0,0,0.9f));
+                    }, null);
+                });
         }
         private async void NetworkReceiveEvent(NetPeer peer, NetPacketReader Reader, byte channel, LiteNetLib.DeliveryMethod deliveryMethod)
         {
