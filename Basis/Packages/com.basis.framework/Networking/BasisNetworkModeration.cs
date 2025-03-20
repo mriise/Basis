@@ -52,7 +52,7 @@ public static class BasisNetworkModeration
         netDataWriter.Put(UUID);
         BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter, BasisNetworkCommons.AdminMessage, DeliveryMethod.ReliableSequenced);
     }
-    public static void TeleportAll(uint DestinationPlayer)
+    public static void TeleportAll(ushort DestinationPlayer)
     {
         AdminRequest AdminRequest = new AdminRequest();
         NetDataWriter netDataWriter = new NetDataWriter();
@@ -60,6 +60,22 @@ public static class BasisNetworkModeration
         netDataWriter.Put(DestinationPlayer);
         BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter, BasisNetworkCommons.AdminMessage, DeliveryMethod.ReliableSequenced);
 
+    }
+    public static void AddAdmin(string UUID)
+    {
+        AdminRequest AdminRequest = new AdminRequest();
+        NetDataWriter netDataWriter = new NetDataWriter();
+        AdminRequest.Serialize(netDataWriter, AdminRequestMode.AddAdmin);
+        netDataWriter.Put(UUID);
+        BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter, BasisNetworkCommons.AdminMessage, DeliveryMethod.ReliableSequenced);
+    }
+    public static void RemoveAdmin(string UUID)
+    {
+        AdminRequest AdminRequest = new AdminRequest();
+        NetDataWriter netDataWriter = new NetDataWriter();
+        AdminRequest.Serialize(netDataWriter, AdminRequestMode.RemoveAdmin);
+        netDataWriter.Put(UUID);
+        BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter, BasisNetworkCommons.AdminMessage, DeliveryMethod.ReliableSequenced);
     }
     public static void DisplayMessage(string Message)
     {
