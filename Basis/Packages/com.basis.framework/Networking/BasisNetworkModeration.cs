@@ -33,7 +33,7 @@ public static class BasisNetworkModeration
     }
     public static void DisplayMessage(string Message)
     {
-
+        BasisUINotification.OpenNotification(Message);
     }
     public static void AdminMessage(NetDataReader reader)
     {
