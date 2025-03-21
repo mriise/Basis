@@ -155,7 +155,7 @@ namespace BasisDidLink
         {
             try
             {
-                BNL.Log($"Authentication response received from {newPeer.Id}.");
+           //     BNL.Log($"Authentication response received from {newPeer.Id}.");
                 if (_timeouts.TryRemove(newPeer, out var cts))
                 {
                     cts.Cancel();
@@ -173,13 +173,11 @@ namespace BasisDidLink
 
                 if (AuthIdentity.TryGetValue(newPeer, out OnAuth authIdentity))
                 {
-                    BNL.Log($"Verifying authentication response for {authIdentity.Did.V}.");
                     Challenge challenge = authIdentity.Challenge;
                     bool isAuthenticated = await RecvChallengeResponse(response, challenge);
 
                     if (isAuthenticated)
                     {
-                        BNL.Log($"Authentication successful for {authIdentity.Did.V}.");
                         BasisServerHandleEvents.OnNetworkAccepted(newPeer, authIdentity.ReadyMessage, authIdentity.Did.V);
                     }
                     else

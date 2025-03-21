@@ -45,13 +45,16 @@ public static class BasisNetworkResourceManagement
     public static void SendOutAllResources(LiteNetLib.NetPeer NewConnection)
     {
         LocalLoadResource[] Resource = UshortNetworkDatabase.Values.ToArray();
-        int length = Resource.Length;
-        for (int Index = 0; Index < length; Index++)
+        if (Resource != null)
         {
-            LocalLoadResource LLR = Resource[Index];
-            NetDataWriter Writer = new NetDataWriter(true);
-            LLR.Serialize(Writer);
-            NetworkServer.SendOutValidated(NewConnection, Writer, BasisNetworkCommons.LoadResourceMessage, LiteNetLib.DeliveryMethod.ReliableOrdered);
+            int length = Resource.Length;
+            for (int Index = 0; Index < length; Index++)
+            {
+                LocalLoadResource LLR = Resource[Index];
+                NetDataWriter Writer = new NetDataWriter(true);
+                LLR.Serialize(Writer);
+                NetworkServer.SendOutValidated(NewConnection, Writer, BasisNetworkCommons.LoadResourceMessage, LiteNetLib.DeliveryMethod.ReliableOrdered);
+            }
         }
     }
     public static void LoadResource(LocalLoadResource LocalLoadResource)

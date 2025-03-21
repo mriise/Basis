@@ -173,9 +173,6 @@ namespace BasisServerHandle
                     BytesMessage authMessage = new BytesMessage();
                     authMessage.Deserialize(ConReq.Data);
                 }
-
-                BNL.Log("Player approved. Current count: " + ServerCount);
-
                 NetPeer newPeer = ConReq.Accept();//can do both way Communication from here on
 
                 if (NetworkServer.Configuration.UseAuthIdentity)
@@ -232,7 +229,7 @@ namespace BasisServerHandle
 
                 SendRemoteSpawnMessage(newPeer, ReadyMessage);
 
-                // BasisNetworkResourceManagement.SendOutAllResources(newPeer);
+                BasisNetworkResourceManagement.SendOutAllResources(newPeer);
             }
             else
             {
@@ -257,6 +254,7 @@ namespace BasisServerHandle
             {
                 try
                 {
+                   // if(NetworkServer.authIdentity.)
                     switch (channel)
                     {
                         case BasisNetworkCommons.FallChannel:

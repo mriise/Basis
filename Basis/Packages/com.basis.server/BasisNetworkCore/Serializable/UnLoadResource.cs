@@ -1,4 +1,4 @@
-﻿using LiteNetLib.Utils;
+using LiteNetLib.Utils;
 public static partial class SerializableBasis
 {
     public struct UnLoadResource
@@ -8,19 +8,19 @@ public static partial class SerializableBasis
         /// </summary>
         public byte Mode;
         public string LoadedNetID;
-        public void Deserialize(NetDataReader Writer)
+        public bool Deserialize(NetDataReader Writer)
         {
             int Bytes = Writer.AvailableBytes;
-            if (Bytes != 0)
+            if (Writer.TryGetByte(out Mode) == false)
             {
-                Mode = Writer.GetByte();
+                return false;
+            }
 
-                LoadedNetID = Writer.GetString();
-            }
-            else
+            if (Writer.TryGetString(out LoadedNetID) == false)
             {
-                BNL.LogError($"Unable to read Remaing bytes where {Bytes}");
+                return false;
             }
+            return true;
         }
         public void Serialize(NetDataWriter Writer)
         {
