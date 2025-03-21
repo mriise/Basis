@@ -87,6 +87,29 @@ public class BasisUIAdminPanel : BasisUIBase
             }
         });
         SendMessageAll.onClick.AddListener(() => BasisNetworkModeration.SendMessageAll(ReasonSubmission.text));
+
+        TeleportTo.onClick.AddListener(() =>
+        {
+            if (FindID(UUIDSubmission.text, out ushort Id))
+            {
+                BasisNetworkModeration.TeleportTo(Id);
+            }
+            else
+            {
+                BasisDebug.LogError("Cant find ID " + UUIDSubmission.text);
+            }
+        });
+        TeleportHere.onClick.AddListener(() =>
+        {
+            if (FindID(UUIDSubmission.text, out ushort Id))
+            {
+                BasisNetworkModeration.TeleportHere(Id);
+            }
+            else
+            {
+                BasisDebug.LogError("Cant find ID " + UUIDSubmission.text);
+            }
+        });
     }
     public bool FindID(string UUID, out ushort Id)
     {
@@ -116,6 +139,9 @@ public class BasisUIAdminPanel : BasisUIBase
 
     public Button SendMessage;
     public Button SendMessageAll;
+
+    public Button TeleportTo;
+    public Button TeleportHere;
 
     public TMP_InputField UUIDSubmission;
     public TMP_InputField ReasonSubmission;

@@ -302,6 +302,14 @@ namespace BasisNetworkServer.Security
                 case AdminRequestMode.RemoveAdmin:
                     NetworkServer.authIdentity.RemoveNetPeerAsAdmin(reader.GetString());
                     break;
+                case AdminRequestMode.TeleportPlayer:
+                    Writer = new NetDataWriter(true, 4);
+                    OutAdminRequest = new AdminRequest();
+                    OutAdminRequest.Serialize(Writer, AdminRequestMode.TeleportPlayer);
+                    PlayerDestination = reader.GetUShort();
+                    Writer.Put(PlayerDestination);
+                    peer.Send(Writer, BasisNetworkCommons.AdminMessage, DeliveryMethod.ReliableOrdered);
+                    break;
                 default:
                     BNL.LogError("Missing Mode!");
                     ReturnMessage = "Missing mode";

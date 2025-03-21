@@ -43,6 +43,7 @@ namespace BasisNetworkCore.Serializable
             TeleportAll,// teleports everyone
             AddAdmin,
             RemoveAdmin,
+            TeleportPlayer,
         }
     }
 }

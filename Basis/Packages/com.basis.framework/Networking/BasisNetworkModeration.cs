@@ -135,6 +135,34 @@ public static class BasisNetworkModeration
 
         BasisUINotification.OpenNotification(Message, false, Vector3.zero);
     }
+    public static void TeleportTo(ushort netId)
+    {
+        if (BasisNetworkManagement.Players.TryGetValue(netId, out var player))
+        {
+            if (player.Player != null && player.Player.BasisAvatar != null && player.Player.BasisAvatar.Animator != null)
+            {
+                Transform Trans = player.Player.BasisAvatar.Animator.GetBoneTransform(UnityEngine.HumanBodyBones.Hips);
+                BasisLocalPlayer.Instance.Teleport(Trans.position, Trans.rotation);
+            }
+            else
+            {
+                BasisDebug.LogError("Missing Teleport To Player ");
+            }
+        }
+        else
+        {
+            BasisDebug.LogError("Missing " + netId);
+        }
+    }
+    public static void TeleportHere(ushort UUID)
+    {
+
+        AdminRequest AdminRequest = new AdminRequest();
+        NetDataWriter netDataWriter = new NetDataWriter();
+        AdminRequest.Serialize(netDataWriter, AdminRequestMode.TeleportPlayer);
+        netDataWriter.Put(UUID);
+        BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter, BasisNetworkCommons.AdminMessage, DeliveryMethod.ReliableSequenced);
+    }
     public static void AdminMessage(NetDataReader reader)
     {
         AdminRequest AdminRequest = new AdminRequest();
@@ -160,11 +188,28 @@ public static class BasisNetworkModeration
             //   break;
             //  case AdminRequestMode.RequestBannedPlayers:
             //      break;
-            // case AdminRequestMode.TeleportTo:
-            //    break;
-            case AdminRequestMode.TeleportAll:
+             case AdminRequestMode.TeleportPlayer:
                 ushort PlayerID = reader.GetUShort();
                 if (BasisNetworkManagement.Players.TryGetValue(PlayerID, out Basis.Scripts.Networking.NetworkedAvatar.BasisNetworkPlayer player))
+                {
+                    if (player.Player != null && player.Player.BasisAvatar != null && player.Player.BasisAvatar.Animator != null)
+                    {
+                        Transform Trans = player.Player.BasisAvatar.Animator.GetBoneTransform(UnityEngine.HumanBodyBones.Hips);
+                        BasisLocalPlayer.Instance.Teleport(Trans.position, Trans.rotation);
+                    }
+                    else
+                    {
+                        BasisDebug.LogError("Missing Teleport To Player ");
+                    }
+                }
+                else
+                {
+                    BasisDebug.LogError("Trying to teleport to null player for id " + PlayerID);
+                }
+                break;
+            case AdminRequestMode.TeleportAll:
+                PlayerID = reader.GetUShort();
+                if (BasisNetworkManagement.Players.TryGetValue(PlayerID, out player))
                 {
                     if (player.Player != null && player.Player.BasisAvatar != null && player.Player.BasisAvatar.Animator != null)
                     {
