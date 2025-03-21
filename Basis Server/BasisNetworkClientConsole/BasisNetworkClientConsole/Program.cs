@@ -172,7 +172,14 @@ namespace Basis
                 WriteVectorFloatToBytes(Position, ref AvatarMessage, ref Offset);
                 WriteQuaternionToBytes(Rotation, ref AvatarMessage, ref Offset, RotationCompression);
                 WriteUShortsToBytes(UshortArray, ref AvatarMessage, ref Offset);
-                LocalPLayer.Send(AvatarMessage, BasisNetworkCommons.MovementChannel, DeliveryMethod.Sequenced);
+                if (AvatarMessage.Length == 0)
+                {
+                    BNL.LogError("trying to sending a message without a length NetworkReceiveEvent!");
+                }
+                else
+                {
+                    LocalPLayer.Send(AvatarMessage, BasisNetworkCommons.MovementChannel, DeliveryMethod.Sequenced);
+                }
             }
         }
 

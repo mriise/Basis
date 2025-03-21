@@ -431,6 +431,15 @@ namespace Basis.Scripts.Networking
                     }, null);
                 });
         }
+        public static bool ValidateSize(NetPacketReader reader, NetPeer peer, byte channel)
+        {
+            if (reader.AvailableBytes == 0)
+            {
+                BNL.LogError($"Missing Data from peer! {peer.Id} with channel ID {channel}");
+                return false;
+            }
+            return true;
+        }
         private async void NetworkReceiveEvent(NetPeer peer, NetPacketReader Reader, byte channel, LiteNetLib.DeliveryMethod deliveryMethod)
         {
             switch (channel)
@@ -455,6 +464,11 @@ namespace Basis.Scripts.Networking
                     }
                     break;
                 case BasisNetworkCommons.AuthIdentityMessage:
+                    if(ValidateSize(Reader, peer,channel) == false)
+                    {
+                        Reader.Recycle();
+                        return;
+                    }
                     if (BasisDIDAuthIdentityClient.IdentityMessage(peer, Reader, out NetDataWriter Writer))
                     {
                         LocalPlayerPeer.Send(Writer, BasisNetworkCommons.AuthIdentityMessage, DeliveryMethod.ReliableSequenced); Reader.Recycle();
@@ -473,10 +487,20 @@ namespace Basis.Scripts.Networking
                     }
                     break;
                 case BasisNetworkCommons.Disconnection:
+                    if (ValidateSize(Reader, peer, channel) == false)
+                    {
+                        Reader.Recycle();
+                        return;
+                    }
                     BasisNetworkHandleRemoval.HandleDisconnection(Reader);
                     Reader.Recycle();
                     break;
                 case BasisNetworkCommons.AvatarChangeMessage:
+                    if (ValidateSize(Reader, peer, channel) == false)
+                    {
+                        Reader.Recycle();
+                        return;
+                    }
                     BasisNetworkManagement.MainThreadContext.Post(_ =>
                     {
                         BasisNetworkHandleAvatar.HandleAvatarChangeMessage(Reader);
@@ -484,6 +508,11 @@ namespace Basis.Scripts.Networking
                     }, null);
                     break;
                 case BasisNetworkCommons.CreateRemotePlayer:
+                    if (ValidateSize(Reader, peer, channel) == false)
+                    {
+                        Reader.Recycle();
+                        return;
+                    }
                     BasisNetworkManagement.MainThreadContext.Post(async _ =>
                     {
                         await BasisNetworkHandleRemote.HandleCreateRemotePlayer(Reader, this.transform);
@@ -491,6 +520,11 @@ namespace Basis.Scripts.Networking
                     }, null);
                     break;
                 case BasisNetworkCommons.CreateRemotePlayersForNewPeer:
+                    if (ValidateSize(Reader, peer, channel) == false)
+                    {
+                        Reader.Recycle();
+                        return;
+                    }
                     //same as remote player but just used at the start
                     BasisNetworkManagement.MainThreadContext.Post(async _ =>
                     {
@@ -500,6 +534,11 @@ namespace Basis.Scripts.Networking
                     }, null);
                     break;
                 case BasisNetworkCommons.GetCurrentOwnerRequest:
+                    if (ValidateSize(Reader, peer, channel) == false)
+                    {
+                        Reader.Recycle();
+                        return;
+                    }
                     BasisNetworkManagement.MainThreadContext.Post(_ =>
                     {
                         BasisNetworkGenericMessages.HandleOwnershipResponse(Reader);
@@ -507,6 +546,11 @@ namespace Basis.Scripts.Networking
                     }, null);
                     break;
                 case BasisNetworkCommons.ChangeCurrentOwnerRequest:
+                    if (ValidateSize(Reader, peer, channel) == false)
+                    {
+                        Reader.Recycle();
+                        return;
+                    }
                     BasisNetworkManagement.MainThreadContext.Post(_ =>
                     {
                         BasisNetworkGenericMessages.HandleOwnershipTransfer(Reader);
@@ -514,6 +558,11 @@ namespace Basis.Scripts.Networking
                     }, null);
                     break;
                 case BasisNetworkCommons.RemoveCurrentOwnerRequest:
+                    if (ValidateSize(Reader, peer, channel) == false)
+                    {
+                        Reader.Recycle();
+                        return;
+                    }
                     BasisNetworkManagement.MainThreadContext.Post(_ =>
                     {
                         BasisNetworkGenericMessages.HandleOwnershipRemove(Reader);
@@ -525,10 +574,20 @@ namespace Basis.Scripts.Networking
                     Reader.Recycle();
                     break;
                 case BasisNetworkCommons.MovementChannel:
-                     BasisNetworkHandleAvatar.HandleAvatarUpdate(Reader,true);
+                    if (ValidateSize(Reader, peer, channel) == false)
+                    {
+                        Reader.Recycle();
+                        return;
+                    }
+                    BasisNetworkHandleAvatar.HandleAvatarUpdate(Reader,true);
                     Reader.Recycle();
                     break;
                 case BasisNetworkCommons.SceneChannel:
+                    if (ValidateSize(Reader, peer, channel) == false)
+                    {
+                        Reader.Recycle();
+                        return;
+                    }
                     BasisNetworkManagement.MainThreadContext.Post(_ =>
                     {
                         BasisNetworkGenericMessages.HandleServerSceneDataMessage(Reader,deliveryMethod);
@@ -536,6 +595,11 @@ namespace Basis.Scripts.Networking
                     }, null);
                     break;
                 case BasisNetworkCommons.AvatarChannel:
+                    if (ValidateSize(Reader, peer, channel) == false)
+                    {
+                        Reader.Recycle();
+                        return;
+                    }
                     BasisNetworkManagement.MainThreadContext.Post(_ =>
                     {
                         BasisNetworkGenericMessages.HandleServerAvatarDataMessage(Reader, deliveryMethod);
@@ -543,6 +607,11 @@ namespace Basis.Scripts.Networking
                     }, null);
                     break;
                 case BasisNetworkCommons.NetIDAssigns:
+                    if (ValidateSize(Reader, peer, channel) == false)
+                    {
+                        Reader.Recycle();
+                        return;
+                    }
                     BasisNetworkManagement.MainThreadContext.Post(_ =>
                     {
                         BasisNetworkGenericMessages.MassNetIDAssign(Reader, deliveryMethod);
@@ -550,6 +619,11 @@ namespace Basis.Scripts.Networking
                     }, null);
                     break;
                 case BasisNetworkCommons.netIDAssign:
+                    if (ValidateSize(Reader, peer, channel) == false)
+                    {
+                        Reader.Recycle();
+                        return;
+                    }
                     BasisNetworkManagement.MainThreadContext.Post(_ =>
                     {
                         BasisNetworkGenericMessages.NetIDAssign(Reader, deliveryMethod);
@@ -557,6 +631,11 @@ namespace Basis.Scripts.Networking
                     }, null);
                     break;
                 case BasisNetworkCommons.LoadResourceMessage:
+                    if (ValidateSize(Reader, peer, channel) == false)
+                    {
+                        Reader.Recycle();
+                        return;
+                    }
                     BasisNetworkManagement.MainThreadContext.Post(async _ =>
                     {
                      await   BasisNetworkGenericMessages.LoadResourceMessage(Reader, deliveryMethod);
@@ -564,6 +643,11 @@ namespace Basis.Scripts.Networking
                     }, null);
                     break;
                 case BasisNetworkCommons.UnloadResourceMessage:
+                    if (ValidateSize(Reader, peer, channel) == false)
+                    {
+                        Reader.Recycle();
+                        return;
+                    }
                     BasisNetworkManagement.MainThreadContext.Post(_ =>
                     {
                         BasisNetworkGenericMessages.UnloadResourceMessage(Reader, deliveryMethod);
@@ -571,6 +655,11 @@ namespace Basis.Scripts.Networking
                     }, null);
                     break;
                 case BasisNetworkCommons.AdminMessage:
+                    if (ValidateSize(Reader, peer, channel) == false)
+                    {
+                        Reader.Recycle();
+                        return;
+                    }
                     BasisNetworkManagement.MainThreadContext.Post(_ =>
                     {
                         BasisNetworkModeration.AdminMessage(Reader);

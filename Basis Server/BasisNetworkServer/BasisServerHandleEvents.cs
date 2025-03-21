@@ -242,6 +242,15 @@ namespace BasisServerHandle
         #endregion
 
         #region Network Receive Handlers
+        public static bool ValidateSize(NetPacketReader reader, NetPeer peer,byte channel )
+        {
+            if (reader.AvailableBytes == 0)
+            {
+                BNL.LogError($"Missing Data from peer! {peer.Id} with channel ID {channel}");
+                return false;
+            }
+            return true;
+        }
         private static void HandleNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel, DeliveryMethod deliveryMethod)
         {
             var task = Task.Run(() =>
@@ -270,74 +279,113 @@ namespace BasisServerHandle
                             }
                             break;
                         case BasisNetworkCommons.AuthIdentityMessage:
-                            HandleAuth(reader, peer);
+                            if (ValidateSize(reader, peer,channel))
+                            {
+                                HandleAuth(reader, peer);
+                            }
                             break;
                         case BasisNetworkCommons.MovementChannel:
-                            HandleAvatarMovement(reader, peer);
+                            if (ValidateSize(reader, peer, channel))
+                            {
+                                HandleAvatarMovement(reader, peer);
+                            }
                             break;
                         case BasisNetworkCommons.VoiceChannel:
                             HandleVoiceMessage(reader, peer);
                             break;
                         case BasisNetworkCommons.AvatarChannel:
-                            BasisNetworkingGeneric.HandleAvatar(reader, deliveryMethod, peer);
+                            if (ValidateSize(reader, peer, channel))
+                            {
+                                BasisNetworkingGeneric.HandleAvatar(reader, deliveryMethod, peer);
+                            }
                             break;
                         case BasisNetworkCommons.SceneChannel:
-                            BasisNetworkingGeneric.HandleScene(reader, deliveryMethod, peer);
+                            if (ValidateSize(reader, peer, channel))
+                            {
+                                BasisNetworkingGeneric.HandleScene(reader, deliveryMethod, peer);
+                            }
                             break;
                         case BasisNetworkCommons.AvatarChangeMessage:
-                            SendAvatarMessageToClients(reader, peer);
+                            if (ValidateSize(reader, peer, channel))
+                            {
+                                SendAvatarMessageToClients(reader, peer);
+                            }
                             break;
                         case BasisNetworkCommons.ChangeCurrentOwnerRequest:
-                            BasisNetworkOwnership.OwnershipTransfer(reader, peer);
+                            if (ValidateSize(reader, peer, channel))
+                            {
+                                BasisNetworkOwnership.OwnershipTransfer(reader, peer);
+                            }
                             break;
                         case BasisNetworkCommons.GetCurrentOwnerRequest:
-                            BasisNetworkOwnership.OwnershipResponse(reader, peer);
+                            if (ValidateSize(reader, peer, channel))
+                            {
+                                BasisNetworkOwnership.OwnershipResponse(reader, peer);
+                            }
                             break;
                         case BasisNetworkCommons.RemoveCurrentOwnerRequest:
-                            BasisNetworkOwnership.RemoveOwnership(reader, peer);
+                            if (ValidateSize(reader, peer, channel))
+                            {
+                                BasisNetworkOwnership.RemoveOwnership(reader, peer);
+                            }
                             break;
                         case BasisNetworkCommons.AudioRecipients:
-                            UpdateVoiceReceivers(reader, peer);
+                            if (ValidateSize(reader, peer, channel))
+                            {
+                                UpdateVoiceReceivers(reader, peer);
+                            }
                             break;
                         case BasisNetworkCommons.netIDAssign:
-                            netIDAssign(reader, peer);
+                            if (ValidateSize(reader, peer, channel))
+                            {
+                                netIDAssign(reader, peer);
+                            }
                             break;
                         case BasisNetworkCommons.LoadResourceMessage:
-                            if (NetworkServer.authIdentity.NetIDToUUID(peer, out string UUID))
+                            if (ValidateSize(reader, peer, channel))
                             {
-                                if (NetworkServer.authIdentity.IsNetPeerAdmin(UUID))
+                                if (NetworkServer.authIdentity.NetIDToUUID(peer, out string UUID))
                                 {
-                                    LoadResource(reader, peer);
+                                    if (NetworkServer.authIdentity.IsNetPeerAdmin(UUID))
+                                    {
+                                        LoadResource(reader, peer);
+                                    }
+                                    else
+                                    {
+                                        BNL.LogError("Admin was not found! for " + UUID);
+                                    }
                                 }
                                 else
                                 {
-                                    BNL.LogError("Admin was not found! for " + UUID);
+                                    BNL.LogError("User " + UUID + " does not exist!");
                                 }
-                            }
-                            else
-                            {
-                                BNL.LogError("User " + UUID + " does not exist!");
                             }
                             break;
                         case BasisNetworkCommons.UnloadResourceMessage:
-                            if (NetworkServer.authIdentity.NetIDToUUID(peer, out UUID))
+                            if (ValidateSize(reader, peer, channel))
                             {
-                                if (NetworkServer.authIdentity.IsNetPeerAdmin(UUID))
+                                if (NetworkServer.authIdentity.NetIDToUUID(peer, out string UUID))
                                 {
-                                    UnloadResource(reader, peer);
+                                    if (NetworkServer.authIdentity.IsNetPeerAdmin(UUID))
+                                    {
+                                        UnloadResource(reader, peer);
+                                    }
+                                    else
+                                    {
+                                        BNL.LogError("Admin was not found! for " + UUID);
+                                    }
                                 }
                                 else
                                 {
-                                    BNL.LogError("Admin was not found! for " + UUID);
+                                    BNL.LogError("User " + UUID + " does not exist!");
                                 }
-                            }
-                            else
-                            {
-                                BNL.LogError("User " + UUID + " does not exist!");
                             }
                             break;
                         case BasisNetworkCommons.AdminMessage:
-                            BasisPlayerModeration.OnAdminMessage(peer, reader);
+                            if (ValidateSize(reader, peer, channel))
+                            {
+                                BasisPlayerModeration.OnAdminMessage(peer, reader);
+                            }
                             reader.Recycle();
                             break;
                         default:
