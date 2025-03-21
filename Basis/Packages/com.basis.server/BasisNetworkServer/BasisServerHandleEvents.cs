@@ -160,8 +160,8 @@ namespace BasisServerHandle
                 if (NetworkServer.Configuration.UseAuth)
                 {
                     BytesMessage authMessage = new BytesMessage();
-                    authMessage.Deserialize(ConReq.Data);
-                    if (NetworkServer.auth.IsAuthenticated(authMessage) == false)
+                    authMessage.Deserialize(ConReq.Data,out byte[] AuthBytes);
+                    if (NetworkServer.auth.IsAuthenticated(AuthBytes) == false)
                     {
                         RejectWithReason(ConReq, "Authentication failed, Auth rejected");
                         return;
@@ -171,7 +171,7 @@ namespace BasisServerHandle
                 {
                     //we still want to read the data to move the needle along
                     BytesMessage authMessage = new BytesMessage();
-                    authMessage.Deserialize(ConReq.Data);
+                    authMessage.Deserialize(ConReq.Data,out byte[] UnusedBytes);
                 }
                 NetPeer newPeer = ConReq.Accept();//can do both way Communication from here on
 

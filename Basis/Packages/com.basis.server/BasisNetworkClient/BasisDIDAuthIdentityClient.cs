@@ -58,31 +58,39 @@ namespace BasisNetworkClient
 
         public static bool IdentityMessage(NetPeer peer, NetPacketReader Reader, out NetDataWriter Writer)
         {
-            Writer = new NetDataWriter();
             BytesMessage ChallengeBytes = new BytesMessage();
-
-            ChallengeBytes.Deserialize(Reader);
+            ChallengeBytes.Deserialize(Reader,out byte[] PayloadBytes);
+            if (PayloadBytes != null && PayloadBytes.Length != 0)
+            {
+                BNL.LogError("Unable to Identify Challenge was null or empty!");
+                Writer = null;
+                return false;
+            }
+            
             // Client
-            Payload payloadToSign = new Payload(ChallengeBytes.bytes);
+            Payload payloadToSign = new Payload(PayloadBytes);
             if (Ed25519.Sign(Key.Item2, payloadToSign, out Signature sig) == false)
             {
                 BNL.LogError("Unable to sign Key");
+                Writer = null;
                 return false;
             }
             if (Ed25519.Verify(Key.Item1, sig, payloadToSign) == false)
             {
                 BNL.LogError("Unable to Very Key");
+                Writer = null;
                 return false;
             }
             // for simplicity, use an empty fragment since the client only has one pubkey
             Response response = new Response(sig, DidUrlFragment);
+            Writer = new NetDataWriter();
             BytesMessage SignatureBytes = new BytesMessage();
-            SignatureBytes.bytes = response.Signature.V;
+            SignatureBytes.Serialize(Writer, response.Signature.V);
             BytesMessage FragmentBytes = new BytesMessage();
-            FragmentBytes.bytes = CompressString(response.DidUrlFragment.V);
-            SignatureBytes.Serialize(Writer);
-            FragmentBytes.Serialize(Writer);
+            FragmentBytes.Serialize(Writer, Encoding.UTF8.GetBytes(response.DidUrlFragment.V));
+            BNL.Log("Sending out Bytes");
             return true;
+
         }
         public static (PubKey, PrivKey) RandomKeyPair(CryptoRng rng)
         {
@@ -98,10 +106,6 @@ namespace BasisNetworkClient
             CryptoRng rng = CryptoRng.Create();
             Keys = RandomKeyPair(rng);
             Did = DidKeyResolver.EncodePubkeyAsDid(Keys.Item1);
-        }
-        public static byte[] CompressString(string str)
-        {
-            return Encoding.UTF8.GetBytes(str);
         }
     }
 }

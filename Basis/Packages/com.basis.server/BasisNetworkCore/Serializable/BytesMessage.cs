@@ -1,6 +1,5 @@
-#nullable enable
-
 using LiteNetLib.Utils;
+using System;
 
 namespace Basis.Network.Core.Serializable
 {
@@ -12,39 +11,28 @@ namespace Basis.Network.Core.Serializable
         [System.Serializable]
         public struct BytesMessage
         {
-            public byte[] bytes;
-            public void Deserialize(NetDataReader Reader)
+            public bool Deserialize(NetDataReader reader,out byte[] Data)
             {
-                if (Reader.TryGetUShort(out ushort msgLength))
+                if (reader.TryGetUShort(out ushort msgLength))
                 {
-                    if (msgLength == 0)
-                    {
-                        bytes = System.Array.Empty<byte>(); // Assign an empty array instead of null
-                        return;
-                    }
-
-                    if (bytes == null || bytes.Length != msgLength)
-                    {
-                        bytes = new byte[msgLength];
-                    }
-                    Reader.GetBytes(bytes, msgLength);
+                    Data = new byte[msgLength];
+                    reader.GetBytes(Data, msgLength);
+                    return true;
                 }
-                else
-                {
-                    BNL.LogError("Missing Message Length!");
-                }
+                BNL.LogError("unable to read the size of the data");
+                Data = null;
+                return false;
             }
 
-            public readonly void Serialize(NetDataWriter Writer)
+            public readonly void Serialize(NetDataWriter writer, byte[] Data)
             {
-                if (bytes == null || bytes.Length == 0)
+                ushort Length = (ushort)Data.Length;
+                if (Length == 0)
                 {
-                    Writer.Put((ushort)0);
-                    return;
+                    BNL.LogError("this data does not belong on the network! was size 0");
                 }
-                ushort Length = (ushort)bytes.Length;
-                Writer.Put(Length);
-                Writer.Put(bytes);
+                writer.Put(Length);
+                writer.Put(Data);
             }
         }
     }

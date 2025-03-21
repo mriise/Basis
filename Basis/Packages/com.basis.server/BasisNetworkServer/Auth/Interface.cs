@@ -8,7 +8,7 @@ namespace Basis.Network.Server.Auth
     /// </summary>
     public interface IAuth
     {
-        public bool IsAuthenticated(BytesMessage msg);
+        public bool IsAuthenticated(byte[] BytesMsg);
     }
     public interface IAuthIdentity
     {

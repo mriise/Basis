@@ -133,7 +133,7 @@ namespace Basis.Scripts.Networking
         }
         private void LogErrorOutput(string obj)
         {
-           BasisDebug.LogError(obj);
+           BasisDebug.LogError(obj, BasisDebug.LogTag.Networking);
         }
         private void LogWarningOutput(string obj)
         {
@@ -141,7 +141,7 @@ namespace Basis.Scripts.Networking
         }
         private void LogOutput(string obj)
         {
-            BasisDebug.Log(obj);
+            BasisDebug.Log(obj, BasisDebug.LogTag.Networking);
         }
         public void OnDestroy()
         {
@@ -275,12 +275,8 @@ namespace Basis.Scripts.Networking
             };
             BasisNetworkAvatarCompressor.InitalAvatarData(BasisLocalPlayer.Instance.BasisAvatar.Animator, out readyMessage.localAvatarSyncMessage);
             BasisDebug.Log("Network Starting Client");
-            NetworkClient.AuthenticationMessage = new Network.Core.Serializable.SerializableBasis.BytesMessage()
-            {
-                bytes = Encoding.UTF8.GetBytes(PrimitivePassword)
-            };
             // BasisDebug.Log("Size is " + BasisNetworkClient.AuthenticationMessage.Message.Length);
-            LocalPlayerPeer = NetworkClient.StartClient(IpString, Port, readyMessage);
+            LocalPlayerPeer = NetworkClient.StartClient(IpString, Port, readyMessage, Encoding.UTF8.GetBytes(PrimitivePassword));
             NetworkClient.listener.PeerConnectedEvent += PeerConnectedEvent;
             NetworkClient.listener.PeerDisconnectedEvent += PeerDisconnectedEvent;
             NetworkClient.listener.NetworkReceiveEvent += NetworkReceiveEvent;
@@ -435,10 +431,40 @@ namespace Basis.Scripts.Networking
         {
             if (reader.AvailableBytes == 0)
             {
-                BNL.LogError($"Missing Data from peer! {peer.Id} with channel ID {channel}");
+                BasisDebug.LogError($"Missing Data from peer! {peer.Id} with channel ID {channel}");
                 return false;
             }
             return true;
+        }
+        public void AuthIdentityMessage(NetPeer peer, NetPacketReader Reader, byte channel)
+        {
+            BasisDebug.Log("Auth is being requested by server!");
+            if (ValidateSize(Reader, peer, channel) == false)
+            {
+                BasisDebug.Log("Auth Failed");
+                Reader.Recycle();
+                return;
+            }
+            BasisDebug.Log("Validated Size " + Reader.AvailableBytes);
+            if (BasisDIDAuthIdentityClient.IdentityMessage(peer, Reader, out NetDataWriter Writer))
+            {
+                BasisDebug.Log("Sent Identity To Server!");
+                LocalPlayerPeer.Send(Writer, BasisNetworkCommons.AuthIdentityMessage, DeliveryMethod.ReliableSequenced);
+                Reader.Recycle();
+            }
+            else
+            {
+                BasisDebug.LogError("Failed Identity Message!");
+                Reader.Recycle();
+                DisconnectInfo info = new DisconnectInfo
+                {
+                    Reason = DisconnectReason.ConnectionRejected,
+                    SocketErrorCode = System.Net.Sockets.SocketError.AccessDenied,
+                    AdditionalData = null
+                };
+                PeerDisconnectedEvent(peer, info);
+            }
+            BasisDebug.Log("Completed");
         }
         private async void NetworkReceiveEvent(NetPeer peer, NetPacketReader Reader, byte channel, LiteNetLib.DeliveryMethod deliveryMethod)
         {
@@ -464,27 +490,7 @@ namespace Basis.Scripts.Networking
                     }
                     break;
                 case BasisNetworkCommons.AuthIdentityMessage:
-                    if(ValidateSize(Reader, peer,channel) == false)
-                    {
-                        Reader.Recycle();
-                        return;
-                    }
-                    if (BasisDIDAuthIdentityClient.IdentityMessage(peer, Reader, out NetDataWriter Writer))
-                    {
-                        LocalPlayerPeer.Send(Writer, BasisNetworkCommons.AuthIdentityMessage, DeliveryMethod.ReliableSequenced); Reader.Recycle();
-                        Reader.Recycle();
-                    }
-                    else
-                    {
-                        Reader.Recycle();
-                        DisconnectInfo info = new DisconnectInfo
-                        {
-                            Reason = DisconnectReason.ConnectionRejected,
-                            SocketErrorCode = System.Net.Sockets.SocketError.AccessDenied,
-                            AdditionalData = null
-                        };
-                        PeerDisconnectedEvent(peer, info);
-                    }
+                    AuthIdentityMessage(peer,Reader,channel);
                     break;
                 case BasisNetworkCommons.Disconnection:
                     if (ValidateSize(Reader, peer, channel) == false)

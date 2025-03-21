@@ -112,27 +112,19 @@ namespace BasisDidLink
                     if (AuthIdentity.TryAdd(newPeer, OnAuth))
                     {
                         readyMessage.playerMetaDataMessage.playerUUID = playerDid.V;
-                        BytesMessage NetworkMessage = new BytesMessage { bytes = OnAuth.Challenge.Nonce.V };
                         NetDataWriter Writer = new NetDataWriter();
-                        NetworkMessage.Serialize(Writer);
+                        BytesMessage NetworkMessage = new BytesMessage();
+                        NetworkMessage.Serialize(Writer, OnAuth.Challenge.Nonce.V);
+                        BNL.LogError("Sending out Writer with size! " + Writer.Length);
                         NetworkServer.SendOutValidated(newPeer, Writer, BasisNetworkCommons.AuthIdentityMessage, DeliveryMethod.ReliableOrdered);
-                        var cts = new CancellationTokenSource();
-                        _timeouts[newPeer] = cts;
 
+                        CancellationTokenSource cts = new CancellationTokenSource();
+                        _timeouts[newPeer] = cts;
                         Task.Run(async () =>
                         {
-                            try
-                            {
-                                await Task.Delay(NetworkServer.Configuration.AuthValidationTimeOutMiliseconds, cts.Token);
-                                if (!_timeouts.ContainsKey(newPeer)) return;
-                                AuthIdentity.TryRemove(newPeer, out _);
-                                _timeouts.TryRemove(newPeer, out _);
-                                BNL.Log($"Authentication timeout for {UUID}.");
-                                BasisServerHandleEvents.RejectWithReason(newPeer, "Authentication timeout");
-                                newPeer.Disconnect();
-                            }
-                            catch (TaskCanceledException) { }
+                            await TimeOut(newPeer, UUID, cts);
                         });
+                        //   BasisServerHandleEvents.OnNetworkAccepted(newPeer, readyMessage, playerDid.V);
                     }
                     else
                     {
@@ -150,6 +142,20 @@ namespace BasisDidLink
                 BasisServerHandleEvents.RejectWithReason(newPeer, $"{e.Message} {e.StackTrace}");
             }
         }
+        public async Task TimeOut(NetPeer newPeer,string UUID, CancellationTokenSource cts)
+        {
+            try
+            {
+                await Task.Delay(NetworkServer.Configuration.AuthValidationTimeOutMiliseconds, cts.Token);
+                if (!_timeouts.ContainsKey(newPeer)) return;
+                AuthIdentity.TryRemove(newPeer, out _);
+                _timeouts.TryRemove(newPeer, out _);
+                BNL.Log($"Authentication timeout for {UUID}.");
+                BasisServerHandleEvents.RejectWithReason(newPeer, "Authentication timeout");
+                newPeer.Disconnect();
+            }
+            catch (TaskCanceledException) { }
+        }
 
         private async void OnAuthReceived(NetPacketReader reader, NetPeer newPeer)
         {
@@ -162,12 +168,12 @@ namespace BasisDidLink
                 }
 
                 BytesMessage SignatureBytes = new BytesMessage();
-                SignatureBytes.Deserialize(reader);
+                SignatureBytes.Deserialize(reader,out byte[] SigBytes);
                 BytesMessage FragmentBytes = new BytesMessage();
-                FragmentBytes.Deserialize(reader);
+                FragmentBytes.Deserialize(reader,out byte[] FragBytes);
 
-                Signature Sig = new Signature(SignatureBytes.bytes);
-                string FragmentAsString = UnpackString(FragmentBytes.bytes);
+                Signature Sig = new Signature(SigBytes);
+                string FragmentAsString = UnpackString(FragBytes);
                 DidUrlFragment Fragment = new DidUrlFragment(FragmentAsString);
                 Response response = new Response(Sig, Fragment);
 

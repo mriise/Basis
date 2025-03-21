@@ -24,9 +24,10 @@ namespace Basis.Network.Server.Auth
     internal readonly struct Deserialized
     {
         public readonly UserPassword Password { get; }
-        public Deserialized(BytesMessage msg)
+        public Deserialized(byte[] Bytesmsg)
         {
-            Password = new UserPassword(Encoding.UTF8.GetString(msg.bytes));
+            string password = Encoding.UTF8.GetString(Bytesmsg);
+            Password = new UserPassword(password);
         }
     }
 
@@ -65,9 +66,9 @@ namespace Basis.Network.Server.Auth
             }
         }
 
-        public bool IsAuthenticated(BytesMessage msg)
+        public bool IsAuthenticated(byte[] Bytesmsg)
         {
-            var deserialized = new Deserialized(msg);
+            var deserialized = new Deserialized(Bytesmsg);
             return CheckPassword(serverPassword, deserialized.Password);
         }
     }

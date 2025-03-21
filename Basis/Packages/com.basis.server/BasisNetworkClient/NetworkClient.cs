@@ -10,14 +10,13 @@ public static class NetworkClient
     public static EventBasedNetListener listener;
     private static NetPeer peer;
     private static bool IsInUse;
-    public static BytesMessage AuthenticationMessage = new BytesMessage();
     /// <summary>
     /// inital data is typically the 
     /// </summary> 
     /// <param name="IP"></param>
     /// <param name="port"></param>
     /// <param name="ReadyMessage"></param>
-    public static NetPeer StartClient(string IP, int port, ReadyMessage ReadyMessage,bool UseNativeSockets = false)
+    public static NetPeer StartClient(string IP, int port, ReadyMessage ReadyMessage, byte[] AuthenticationMessage, bool UseNativeSockets = false)
     {
         if (IsInUse == false)
         {
@@ -40,7 +39,8 @@ public static class NetworkClient
             NetDataWriter Writer = new NetDataWriter(true,12);
             //this is the only time we dont put key!
             Writer.Put(BasisNetworkVersion.ServerVersion);
-            AuthenticationMessage.Serialize(Writer);
+            BytesMessage AuthBytes = new BytesMessage();
+            AuthBytes.Serialize(Writer, AuthenticationMessage);
             ReadyMessage.Serialize(Writer,false);
             peer = client.Connect(IP, port, Writer);
             return peer;

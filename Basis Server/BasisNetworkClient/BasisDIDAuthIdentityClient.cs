@@ -61,9 +61,9 @@ namespace BasisNetworkClient
             Writer = new NetDataWriter();
             BytesMessage ChallengeBytes = new BytesMessage();
 
-            ChallengeBytes.Deserialize(Reader);
+            ChallengeBytes.Deserialize(Reader,out byte[] PayloadBytes);
             // Client
-            Payload payloadToSign = new Payload(ChallengeBytes.bytes);
+            Payload payloadToSign = new Payload(PayloadBytes);
             if (Ed25519.Sign(Key.Item2, payloadToSign, out Signature sig) == false)
             {
                 BNL.LogError("Unable to sign Key");
@@ -77,11 +77,9 @@ namespace BasisNetworkClient
             // for simplicity, use an empty fragment since the client only has one pubkey
             Response response = new Response(sig, DidUrlFragment);
             BytesMessage SignatureBytes = new BytesMessage();
-            SignatureBytes.bytes = response.Signature.V;
             BytesMessage FragmentBytes = new BytesMessage();
-            FragmentBytes.bytes = CompressString(response.DidUrlFragment.V);
-            SignatureBytes.Serialize(Writer);
-            FragmentBytes.Serialize(Writer);
+            SignatureBytes.Serialize(Writer, response.Signature.V);
+            FragmentBytes.Serialize(Writer, Encoding.UTF8.GetBytes(response.DidUrlFragment.V));
             return true;
         }
         public static (PubKey, PrivKey) RandomKeyPair(CryptoRng rng)
@@ -98,10 +96,6 @@ namespace BasisNetworkClient
             CryptoRng rng = CryptoRng.Create();
             Keys = RandomKeyPair(rng);
             Did = DidKeyResolver.EncodePubkeyAsDid(Keys.Item1);
-        }
-        public static byte[] CompressString(string str)
-        {
-            return Encoding.UTF8.GetBytes(str);
         }
     }
 }
