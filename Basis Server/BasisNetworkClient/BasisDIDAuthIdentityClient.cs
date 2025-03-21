@@ -61,7 +61,7 @@ namespace BasisNetworkClient
             Writer = new NetDataWriter();
             BytesMessage ChallengeBytes = new BytesMessage();
 
-            ChallengeBytes.Deserialize(Reader,out byte[] PayloadBytes);
+            ChallengeBytes.Deserialize(Reader, out byte[] PayloadBytes);
             // Client
             Payload payloadToSign = new Payload(PayloadBytes);
             if (Ed25519.Sign(Key.Item2, payloadToSign, out Signature sig) == false)
@@ -79,7 +79,12 @@ namespace BasisNetworkClient
             BytesMessage SignatureBytes = new BytesMessage();
             BytesMessage FragmentBytes = new BytesMessage();
             SignatureBytes.Serialize(Writer, response.Signature.V);
-            FragmentBytes.Serialize(Writer, Encoding.UTF8.GetBytes(response.DidUrlFragment.V));
+            string Fragment = response.DidUrlFragment.V;
+            if (string.IsNullOrEmpty(Fragment))
+            {
+                Fragment = "N/A";
+            }
+            FragmentBytes.Serialize(Writer, Encoding.UTF8.GetBytes(Fragment));
             return true;
         }
         public static (PubKey, PrivKey) RandomKeyPair(CryptoRng rng)

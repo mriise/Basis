@@ -11,7 +11,7 @@ namespace Basis.Network.Core.Serializable
         [System.Serializable]
         public struct BytesMessage
         {
-            public bool Deserialize(NetDataReader reader,out byte[] Data)
+            public bool Deserialize(NetDataReader reader, out byte[] Data)
             {
                 if (reader.TryGetUShort(out ushort msgLength))
                 {

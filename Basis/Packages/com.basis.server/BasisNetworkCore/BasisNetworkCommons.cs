@@ -14,7 +14,7 @@ namespace Basis.Network.Core
         /// </summary>
         public const byte FallChannel = 0;
         /// <summary>
-        /// Unload a Resource
+        /// Auth Identity Message
         /// </summary>
         public const byte AuthIdentityMessage = 1;
         /// <summary>

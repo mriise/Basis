@@ -120,6 +120,7 @@ public static class NetworkServer
             if (MessageIndex <= BasisNetworkCommons.TotalChannels)
             {
                 Peer.Send(Writer, MessageIndex, DeliveryMethod);
+              //  BNL.Log($"sent {MessageIndex}");
             }
             else
             {
