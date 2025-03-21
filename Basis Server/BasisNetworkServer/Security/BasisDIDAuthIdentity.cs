@@ -115,8 +115,7 @@ namespace BasisDidLink
                         BytesMessage NetworkMessage = new BytesMessage { bytes = OnAuth.Challenge.Nonce.V };
                         NetDataWriter Writer = new NetDataWriter();
                         NetworkMessage.Serialize(Writer);
-                        newPeer.Send(Writer, BasisNetworkCommons.AuthIdentityMessage, DeliveryMethod.ReliableOrdered);
-
+                        NetworkServer.SendOutValidated(newPeer, Writer, BasisNetworkCommons.AuthIdentityMessage, DeliveryMethod.ReliableOrdered);
                         var cts = new CancellationTokenSource();
                         _timeouts[newPeer] = cts;
 

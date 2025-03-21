@@ -128,7 +128,14 @@ namespace Basis
                     Reader.Recycle();
                     NetDataWriter Writer = new NetDataWriter(true, 202);
                     SSM.avatarSerialization.Serialize(Writer, true);
-                    LocalPLayer.Send(Writer, BasisNetworkCommons.MovementChannel, deliveryMethod);
+                    if (Writer.Length == 0)
+                    {
+                        BNL.LogError("trying to sending a message without a length NetworkReceiveEvent!");
+                    }
+                    else
+                    {
+                        LocalPLayer.Send(Writer, BasisNetworkCommons.MovementChannel, deliveryMethod);
+                    }
                 }
                 else
                 {

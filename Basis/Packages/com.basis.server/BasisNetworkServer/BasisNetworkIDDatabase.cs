@@ -27,7 +27,7 @@ namespace BasisNetworkCore
                 };
                 NetDataWriter Writer = new NetDataWriter(true);
                 SUIMA.Serialize(Writer);
-                HeWhoAsked.Send(Writer, BasisNetworkCommons.netIDAssign, DeliveryMethod.ReliableOrdered);
+                NetworkServer.SendOutValidated(HeWhoAsked, Writer, BasisNetworkCommons.netIDAssign, DeliveryMethod.ReliableOrdered);
                 BNL.Log($"Sent existing NetID ({Value}) for {UniqueStringID} to peer {HeWhoAsked.Address}");
             }
             else
@@ -67,7 +67,6 @@ namespace BasisNetworkCore
 
         public static bool GetAllNetworkID(out List<ServerNetIDMessage> ServerUniqueIDMessages)
         {
-            BNL.Log("Fetching all network IDs...");
             ServerUniqueIDMessages = new List<ServerNetIDMessage>();
             foreach (KeyValuePair<string, ushort> pair in UshortNetworkDatabase)
             {
@@ -79,7 +78,6 @@ namespace BasisNetworkCore
                 ServerUniqueIDMessages.Add(SUIM);
             }
             int Count = ServerUniqueIDMessages.Count;
-            BNL.Log($"Total network IDs fetched: {Count}");
             return Count != 0;
         }
         public static void RemoveUshortNetworkID(ushort netID)

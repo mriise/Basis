@@ -7,6 +7,7 @@ using LiteNetLib;
 using LiteNetLib.Utils;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -112,12 +113,15 @@ namespace BasisServerHandle
             NetDataWriter writer = new NetDataWriter(true, sizeof(ushort));
             writer.Put(leaving);
 
-            ReadOnlySpan<NetPeer> Peers = BasisPlayerArray.GetSnapshot();
-            foreach (var client in Peers)
+            if (NetworkServer.CheckValidated(writer))
             {
-                if (client.Id != leaving)
+                ReadOnlySpan<NetPeer> Peers = BasisPlayerArray.GetSnapshot();
+                foreach (var client in Peers)
                 {
-                    client.Send(writer, BasisNetworkCommons.Disconnection, DeliveryMethod.ReliableOrdered);
+                    if (client.Id != leaving)
+                    {
+                        client.Send(writer, BasisNetworkCommons.Disconnection, DeliveryMethod.ReliableOrdered);
+                    }
                 }
             }
         }
@@ -218,7 +222,12 @@ namespace BasisServerHandle
 
                     NetDataWriter Writer = new NetDataWriter(true, 4);
                     ServerUniqueIDMessageArray.Serialize(Writer);
-                    newPeer.Send(Writer, BasisNetworkCommons.NetIDAssigns, DeliveryMethod.ReliableOrdered);
+                    BNL.Log($"Sending out Network Id Count " + ServerUniqueIDMessageArray.Messages.Length);
+                    NetworkServer.SendOutValidated(newPeer, Writer, BasisNetworkCommons.NetIDAssigns, LiteNetLib.DeliveryMethod.ReliableOrdered);
+                }
+                else
+                {
+                    BNL.Log($"No Network Ids Not Sending out");
                 }
 
                 SendRemoteSpawnMessage(newPeer, ReadyMessage);
@@ -522,12 +531,15 @@ namespace BasisServerHandle
             NetDataWriter Writer = new NetDataWriter(true);
             serverSideSyncPlayerMessage.Serialize(Writer, false);
             ReadOnlySpan<NetPeer> Peers = BasisPlayerArray.GetSnapshot();
-          //  BNL.LogError("Writing Data with size Size " + Writer.Length);
-            foreach (NetPeer client in Peers)
+            //  BNL.LogError("Writing Data with size Size " + Writer.Length);
+            if (NetworkServer.CheckValidated(Writer))
             {
-                if (client != authClient)
+                foreach (NetPeer client in Peers)
                 {
-                    client.Send(Writer, BasisNetworkCommons.CreateRemotePlayer, DeliveryMethod.ReliableOrdered);
+                    if (client != authClient)
+                    {
+                        client.Send(Writer, BasisNetworkCommons.CreateRemotePlayer, DeliveryMethod.ReliableOrdered);
+                    }
                 }
             }
         }
@@ -552,9 +564,8 @@ namespace BasisServerHandle
                     if (CreateServerReadyMessageForPeer(peer, out ServerReadyMessage Message))
                     {
                         Message.Serialize(writer, true);
-                       BNL.LogError("Writing Data with size Size " + writer.Length);
-                    //
-                        authClient.Send(writer, BasisNetworkCommons.CreateRemotePlayersForNewPeer, DeliveryMethod.ReliableOrdered);
+                        BNL.Log($"Writing Data with size {writer.Length}");
+                        NetworkServer.SendOutValidated(authClient, writer, BasisNetworkCommons.CreateRemotePlayersForNewPeer, LiteNetLib.DeliveryMethod.ReliableOrdered);
                     }
                 }
             }

@@ -74,30 +74,66 @@ public static class NetworkServer
         }
     }
     #endregion
-    public static void BroadcastMessageToClients(NetDataWriter NetDataWriter, byte channel, NetPeer sender, ReadOnlySpan<NetPeer> authenticatedClients, DeliveryMethod deliveryMethod = DeliveryMethod.Sequenced)
+    public static void BroadcastMessageToClients(NetDataWriter Writer, byte channel, NetPeer sender, ReadOnlySpan<NetPeer> authenticatedClients, DeliveryMethod deliveryMethod = DeliveryMethod.Sequenced)
     {
-        foreach (NetPeer client in authenticatedClients)
+        if (NetworkServer.CheckValidated(Writer))
         {
-            if (client.Id != sender.Id)
+            foreach (NetPeer client in authenticatedClients)
             {
-                client.Send(NetDataWriter, channel, deliveryMethod);
+                if (client.Id != sender.Id)
+                {
+                    client.Send(Writer, channel, deliveryMethod);
+                }
             }
         }
     }
-    public static void BroadcastMessageToClients(NetDataWriter NetDataWriter, byte channel, ReadOnlySpan<NetPeer> authenticatedClients, DeliveryMethod deliveryMethod = DeliveryMethod.Sequenced)
+    public static void BroadcastMessageToClients(NetDataWriter Writer, byte channel, ReadOnlySpan<NetPeer> authenticatedClients, DeliveryMethod deliveryMethod = DeliveryMethod.Sequenced)
     {
-        int count = authenticatedClients.Length;
-        for (int index = 0; index < count; index++)
+        if (NetworkServer.CheckValidated(Writer))
         {
-            authenticatedClients[index].Send(NetDataWriter, channel, deliveryMethod);
+            int count = authenticatedClients.Length;
+            for (int index = 0; index < count; index++)
+            {
+                authenticatedClients[index].Send(Writer, channel, deliveryMethod);
+            }
         }
     }
-    public static void BroadcastMessageToClients(NetDataWriter NetDataWriter, byte channel, ref List<NetPeer> authenticatedClients, DeliveryMethod deliveryMethod = DeliveryMethod.Sequenced)
+    public static void BroadcastMessageToClients(NetDataWriter Writer, byte channel, ref List<NetPeer> authenticatedClients, DeliveryMethod deliveryMethod = DeliveryMethod.Sequenced)
     {
-        int count = authenticatedClients.Count;
-        for (int index = 0; index < count; index++)
+        if (NetworkServer.CheckValidated(Writer))
         {
-            authenticatedClients[index].Send(NetDataWriter, channel, deliveryMethod);
+            int count = authenticatedClients.Count;
+            for (int index = 0; index < count; index++)
+            {
+                authenticatedClients[index].Send(Writer, channel, deliveryMethod);
+            }
         }
+    }
+    public static void SendOutValidated(NetPeer Peer, NetDataWriter Writer, byte MessageIndex, DeliveryMethod DeliveryMethod = DeliveryMethod.ReliableSequenced)
+    {
+        if (Writer.Length == 0)
+        {
+            BNL.LogError("trying to sending a message without a length SendOutValidated : " + MessageIndex);
+        }
+        else
+        {
+            if (MessageIndex <= BasisNetworkCommons.TotalChannels)
+            {
+                Peer.Send(Writer, MessageIndex, DeliveryMethod);
+            }
+            else
+            {
+                BNL.LogError($"Message was larger then the preprogrammed channels {BasisNetworkCommons.TotalChannels}");
+            }
+        }
+    }
+    public static bool CheckValidated(NetDataWriter Writer)
+    {
+        if (Writer.Length == 0)
+        {
+            BNL.LogError("trying to sending a message without a length!");
+            return false;
+        }
+        return true;
     }
 }

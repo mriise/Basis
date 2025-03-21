@@ -51,7 +51,7 @@ public static class BasisNetworkResourceManagement
             LocalLoadResource LLR = Resource[Index];
             NetDataWriter Writer = new NetDataWriter(true);
             LLR.Serialize(Writer);
-            NewConnection.Send(Writer, BasisNetworkCommons.LoadResourceMessage, LiteNetLib.DeliveryMethod.ReliableSequenced);
+            NetworkServer.SendOutValidated(NewConnection, Writer, BasisNetworkCommons.LoadResourceMessage, LiteNetLib.DeliveryMethod.ReliableOrdered);
         }
     }
     public static void LoadResource(LocalLoadResource LocalLoadResource)

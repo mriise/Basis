@@ -308,7 +308,8 @@ namespace BasisNetworkServer.Security
                     OutAdminRequest.Serialize(Writer, AdminRequestMode.TeleportPlayer);
                     PlayerDestination = reader.GetUShort();
                     Writer.Put(PlayerDestination);
-                    peer.Send(Writer, BasisNetworkCommons.AdminMessage, DeliveryMethod.ReliableOrdered);
+
+                    NetworkServer.SendOutValidated(peer, Writer, BasisNetworkCommons.AdminMessage, DeliveryMethod.ReliableOrdered);
                     break;
                 default:
                     BNL.LogError("Missing Mode!");
@@ -319,11 +320,16 @@ namespace BasisNetworkServer.Security
         }
         public static void SendBackMessage(NetPeer Peer, string ReturnMessage)
         {
+            if(string.IsNullOrEmpty(ReturnMessage))
+            {
+                BNL.LogError("trying to send a empty message to client " + Peer.Id);
+                return;
+            }
             NetDataWriter Writer = new NetDataWriter(true, 4);
             AdminRequest OutAdminRequest = new AdminRequest();
             OutAdminRequest.Serialize(Writer, AdminRequestMode.Message);
             Writer.Put(ReturnMessage);
-            Peer.Send(Writer, BasisNetworkCommons.AdminMessage, DeliveryMethod.ReliableOrdered);
+            NetworkServer.SendOutValidated(Peer,Writer, BasisNetworkCommons.AdminMessage, DeliveryMethod.ReliableOrdered);
         }
     }
 }

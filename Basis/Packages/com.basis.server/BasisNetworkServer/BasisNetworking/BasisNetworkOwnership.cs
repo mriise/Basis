@@ -26,7 +26,7 @@ namespace Basis.Network.Server.Ownership
             ownershipTransferMessage.playerIdMessage.playerID = currentOwner;
             ownershipTransferMessage.Serialize(Writer);
             BNL.Log("OwnershipResponse " + currentOwner + " for " + ownershipTransferMessage.playerIdMessage);
-            Peer.Send(Writer, BasisNetworkCommons.GetCurrentOwnerRequest, DeliveryMethod.ReliableSequenced);
+            NetworkServer.SendOutValidated(Peer, Writer, BasisNetworkCommons.GetCurrentOwnerRequest, DeliveryMethod.ReliableOrdered);
         }
         /// <summary>
         /// this api removes a owner from the object,
@@ -94,7 +94,7 @@ namespace Basis.Network.Server.Ownership
                 //once a ownership has been requested there good for life or when a ownership switch happens.
                 NetworkRequestNewOrExisting(ownershipTransferMessage, out ushort currentOwner);
                 ownershipTransferMessage.Serialize(Writer);
-                Peer.Send(Writer, BasisNetworkCommons.ChangeCurrentOwnerRequest, DeliveryMethod.ReliableSequenced);
+                NetworkServer.SendOutValidated(Peer, Writer, BasisNetworkCommons.ChangeCurrentOwnerRequest, LiteNetLib.DeliveryMethod.ReliableOrdered);
             }
         }
         /// <summary>

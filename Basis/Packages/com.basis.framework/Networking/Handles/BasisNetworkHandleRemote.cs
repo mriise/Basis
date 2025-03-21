@@ -14,12 +14,7 @@ namespace Basis.Scripts.Networking
     {
         public static async Task HandleCreateRemotePlayer(LiteNetLib.NetPacketReader reader,Transform Parent)
         {
-            BasisDebug.Log("Handling Create Remote Player!");
-            if(reader.AvailableBytes == 0)
-            {
-                BasisDebug.LogError("Missing Remote Player Data!!");
-            }
-            BasisDebug.Log("remaining bytes " + reader.AvailableBytes);
+            BasisDebug.Log($"Handling Create Remote Player! {reader.AvailableBytes}");
             ServerReadyMessage ServerReadyMessage = new ServerReadyMessage();
             ServerReadyMessage.Deserialize(reader, true);
 
