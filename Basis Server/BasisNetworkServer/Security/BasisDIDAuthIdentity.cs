@@ -30,6 +30,7 @@ namespace BasisDidLink
         private readonly ConcurrentDictionary<NetPeer, CancellationTokenSource> _timeouts = new ConcurrentDictionary<NetPeer, CancellationTokenSource>();
         public List<string> Admins = new List<string>();
         public const string FilePath = "admins.xml";
+        public const string ExampleFilePath = "Example_admins.xml";
         public BasisDIDAuthIdentity()
         {
             Admins = LoadAdmins(FilePath).ToList();
@@ -38,9 +39,6 @@ namespace BasisDidLink
             DidAuth = new DidAuthentication(cfg);
             BasisServerHandleEvents.OnAuthReceived += OnAuthReceived;
             BNL.Log("DidAuthIdentity initialized.");
-
-           // Admins.Add("did:key:z6Mkt4omnWQ1YTPCCkpfocdXn8X25sVLhwdsgXzfpGgqPyYc");
-          //  SaveAdmins(Admins.ToArray(), FilePath);
         }
 
         public void DeInitalize()
@@ -258,8 +256,14 @@ namespace BasisDidLink
             }
             else
             {
-                string[] Admins = new string[] { };
+                string[] Admins = new string[] {};
                 SaveAdmins(Admins, filePath);
+
+                if (File.Exists(ExampleFilePath) == false)
+                {
+                    string[] AdminsExample = new string[] { "did:key:{key}", "did:key:z6Mkt4omnWQ1YTPCCkpfocdXn8X25sVLhwdsgXzfpGgqPyYc" };
+                    SaveAdmins(AdminsExample, ExampleFilePath);
+                }
                 return Admins;
             }
         }

@@ -250,7 +250,7 @@ namespace BasisNetworkServer.Security
                     ushort RemoteplayerIndex = reader.GetUShort();
                     NetPeer RemotePeer = NetworkServer.chunkedNetPeerArray.GetPeer(RemoteplayerIndex);
                     string Message = reader.GetString();
-                    SendBackMessage(RemotePeer, reader.GetString());
+                    SendBackMessage(RemotePeer, Message);
                     BNL.Log($"sending Message {Message}");
                     break;
                 case AdminRequestMode.MessageAll:

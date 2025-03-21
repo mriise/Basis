@@ -4,6 +4,7 @@ using Basis.Scripts.Networking;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using System;
+using UnityEditor;
 using UnityEngine;
 using static BasisNetworkCore.Serializable.SerializableBasis;
 
@@ -107,7 +108,27 @@ public static class BasisNetworkModeration
         netDataWriter.Put(UUID);
         BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter, BasisNetworkCommons.AdminMessage, DeliveryMethod.ReliableSequenced);
     }
+    public static void SendMessage(ushort UUID, string Message)
+    {
+        ValidateString(Message, nameof(Message));
 
+        AdminRequest AdminRequest = new AdminRequest();
+        NetDataWriter netDataWriter = new NetDataWriter();
+        AdminRequest.Serialize(netDataWriter, AdminRequestMode.Message);
+        netDataWriter.Put(UUID);
+        netDataWriter.Put(Message);
+        BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter, BasisNetworkCommons.AdminMessage, DeliveryMethod.ReliableSequenced);
+    }
+    public static void SendMessageAll(string Message)
+    {
+        ValidateString(Message, nameof(Message));
+
+        AdminRequest AdminRequest = new AdminRequest();
+        NetDataWriter netDataWriter = new NetDataWriter();
+        AdminRequest.Serialize(netDataWriter, AdminRequestMode.MessageAll);
+        netDataWriter.Put(Message);
+        BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter, BasisNetworkCommons.AdminMessage, DeliveryMethod.ReliableSequenced);
+    }
     public static void DisplayMessage(string Message)
     {
         ValidateString(Message, nameof(Message));

@@ -3,6 +3,7 @@ using Basis.Scripts.Networking;
 using Basis.Scripts.Networking.NetworkedAvatar;
 using Basis.Scripts.UI.UI_Panels;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -74,6 +75,31 @@ public class BasisUIAdminPanel : BasisUIBase
         Uban.onClick.AddListener(() => BasisNetworkModeration.UnBan(UUIDSubmission.text));
         AddAdmin.onClick.AddListener(() => BasisNetworkModeration.AddAdmin(UUIDSubmission.text));
         RemoveAdmin.onClick.AddListener(() => BasisNetworkModeration.RemoveAdmin(UUIDSubmission.text));
+        SendMessage.onClick.AddListener(() =>
+        {
+            if (FindID(UUIDSubmission.text, out ushort Id))
+            {
+                BasisNetworkModeration.SendMessage(Id, ReasonSubmission.text);
+            }
+            else
+            {
+                BasisDebug.LogError("Cant find ID " + UUIDSubmission.text);
+            }
+        });
+        SendMessageAll.onClick.AddListener(() => BasisNetworkModeration.SendMessageAll(ReasonSubmission.text));
+    }
+    public bool FindID(string UUID, out ushort Id)
+    {
+        foreach (BasisNetworkPlayer Player in BasisNetworkManagement.Players.Values)
+        {
+            if (UUID == Player.Player.UUID)
+            {
+                Id = Player.NetId;
+                return true;
+            }
+        }
+        Id = 0;
+        return false;
     }
     private void OnClick(BasisNetworkPlayer Player)
     {
@@ -87,6 +113,9 @@ public class BasisUIAdminPanel : BasisUIBase
     public Button Uban;
     public Button AddAdmin;
     public Button RemoveAdmin;
+
+    public Button SendMessage;
+    public Button SendMessageAll;
 
     public TMP_InputField UUIDSubmission;
     public TMP_InputField ReasonSubmission;
