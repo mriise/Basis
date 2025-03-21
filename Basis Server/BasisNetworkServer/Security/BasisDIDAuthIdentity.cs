@@ -174,6 +174,10 @@ namespace BasisDidLink
 
                 Signature Sig = new Signature(SigBytes);
                 string FragmentAsString = UnpackString(FragBytes);
+                if(FragmentAsString == "N/A")
+                {
+                    FragmentAsString = string.Empty;
+                }
                 DidUrlFragment Fragment = new DidUrlFragment(FragmentAsString);
                 Response response = new Response(Sig, Fragment);
 
