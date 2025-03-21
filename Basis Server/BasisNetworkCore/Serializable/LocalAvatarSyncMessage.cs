@@ -43,7 +43,7 @@ public static partial class SerializableBasis
             }
             else
             {
-                BNL.LogError($"Unable to read Remaing bytes where {Bytes}");
+                BNL.LogError($"Unable to read Remaining bytes where {Bytes} in LocalAvatarSyncMessage");
             }
         }
         public void Serialize(NetDataWriter Writer,bool AttemptAdditionalData)
