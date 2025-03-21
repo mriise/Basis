@@ -249,15 +249,18 @@ namespace BasisNetworkServer.Security
                 case AdminRequestMode.Message:
                     ushort RemoteplayerIndex = reader.GetUShort();
                     NetPeer RemotePeer = NetworkServer.chunkedNetPeerArray.GetPeer(RemoteplayerIndex);
+                    string Message = reader.GetString();
                     SendBackMessage(RemotePeer, reader.GetString());
+                    BNL.Log($"sending Message {Message}");
                     break;
                 case AdminRequestMode.MessageAll:
                     NetDataWriter Writer = new NetDataWriter(true, 4);
                     AdminRequest OutAdminRequest = new AdminRequest();
                     OutAdminRequest.Serialize(Writer, AdminRequestMode.MessageAll);
-                    string Message = reader.GetString();
+                    Message = reader.GetString();
                     Writer.Put(Message);
                     NetworkServer.BroadcastMessageToClients(Writer, BasisNetworkCommons.AdminMessage, peer, BasisPlayerArray.GetSnapshot(), DeliveryMethod.ReliableOrdered);
+                    BNL.Log($"sending MessageAll {Message}");
                     break;
                 case AdminRequestMode.UnBanIP:
                     if (UnbanIp(reader.GetString()))
@@ -291,6 +294,7 @@ namespace BasisNetworkServer.Security
                     ushort PlayerDestination = reader.GetUShort();
                     Writer.Put(PlayerDestination);
                     NetworkServer.BroadcastMessageToClients(Writer, BasisNetworkCommons.AdminMessage, peer, BasisPlayerArray.GetSnapshot(), DeliveryMethod.ReliableOrdered);
+                    BNL.Log($"sending TeleportAll destination is NetID {PlayerDestination}");
                     break;
                 case AdminRequestMode.AddAdmin:
                     NetworkServer.authIdentity.AddNetPeerAsAdmin(reader.GetString());

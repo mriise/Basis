@@ -232,6 +232,7 @@ namespace BasisDidLink
 
         public bool AddNetPeerAsAdmin(string UUID)
         {
+            BNL.Log($"AddNetPeerAsAdmin {UUID}");
             Admins.Add(UUID);
             SaveAdmins(Admins.ToArray(), FilePath);
             return true;
@@ -289,6 +290,7 @@ namespace BasisDidLink
 
         public bool RemoveNetPeerAsAdmin(string UUID)
         {
+            BNL.Log($"RemoveNetPeerAsAdmin {UUID}");
             if (Admins.Remove(UUID))
             {
                 SaveAdmins(Admins.ToArray(), FilePath);
