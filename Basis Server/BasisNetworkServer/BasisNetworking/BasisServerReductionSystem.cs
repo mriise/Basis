@@ -184,7 +184,14 @@ public partial class BasisServerReductionSystem
                         }
                         catch (Exception e)
                         {
-                            BNL.LogError("Server Reduction System Encounter Isssue " + e.Message + " " + e.StackTrace);
+                            if (e.InnerException != null)
+                            {
+                                BNL.LogError($"SRS Encounter Issue {e.Message} {e.StackTrace} {e.InnerException}");
+                            }
+                            else
+                            {
+                                BNL.LogError($"SRS Encounter Issue {e.Message} {e.StackTrace}");
+                            }
                         }
                     }
                 }
