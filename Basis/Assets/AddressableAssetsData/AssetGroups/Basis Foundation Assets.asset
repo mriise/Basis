@@ -201,7 +201,7 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a6def01a1603e4447bdd668aab602f11
-    m_Address: Packages/com.basis.sdk/Prefabs/UI/BasisUIAdminPanel.prefab
+    m_Address: BasisUIAdminPanel
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

@@ -3,53 +3,30 @@ using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Networking;
 using LiteNetLib;
 using LiteNetLib.Utils;
-using System.Drawing;
+using System;
 using UnityEngine;
 using static BasisNetworkCore.Serializable.SerializableBasis;
 
 public static class BasisNetworkModeration
 {
+    private static void ValidateString(string param, string paramName)
+    {
+        if (string.IsNullOrEmpty(param))
+        {
+            throw new ArgumentException($"{paramName} cannot be null or empty", paramName);
+        }
+    }
+
     public static void SendBan(string UUID, string Reason)
     {
+        ValidateString(UUID, nameof(UUID));
+        ValidateString(Reason, nameof(Reason));
+
         AdminRequest AdminRequest = new AdminRequest();
         NetDataWriter netDataWriter = new NetDataWriter();
         AdminRequest.Serialize(netDataWriter, AdminRequestMode.Ban);
         netDataWriter.Put(UUID);
         netDataWriter.Put(Reason);
-        BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter, BasisNetworkCommons.AdminMessage, DeliveryMethod.ReliableSequenced);
-    }
-    public static void SendIPBan(string UUID, string Reason)
-    {
-        AdminRequest AdminRequest = new AdminRequest();
-        NetDataWriter netDataWriter = new NetDataWriter();
-        AdminRequest.Serialize(netDataWriter, AdminRequestMode.IpAndBan);
-        netDataWriter.Put(UUID);
-        netDataWriter.Put(Reason);
-        BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter, BasisNetworkCommons.AdminMessage, DeliveryMethod.ReliableSequenced);
-    }
-    public static void SendKick(string UUID, string Reason)
-    {
-        AdminRequest AdminRequest = new AdminRequest();
-        NetDataWriter netDataWriter = new NetDataWriter();
-        AdminRequest.Serialize(netDataWriter, AdminRequestMode.Kick);
-        netDataWriter.Put(UUID);
-        netDataWriter.Put(Reason);
-        BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter, BasisNetworkCommons.AdminMessage, DeliveryMethod.ReliableSequenced);
-    }
-    public static void UnBan(string UUID)
-    {
-        AdminRequest AdminRequest = new AdminRequest();
-        NetDataWriter netDataWriter = new NetDataWriter();
-        AdminRequest.Serialize(netDataWriter, AdminRequestMode.UnBan);
-        netDataWriter.Put(UUID);
-        BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter, BasisNetworkCommons.AdminMessage, DeliveryMethod.ReliableSequenced);
-    }
-    public static void UnIpBan(string UUID)
-    {
-        AdminRequest AdminRequest = new AdminRequest();
-        NetDataWriter netDataWriter = new NetDataWriter();
-        AdminRequest.Serialize(netDataWriter, AdminRequestMode.UnBanIP);
-        netDataWriter.Put(UUID);
         BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter, BasisNetworkCommons.AdminMessage, DeliveryMethod.ReliableSequenced);
     }
     public static void TeleportAll(ushort DestinationPlayer)
@@ -61,24 +38,80 @@ public static class BasisNetworkModeration
         BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter, BasisNetworkCommons.AdminMessage, DeliveryMethod.ReliableSequenced);
 
     }
+    public static void SendIPBan(string UUID, string Reason)
+    {
+        ValidateString(UUID, nameof(UUID));
+        ValidateString(Reason, nameof(Reason));
+
+        AdminRequest AdminRequest = new AdminRequest();
+        NetDataWriter netDataWriter = new NetDataWriter();
+        AdminRequest.Serialize(netDataWriter, AdminRequestMode.IpAndBan);
+        netDataWriter.Put(UUID);
+        netDataWriter.Put(Reason);
+        BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter, BasisNetworkCommons.AdminMessage, DeliveryMethod.ReliableSequenced);
+    }
+
+    public static void SendKick(string UUID, string Reason)
+    {
+        ValidateString(UUID, nameof(UUID));
+        ValidateString(Reason, nameof(Reason));
+
+        AdminRequest AdminRequest = new AdminRequest();
+        NetDataWriter netDataWriter = new NetDataWriter();
+        AdminRequest.Serialize(netDataWriter, AdminRequestMode.Kick);
+        netDataWriter.Put(UUID);
+        netDataWriter.Put(Reason);
+        BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter, BasisNetworkCommons.AdminMessage, DeliveryMethod.ReliableSequenced);
+    }
+
+    public static void UnBan(string UUID)
+    {
+        ValidateString(UUID, nameof(UUID));
+
+        AdminRequest AdminRequest = new AdminRequest();
+        NetDataWriter netDataWriter = new NetDataWriter();
+        AdminRequest.Serialize(netDataWriter, AdminRequestMode.UnBan);
+        netDataWriter.Put(UUID);
+        BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter, BasisNetworkCommons.AdminMessage, DeliveryMethod.ReliableSequenced);
+    }
+
+    public static void UnIpBan(string UUID)
+    {
+        ValidateString(UUID, nameof(UUID));
+
+        AdminRequest AdminRequest = new AdminRequest();
+        NetDataWriter netDataWriter = new NetDataWriter();
+        AdminRequest.Serialize(netDataWriter, AdminRequestMode.UnBanIP);
+        netDataWriter.Put(UUID);
+        BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter, BasisNetworkCommons.AdminMessage, DeliveryMethod.ReliableSequenced);
+    }
+
     public static void AddAdmin(string UUID)
     {
+        ValidateString(UUID, nameof(UUID));
+
         AdminRequest AdminRequest = new AdminRequest();
         NetDataWriter netDataWriter = new NetDataWriter();
         AdminRequest.Serialize(netDataWriter, AdminRequestMode.AddAdmin);
         netDataWriter.Put(UUID);
         BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter, BasisNetworkCommons.AdminMessage, DeliveryMethod.ReliableSequenced);
     }
+
     public static void RemoveAdmin(string UUID)
     {
+        ValidateString(UUID, nameof(UUID));
+
         AdminRequest AdminRequest = new AdminRequest();
         NetDataWriter netDataWriter = new NetDataWriter();
         AdminRequest.Serialize(netDataWriter, AdminRequestMode.RemoveAdmin);
         netDataWriter.Put(UUID);
         BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter, BasisNetworkCommons.AdminMessage, DeliveryMethod.ReliableSequenced);
     }
+
     public static void DisplayMessage(string Message)
     {
+        ValidateString(Message, nameof(Message));
+
         BasisUINotification.OpenNotification(Message, false, Vector3.zero);
     }
     public static void AdminMessage(NetDataReader reader)

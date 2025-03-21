@@ -785,7 +785,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Settings: {fileID: 5865646128739940637}
   AvatarButton: {fileID: 3709037694964643092}
-  CloseUI: {fileID: 0}
   FullBody: {fileID: 7678974883384352877}
   Respawn: {fileID: 6177668928599932322}
   OverrideForceCalibration: 0
