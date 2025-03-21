@@ -115,7 +115,7 @@ namespace BasisDidLink
                         NetDataWriter Writer = new NetDataWriter();
                         BytesMessage NetworkMessage = new BytesMessage();
                         NetworkMessage.Serialize(Writer, OnAuth.Challenge.Nonce.V);
-                        BNL.LogError("Sending out Writer with size! " + Writer.Length);
+                        BNL.Log("Sending out Writer with size : " + Writer.Length);
                         NetworkServer.SendOutValidated(newPeer, Writer, BasisNetworkCommons.AuthIdentityMessage, DeliveryMethod.ReliableOrdered);
 
                         CancellationTokenSource cts = new CancellationTokenSource();

@@ -61,7 +61,7 @@ public class BasisUIAdminPanel : BasisUIBase
                 TextMeshProUGUI buttonText = buttonObject.GetComponentInChildren<TextMeshProUGUI>();
                 if (buttonText != null)
                 {
-                    buttonText.text = $"{Player.Player.DisplayName} : {Player.Player.UUID}";
+                    buttonText.text = $"{Player.Player.DisplayName} :{Player.NetId} : {Player.Player.UUID}";
                 }
             }
         }
