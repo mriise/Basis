@@ -128,6 +128,11 @@ namespace BasisServerHandle
         {
             try
             {
+                if (BasisPlayerModeration.IsIpBanned(ConReq.RemoteEndPoint.Address.ToString()))
+                {
+                    RejectWithReason(ConReq, "Banned IP");
+                    return;
+                }
                 BNL.Log("Processing Connection Request");
                 int ServerCount = NetworkServer.server.ConnectedPeersCount;
 

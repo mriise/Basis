@@ -214,6 +214,7 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
             else
             {
                 BasisHamburgerMenu.Instance.CloseThisMenu();
+                BasisHamburgerMenu.Instance = null;
             }
         }
         public void EscapeCancelled()

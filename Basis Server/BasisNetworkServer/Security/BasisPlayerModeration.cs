@@ -27,6 +27,26 @@ namespace BasisNetworkServer.Security
             public bool HasBannedIp { get; set; }
             public string TimeOfBan { get; set; }
         }
+        public static bool GetBannedReason(string UUID, out string Reason)
+        {
+            if (BannedPlayers.TryGetValue(UUID, out BannedPlayer Player))
+            {
+                Reason = Player.Reason;
+                return true;
+            }
+            else
+            {
+                Reason = string.Empty;
+                return false;
+            }
+        }
+        public static bool IsIpBanned(string ip)
+        {
+            if (string.IsNullOrEmpty(ip))
+                throw new ArgumentException("[Error] IP address cannot be null or empty.");
+
+            return BannedPlayers.Values.Any(bp => bp.HasBannedIp && bp.BannedIp == ip);
+        }
         public static void SaveBannedPlayers()
         {
             try
@@ -81,20 +101,23 @@ namespace BasisNetworkServer.Security
 
             NetworkServer.server.DisconnectPeer(peer, Encoding.UTF8.GetBytes(reason));
 
-            if (!BannedUUIDs.Contains(UUID))
+            if (BannedUUIDs.Contains(UUID))
             {
-                var bannedPlayer = new BannedPlayer
-                {
-                    UUID = UUID,
-                    Reason = reason,
-                    HasBannedIp = false,
-                    TimeOfBan = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")
-                };
-
-                BannedPlayers[UUID] = bannedPlayer;
-                BannedUUIDs.Add(UUID);
-                SaveBannedPlayers();
+                BannedUUIDs.Remove(UUID);
             }
+
+            BannedPlayer bannedPlayer = new BannedPlayer
+            {
+                UUID = UUID,
+                Reason = reason,
+                HasBannedIp = false,
+                TimeOfBan = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"),
+                BannedIp = string.Empty
+            };
+
+            BannedPlayers[UUID] = bannedPlayer;
+            BannedUUIDs.Add(UUID);
+            SaveBannedPlayers();
 
             return $"Player {UUID} banned successfully for reason: {reason}";
         }
@@ -115,7 +138,7 @@ namespace BasisNetworkServer.Security
             if (BannedUUIDs.Contains(UUID))
                 return $"[Info] Player {UUID} is already banned.";
 
-            var bannedPlayer = new BannedPlayer
+            BannedPlayer bannedPlayer = new BannedPlayer
             {
                 UUID = UUID,
                 BannedIp = ip,

@@ -3,6 +3,7 @@ using Basis.Contrib.Auth.DecentralizedIds.Newtypes;
 using Basis.Contrib.Crypto;
 using Basis.Network.Core;
 using Basis.Network.Server.Auth;
+using BasisNetworkServer.Security;
 using BasisServerHandle;
 using LiteNetLib;
 using LiteNetLib.Utils;
@@ -37,6 +38,9 @@ namespace BasisDidLink
             DidAuth = new DidAuthentication(cfg);
             BasisServerHandleEvents.OnAuthReceived += OnAuthReceived;
             BNL.Log("DidAuthIdentity initialized.");
+
+           // Admins.Add("did:key:z6Mkt4omnWQ1YTPCCkpfocdXn8X25sVLhwdsgXzfpGgqPyYc");
+          //  SaveAdmins(Admins.ToArray(), FilePath);
         }
 
         public void DeInitalize()
@@ -81,8 +85,19 @@ namespace BasisDidLink
                 {
                     string UUID = readyMessage.playerMetaDataMessage.playerUUID;
                     Did playerDid = new Did(UUID);
-                    BNL.Log($"Received valid ReadyMessage for player {UUID}.");
+                    if (BasisPlayerModeration.IsBanned(UUID))
+                    {
+                        if (BasisPlayerModeration.GetBannedReason(UUID, out string Reason))
+                        {
+                            BasisServerHandleEvents.RejectWithReason(newPeer, "Banned User!  Reason " + Reason);
 
+                        }
+                        else
+                        {
+                            BasisServerHandleEvents.RejectWithReason(newPeer, " Banned User!");
+                        }
+                        return;
+                    }
                     if (Configuration.HowManyDuplicateAuthCanExist <= CheckForDuplicates(playerDid))
                     {
                         BasisServerHandleEvents.RejectWithReason(newPeer, "To Many Auths From this DID!");
@@ -98,7 +113,6 @@ namespace BasisDidLink
 
                     if (AuthIdentity.TryAdd(newPeer, OnAuth))
                     {
-                        BNL.Log($"Challenge created and stored for {UUID}.");
                         readyMessage.playerMetaDataMessage.playerUUID = playerDid.V;
                         BytesMessage NetworkMessage = new BytesMessage { bytes = OnAuth.Challenge.Nonce.V };
                         NetDataWriter Writer = new NetDataWriter();
