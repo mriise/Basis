@@ -56,7 +56,7 @@ namespace BasisNetworkServer.Security
             }
             catch (Exception ex)
             {
-                BNL.LogException($"[Error] Failed to save banned players: {ex.Message}");
+                BNL.LogError($"[Error] Failed to save banned players: {ex.Message}");
             }
         }
 
@@ -212,11 +212,13 @@ namespace BasisNetworkServer.Security
         {
             if (!NetworkServer.authIdentity.NetIDToUUID(peer, out string UUID))
             {
-                BNL.LogException($"Netpeer was not in database {peer.Address}");
+                BNL.LogError($"Netpeer was not in database {peer.Address}");
+                return;
             }
             if (!NetworkServer.authIdentity.IsNetPeerAdmin(UUID))
             {
-                BNL.LogException($"Was not admin! {UUID}");
+                BNL.LogError($"Was not admin! {UUID}");
+                return;
             }
             string ReturnMessage = string.Empty;
             AdminRequest AdminRequest = new AdminRequest();
@@ -312,7 +314,7 @@ namespace BasisNetworkServer.Security
         {
             if(string.IsNullOrEmpty(ReturnMessage))
             {
-                BNL.LogException("trying to send a empty message to client " + Peer.Id);
+                BNL.LogError("trying to send a empty message to client " + Peer.Id);
                 return;
             }
             NetDataWriter Writer = new NetDataWriter(true, 4);

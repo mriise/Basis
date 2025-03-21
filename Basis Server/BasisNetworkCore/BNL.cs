@@ -45,19 +45,6 @@ public static class BNL
             WriteWithColor(message, ConsoleColor.Red); // Error is red
         }
     }
-    public static void LogException(string message,Exception E = null)
-    {
-        if (LogErrorOutput != null)
-        {
-            LogErrorOutput.Invoke(message);
-            throw new Exception(message,E);
-        }
-        else
-        {
-            WriteWithColor(message, ConsoleColor.Red); // Error is red
-        }
-    }
-
     private static void WriteWithColor(string message, ConsoleColor color)
     {
         ConsoleColor originalColor = Console.ForegroundColor;
