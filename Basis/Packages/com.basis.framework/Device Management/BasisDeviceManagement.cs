@@ -31,7 +31,7 @@ namespace Basis.Scripts.Device_Management
         public const string Desktop = "Desktop";
         public string DefaultMode()
         {
-            if (Application.platform == RuntimePlatform.Android)
+            if (IsMobile())
             {
                 return "OpenXRLoader";
             }
@@ -39,6 +39,10 @@ namespace Basis.Scripts.Device_Management
             {
                 return Desktop;
             }
+        }
+        public static bool IsMobile()
+        {
+            return Application.platform == RuntimePlatform.Android;
         }
         /// <summary>
         /// checks to see if we are in desktop

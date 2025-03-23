@@ -50,12 +50,17 @@ namespace Basis.Scripts.UI.NamePlate
             BasisRemotePlayer.OnAvatarSwitched += RebuildRenderCheck;
             BasisRemotePlayer.OnAvatarSwitchedFallBack += RebuildRenderCheck;
             RemoteNamePlateDriver.Instance.AddNamePlate(this);
-            Text.enableVertexGradient = false;
             Loadingtext.enableVertexGradient = false;
             // Text.enableCulling = true;
             // Text.enableAutoSizing = false;
             GenerateText();
             GameObject.Destroy(Text.gameObject);
+            if (BasisDeviceManagement.IsMobile())
+            {
+                NormalColor.a = 1;
+                IsTalkingColor.a = 1;
+                OutOfRangeColor.a = 1;
+            }
         }
         public void GenerateText()
         {
