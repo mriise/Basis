@@ -3809,7 +3809,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b87e7a2b5ca91e74f93d8eb6d575954e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  WorldOffset: {x: 0, y: 0, z: 0.5}
+  WorldOffset: {x: 0, y: 0, z: 0.4}
   hasLocalCreationEvent: 0
   Position: {x: 0, y: 0, z: 0}
   Rotation: {x: 0, y: 0, z: 0, w: 0}

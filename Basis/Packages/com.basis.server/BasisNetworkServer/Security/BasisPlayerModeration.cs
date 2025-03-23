@@ -212,22 +212,25 @@ namespace BasisNetworkServer.Security
         {
             if (!NetworkServer.authIdentity.NetIDToUUID(peer, out string UUID))
             {
-                BNL.LogError($"Netpeer was not in database {peer.Address}");
+                string msg = $"Netpeer was not in database {peer.Address}";
+                BNL.LogError(msg);
+                SendBackMessage(peer, msg);
                 return;
             }
             if (!NetworkServer.authIdentity.IsNetPeerAdmin(UUID))
             {
-                BNL.LogError($"Was not admin! {UUID}");
+                string msg = $"Was not admin! {UUID}";
+                BNL.LogError(msg);
+                SendBackMessage(peer, msg);
                 return;
             }
-            string ReturnMessage = string.Empty;
             AdminRequest AdminRequest = new AdminRequest();
             AdminRequest.Deserialize(reader);
             AdminRequestMode Mode = AdminRequest.GetAdminRequestMode();
             switch (Mode)
             {
                 case AdminRequestMode.Ban:
-                    ReturnMessage = Ban(reader.GetString(), reader.GetString());
+                    string ReturnMessage = Ban(reader.GetString(), reader.GetString());
                     SendBackMessage(peer, ReturnMessage);
                     break;
                 case AdminRequestMode.Kick:
@@ -239,11 +242,12 @@ namespace BasisNetworkServer.Security
                     SendBackMessage(peer, ReturnMessage);
                     break;
                 case AdminRequestMode.Message:
-                    ushort RemoteplayerIndex = reader.GetUShort();
-                    NetPeer RemotePeer = NetworkServer.chunkedNetPeerArray.GetPeer(RemoteplayerIndex);
+                    ushort RPI = reader.GetUShort();
+                    NetPeer RemotePeer = NetworkServer.chunkedNetPeerArray.GetPeer(RPI);
                     string Message = reader.GetString();
                     SendBackMessage(RemotePeer, Message);
-                    BNL.Log($"sending Message {Message}");
+                    BNL.Log($"sending Message | {Message}");
+
                     break;
                 case AdminRequestMode.MessageAll:
                     NetDataWriter Writer = new NetDataWriter(true, 4);
@@ -252,7 +256,7 @@ namespace BasisNetworkServer.Security
                     Message = reader.GetString();
                     Writer.Put(Message);
                     NetworkServer.BroadcastMessageToClients(Writer, BasisNetworkCommons.AdminMessage, peer, BasisPlayerArray.GetSnapshot(), DeliveryMethod.ReliableOrdered);
-                    BNL.Log($"sending MessageAll {Message}");
+                    BNL.Log($"sending MessageAll | {Message}");
                     break;
                 case AdminRequestMode.UnBanIP:
                     if (UnbanIp(reader.GetString()))
@@ -263,6 +267,7 @@ namespace BasisNetworkServer.Security
                     {
                         ReturnMessage = "failed to unban no ban existed!";
                     }
+                    SendBackMessage(peer, ReturnMessage);
                     break;
                 case AdminRequestMode.UnBan:
                     if (Unban(reader.GetString()))
@@ -273,6 +278,7 @@ namespace BasisNetworkServer.Security
                     {
                         ReturnMessage = "failed to unban";
                     }
+                    SendBackMessage(peer, ReturnMessage);
                     break;
                 //  case AdminRequestMode.RequestBannedPlayers:
                 //      break;
@@ -289,10 +295,26 @@ namespace BasisNetworkServer.Security
                     BNL.Log($"sending TeleportAll destination is NetID {PlayerDestination}");
                     break;
                 case AdminRequestMode.AddAdmin:
-                    NetworkServer.authIdentity.AddNetPeerAsAdmin(reader.GetString());
+                    string AddingAdmin = reader.GetString();
+                    if (NetworkServer.authIdentity.AddNetPeerAsAdmin(AddingAdmin))
+                    {
+                        SendBackMessage(peer, $"Added Admin {AddingAdmin}");
+                    }
+                    else
+                    {
+                        SendBackMessage(peer, $"Failed to Added Admin {AddingAdmin}");
+                    }
                     break;
                 case AdminRequestMode.RemoveAdmin:
-                    NetworkServer.authIdentity.RemoveNetPeerAsAdmin(reader.GetString());
+                    string RemoveAdmin = reader.GetString();
+                    if (NetworkServer.authIdentity.RemoveNetPeerAsAdmin(RemoveAdmin))
+                    {
+                        SendBackMessage(peer, $"Removing Admin {RemoveAdmin}");
+                    }
+                    else
+                    {
+                        SendBackMessage(peer, $"Failed to Remove Admin {RemoveAdmin}");
+                    }
                     break;
                 case AdminRequestMode.TeleportPlayer:
                     Writer = new NetDataWriter(true, 4);
@@ -312,7 +334,7 @@ namespace BasisNetworkServer.Security
         }
         public static void SendBackMessage(NetPeer Peer, string ReturnMessage)
         {
-            if(string.IsNullOrEmpty(ReturnMessage))
+            if (string.IsNullOrEmpty(ReturnMessage))
             {
                 BNL.LogError("trying to send a empty message to client " + Peer.Id);
                 return;
@@ -321,7 +343,7 @@ namespace BasisNetworkServer.Security
             AdminRequest OutAdminRequest = new AdminRequest();
             OutAdminRequest.Serialize(Writer, AdminRequestMode.Message);
             Writer.Put(ReturnMessage);
-            NetworkServer.SendOutValidated(Peer,Writer, BasisNetworkCommons.AdminMessage, DeliveryMethod.ReliableOrdered);
+            NetworkServer.SendOutValidated(Peer, Writer, BasisNetworkCommons.AdminMessage, DeliveryMethod.ReliableOrdered);
         }
     }
 }

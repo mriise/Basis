@@ -34,6 +34,8 @@ namespace BasisDidLink
         public BasisDIDAuthIdentity()
         {
             Admins = LoadAdmins(FilePath).ToList();
+            string adminsList = string.Join(", ", Admins);
+            BNL.Log($"Loaded Admins {Admins.Count} {adminsList}");
             CryptoRng rng = CryptoRng.Create();
             Config cfg = new Config { Rng = rng };
             DidAuth = new DidAuthentication(cfg);
@@ -60,17 +62,10 @@ namespace BasisDidLink
         }
         public int CheckForDuplicates(Did Did)
         {
-            int Count = 0;
-            foreach (var key in AuthIdentity.Values)
-            {
-                if (key.Did.V == Did.V)
-                {
-                    Count++;
-                }
-            }
-            return Count;
+            return (from key in AuthIdentity.Values
+                    where key.Did.V == Did.V
+                    select key).Count();
         }
-
         public void ProcessConnection(Configuration Configuration, ConnectionRequest ConnectionRequest, NetPeer newPeer)
         {
             try
