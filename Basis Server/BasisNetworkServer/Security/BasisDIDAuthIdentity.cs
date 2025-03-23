@@ -232,10 +232,18 @@ namespace BasisDidLink
 
         public bool AddNetPeerAsAdmin(string UUID)
         {
-            BNL.Log($"AddNetPeerAsAdmin {UUID}");
-            Admins.Add(UUID);
-            SaveAdmins(Admins.ToArray(), FilePath);
-            return true;
+            if (string.IsNullOrEmpty(UUID))
+            {
+                BNL.Log($"cant add was empty or null! {UUID}");
+                return false;
+            }
+            else
+            {
+                BNL.Log($"AddNetPeerAsAdmin {UUID}");
+                Admins.Add(UUID);
+                SaveAdmins(Admins.ToArray(), FilePath);
+                return true;
+            }
         }
         static void SaveAdmins(string[] admins, string filePath)
         {
