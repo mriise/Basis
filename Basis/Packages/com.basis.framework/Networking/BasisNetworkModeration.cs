@@ -195,7 +195,7 @@ public static class BasisNetworkModeration
                     if (player.Player != null && player.Player.BasisAvatar != null && player.Player.BasisAvatar.Animator != null)
                     {
                         Transform Trans = player.Player.BasisAvatar.Animator.GetBoneTransform(UnityEngine.HumanBodyBones.Hips);
-                        BasisLocalPlayer.Instance.Teleport(Trans.position, Trans.rotation);
+                        BasisLocalPlayer.Instance.Teleport(Trans.position, Quaternion.identity);
                     }
                     else
                     {
@@ -214,7 +214,7 @@ public static class BasisNetworkModeration
                     if (player.Player != null && player.Player.BasisAvatar != null && player.Player.BasisAvatar.Animator != null)
                     {
                         Transform Trans = player.Player.BasisAvatar.Animator.GetBoneTransform(UnityEngine.HumanBodyBones.Hips);
-                        BasisLocalPlayer.Instance.Teleport(Trans.position, Trans.rotation);
+                        BasisLocalPlayer.Instance.Teleport(Trans.position, Quaternion.identity);
                     }
                     else
                     {
