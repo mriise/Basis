@@ -30,10 +30,19 @@ namespace BasisDidLink
         private readonly ConcurrentDictionary<NetPeer, CancellationTokenSource> _timeouts = new ConcurrentDictionary<NetPeer, CancellationTokenSource>();
         public List<string> Admins = new List<string>();
         public const string FilePath = "admins.xml";
-        public const string ExampleFilePath = "Example_admins.xml";
         public BasisDIDAuthIdentity()
         {
-            Admins = LoadAdmins(FilePath).ToList();
+            string[] LoadedAdmins = LoadAdmins(FilePath);
+            if (LoadedAdmins != null)
+            {
+                Admins = LoadedAdmins.ToList();
+            }
+            else
+            {
+                Admins = new List<string>();
+            }
+            string adminsList = string.Join(", ", Admins);
+            BNL.Log($"Loaded Admins {Admins.Count} {adminsList}");
             CryptoRng rng = CryptoRng.Create();
             Config cfg = new Config { Rng = rng };
             DidAuth = new DidAuthentication(cfg);
@@ -60,17 +69,10 @@ namespace BasisDidLink
         }
         public int CheckForDuplicates(Did Did)
         {
-            int Count = 0;
-            foreach (var key in AuthIdentity.Values)
-            {
-                if (key.Did.V == Did.V)
-                {
-                    Count++;
-                }
-            }
-            return Count;
+            return (from key in AuthIdentity.Values
+                    where key.Did.V == Did.V
+                    select key).Count();
         }
-
         public void ProcessConnection(Configuration Configuration, ConnectionRequest ConnectionRequest, NetPeer newPeer)
         {
             try
@@ -142,7 +144,7 @@ namespace BasisDidLink
                 BasisServerHandleEvents.RejectWithReason(newPeer, $"{e.Message} {e.StackTrace}");
             }
         }
-        public async Task TimeOut(NetPeer newPeer,string UUID, CancellationTokenSource cts)
+        public async Task TimeOut(NetPeer newPeer, string UUID, CancellationTokenSource cts)
         {
             try
             {
@@ -161,20 +163,20 @@ namespace BasisDidLink
         {
             try
             {
-           //     BNL.Log($"Authentication response received from {newPeer.Id}.");
+                //     BNL.Log($"Authentication response received from {newPeer.Id}.");
                 if (_timeouts.TryRemove(newPeer, out var cts))
                 {
                     cts.Cancel();
                 }
 
                 BytesMessage SignatureBytes = new BytesMessage();
-                SignatureBytes.Deserialize(reader,out byte[] SigBytes);
+                SignatureBytes.Deserialize(reader, out byte[] SigBytes);
                 BytesMessage FragmentBytes = new BytesMessage();
-                FragmentBytes.Deserialize(reader,out byte[] FragBytes);
+                FragmentBytes.Deserialize(reader, out byte[] FragBytes);
 
                 Signature Sig = new Signature(SigBytes);
                 string FragmentAsString = UnpackString(FragBytes);
-                if(FragmentAsString == "N/A")
+                if (FragmentAsString == "N/A")
                 {
                     FragmentAsString = string.Empty;
                 }
@@ -237,17 +239,34 @@ namespace BasisDidLink
 
         public bool AddNetPeerAsAdmin(string UUID)
         {
-            BNL.Log($"AddNetPeerAsAdmin {UUID}");
-            Admins.Add(UUID);
-            SaveAdmins(Admins.ToArray(), FilePath);
-            return true;
+            if (string.IsNullOrEmpty(UUID))
+            {
+                BNL.Log($"cant add was empty or null! {UUID}");
+                return false;
+            }
+            else
+            {
+                BNL.Log($"AddNetPeerAsAdmin {UUID}");
+                Admins.Add(UUID);
+                SaveAdmins(Admins.ToArray(), FilePath);
+                return true;
+            }
         }
         static void SaveAdmins(string[] admins, string filePath)
         {
-            XmlSerializer serializer = new XmlSerializer(typeof(string[]));
-            using (StreamWriter writer = new StreamWriter(filePath))
+            admins ??= new string[0]; // Ensure it's not null
+
+            try
             {
-                serializer.Serialize(writer, admins);
+                XmlSerializer serializer = new XmlSerializer(typeof(string[]));
+                using (StreamWriter writer = new StreamWriter(filePath))
+                {
+                    serializer.Serialize(writer, admins);
+                }
+            }
+            catch (Exception ex)
+            {
+                BNL.LogError($"Error saving admins: {ex.Message} {ex.StackTrace}");
             }
         }
 
@@ -255,25 +274,30 @@ namespace BasisDidLink
         {
             if (File.Exists(filePath))
             {
-                XmlSerializer serializer = new XmlSerializer(typeof(string[]));
-                using (StreamReader reader = new StreamReader(filePath))
+                try
                 {
-                    return (string[])serializer.Deserialize(reader);
+                    XmlSerializer serializer = new XmlSerializer(typeof(string[]));
+                    using (StreamReader reader = new StreamReader(filePath))
+                    {
+                        return (string[])serializer.Deserialize(reader);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    BNL.LogError($"Error loading admins (possibly corrupted file) deleting and trying again: {ex.Message} {ex.StackTrace}");
+                    File.Delete(filePath);
+                    LoadAdmins(filePath);
                 }
             }
-            else
-            {
-                string[] Admins = new string[] {};
-                SaveAdmins(Admins, filePath);
 
-                if (File.Exists(ExampleFilePath) == false)
-                {
-                    string[] AdminsExample = new string[] { "did:key:{key}", "did:key:z6Mkt4omnWQ1YTPCCkpfocdXn8X25sVLhwdsgXzfpGgqPyYc" };
-                    SaveAdmins(AdminsExample, ExampleFilePath);
-                }
-                return Admins;
-            }
+            // If file is missing or corrupted, create a new one
+            BNL.Log("Creating a new admin list...");
+            string[] newAdmins = new string[0];
+            SaveAdmins(newAdmins, filePath);
+            return newAdmins;
         }
+
+
         public bool NetIDToUUID(NetPeer Peer, out string UUID)
         {
             if (AuthIdentity.TryGetValue(Peer, out OnAuth OnAuth))

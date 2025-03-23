@@ -50,7 +50,7 @@ namespace Basis
                 }
                 catch (Exception ex)
                 {
-                    BNL.LogError($"Server encountered an error: {ex.Message}");
+                    BNL.LogError($"Server encountered an error: {ex.Message} {ex.StackTrace}");
                 }
             }, cancellationToken);
 
