@@ -448,7 +448,13 @@ namespace Basis.Scripts.Drivers
             {
                 controls.Add(LeftFoot);
             }
+            if (driver.FindBone(out BasisBoneControl LeftLowerLeg, BasisBoneTrackedRole.LeftLowerLeg))
+            {
+                controls.Add(LeftLowerLeg);
+            }
+
             WriteUpEvents(controls, LeftFootLayer);
+
             CreateTwoBone(driver, feet, References.LeftUpperLeg, References.LeftLowerLeg, References.leftFoot, BasisBoneTrackedRole.LeftFoot, BasisBoneTrackedRole.LeftLowerLeg, true, out LeftFootTwoBoneIK, false, true);
         }
         public void RightFoot(BasisLocalBoneDriver driver)
