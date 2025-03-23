@@ -175,32 +175,6 @@ public class BasisVirtualSpineDriver
         ApplyPositionControl(Spine);
         ApplyPositionControl(Hips);
     }
-    /// <summary>
-    /// this works well however its not good enough.
-    /// </summary>
-    public void OnSimulateHipsWithTracker()
-    {
-        // Calculate the maximum allowed stretch between Neck and Hips
-        float MaxStretch = Vector3.Distance(Neck.TposeLocal.position, Hips.TposeLocal.position);
-
-        // Update the position of the secondary transform to maintain the initial offset
-        Vector3 targetPosition = Hips.IncomingData.position + math.mul(Hips.IncomingData.rotation, Hips.InverseOffsetFromBone.position);
-        Hips.OutGoingData.position = Vector3.Lerp(Hips.OutGoingData.position, targetPosition, Hips.trackersmooth);
-
-        // Constrain the position if the distance exceeds the maximum allowed stretch
-       float Distance = Vector3.Distance(Neck.OutGoingData.position, Hips.OutGoingData.position);
-        if (Distance > MaxStretch)
-        {
-            // Clamp the position along the direction vector
-            Vector3 Difference = (Hips.OutGoingData.position - Neck.OutGoingData.position);
-            Vector3 direction = Difference.normalized;
-            Vector3 NeckOutgoing = Neck.OutGoingData.position;
-            Hips.OutGoingData.position = NeckOutgoing + direction * MaxStretch;
-        }
-
-        // Update the rotation of the secondary transform to maintain the initial offset
-        Hips.OutGoingData.rotation = Quaternion.Slerp(Hips.OutGoingData.rotation, math.mul(Hips.IncomingData.rotation, Hips.InverseOffsetFromBone.rotation), Hips.trackersmooth);
-    }
     private void ApplyPositionControl(BasisBoneControl boneControl)
     {
         if (boneControl.HasTarget)

@@ -27,7 +27,7 @@ namespace Basis.Scripts.Drivers
         public TwoBoneIKConstraint RightFootTwoBoneIK;
         public TwoBoneIKConstraint LeftHandTwoBoneIK;
         public TwoBoneIKConstraint RightHandTwoBoneIK;
-       // public TwoBoneIKConstraint UpperChestTwoBoneIK;
+        public TwoBoneIKConstraint UpperChestTwoBoneIK;
         [SerializeField]
         public List<TwoBoneIKConstraint> LeftFingers = new List<TwoBoneIKConstraint>();
         [SerializeField]
@@ -41,7 +41,7 @@ namespace Basis.Scripts.Drivers
         public Rig RightHandRig;
         public Rig LeftFootRig;
         public Rig RightFootRig;
-      //  public Rig ChestSpineRig;
+        public Rig ChestSpineRig;
         public Rig LeftShoulderRig;
         public Rig RightShoulderRig;
 
@@ -54,7 +54,7 @@ namespace Basis.Scripts.Drivers
 
         public RigLayer RigHeadLayer;
         public RigLayer RigChestLayer;
-       // public RigLayer ChestSpineLayer;
+        public RigLayer ChestSpineLayer;
 
         public RigLayer LeftShoulderLayer;
         public RigLayer RightShoulderLayer;
@@ -232,10 +232,10 @@ namespace Basis.Scripts.Drivers
             {
                 Destroy(RightFootRig.gameObject);
             }
-            //if (ChestSpineRig != null)
-           // {
-            //    Destroy(ChestSpineRig.gameObject);
-            //}
+            if (ChestSpineRig != null)
+            {
+               Destroy(ChestSpineRig.gameObject);
+            }
             if (LeftShoulderRig != null)
             {
                 Destroy(LeftShoulderRig.gameObject);
@@ -318,7 +318,7 @@ namespace Basis.Scripts.Drivers
         public void SetBodySettings(BasisLocalBoneDriver driver)
         {
             SetupHeadRig(driver);
-            //  SetupChestRig(driver);
+            SetupChestRig(driver);
             //  SetupRightShoulderRig(driver);
             //  SetupLeftShoulderRig(driver);
             LeftHand(driver);
@@ -335,13 +335,15 @@ namespace Basis.Scripts.Drivers
         private void SetupChestRig(BasisLocalBoneDriver driver)
         {
             GameObject ChestRig = CreateRig("Chest", false, out RigChestRig, out RigChestLayer);
-            Damp(driver, ChestRig, References.chest, BasisBoneTrackedRole.Chest, 1, 1);
+            //  Damp(driver, ChestRig, References.chest, BasisBoneTrackedRole.Chest, 1, 1
+            //  );
+            CreateTwoBone(driver, ChestRig, References.chest, References.Upperchest, References.neck, BasisBoneTrackedRole.Head, BasisBoneTrackedRole.Chest, true, out UpperChestTwoBoneIK, true, true);
 
             List<BasisBoneControl> controls = new List<BasisBoneControl>();
             if (driver.FindBone(out BasisBoneControl Chest, BasisBoneTrackedRole.Chest))
             {
                 controls.Add(Chest);
-            } 
+            }
             WriteUpEvents(controls, RigChestLayer);
         }
         /// <summary>

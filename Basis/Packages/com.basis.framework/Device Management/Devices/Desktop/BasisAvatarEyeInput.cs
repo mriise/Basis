@@ -18,8 +18,8 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
         public float rotationSpeed = 0.1f;
         public float rotationY;
         public float rotationX;
-        public float minimumY = -80f;
-        public float maximumY = 80f;
+        public float minimumY = -89f;
+        public float maximumY = 50f;
         [HideInInspector]
         public float FallBackHeight = 1.73f;
         public bool BlockCrouching;
