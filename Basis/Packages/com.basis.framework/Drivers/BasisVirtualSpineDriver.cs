@@ -36,13 +36,14 @@ public class BasisVirtualSpineDriver
         }
         if (BasisLocalPlayer.Instance.LocalBoneDriver.FindBone(out Head, BasisBoneTrackedRole.Head))
         {
+            Head.HasVirtualOverride = true;
+            Head.VirtualRun += OnSimulateHead;
+            BasisLocalPlayer.Instance.LocalBoneDriver.ReadyToRead.AddAction(30, Hint);
         }
 
         if (BasisLocalPlayer.Instance.LocalBoneDriver.FindBone(out Neck, BasisBoneTrackedRole.Neck))
         {
             Neck.HasVirtualOverride = true;
-            Neck.VirtualRun += OnSimulateNeck;
-            BasisLocalPlayer.Instance.LocalBoneDriver.ReadyToRead.AddAction(30, Hint);
         }
         if (BasisLocalPlayer.Instance.LocalBoneDriver.FindBone(out Chest, BasisBoneTrackedRole.Chest))
         {
@@ -123,7 +124,7 @@ public class BasisVirtualSpineDriver
     {
         if (Neck != null)
         {
-            Neck.VirtualRun -= OnSimulateNeck;
+            Neck.VirtualRun -= OnSimulateHead;
             Neck.HasVirtualOverride = false;
         }
         if (Chest != null)
@@ -141,9 +142,11 @@ public class BasisVirtualSpineDriver
      //   Hips.HasInverseOffsetOverride = false;
      //   Hips.VirtualInverseOffsetRun -= OnSimulateHipsWithTracker;
     }
-    public void OnSimulateNeck()
+    public void OnSimulateHead()
     {
         float time = BasisLocalPlayer.Instance.LocalBoneDriver.DeltaTime;
+
+        Head.OutGoingData.rotation = CenterEye.OutGoingData.rotation;
         Neck.OutGoingData.rotation = Head.OutGoingData.rotation;
 
         // Now, apply the spine curve progressively:
@@ -166,6 +169,7 @@ public class BasisVirtualSpineDriver
         Hips.OutGoingData.rotation = Quaternion.Euler(clampedHipsPitch, targetHipsRotationEuler.y, 0);
 
         // Handle position control for each segment if targets are set (as before)
+        ApplyPositionControl(Head);
         ApplyPositionControl(Neck);
         ApplyPositionControl(Chest);
         ApplyPositionControl(Spine);
@@ -201,18 +205,17 @@ public class BasisVirtualSpineDriver
     {
         if (boneControl.HasTarget)
         {
-            float3 customDirection = math.mul(boneControl.Target.OutGoingData.rotation, boneControl.Offset);
+            quaternion targetRotation = boneControl.Target.OutGoingData.rotation;
+
+            // Extract only Yaw (Horizontal rotation), ignoring Pitch (Up/Down)
+            float3 forward = math.mul(targetRotation, new float3(0, 0, 1));
+            forward.y = 0; // Flatten to avoid up/down swaying
+            forward = math.normalize(forward);
+
+            quaternion correctedRotation = quaternion.LookRotationSafe(forward, new float3(0, 1, 0));
+
+            float3 customDirection = math.mul(correctedRotation, boneControl.Offset);
             boneControl.OutGoingData.position = boneControl.Target.OutGoingData.position + customDirection;
         }
-
-    }
-    private void ApplyMirrorPositionControl(BasisBoneControl boneControl)
-    {
-        if (boneControl.HasTarget)
-        {
-          //  float3 customDirection = math.mul(boneControl.Target.OutGoingData.rotation, boneControl.Offset);
-           // boneControl.OutGoingData.position = boneControl.Target.OutGoingData.position + customDirection;
-        }
-
     }
 }
