@@ -180,26 +180,16 @@ namespace Basis.Scripts.Drivers
                         continue;
                     }
                     Vector3 BonePosition = Control.OutgoingWorldData.position;
-                    if (BasisBoneTrackedRoleCommonCheck.CheckIfRightHand(Role) || BasisBoneTrackedRoleCommonCheck.CheckIfLeftHand(Role))
+                    if (Control.HasTarget)
                     {
-                        if (BasisGizmoManager.CreateSphereGizmo(out Control.GizmoReference, BonePosition, HandGizmoSize * BasisLocalPlayer.Instance.CurrentHeight.EyeRatioAvatarToAvatarDefaultScale, Control.Color))
+                        if (BasisGizmoManager.CreateLineGizmo(out Control.LineDrawIndex, BonePosition, Control.Target.OutgoingWorldData.position, 0.03f, Control.Color))
                         {
-                            Control.HasGizmo = true;
+                            Control.HasLineDraw = true;
                         }
                     }
-                    else
+                    if (BasisGizmoManager.CreateSphereGizmo(out Control.GizmoReference, BonePosition, DefaultGizmoSize * BasisLocalPlayer.Instance.CurrentHeight.EyeRatioAvatarToAvatarDefaultScale, Control.Color))
                     {
-                        if (Control.HasTarget)
-                        {
-                            if (BasisGizmoManager.CreateLineGizmo(out Control.LineDrawIndex, BonePosition, Control.Target.OutgoingWorldData.position, 0.03f, Control.Color))
-                            {
-                                Control.HasLineDraw = true;
-                            }
-                        }
-                        if (BasisGizmoManager.CreateSphereGizmo(out Control.GizmoReference, BonePosition, DefaultGizmoSize * BasisLocalPlayer.Instance.CurrentHeight.EyeRatioAvatarToAvatarDefaultScale, Control.Color))
-                        {
-                            Control.HasGizmo = true;
-                        }
+                        Control.HasGizmo = true;
                     }
                 }
                 else

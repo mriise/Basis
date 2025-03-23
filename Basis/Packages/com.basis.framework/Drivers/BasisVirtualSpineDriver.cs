@@ -144,11 +144,7 @@ public class BasisVirtualSpineDriver
     public void OnSimulateNeck()
     {
         float time = BasisLocalPlayer.Instance.LocalBoneDriver.DeltaTime;
-        // Smooth the neck rotation and clamp it to prevent unnatural flipping
-        Quaternion targetNeckRotation = Quaternion.Slerp(Neck.OutGoingData.rotation, Head.OutGoingData.rotation, time * NeckRotationSpeed);
-        Vector3 EulerNeckRotation = targetNeckRotation.eulerAngles;
-        float clampedHeadPitch = Mathf.Clamp(targetNeckRotation.x, -MaxNeckAngle, MaxNeckAngle);
-        Neck.OutGoingData.rotation = Quaternion.Euler(clampedHeadPitch, EulerNeckRotation.y, 0);
+        Neck.OutGoingData.rotation = Head.OutGoingData.rotation;
 
         // Now, apply the spine curve progressively:
         // The chest should not follow the head directly, it should follow the neck but with reduced influence.
@@ -207,6 +203,15 @@ public class BasisVirtualSpineDriver
         {
             float3 customDirection = math.mul(boneControl.Target.OutGoingData.rotation, boneControl.Offset);
             boneControl.OutGoingData.position = boneControl.Target.OutGoingData.position + customDirection;
+        }
+
+    }
+    private void ApplyMirrorPositionControl(BasisBoneControl boneControl)
+    {
+        if (boneControl.HasTarget)
+        {
+          //  float3 customDirection = math.mul(boneControl.Target.OutGoingData.rotation, boneControl.Offset);
+           // boneControl.OutGoingData.position = boneControl.Target.OutGoingData.position + customDirection;
         }
 
     }
