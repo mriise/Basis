@@ -7,7 +7,6 @@ using LiteNetLib;
 using LiteNetLib.Utils;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -490,16 +489,16 @@ namespace BasisServerHandle
                 // Select valid clients based on the users list and corresponding NetPeer
                 List<NetPeer> endPoints = new List<NetPeer>(length);
 
-                for (int i = 0; i < length; i++)
+                for (int DataIndex = 0; DataIndex < length; DataIndex++)
                 {
                     // Find the NetPeer corresponding to the user
                     NetPeer matchingPeer = null;
 
-                    for (int j = 0; j < AllPeersLength; j++)
+                    for (int PeerIndex = 0; PeerIndex < AllPeersLength; PeerIndex++)
                     {
-                        if (AllPeers[j].Id == data.users[i])
+                        if (AllPeers[PeerIndex].Id == data.users[DataIndex])
                         {
-                            matchingPeer = AllPeers[j];
+                            matchingPeer = AllPeers[PeerIndex];
                             break;  // Found the peer, exit inner loop
                         }
                     }

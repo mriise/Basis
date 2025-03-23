@@ -14,7 +14,7 @@ public static class NetworkServer
     public static EventBasedNetListener listener;
     public static NetManager server;
     public static ConcurrentDictionary<ushort, NetPeer> Peers = new ConcurrentDictionary<ushort, NetPeer>();
-    public static ChunkedNetPeerArray chunkedNetPeerArray = new ChunkedNetPeerArray();
+    public static StripedNetPeerArray chunkedNetPeerArray = new StripedNetPeerArray();
     public static Configuration Configuration;
     public static IAuth auth;
     public static IAuthIdentity authIdentity;
