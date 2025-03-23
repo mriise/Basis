@@ -100,71 +100,72 @@ namespace JigglePhysics
             /// <param name="time">How much time to simulate forward by.</param>
             public void StepSimulation(JiggleSettingsData data, double time, Vector3 acceleration)
             {
-                Assert.IsTrue(initialized, "JiggleRig was never initialized. Please call JiggleRig.Initialize() if you're going to manually timestep.");
-
-                for (int i = 0; i < boneCount; i++)
+                if (initialized)
                 {
-                    var simulatedPoint = simulatedPoints[i];
-
-                    #region VerletIntegrate
-
-                    simulatedPoint.currentFixedAnimatedBonePosition =
-                        simulatedPoint.targetAnimatedBoneSignal.SamplePosition(time);
-                    if (!simulatedPoint.hasParent)
+                    for (int i = 0; i < boneCount; i++)
                     {
-                        simulatedPoint.workingPosition = simulatedPoint.currentFixedAnimatedBonePosition;
-                        simulatedPoint.parentPose = 2f * simulatedPoint.currentFixedAnimatedBonePosition -
-                                                    simulatedPoints[simulatedPoint.childID]
-                                                        .currentFixedAnimatedBonePosition;
-                        simulatedPoint.parentPosition = simulatedPoint.parentPose;
-                        continue;
+                        var simulatedPoint = simulatedPoints[i];
+
+                        #region VerletIntegrate
+
+                        simulatedPoint.currentFixedAnimatedBonePosition =
+                            simulatedPoint.targetAnimatedBoneSignal.SamplePosition(time);
+                        if (!simulatedPoint.hasParent)
+                        {
+                            simulatedPoint.workingPosition = simulatedPoint.currentFixedAnimatedBonePosition;
+                            simulatedPoint.parentPose = 2f * simulatedPoint.currentFixedAnimatedBonePosition -
+                                                        simulatedPoints[simulatedPoint.childID]
+                                                            .currentFixedAnimatedBonePosition;
+                            simulatedPoint.parentPosition = simulatedPoint.parentPose;
+                            continue;
+                        }
+
+                        var parentSimulatedPoint = simulatedPoints[simulatedPoint.parentID];
+                        simulatedPoint.parentPose = parentSimulatedPoint.currentFixedAnimatedBonePosition;
+                        simulatedPoint.parentPosition = parentSimulatedPoint.workingPosition;
+
+                        Vector3 newPosition = simulatedPoint.particleSignal.GetCurrent();
+                        Vector3 delta = newPosition - simulatedPoint.particleSignal.GetPrevious();
+                        Vector3 localSpaceVelocity = delta - (parentSimulatedPoint.particleSignal.GetCurrent() -
+                                                              parentSimulatedPoint.particleSignal.GetPrevious());
+                        Vector3 velocity = delta - localSpaceVelocity;
+                        simulatedPoint.workingPosition = newPosition + velocity * data.airDragOneMinus +
+                                                         localSpaceVelocity * data.frictionOneMinus + acceleration;
+
+                        #endregion
                     }
 
-                    var parentSimulatedPoint = simulatedPoints[simulatedPoint.parentID];
-                    simulatedPoint.parentPose = parentSimulatedPoint.currentFixedAnimatedBonePosition;
-                    simulatedPoint.parentPosition = parentSimulatedPoint.workingPosition;
-
-                    Vector3 newPosition = simulatedPoint.particleSignal.GetCurrent();
-                    Vector3 delta = newPosition - simulatedPoint.particleSignal.GetPrevious();
-                    Vector3 localSpaceVelocity = delta - (parentSimulatedPoint.particleSignal.GetCurrent() -
-                                                          parentSimulatedPoint.particleSignal.GetPrevious());
-                    Vector3 velocity = delta - localSpaceVelocity;
-                    simulatedPoint.workingPosition = newPosition + velocity * data.airDragOneMinus +
-                                                     localSpaceVelocity * data.frictionOneMinus + acceleration;
-
-                    #endregion
-                }
-
-                for (int i = 0; i < boneCount; i++)
-                {
-                    var simulatedPoint = simulatedPoints[i];
-                    if (!simulatedPoint.hasParent)
+                    for (int i = 0; i < boneCount; i++)
                     {
-                        continue;
-                    }
-                    var parentSimulatedPoint = simulatedPoints[simulatedPoint.parentID];
-                    var lengthToParent = simulatedPoint.cachedLengthToParent;
-                    #region ConstrainAngle
-                    if (simulatedPoint.shouldConfineAngle)
-                    {
-                        Vector3 parentAimTargetPose = parentSimulatedPoint.currentFixedAnimatedBonePosition - parentSimulatedPoint.parentPose;
-                        Vector3 parentAim = parentSimulatedPoint.workingPosition - parentSimulatedPoint.parentPosition;
-                        Quaternion targetPoseToPose = Quaternion.FromToRotation(parentAimTargetPose, parentAim);
-                        Vector3 currentPose = simulatedPoint.currentFixedAnimatedBonePosition - parentSimulatedPoint.parentPose;
-                        Vector3 constraintTarget = targetPoseToPose * currentPose;
-                        float error = Vector3.Distance(simulatedPoint.workingPosition, parentSimulatedPoint.parentPosition + constraintTarget);
-                        error /= lengthToParent;
-                        error = Mathf.Min(error, 1f);
-                        error = Mathf.Pow(error, data.doubleElasticitySoften);
-                        simulatedPoint.workingPosition = Vector3.LerpUnclamped(simulatedPoint.workingPosition, parentSimulatedPoint.parentPosition + constraintTarget, data.squaredAngleElasticity * error);
-                    }
-                    #endregion
+                        var simulatedPoint = simulatedPoints[i];
+                        if (!simulatedPoint.hasParent)
+                        {
+                            continue;
+                        }
+                        var parentSimulatedPoint = simulatedPoints[simulatedPoint.parentID];
+                        var lengthToParent = simulatedPoint.cachedLengthToParent;
+                        #region ConstrainAngle
+                        if (simulatedPoint.shouldConfineAngle)
+                        {
+                            Vector3 parentAimTargetPose = parentSimulatedPoint.currentFixedAnimatedBonePosition - parentSimulatedPoint.parentPose;
+                            Vector3 parentAim = parentSimulatedPoint.workingPosition - parentSimulatedPoint.parentPosition;
+                            Quaternion targetPoseToPose = Quaternion.FromToRotation(parentAimTargetPose, parentAim);
+                            Vector3 currentPose = simulatedPoint.currentFixedAnimatedBonePosition - parentSimulatedPoint.parentPose;
+                            Vector3 constraintTarget = targetPoseToPose * currentPose;
+                            float error = Vector3.Distance(simulatedPoint.workingPosition, parentSimulatedPoint.parentPosition + constraintTarget);
+                            error /= lengthToParent;
+                            error = Mathf.Min(error, 1f);
+                            error = Mathf.Pow(error, data.doubleElasticitySoften);
+                            simulatedPoint.workingPosition = Vector3.LerpUnclamped(simulatedPoint.workingPosition, parentSimulatedPoint.parentPosition + constraintTarget, data.squaredAngleElasticity * error);
+                        }
+                        #endregion
 
 
                         Vector3 diff = simulatedPoint.workingPosition - parentSimulatedPoint.workingPosition;
                         Vector3 dir = diff.normalized;
                         simulatedPoint.workingPosition = Vector3.LerpUnclamped(simulatedPoint.workingPosition, parentSimulatedPoint.workingPosition + dir * lengthToParent, data.squaredLengthElasticity);
 
+                    }
                 }
             }
 

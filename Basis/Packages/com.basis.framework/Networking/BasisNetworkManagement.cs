@@ -187,7 +187,7 @@ namespace Basis.Scripts.Networking
 
             BasisDebug.Log("BasisNetworkManagement has been successfully shutdown.", BasisDebug.LogTag.Networking);
         }
-        public void Update()
+        public static void SimulateNetworkUpdate()
         {
             double TimeAsDouble = Time.timeAsDouble;
 
@@ -200,16 +200,16 @@ namespace Basis.Scripts.Networking
                     }
             }
         }
-        public static void SimulateNetwork()
+        public static void SimulateNetworklateUpdate()
         {
             if (NetworkRunning)
             {
                 double TimeAsDouble = Time.timeAsDouble;
                 float deltaTime = Time.deltaTime;
-                if (float.IsNaN(deltaTime))
-                {
-                    return;
-                }
+                //if (float.IsNaN(deltaTime))
+                //{
+                //    return;
+                //}
                 // Complete tasks and apply results
                 for (int Index = 0; Index < ReceiverCount; Index++)
                 {

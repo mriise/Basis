@@ -28,7 +28,7 @@ public class BasisEventDriver : MonoBehaviour
             timeSinceLastUpdate -= updateInterval; // Subtract interval instead of resetting to zero
             BasisConsoleLogger.QueryLogDisplay();
         }
-
+        BasisNetworkManagement.SimulateNetworkUpdate();
         if (!BasisDeviceManagement.hasPendingActions) return;
 
         while (BasisDeviceManagement.mainThreadActions.TryDequeue(out System.Action action))
@@ -47,7 +47,7 @@ public class BasisEventDriver : MonoBehaviour
             BasisLocalEyeFollowBase.Instance.Simulate();
         }
         MicrophoneRecorder.MicrophoneUpdate();
-        BasisNetworkManagement.SimulateNetwork();
+        BasisNetworkManagement.SimulateNetworklateUpdate();
     }
     private void OnBeforeRender()
     {
