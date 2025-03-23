@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using Basis.Network.Core;
 using LiteNetLib;
 
 public class StripedNetPeerArray
@@ -8,12 +9,10 @@ public class StripedNetPeerArray
     private readonly ReaderWriterLockSlim[] _locks; // Striped locks
     private readonly ushort _chunkSize;            // Size of each chunk
     private readonly ushort _lockCount;            // Number of locks
-    public const ushort TotalSize = 1024;
-
     public StripedNetPeerArray(ushort chunkSize = 64, ushort lockCount = 32)
     {
-        if (TotalSize <= 0)
-            throw new ArgumentOutOfRangeException(nameof(TotalSize), "Total size must be greater than zero.");
+        if (BasisNetworkCommons.MaxConnections <= 0)
+            throw new ArgumentOutOfRangeException(nameof(BasisNetworkCommons.MaxConnections), "Total size must be greater than zero.");
         if (chunkSize <= 0)
             throw new ArgumentOutOfRangeException(nameof(chunkSize), "Chunk size must be greater than zero.");
         if (lockCount <= 0)
@@ -22,7 +21,7 @@ public class StripedNetPeerArray
         _chunkSize = chunkSize;
         _lockCount = lockCount;
 
-        ushort numChunks = (ushort)Math.Ceiling((double)TotalSize / chunkSize);
+        ushort numChunks = (ushort)Math.Ceiling((double)BasisNetworkCommons.MaxConnections / chunkSize);
         _chunks = new NetPeer[numChunks][];
         _locks = new ReaderWriterLockSlim[lockCount];
 
@@ -39,7 +38,7 @@ public class StripedNetPeerArray
 
     public void SetPeer(ushort index, NetPeer value)
     {
-        if (index >= TotalSize)
+        if (index >= BasisNetworkCommons.MaxConnections)
             throw new ArgumentOutOfRangeException(nameof(index), "Index is out of range.");
 
         ushort chunkIndex = (ushort)(index / _chunkSize);
@@ -60,7 +59,7 @@ public class StripedNetPeerArray
 
     public NetPeer GetPeer(ushort index)
     {
-        if (index >= TotalSize)
+        if (index >= BasisNetworkCommons.MaxConnections)
             throw new ArgumentOutOfRangeException(nameof(index), "Index is out of range.");
 
         ushort chunkIndex = (ushort)(index / _chunkSize);

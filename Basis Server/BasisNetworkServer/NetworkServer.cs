@@ -54,9 +54,7 @@ public static class NetworkServer
             DisconnectTimeout = configuration.DisconnectTimeout,
             PacketPoolSize = 2000,
             UnsyncedEvents = true,
-
         };
-
         StartListening(configuration);
     }
 

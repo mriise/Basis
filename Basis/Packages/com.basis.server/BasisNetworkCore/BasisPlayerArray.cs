@@ -1,3 +1,4 @@
+using Basis.Network.Core;
 using LiteNetLib;
 using System;
 
@@ -6,11 +7,11 @@ namespace BasisNetworkCore
     public class BasisPlayerArray
     {
         private static readonly object PlayerArrayLock = new object();
-        private static NetPeer[] PlayerArray = new NetPeer[1024];
+        private static NetPeer[] PlayerArray = new NetPeer[BasisNetworkCommons.MaxConnections];
         private static int PlayerCount = 0;
 
         // Reusable snapshot buffer
-        private static NetPeer[] SnapshotBuffer = new NetPeer[1024];
+        private static NetPeer[] SnapshotBuffer = new NetPeer[BasisNetworkCommons.MaxConnections];
         /// <summary>
         /// slow operation but allows us to get a copy of the players quickly later.
         /// slow operation can be out of order.

@@ -53,26 +53,26 @@ public partial class BasisServerReductionSystem
         PlayerSync.SetPulse(playerID.Id, null);
         if (Pulse != null)
         {
-            for (int i = 0; i < 1024; i++)
+            for (int Index = 0; Index < BasisNetworkCommons.MaxConnections; Index++)
             {
-                ServerSideReducablePlayer player = Pulse.ChunkedServerSideReducablePlayerArray.GetPlayer(i);
+                ServerSideReducablePlayer player = Pulse.ChunkedServerSideReducablePlayerArray.GetPlayer(Index);
                 if (player != null)
                 {
                     player.timer.Dispose();
-                    Pulse.ChunkedServerSideReducablePlayerArray.SetPlayer(i, null);
+                    Pulse.ChunkedServerSideReducablePlayerArray.SetPlayer(Index, null);
                 }
             }
         }
-        for (int i = 0; i < 1024; i++)
+        for (int Index = 0; Index < BasisNetworkCommons.MaxConnections; Index++)
         {
-            SyncedToPlayerPulse player = PlayerSync.GetPulse(i);
+            SyncedToPlayerPulse player = PlayerSync.GetPulse(Index);
             if (player != null)
             {
-                ServerSideReducablePlayer SSRP = player.ChunkedServerSideReducablePlayerArray.GetPlayer(i);
+                ServerSideReducablePlayer SSRP = player.ChunkedServerSideReducablePlayerArray.GetPlayer(Index);
                 if (SSRP != null)
                 {
                     SSRP.timer.Dispose();
-                    Pulse.ChunkedServerSideReducablePlayerArray.SetPlayer(i, null);
+                    Pulse.ChunkedServerSideReducablePlayerArray.SetPlayer(Index, null);
                 }
             }
         }

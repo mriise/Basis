@@ -180,12 +180,13 @@ namespace BasisServerHandle
                 }
                 else
                 {
-                    /*
-                    we need a way to stop sending or skip over sign in payloads here.
-                    as soon as this runs everyone knows about this person.
-                    OnNetworkAccepted(newPeer, ConReq, UUID, HasAuthID);
-                    ThreadSafeMessagePool<ReadyMessage>.Return(readyMessage);
-                    */
+                    ReadyMessage readyMessage = new ReadyMessage();
+                    readyMessage.Deserialize(ConReq.Data, false);
+
+                    if (readyMessage.WasDeserializedCorrectly())
+                    {
+                        OnNetworkAccepted(newPeer, readyMessage, readyMessage.playerMetaDataMessage.playerUUID);
+                    }
                 }
             }
             catch (Exception e)

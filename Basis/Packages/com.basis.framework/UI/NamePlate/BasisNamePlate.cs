@@ -43,6 +43,9 @@ namespace Basis.Scripts.UI.NamePlate
             BasisRemotePlayer.OnAvatarSwitched += RebuildRenderCheck;
             BasisRemotePlayer.OnAvatarSwitchedFallBack += RebuildRenderCheck;
             RemoteNamePlateDriver.Instance.AddNamePlate(this);
+            Text.enableVertexGradient = false;
+            // Text.enableCulling = true;
+            // Text.enableAutoSizing = false;
         }
         public void RebuildRenderCheck()
         {
@@ -185,7 +188,10 @@ namespace Basis.Scripts.UI.NamePlate
                           HasProgressBarVisible = true;
                       }
 
-                      Loadingtext.text = info;
+                      if (Loadingtext.text != info)
+                      {
+                          Loadingtext.text = info;
+                      }
                       UpdateProgressBar(UniqueID, progress);
                   }
               });
@@ -193,8 +199,12 @@ namespace Basis.Scripts.UI.NamePlate
         public void UpdateProgressBar(string UniqueID,float progress)
         {
             Vector2 scale = Loadingbar.size;
-            scale.x = progress/2;
-            Loadingbar.size = scale;
+            float NewX = progress / 2;
+            if (scale.x != NewX)
+            {
+                scale.x = NewX;
+                Loadingbar.size = scale;
+            }
         }
     }
 }

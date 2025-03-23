@@ -17,7 +17,6 @@ namespace Basis
         private const string InitialResources = "initalresources";
         private const int ThreadSleepTime = 15000;
         private static bool isRunning = true;
-
         public static void Main(string[] args)
         {
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;

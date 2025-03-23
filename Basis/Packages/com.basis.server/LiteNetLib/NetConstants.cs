@@ -1,4 +1,4 @@
-﻿namespace LiteNetLib
+namespace LiteNetLib
 {
     /// <summary>
     /// Sending method type

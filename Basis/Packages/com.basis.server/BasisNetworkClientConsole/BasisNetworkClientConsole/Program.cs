@@ -1,6 +1,7 @@
 using Basis.Network.Core;
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Networking.Compression;
+using BasisNetworkClient;
 using BasisNetworkClientConsole;
 using LiteNetLib;
 using LiteNetLib.Utils;
@@ -76,7 +77,7 @@ namespace Basis
                     };
                     byte[] bytes = Encoding.UTF8.GetBytes(Password);
                     LocalPLayer = NetworkClient.StartClient(Ip, Port, RM, bytes, true);
-                    //   BasisNetworkClient.listener.NetworkReceiveEvent += NetworkReceiveEvent;
+                    NetworkClient.listener.NetworkReceiveEvent += NetworkReceiveEvent;
                     BNL.Log($"Connecting! Player Name: {randomPlayerName}, UUID: {randomUUID}");
                 }
                 catch (Exception ex)
@@ -117,47 +118,94 @@ namespace Basis
             //loop back index 0 (0 being real player)
             if (peer.Id == 0)
             {
-                if (BasisNetworkCommons.MovementChannel == channel)
+                switch (channel)
                 {
-                    ServerSideSyncPlayerMessage SSM = new ServerSideSyncPlayerMessage();
-                    SSM.Deserialize(Reader,true);
-                    Reader.Recycle();
-                    NetDataWriter Writer = new NetDataWriter(true, 202);
-                    SSM.avatarSerialization.Serialize(Writer, true);
-                    if (Writer.Length == 0)
-                    {
-                        BNL.LogError("trying to sending a message without a length NetworkReceiveEvent!");
-                    }
-                    else
-                    {
-                        LocalPLayer.Send(Writer, BasisNetworkCommons.MovementChannel, deliveryMethod);
-                    }
-                }
-                else
-                {
-                    if(BasisNetworkCommons.FallChannel == channel)
-                    {
-                        if (deliveryMethod == DeliveryMethod.Unreliable)
+                    /*
+                    case BasisNetworkCommons.MovementChannel:
                         {
-                            if (Reader.TryGetByte(out byte Byte))
+                            ServerSideSyncPlayerMessage SSM = new ServerSideSyncPlayerMessage();
+                            SSM.Deserialize(Reader, true);
+                            Reader.Recycle();
+                            NetDataWriter Writer = new NetDataWriter(true, 202);
+                            SSM.avatarSerialization.Serialize(Writer, true);
+                            if (Writer.Length == 0)
                             {
-                              //  NetworkReceiveEvent(peer, Reader, Byte, deliveryMethod);
+                                BNL.LogError("trying to sending a message without a length NetworkReceiveEvent!");
                             }
                             else
                             {
-                                BNL.LogError($"Unknown channel no data remains: {channel} " + Reader.AvailableBytes);
+                                LocalPLayer.Send(Writer, BasisNetworkCommons.MovementChannel, deliveryMethod);
+                            }
+
+                            break;
+                        }
+
+                    case BasisNetworkCommons.FallChannel:
+                        {
+                            if (deliveryMethod == DeliveryMethod.Unreliable)
+                            {
+                                if (Reader.TryGetByte(out byte Byte))
+                                {
+                                    //  NetworkReceiveEvent(peer, Reader, Byte, deliveryMethod);
+                                }
+                                else
+                                {
+                                    BNL.LogError($"Unknown channel no data remains: {channel} " + Reader.AvailableBytes);
+                                    Reader.Recycle();
+                                }
+                            }
+                            else
+                            {
+                                BNL.LogError($"Unknown channel: {channel} " + Reader.AvailableBytes);
                                 Reader.Recycle();
                             }
+
+                            break;
                         }
-                        else
+                    */
+                    case BasisNetworkCommons.AuthIdentityMessage:
                         {
-                            BNL.LogError($"Unknown channel: {channel} " + Reader.AvailableBytes);
-                            Reader.Recycle();
+                            AuthIdentityMessage(peer, Reader, channel);
+                            break;
                         }
-                    }
+
+                    default:
+                        break;
                 }
 
             }
+        }
+        public static bool ValidateSize(NetPacketReader reader, NetPeer peer, byte channel)
+        {
+            if (reader.AvailableBytes == 0)
+            {
+                BNL.LogError($"Missing Data from peer! {peer.Id} with channel ID {channel}");
+                return false;
+            }
+            return true;
+        }
+        public static void AuthIdentityMessage(NetPeer peer, NetPacketReader Reader, byte channel)
+        {
+            BNL.Log("Auth is being requested by server!");
+            if (ValidateSize(Reader, peer, channel) == false)
+            {
+                BNL.Log("Auth Failed");
+                Reader.Recycle();
+                return;
+            }
+            BNL.Log("Validated Size " + Reader.AvailableBytes);
+            if (BasisDIDAuthIdentityClient.IdentityMessage(peer, Reader, out NetDataWriter Writer))
+            {
+                BNL.Log("Sent Identity To Server!");
+                peer.Send(Writer, BasisNetworkCommons.AuthIdentityMessage, DeliveryMethod.ReliableSequenced);
+                Reader.Recycle();
+            }
+            else
+            {
+                BNL.LogError("Failed Identity Message!");
+                Reader.Recycle();
+            }
+            BNL.Log("Completed");
         }
         public static void SendMovement()
         {

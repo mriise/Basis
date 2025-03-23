@@ -11,14 +11,12 @@ namespace Basis
     class Program
     {
         public static BasisNetworkHealthCheck Check;
-        private static readonly HttpClient httpClient = new HttpClient();
 
         private const string ConfigFileName = "config.xml";
         private const string LogsFolderName = "Logs";
         private const string InitialResources = "initalresources";
         private const int ThreadSleepTime = 15000;
         private static bool isRunning = true;
-
         public static void Main(string[] args)
         {
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
@@ -36,9 +34,7 @@ namespace Basis
 
             BNL.Log("Server Booting");
 
-            var cancellationTokenSource = new CancellationTokenSource();
-            var cancellationToken = cancellationTokenSource.Token;
-
+            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
             Check = new BasisNetworkHealthCheck(config);
 
             Task serverTask = Task.Run(() =>
@@ -52,7 +48,7 @@ namespace Basis
                 {
                     BNL.LogError($"Server encountered an error: {ex.Message} {ex.StackTrace}");
                 }
-            }, cancellationToken);
+            }, cancellationTokenSource.Token);
 
             AppDomain.CurrentDomain.ProcessExit += async (sender, eventArgs) =>
             {
