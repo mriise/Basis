@@ -14,6 +14,7 @@ namespace Basis.Scripts.UI.NamePlate
         public BasisBoneControl MouthTarget;
         public TextMeshPro Text;
         public SpriteRenderer Loadingbar;
+        public MeshFilter Filter;
         public TextMeshPro Loadingtext;
         public float YHeightMultiplier = 1.25f;
         public BasisRemotePlayer BasisRemotePlayer;
@@ -32,6 +33,12 @@ namespace Basis.Scripts.UI.NamePlate
         public bool HasRendererCheckWiredUp = false;
         public bool IsVisible = true;
         public bool HasProgressBarVisible = false;
+        public Mesh bakedMesh;
+        /// <summary>
+        /// can only be called once after that the text is nuked and a mesh render is just used with a filter
+        /// </summary>
+        /// <param name="hipTarget"></param>
+        /// <param name="basisRemotePlayer"></param>
         public void Initalize(BasisBoneControl hipTarget, BasisRemotePlayer basisRemotePlayer)
         {
             BasisRemotePlayer = basisRemotePlayer;
@@ -44,8 +51,19 @@ namespace Basis.Scripts.UI.NamePlate
             BasisRemotePlayer.OnAvatarSwitchedFallBack += RebuildRenderCheck;
             RemoteNamePlateDriver.Instance.AddNamePlate(this);
             Text.enableVertexGradient = false;
+            Loadingtext.enableVertexGradient = false;
             // Text.enableCulling = true;
             // Text.enableAutoSizing = false;
+            GenerateText();
+            GameObject.Destroy(Text.gameObject);
+        }
+        public void GenerateText()
+        {
+            // Force update to ensure the mesh is generated
+            Text.ForceMeshUpdate();
+            // Store the generated mesh
+            bakedMesh = Mesh.Instantiate(Text.mesh);
+            Filter.sharedMesh = bakedMesh;
         }
         public void RebuildRenderCheck()
         {
