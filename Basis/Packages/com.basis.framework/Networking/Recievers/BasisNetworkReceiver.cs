@@ -126,14 +126,17 @@ namespace Basis.Scripts.Networking.Recievers
         }
         public Vector3 GetScale()
         {
-            if (Player != null && Player.BasisAvatar != null && Player.BasisAvatar.Animator != null)
+            if (Player != null && Player.BasisAvatar != null)
             {
-                Vector3 Scale = Player.BasisAvatar.Animator.transform.localScale;
-               if(Scale != Vector3.zero)
+                Vector3 Scale = Player.BasisAvatar.transform.localScale;
+                if (Scale != Vector3.zero)
                 {
                     return Scale;
                 }
-               else { return Vector3.one; }
+                else
+                {
+                    return Vector3.one;
+                }
             }
             else
             {

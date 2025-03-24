@@ -2,6 +2,11 @@ namespace Basis.Network.Core
 {
     public static class BasisNetworkCommons
     {
+        /// <summary>
+        /// this is the maximum connectinos that can occur under the hood.
+        /// </summary>
+        public const int MaxConnections = 1024;
+
         public const int NetworkIntervalPoll = 15;
         /// <summary>
         /// when adding a new message we need to increase this

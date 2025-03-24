@@ -1,3 +1,4 @@
+using Basis.Network.Core;
 using LiteNetLib;
 using System;
 using static SerializableBasis;
@@ -105,17 +106,15 @@ namespace Basis.Network.Server.Generic
         private readonly T[][] _chunks;
         private readonly int _chunkSize;
         private readonly int _numChunks;
-        private const int TotalSize = 1024;
-
         public ChunkedSyncedToPlayerPulseArray(int chunkSize = 256)
         {
-            if (TotalSize <= 0)
-                throw new ArgumentOutOfRangeException(nameof(TotalSize), "Total size must be greater than zero.");
+            if (BasisNetworkCommons.MaxConnections <= 0)
+                throw new ArgumentOutOfRangeException(nameof(BasisNetworkCommons.MaxConnections), "Total size must be greater than zero.");
             if (chunkSize <= 0)
                 throw new ArgumentOutOfRangeException(nameof(chunkSize), "Chunk size must be greater than zero.");
 
             _chunkSize = chunkSize;
-            _numChunks = (int)Math.Ceiling((double)TotalSize / chunkSize);
+            _numChunks = (int)Math.Ceiling((double)BasisNetworkCommons.MaxConnections / chunkSize);
 
             _chunks = new T[_numChunks][];
             _chunkLocks = new object[_numChunks];
@@ -129,7 +128,7 @@ namespace Basis.Network.Server.Generic
 
         public void SetPulse(int index, T pulse)
         {
-            if (index < 0 || index >= TotalSize)
+            if (index < 0 || index >= BasisNetworkCommons.MaxConnections)
                 throw new ArgumentOutOfRangeException(nameof(index), "Index is out of range.");
 
             int chunkIndex = index / _chunkSize;
@@ -143,7 +142,7 @@ namespace Basis.Network.Server.Generic
 
         public T GetPulse(int index)
         {
-            if (index < 0 || index >= TotalSize)
+            if (index < 0 || index >= BasisNetworkCommons.MaxConnections)
                 throw new ArgumentOutOfRangeException(nameof(index), "Index is out of range.");
 
             int chunkIndex = index / _chunkSize;

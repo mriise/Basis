@@ -40,9 +40,8 @@ namespace Basis.Scripts.Networking
         public static ConcurrentDictionary<ushort, BasisNetworkPlayer> Players = new ConcurrentDictionary<ushort, BasisNetworkPlayer>();
         public static ConcurrentDictionary<ushort, BasisNetworkReceiver> RemotePlayers = new ConcurrentDictionary<ushort, BasisNetworkReceiver>();
         public static HashSet<ushort> JoiningPlayers = new HashSet<ushort>();
-        public static BasisNetworkReceiver[] ReceiverArray => BasisNetworkManagement.Instance.receiverArray;
         [SerializeField]
-        public BasisNetworkReceiver[] receiverArray;
+        public static BasisNetworkReceiver[] ReceiverArray;
         public static int ReceiverCount = 0;
         public static SynchronizationContext MainThreadContext;
         public static NetPeer LocalPlayerPeer;
@@ -82,7 +81,7 @@ namespace Basis.Scripts.Networking
                     if (NetPlayer.Player.IsLocal == false)
                     {
                         RemotePlayers.TryAdd(NetPlayer.NetId, (BasisNetworkReceiver)NetPlayer);
-                        BasisNetworkManagement.Instance.receiverArray = RemotePlayers.Values.ToArray();
+                        BasisNetworkManagement.ReceiverArray = RemotePlayers.Values.ToArray();
                         ReceiverCount = ReceiverArray.Length;
                         BasisDebug.Log("ReceiverCount was " + ReceiverCount);
                     }
@@ -104,7 +103,7 @@ namespace Basis.Scripts.Networking
             if (Instance != null)
             {
                 RemotePlayers.TryRemove(NetID,out BasisNetworkReceiver A);
-                BasisNetworkManagement.Instance.receiverArray = RemotePlayers.Values.ToArray();
+                BasisNetworkManagement.ReceiverArray = RemotePlayers.Values.ToArray();
                 ReceiverCount = ReceiverArray.Length;
                 //BasisDebug.Log("ReceiverCount was " + ReceiverCount);
                 return Players.Remove(NetID, out var B);
@@ -179,10 +178,10 @@ namespace Basis.Scripts.Networking
             OwnershipPairing.Clear();
             BasisNetworkServerRunner = null;
 
-            if (receiverArray != null)
+            if (BasisNetworkManagement.ReceiverArray != null)
             {
-                Array.Clear(receiverArray, 0, receiverArray.Length);
-                receiverArray = null;
+                Array.Clear(BasisNetworkManagement.ReceiverArray, 0, BasisNetworkManagement.ReceiverArray.Length);
+                BasisNetworkManagement.ReceiverArray = null;
             }
 
             BasisDebug.Log("BasisNetworkManagement has been successfully shutdown.", BasisDebug.LogTag.Networking);

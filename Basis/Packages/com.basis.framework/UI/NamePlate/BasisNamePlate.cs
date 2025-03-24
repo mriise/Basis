@@ -14,6 +14,7 @@ namespace Basis.Scripts.UI.NamePlate
         public BasisBoneControl MouthTarget;
         public TextMeshPro Text;
         public SpriteRenderer Loadingbar;
+        public MeshFilter Filter;
         public TextMeshPro Loadingtext;
         public float YHeightMultiplier = 1.25f;
         public BasisRemotePlayer BasisRemotePlayer;
@@ -32,6 +33,12 @@ namespace Basis.Scripts.UI.NamePlate
         public bool HasRendererCheckWiredUp = false;
         public bool IsVisible = true;
         public bool HasProgressBarVisible = false;
+        public Mesh bakedMesh;
+        /// <summary>
+        /// can only be called once after that the text is nuked and a mesh render is just used with a filter
+        /// </summary>
+        /// <param name="hipTarget"></param>
+        /// <param name="basisRemotePlayer"></param>
         public void Initalize(BasisBoneControl hipTarget, BasisRemotePlayer basisRemotePlayer)
         {
             BasisRemotePlayer = basisRemotePlayer;
@@ -43,6 +50,25 @@ namespace Basis.Scripts.UI.NamePlate
             BasisRemotePlayer.OnAvatarSwitched += RebuildRenderCheck;
             BasisRemotePlayer.OnAvatarSwitchedFallBack += RebuildRenderCheck;
             RemoteNamePlateDriver.Instance.AddNamePlate(this);
+            Loadingtext.enableVertexGradient = false;
+            // Text.enableCulling = true;
+            // Text.enableAutoSizing = false;
+            GenerateText();
+            GameObject.Destroy(Text.gameObject);
+            if (BasisDeviceManagement.IsMobile())
+            {
+                NormalColor.a = 1;
+                IsTalkingColor.a = 1;
+                OutOfRangeColor.a = 1;
+            }
+        }
+        public void GenerateText()
+        {
+            // Force update to ensure the mesh is generated
+            Text.ForceMeshUpdate();
+            // Store the generated mesh
+            bakedMesh = Mesh.Instantiate(Text.mesh);
+            Filter.sharedMesh = bakedMesh;
         }
         public void RebuildRenderCheck()
         {
@@ -185,7 +211,10 @@ namespace Basis.Scripts.UI.NamePlate
                           HasProgressBarVisible = true;
                       }
 
-                      Loadingtext.text = info;
+                      if (Loadingtext.text != info)
+                      {
+                          Loadingtext.text = info;
+                      }
                       UpdateProgressBar(UniqueID, progress);
                   }
               });
@@ -193,8 +222,12 @@ namespace Basis.Scripts.UI.NamePlate
         public void UpdateProgressBar(string UniqueID,float progress)
         {
             Vector2 scale = Loadingbar.size;
-            scale.x = progress/2;
-            Loadingbar.size = scale;
+            float NewX = progress / 2;
+            if (scale.x != NewX)
+            {
+                scale.x = NewX;
+                Loadingbar.size = scale;
+            }
         }
     }
 }

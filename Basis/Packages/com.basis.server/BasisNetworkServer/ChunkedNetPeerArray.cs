@@ -1,56 +1,71 @@
-using LiteNetLib;
 using System;
-public class ChunkedNetPeerArray
-{
-    private readonly object[] _chunkLocks; // Locks for each chunk
-    private readonly NetPeer[][] _chunks;  // Array divided into chunks
-    private readonly ushort _chunkSize;    // Number of elements in each chunk
-    public const ushort totalSize = 1024;  // Total size
+using System.Threading;
+using Basis.Network.Core;
+using LiteNetLib;
 
-    public ChunkedNetPeerArray(ushort chunkSize = 256)
+public class StripedNetPeerArray
+{
+    private readonly NetPeer[][] _chunks;           // Data storage in chunks
+    private readonly ReaderWriterLockSlim[] _locks; // Striped locks
+    private readonly ushort _chunkSize;            // Size of each chunk
+    private readonly ushort _lockCount;            // Number of locks
+    public StripedNetPeerArray(ushort chunkSize = 64, ushort lockCount = 32)
     {
-        if (totalSize <= 0)
-            throw new ArgumentOutOfRangeException(nameof(totalSize), "Total size must be greater than zero.");
+        if (BasisNetworkCommons.MaxConnections <= 0)
+            throw new ArgumentOutOfRangeException(nameof(BasisNetworkCommons.MaxConnections), "Total size must be greater than zero.");
         if (chunkSize <= 0)
             throw new ArgumentOutOfRangeException(nameof(chunkSize), "Chunk size must be greater than zero.");
+        if (lockCount <= 0)
+            throw new ArgumentOutOfRangeException(nameof(lockCount), "Lock count must be greater than zero.");
 
         _chunkSize = chunkSize;
-        ushort numChunks = (ushort)Math.Ceiling((double)totalSize / chunkSize); // Now using ushort
-        _chunks = new NetPeer[numChunks][];
-        _chunkLocks = new object[numChunks];
+        _lockCount = lockCount;
 
-        for (ushort i = 0; i < numChunks; i++) // Changed to ushort
+        ushort numChunks = (ushort)Math.Ceiling((double)BasisNetworkCommons.MaxConnections / chunkSize);
+        _chunks = new NetPeer[numChunks][];
+        _locks = new ReaderWriterLockSlim[lockCount];
+
+        for (ushort i = 0; i < numChunks; i++)
         {
             _chunks[i] = new NetPeer[chunkSize];
-            _chunkLocks[i] = new object();
+        }
+
+        for (ushort i = 0; i < lockCount; i++)
+        {
+            _locks[i] = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
         }
     }
 
     public void SetPeer(ushort index, NetPeer value)
     {
-        if (index < 0 || index >= _chunkSize * _chunks.Length)
+        if (index >= BasisNetworkCommons.MaxConnections)
             throw new ArgumentOutOfRangeException(nameof(index), "Index is out of range.");
 
-        ushort chunkIndex = (ushort)(index / _chunkSize); // Changed to ushort
-        ushort localIndex = (ushort)(index % _chunkSize); // Changed to ushort
+        ushort chunkIndex = (ushort)(index / _chunkSize);
+        ushort localIndex = (ushort)(index % _chunkSize);
+        ushort lockIndex = (ushort)(index % _lockCount); // Lock striping
 
-        lock (_chunkLocks[chunkIndex])
+        var lockObj = _locks[lockIndex];
+        lockObj.EnterWriteLock();
+        try
         {
             _chunks[chunkIndex][localIndex] = value;
+        }
+        finally
+        {
+            lockObj.ExitWriteLock();
         }
     }
 
     public NetPeer GetPeer(ushort index)
     {
-        if (index < 0 || index >= _chunkSize * _chunks.Length)
+        if (index >= BasisNetworkCommons.MaxConnections)
             throw new ArgumentOutOfRangeException(nameof(index), "Index is out of range.");
 
-        ushort chunkIndex = (ushort)(index / _chunkSize); // Changed to ushort
-        ushort localIndex = (ushort)(index % _chunkSize); // Changed to ushort
+        ushort chunkIndex = (ushort)(index / _chunkSize);
+        ushort localIndex = (ushort)(index % _chunkSize);
 
-        lock (_chunkLocks[chunkIndex])
-        {
-            return _chunks[chunkIndex][localIndex];
-        }
+        // Use Volatile.Read to avoid locking for read-only access
+        return Volatile.Read(ref _chunks[chunkIndex][localIndex]);
     }
 }
