@@ -6,6 +6,8 @@ using LiteNetLib;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Unity.Collections;
+using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using static SerializableBasis;
@@ -77,11 +79,31 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
             }
 
             var NetworkOutData = NetworkSend;
-            var FloatArrayCopy = FloatArray;
-            Parallel.For(0, LocalAvatarSyncMessage.StoredBones, Index =>
+            NativeArray<float> floatArrayNative = new NativeArray<float>(FloatArray, Allocator.TempJob);
+            NativeArray<float> minMuscleNative = new NativeArray<float>(BasisNetworkPlayer.MinMuscle, Allocator.TempJob);
+            NativeArray<float> maxMuscleNative = new NativeArray<float>(BasisNetworkPlayer.MaxMuscle, Allocator.TempJob);
+            NativeArray<float> rangeMuscleNative = new NativeArray<float>(BasisNetworkPlayer.RangeMuscle, Allocator.TempJob);
+            NativeArray<ushort> networkSendNative = new NativeArray<ushort>(LocalAvatarSyncMessage.StoredBones, Allocator.TempJob);
+
+            CompressMusclesJob MuscleJob = new CompressMusclesJob
             {
-                NetworkOutData[Index] = Compress(FloatArrayCopy[Index], BasisNetworkPlayer.MinMuscle[Index], BasisNetworkPlayer.MaxMuscle[Index], BasisNetworkPlayer.RangeMuscle[Index]);
-            });
+                ValueArray = floatArrayNative,
+                MinMuscle = minMuscleNative,
+                MaxMuscle = maxMuscleNative,
+                valueDiffence = rangeMuscleNative,
+                NetworkSend = networkSendNative
+            };
+
+            JobHandle handle = MuscleJob.Schedule(LocalAvatarSyncMessage.StoredBones, 64);
+            handle.Complete();
+
+            networkSendNative.CopyTo(NetworkSend);
+
+            floatArrayNative.Dispose();
+            minMuscleNative.Dispose();
+            maxMuscleNative.Dispose();
+            rangeMuscleNative.Dispose();
+            networkSendNative.Dispose();
 
             BasisUnityBitPackerExtensions.WriteUShortsToBytes(NetworkOutData, ref LocalAvatarSyncMessage.array, ref Offset);
         }
@@ -94,6 +116,23 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
             float normalized = (value - MinValue) / (valueDiffence); // 0..1
             return (ushort)(normalized * ushortRangeDifference);//+ UShortMin (its always zero)
         }
+
+        public struct CompressMusclesJob : IJobParallelFor
+        {
+            [ReadOnly] public NativeArray<float> ValueArray;
+            [ReadOnly] public NativeArray<float> MinMuscle;
+            [ReadOnly] public NativeArray<float> MaxMuscle;
+            [ReadOnly] public NativeArray<float> valueDiffence;
+            [WriteOnly] public NativeArray<ushort> NetworkSend;
+
+            public void Execute(int index)
+            {
+                float value = math.clamp(ValueArray[index], MinMuscle[index], MaxMuscle[index]);
+                float normalized = (value - MinMuscle[index]) / valueDiffence[index]; // 0..1
+                NetworkSend[index] = (ushort)(normalized * ushortRangeDifference); // Assuming ushortRangeDifference is ushort.MaxValue
+            }
+        }
+
         private const ushort UShortMin = ushort.MinValue; // 0
         private const ushort UShortMax = ushort.MaxValue; // 65535
         private const ushort ushortRangeDifference = UShortMax - UShortMin;

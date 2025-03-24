@@ -322,7 +322,6 @@ namespace Basis.Scripts.Networking.Recievers
 
                 RemotePlayer = (BasisRemotePlayer)Player;
                 AudioReceiverModule.OnEnable(this);
-               //this wont work here OnAvatarCalibrationRemote();
                 if (HasEvents == false)
                 {
                     RemotePlayer.RemoteAvatarDriver.CalibrationComplete += OnCalibration;

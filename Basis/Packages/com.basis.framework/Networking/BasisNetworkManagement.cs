@@ -186,20 +186,23 @@ namespace Basis.Scripts.Networking
 
             BasisDebug.Log("BasisNetworkManagement has been successfully shutdown.", BasisDebug.LogTag.Networking);
         }
-        public static void SimulateNetworkUpdate()
+        public static void SimulateNetworkCompute()
         {
-            double TimeAsDouble = Time.timeAsDouble;
-
-            // Schedule multithreaded tasks
-            for (int Index = 0; Index < ReceiverCount; Index++)
+            if (NetworkRunning)
             {
+                double TimeAsDouble = Time.timeAsDouble;
+
+                // Schedule multithreaded tasks
+                for (int Index = 0; Index < ReceiverCount; Index++)
+                {
                     if (ReceiverArray[Index] != null)
                     {
                         ReceiverArray[Index].Compute(TimeAsDouble);
                     }
+                }
             }
         }
-        public static void SimulateNetworklateUpdate()
+        public static void SimulateNetworkApply()
         {
             if (NetworkRunning)
             {
