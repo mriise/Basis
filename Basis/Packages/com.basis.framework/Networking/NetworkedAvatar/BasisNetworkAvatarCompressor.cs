@@ -6,6 +6,7 @@ using LiteNetLib;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
@@ -48,6 +49,7 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
             LocalAvatarSyncMessage = new LocalAvatarSyncMessage();
             CompressAvatarData(ref Offset, ref FloatArray, ref UshortArray, ref LocalAvatarSyncMessage, PoseHandler, HumanPose, Anim);
         }
+        [BurstCompile]
         public static void CompressAvatarData(ref int Offset, ref float[] FloatArray, ref ushort[] NetworkSend, ref LocalAvatarSyncMessage LocalAvatarSyncMessage, HumanPoseHandler Handler, HumanPose PoseHandler, Animator Anim)
         {
             if (Handler == null)
@@ -107,16 +109,7 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
 
             BasisUnityBitPackerExtensions.WriteUShortsToBytes(NetworkOutData, ref LocalAvatarSyncMessage.array, ref Offset);
         }
-        public static ushort Compress(float value, float MinValue, float MaxValue,float valueDiffence)
-        {
-            // Clamp the value to ensure it's within the specified range
-            value = math.clamp(value, MinValue, MaxValue);
-
-            // Map the float value to the ushort range
-            float normalized = (value - MinValue) / (valueDiffence); // 0..1
-            return (ushort)(normalized * ushortRangeDifference);//+ UShortMin (its always zero)
-        }
-
+        [BurstCompile]
         public struct CompressMusclesJob : IJobParallelFor
         {
             [ReadOnly] public NativeArray<float> ValueArray;
