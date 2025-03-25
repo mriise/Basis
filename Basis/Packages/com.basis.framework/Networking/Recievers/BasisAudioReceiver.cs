@@ -127,7 +127,7 @@ namespace Basis.Scripts.Networking.Recievers
             IsPlaying = true;
             audioSource.Play();
         }
-        private List<float> remainingSamples = new List<float>(); // Persistent buffer
+        private List<float> remainingSamples = new List<float>();
 
         public int OnAudioFilterRead(float[] data, int channels)
         {
@@ -138,25 +138,25 @@ namespace Basis.Scripts.Networking.Recievers
                 return length;
             }
 
-            int frames = length / channels; // Number of audio frames
+            int frames = length / channels;
             int outputSampleRate = RemoteOpusSettings.PlayBackSampleRate;
 
             if (RemoteOpusSettings.NetworkSampleRate == outputSampleRate)
             {
-                ProcessAudioWithBuffering(data, frames, channels);
+                ProcessAudioWithInterpolation(data, frames, channels);
             }
             else
             {
                 BasisDebug.LogError("Samplerate mismatch");
-                Array.Fill(data, 0f); // Fill with silence in case of mismatch
+                Array.Fill(data, 0f);
             }
 
             return length;
         }
 
-        private void ProcessAudioWithBuffering(float[] data, int frames, int channels)
+        private void ProcessAudioWithInterpolation(float[] data, int frames, int channels)
         {
-            int neededSamples = frames; // Number of mono samples needed
+            int neededSamples = frames;
             List<float> outputSamples = new List<float>();
 
             // Use stored samples first
@@ -173,8 +173,20 @@ namespace Basis.Scripts.Networking.Recievers
             {
                 if (RingBuffer.Pop(out SequencedVoiceData VoiceData) == false || VoiceData.IsInsertedSilence)
                 {
-                    // Not enough data available, pad with silence
-                    outputSamples.AddRange(new float[neededSamples]);
+                    // Not enough data available, smooth it with interpolation
+                    if (outputSamples.Count > 0)
+                    {
+                        float lastSample = outputSamples[^1];
+                        for (int i = 0; i < neededSamples; i++)
+                        {
+                            float t = (float)i / neededSamples; // Interpolation factor
+                            outputSamples.Add(lastSample * (1.0f - t)); // Fade to silence
+                        }
+                    }
+                    else
+                    {
+                        outputSamples.AddRange(new float[neededSamples]); // Absolute silence if no samples exist
+                    }
                     break;
                 }
 
@@ -183,28 +195,42 @@ namespace Basis.Scripts.Networking.Recievers
 
                 if (pcmLength > neededSamples)
                 {
-                    // More samples than needed; store extra
                     outputSamples.AddRange(pcmBuffer.Take(neededSamples));
                     remainingSamples.AddRange(pcmBuffer.Skip(neededSamples).Take(pcmLength - neededSamples));
                 }
                 else
                 {
-                    // Use all decoded samples
                     outputSamples.AddRange(pcmBuffer.Take(pcmLength));
                 }
 
                 neededSamples -= pcmLength;
             }
 
+            // Apply crossfade smoothing to avoid pops
+            SmoothTransition(outputSamples);
+
             // Distribute samples to output buffer
             for (int i = 0; i < frames; i++)
             {
-                float sample = i < outputSamples.Count ? outputSamples[i] : 0f; // Ensure silence if needed
+                float sample = i < outputSamples.Count ? outputSamples[i] : 0f;
                 for (int c = 0; c < channels; c++)
                 {
                     int index = i * channels + c;
-                    data[index] = sample; // Set same sample for each channel
+                    data[index] = sample;
                 }
+            }
+        }
+
+        // Smooths sudden jumps in audio to prevent pops
+        private void SmoothTransition(List<float> samples)
+        {
+            const int fadeSamples = 10; // Adjust as needed
+            if (samples.Count < fadeSamples) return;
+
+            for (int i = 1; i < fadeSamples; i++)
+            {
+                float t = (float)i / fadeSamples;
+                samples[i] = Mathf.Lerp(samples[i - 1], samples[i], t); // Smooth transition
             }
         }
     }
