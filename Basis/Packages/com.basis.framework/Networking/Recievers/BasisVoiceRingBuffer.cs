@@ -45,6 +45,7 @@ public class JitterBuffer
 
                 if (sequencedVoiceDatas.Count > MaxSize)
                 {
+                    BasisDebug.Log("dropping Sequence Voice Data");
                     sequencedVoiceDatas.RemoveAt(0); // Remove oldest packet if full
                 }
 
@@ -56,8 +57,7 @@ public class JitterBuffer
     private void InsertInOrder(SequencedVoiceData sequencedVoiceData)
     {
         int index = 0;
-        while (index < sequencedVoiceDatas.Count &&
-               IsAheadOf(sequencedVoiceDatas[index].SequenceNumber, sequencedVoiceData.SequenceNumber))
+        while (index < sequencedVoiceDatas.Count && IsAheadOf(sequencedVoiceDatas[index].SequenceNumber, sequencedVoiceData.SequenceNumber))
         {
             index++;
         }

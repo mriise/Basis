@@ -16,18 +16,24 @@ public static partial class SerializableBasis
                 messageIndex = reader.GetByte();
 
                 byte payloadSize = reader.GetByte();
-
-                if (payloadSize > 0)
+                if (reader.AvailableBytes >= payloadSize)
                 {
-                    if (array == null || array.Length != payloadSize)
+                    if (payloadSize > 0)
                     {
-                        array = new byte[payloadSize];
+                        if (array == null || array.Length != payloadSize)
+                        {
+                            array = new byte[payloadSize];
+                        }
+                        reader.GetBytes(array, payloadSize);
                     }
-                    reader.GetBytes(array, payloadSize);
+                    else
+                    {
+                        array = new byte[0]; // Ensure it's not null
+                    }
                 }
                 else
                 {
-                    array = new byte[0]; // Ensure it's not null
+                    BNL.LogError($"Unable to read remaining bytes, available: {reader.AvailableBytes}");
                 }
             }
             else

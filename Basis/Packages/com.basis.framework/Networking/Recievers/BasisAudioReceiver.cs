@@ -139,21 +139,54 @@ namespace Basis.Scripts.Networking.Recievers
             }
 
             int frames = length / channels;
+            int networkSampleRate = RemoteOpusSettings.NetworkSampleRate;
             int outputSampleRate = RemoteOpusSettings.PlayBackSampleRate;
 
-            if (RemoteOpusSettings.NetworkSampleRate == outputSampleRate)
+            if (networkSampleRate == outputSampleRate)
             {
                 ProcessAudioWithInterpolation(data, frames, channels);
             }
             else
             {
-                BasisDebug.LogError("Samplerate mismatch");
-                Array.Fill(data, 0f);
+                List<float> resampledData = ResampleAudio(remainingSamples, networkSampleRate, outputSampleRate);
+                ProcessAudioWithInterpolation(resampledData.ToArray(), resampledData.Count / channels, channels);
+
+                // Copy resampled data to output
+                for (int i = 0; i < frames; i++)
+                {
+                    float sample = i < resampledData.Count ? resampledData[i] : 0f;
+                    for (int c = 0; c < channels; c++)
+                    {
+                        int index = i * channels + c;
+                        data[index] = sample;
+                    }
+                }
             }
 
             return length;
         }
 
+        // Resampling using linear interpolation
+        private List<float> ResampleAudio(List<float> input, int fromRate, int toRate)
+        {
+            if (fromRate == toRate) return new List<float>(input);
+
+            float resampleRatio = (float)toRate / fromRate;
+            int newLength = (int)(input.Count * resampleRatio);
+            List<float> output = new List<float>(newLength);
+
+            for (int i = 0; i < newLength; i++)
+            {
+                float srcIndex = i / resampleRatio;
+                int indexA = (int)srcIndex;
+                int indexB = Math.Min(indexA + 1, input.Count - 1);
+                float t = srcIndex - indexA;
+                float interpolatedSample = Mathf.Lerp(input[indexA], input[indexB], t);
+                output.Add(interpolatedSample);
+            }
+
+            return output;
+        }
         private void ProcessAudioWithInterpolation(float[] data, int frames, int channels)
         {
             int neededSamples = frames;

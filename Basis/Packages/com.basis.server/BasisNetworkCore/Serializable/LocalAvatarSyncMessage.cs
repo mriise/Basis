@@ -21,7 +21,7 @@ public static partial class SerializableBasis
                 Writer.GetBytes(array, AvatarSyncSize);
                 if (AttemptAdditionalData)
                 {
-                    if (Writer.EndOfData)
+                    if (Writer.AvailableBytes <= 0)
                     {
                         AdditionalAvatarDatas = null;
                         hasAdditionalAvatarData = false;
@@ -29,7 +29,7 @@ public static partial class SerializableBasis
                     else
                     {
                         List<AdditionalAvatarData> list = new List<AdditionalAvatarData>();
-                        while (Writer.AvailableBytes != 0)
+                        while (Writer.AvailableBytes > 0)
                         {
                             // BNL.Log("Deserialize AAD");
                             AdditionalAvatarData AAD = new AdditionalAvatarData();
