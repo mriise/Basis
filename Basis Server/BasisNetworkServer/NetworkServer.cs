@@ -109,7 +109,7 @@ public static class NetworkServer
     }
     public static void SendOutValidated(NetPeer Peer, NetDataWriter Writer, byte MessageIndex, DeliveryMethod DeliveryMethod = DeliveryMethod.ReliableSequenced)
     {
-        if (Writer.Length == 0)
+        if (Writer.Length <= 0)
         {
             BNL.LogError("trying to sending a message without a length SendOutValidated : " + MessageIndex);
         }

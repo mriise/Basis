@@ -179,7 +179,7 @@ public partial class BasisServerReductionSystem
                             //how long does this data need to last for
                             playerData.serverSideSyncPlayerMessage.interval = (byte)adjustedInterval;
                             playerData.serverSideSyncPlayerMessage.Serialize(playerData.Writer, true);
-                            NetworkServer.SendOutValidated(playerID.localClient, playerData.Writer, BasisNetworkCommons.MovementChannel, DeliveryMethod.ReliableOrdered);
+                            NetworkServer.SendOutValidated(playerID.localClient, playerData.Writer, BasisNetworkCommons.MovementChannel, DeliveryMethod.Sequenced);
                             playerData.Writer.Reset();
                         }
                         catch (Exception e)
