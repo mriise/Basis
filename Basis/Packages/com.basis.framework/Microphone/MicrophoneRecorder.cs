@@ -73,6 +73,7 @@ public partial class MicrophoneRecorder : MicrophoneRecorderBase
     }
     public int minFreq = 48000;
     public int maxFreq = 48000;
+    public static int SampleRate;
     public void ResetMicrophones(string newMicrophone)
     {
         if (string.IsNullOrEmpty(newMicrophone))
@@ -109,6 +110,7 @@ public partial class MicrophoneRecorder : MicrophoneRecorderBase
                 microphoneBufferArray = new float[LocalOpusSettings.RecordingFullLength * LocalOpusSettings.MicrophoneSampleRate];
                 MicrophoneIsStarted = true;
                 processBufferArray = LocalOpusSettings.CalculateProcessBuffer();
+                SampleRate = LocalOpusSettings.SampleRate();
                 PBA = new NativeArray<float>(processBufferArray, Allocator.Persistent);
                 VAJ = new LogarithmicVolumeAdjustmentJob
                 {

@@ -123,13 +123,16 @@ namespace Basis.Scripts.UI.NamePlate
                 }
                 BasisNetworkManagement.MainThreadContext.Post(_ =>
                 {
-                    if (isActiveAndEnabled)
+                    if (this != null)
                     {
-                        if (colorTransitionCoroutine != null)
+                        if (isActiveAndEnabled)
                         {
-                            StopCoroutine(colorTransitionCoroutine);
+                            if (colorTransitionCoroutine != null)
+                            {
+                                StopCoroutine(colorTransitionCoroutine);
+                            }
+                            colorTransitionCoroutine = StartCoroutine(TransitionColor(targetColor));
                         }
-                        colorTransitionCoroutine = StartCoroutine(TransitionColor(targetColor));
                     }
                 }, null);
             }

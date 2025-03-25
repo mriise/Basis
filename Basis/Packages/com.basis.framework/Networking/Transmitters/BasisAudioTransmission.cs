@@ -33,6 +33,9 @@ namespace Basis.Scripts.Networking.Transmitters
 
                 // Initialize the Opus encoder with the retrieved settings
                 encoder = new OpusEncoder(LocalOpusSettings.MicrophoneSampleRate, LocalOpusSettings.Channels, LocalOpusSettings.OpusApplication);
+                //  encoder.Ctl(EncoderCTL.OPUS_SET_COMPLEXITY, ref Complexity);
+                //  bool VBR = true;
+                //encoder.Ctl(EncoderCTL.OPUS_SET_VBR,ref VBR);
                 // Cast the networked player to a local player to access the microphone recorder
                 Local = (BasisLocalPlayer)networkedPlayer.Player;
                 Recorder = Local.MicrophoneRecorder;
@@ -74,6 +77,7 @@ namespace Basis.Scripts.Networking.Transmitters
         }
         public const DeliveryMethod AudioSendMethod = DeliveryMethod.Unreliable;
         public byte sequenceNumber = 0;
+        public const int Complexity = 10;
         public void OnAudioReady()
         {
             if (NetworkedPlayer.HasReasonToSendAudio)
@@ -84,17 +88,12 @@ namespace Basis.Scripts.Networking.Transmitters
                     AudioSegmentData = new AudioSegmentDataMessage(new byte[MicrophoneRecorder.PacketSize]);
                 }
                 // Encode the audio data from the microphone recorder's buffer
-                AudioSegmentData.LengthUsed = encoder.Encode(MicrophoneRecorder.processBufferArray, LocalOpusSettings.SampleRate(), AudioSegmentData.buffer, AudioSegmentData.TotalLength);
+                AudioSegmentData.LengthUsed = encoder.Encode(MicrophoneRecorder.processBufferArray,MicrophoneRecorder.SampleRate, AudioSegmentData.buffer, AudioSegmentData.TotalLength);
 
                 NetDataWriter writer = new NetDataWriter();
                 writer.Put(BasisNetworkCommons.VoiceChannel);
 
                 sequenceNumber = (byte)((sequenceNumber + 1) & 0x3F);
-                if(sequenceNumber > 63)
-                {
-                    sequenceNumber = 0;
-                    BasisDebug.LogError("Sequence was larger then 63");
-                }
                 writer.Put(sequenceNumber);
 
                 AudioSegmentData.Serialize(writer);
@@ -113,16 +112,8 @@ namespace Basis.Scripts.Networking.Transmitters
             {
                 NetDataWriter writer = new NetDataWriter();
                 writer.Put(BasisNetworkCommons.VoiceChannel);
-
-
                 sequenceNumber = (byte)((sequenceNumber + 1) & 0x3F);
-                if (sequenceNumber > 63)
-                {
-                    sequenceNumber = 0;
-                    BasisDebug.LogError("Sequence was larger then 63");
-                }
                 writer.Put(sequenceNumber);
-
                 audioSilentSegmentData.LengthUsed = 0;
                 audioSilentSegmentData.Serialize(writer);
                 BasisNetworkProfiler.AudioSegmentDataMessageCounter.Sample(writer.Length);

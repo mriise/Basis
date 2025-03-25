@@ -36,7 +36,7 @@ public partial class BasisObjectSyncSystem : MonoBehaviour
         Instance = this;
         objectsToSync = new BasisObjectSyncNetworking[arrayCapacity];
     }
-
+    /*
     public void Update()
     {
         double timeAsDouble = Time.timeAsDouble;
@@ -89,6 +89,7 @@ public partial class BasisObjectSyncSystem : MonoBehaviour
             transform.localScale = obj.Current.Scale;
         }
     }
+    */
     public static void StopApplyRemoteData(BasisObjectSyncNetworking obj)
     {
         if (Instance == null)

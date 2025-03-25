@@ -244,6 +244,7 @@ namespace BasisServerHandle
             if (reader.AvailableBytes == 0)
             {
                 BNL.LogError($"Missing Data from peer! {peer.Id} with channel ID {channel}");
+                reader.Recycle();
                 return false;
             }
             return true;
@@ -476,11 +477,10 @@ namespace BasisServerHandle
             {
                 audioSegmentData = audioSegment
             };
-            ServerAudio.playerIdMessage.AdditionalData = sequenceNumber;
-            SendVoiceMessageToClients(ServerAudio, BasisNetworkCommons.VoiceChannel, peer);
+            SendVoiceMessageToClients(ServerAudio, BasisNetworkCommons.FallChannel, peer, sequenceNumber);
             ThreadSafeMessagePool<AudioSegmentDataMessage>.Return(audioSegment);
         }
-        public static void SendVoiceMessageToClients(ServerAudioSegmentMessage audioSegment, byte channel, NetPeer sender)
+        public static void SendVoiceMessageToClients(ServerAudioSegmentMessage audioSegment, byte channel, NetPeer sender,byte sequenceNumber)
         {
             if (BasisSavedState.GetLastVoiceReceivers(sender, out VoiceReceiversMessage data))
             {
@@ -526,11 +526,13 @@ namespace BasisServerHandle
                 // Add player ID to the audio segment message
                 audioSegment.playerIdMessage = new PlayerIdMessage
                 {
-                    playerID = (ushort)sender.Id
+                    playerID = (ushort)sender.Id,
+                    AdditionalData = sequenceNumber,
                 };
 
                 // Serialize the audio segment message
                 NetDataWriter NetDataWriter = new NetDataWriter(true, 2);
+                NetDataWriter.Put(BasisNetworkCommons.VoiceChannel);
                 audioSegment.Serialize(NetDataWriter);
 
                 // Broadcast the message to the clients
