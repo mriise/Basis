@@ -1,117 +1,56 @@
-using System;
 using System.Collections.Generic;
-using System.Threading;
 
-namespace Basis.Scripts.Networking.Recievers
+public class JitterBuffer
 {
-    public class BasisVoiceRingBuffer
+    private const int MaxSize = 3; // Maximum buffer size
+    private Queue<SequencedVoiceData> sequencedVoiceDatas = new Queue<SequencedVoiceData>();
+
+    public byte WritingIndex;
+    public byte ReadingIndex;
+
+    public bool Pop(out SequencedVoiceData sequencedVoiceData)
     {
-        private readonly float[] buffer;
-        private int head; // Points to the next position to write
-        private int tail; // Points to the next position to read
-        private int size; // Current data size in the buffer
-        private readonly object bufferLock = new();
-        public Queue<float[]> BufferedReturn = new Queue<float[]>();
-
-        public BasisVoiceRingBuffer(int capacity)
+        if (sequencedVoiceDatas.TryDequeue(out sequencedVoiceData))
         {
-            if (capacity <= 0) throw new ArgumentException("Capacity must be greater than zero.");
-            buffer = new float[capacity];
-            head = 0;
-            tail = 0;
-            size = 0;
+            ReadingIndex = sequencedVoiceData.SequenceNumber; // Move forward
+            return true;
         }
+        return false;
+    }
 
-        public int Capacity => buffer.Length;
+    public void Push(SequencedVoiceData sequencedVoiceData)
+    {
+        byte sequence = sequencedVoiceData.SequenceNumber;
 
-        public bool IsEmpty => Interlocked.CompareExchange(ref size, 0, 0) == 0;
-
-        public void Add(float[] segment, int length)
+        // Only insert if the packet is ahead of the ReadingIndex
+        if (IsAheadOfReading(sequence))
         {
-            if (segment == null || segment.Length == 0)
+            if (sequencedVoiceDatas.Count >= MaxSize)
             {
-                throw new ArgumentNullException(nameof(segment));
-            }
-            if (length <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(length), "Length must be a positive number.");
-            }
-            if (length > segment.Length)
-            {
-                throw new ArgumentOutOfRangeException(nameof(length), "Length must be less than or equal to the segment's length.");
+                sequencedVoiceDatas.Dequeue(); // Remove oldest packet if full
             }
 
-            lock (bufferLock)
-            {
-                if (length > Capacity)
-                {
-                    throw new InvalidOperationException("The segment is too large to fit into the buffer.");
-                }
-
-                // Remove old data to make room for new data
-                int availableSpace = Capacity - Interlocked.CompareExchange(ref size, 0, 0);
-                if (length > availableSpace)
-                {
-                    int itemsToRemove = length - availableSpace;
-                    Interlocked.Add(ref tail, itemsToRemove);
-                    Interlocked.Add(ref size, -itemsToRemove);
-                    tail %= Capacity;
-                    BasisDebug.Log($"Overwriting {itemsToRemove} elements due to lack of space in the Audio buffer.");
-                }
-
-                // Add the new segment to the buffer
-                int firstPart = Math.Min(length, Capacity - head); // Space till the end of the buffer
-                Array.Copy(segment, 0, buffer, head, firstPart);   // Copy first part
-                int remaining = length - firstPart;
-                if (remaining > 0)
-                {
-                    Array.Copy(segment, firstPart, buffer, 0, remaining); // Copy wrap-around part
-                }
-
-                Interlocked.Add(ref head, length);
-                head %= Capacity;
-                Interlocked.Add(ref size, length);
-            }
+            sequencedVoiceDatas.Enqueue(sequencedVoiceData);
+            WritingIndex = sequence; // Update writing index
         }
+    }
 
-        public void Remove(int segmentSize, out float[] segment)
-        {
-            if (segmentSize <= 0)
-                throw new ArgumentOutOfRangeException(nameof(segmentSize));
+    private bool IsAheadOfReading(byte sequence)
+    {
+        int diff = (sequence - ReadingIndex + 64) % 64;
+        return diff > 0; // Ensures the packet is in the future relative to ReadingIndex
+    }
+}
 
-            // Try to reuse an array from the buffer pool
-            lock (BufferedReturn)
-            {
-                if (!BufferedReturn.TryDequeue(out segment) || segment.Length != segmentSize)
-                {
-                    segment = new float[segmentSize];
-                }
-            }
+public class SequencedVoiceData
+{
+    public byte SequenceNumber;
+    public byte[] Array;
+    public int Length;
+    public bool IsInsertedSilence;
 
-            lock (bufferLock)
-            {
-                int currentSize = Interlocked.CompareExchange(ref size, 0, 0);
-                int itemsToRemove = Math.Min(segmentSize, currentSize);
-
-                // Remove items in bulk
-                int firstPart = Math.Min(itemsToRemove, Capacity - tail); // Items till the end of the buffer
-                Array.Copy(buffer, tail, segment, 0, firstPart);          // Copy first part
-                int remaining = itemsToRemove - firstPart;
-                if (remaining > 0)
-                {
-                    Array.Copy(buffer, 0, segment, firstPart, remaining); // Copy wrap-around part
-                }
-
-                Interlocked.Add(ref tail, itemsToRemove);
-                tail %= Capacity;
-                Interlocked.Add(ref size, -itemsToRemove);
-
-                // Warn if fewer items were available than requested
-                if (itemsToRemove < segmentSize)
-                {
-                    Console.WriteLine($"Warning: Requested {segmentSize} items, but only {itemsToRemove} are available.");
-                }
-            }
-        }
+    public SequencedVoiceData(byte sequenceNumber)
+    {
+        SequenceNumber = sequenceNumber;
     }
 }

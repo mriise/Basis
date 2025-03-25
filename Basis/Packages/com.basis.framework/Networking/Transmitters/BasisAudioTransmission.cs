@@ -72,7 +72,8 @@ namespace Basis.Scripts.Networking.Transmitters
             encoder.Dispose();
             encoder = null;
         }
-        public const DeliveryMethod AudioSendMethod = DeliveryMethod.Sequenced;
+        public const DeliveryMethod AudioSendMethod = DeliveryMethod.Unreliable;
+        public byte sequenceNumber = 0;
         public void OnAudioReady()
         {
             if (NetworkedPlayer.HasReasonToSendAudio)
@@ -84,10 +85,21 @@ namespace Basis.Scripts.Networking.Transmitters
                 }
                 // Encode the audio data from the microphone recorder's buffer
                 AudioSegmentData.LengthUsed = encoder.Encode(MicrophoneRecorder.processBufferArray, LocalOpusSettings.SampleRate(), AudioSegmentData.buffer, AudioSegmentData.TotalLength);
+
                 NetDataWriter writer = new NetDataWriter();
+                writer.Put(BasisNetworkCommons.VoiceChannel);
+
+                sequenceNumber = (byte)((sequenceNumber + 1) & 0x3F);
+                if(sequenceNumber > 63)
+                {
+                    sequenceNumber = 0;
+                    BasisDebug.LogError("Sequence was larger then 63");
+                }
+                writer.Put(sequenceNumber);
+
                 AudioSegmentData.Serialize(writer);
                 BasisNetworkProfiler.AudioSegmentDataMessageCounter.Sample(AudioSegmentData.LengthUsed);
-                BasisNetworkManagement.LocalPlayerPeer.Send(writer, BasisNetworkCommons.VoiceChannel, AudioSendMethod);
+                BasisNetworkManagement.LocalPlayerPeer.Send(writer, BasisNetworkCommons.FallChannel, AudioSendMethod);
                 Local.AudioReceived?.Invoke(true);
             }
             else
@@ -100,10 +112,21 @@ namespace Basis.Scripts.Networking.Transmitters
             if (NetworkedPlayer.HasReasonToSendAudio)
             {
                 NetDataWriter writer = new NetDataWriter();
+                writer.Put(BasisNetworkCommons.VoiceChannel);
+
+
+                sequenceNumber = (byte)((sequenceNumber + 1) & 0x3F);
+                if (sequenceNumber > 63)
+                {
+                    sequenceNumber = 0;
+                    BasisDebug.LogError("Sequence was larger then 63");
+                }
+                writer.Put(sequenceNumber);
+
                 audioSilentSegmentData.LengthUsed = 0;
                 audioSilentSegmentData.Serialize(writer);
                 BasisNetworkProfiler.AudioSegmentDataMessageCounter.Sample(writer.Length);
-                BasisNetworkManagement.LocalPlayerPeer.Send(writer, BasisNetworkCommons.VoiceChannel, AudioSendMethod);
+                BasisNetworkManagement.LocalPlayerPeer.Send(writer, BasisNetworkCommons.FallChannel, AudioSendMethod);
                 Local.AudioReceived?.Invoke(false);
             }
         }

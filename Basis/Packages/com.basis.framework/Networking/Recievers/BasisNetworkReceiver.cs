@@ -15,7 +15,6 @@ namespace Basis.Scripts.Networking.Recievers
     [System.Serializable]
     public partial class BasisNetworkReceiver : BasisNetworkPlayer
     {
-        public float[] silentData;
         public ushort[] CopyData = new ushort[LocalAvatarSyncMessage.StoredBones];
         [SerializeField]
         public BasisAudioReceiver AudioReceiverModule = new BasisAudioReceiver();
@@ -267,26 +266,16 @@ namespace Basis.Scripts.Networking.Recievers
         }
         public void ReceiveNetworkAudio(ServerAudioSegmentMessage audioSegment)
         {
-            if (AudioReceiverModule.decoder != null)
-            {
-                BasisNetworkProfiler.ServerAudioSegmentMessageCounter.Sample(audioSegment.audioSegmentData.LengthUsed);
-                AudioReceiverModule.OnDecode(audioSegment.audioSegmentData.buffer, audioSegment.audioSegmentData.LengthUsed);
-                Player.AudioReceived?.Invoke(true);
-            }
+            byte SequenceNumber = audioSegment.playerIdMessage.AdditionalData;
+            BasisNetworkProfiler.ServerAudioSegmentMessageCounter.Sample(audioSegment.audioSegmentData.LengthUsed);
+            AudioReceiverModule.OnDecode(SequenceNumber, audioSegment.audioSegmentData.buffer, audioSegment.audioSegmentData.LengthUsed);
+            Player.AudioReceived?.Invoke(true);
         }
         public void ReceiveSilentNetworkAudio(ServerAudioSegmentMessage audioSilentSegment)
         {
-            if (AudioReceiverModule.decoder != null)
-            {
-                if (silentData == null || silentData.Length != RemoteOpusSettings.Pcmlength)
-                {
-                    silentData = new float[RemoteOpusSettings.Pcmlength];
-                    Array.Fill(silentData, 0f);
-                }
-                BasisNetworkProfiler.ServerAudioSegmentMessageCounter.Sample(1);
-                AudioReceiverModule.OnDecoded(silentData, RemoteOpusSettings.Pcmlength);
-                Player.AudioReceived?.Invoke(false);
-            }
+            BasisNetworkProfiler.ServerAudioSegmentMessageCounter.Sample(1);
+            AudioReceiverModule.OnDecodeSilence(audioSilentSegment.playerIdMessage.AdditionalData);
+            Player.AudioReceived?.Invoke(false);
         }
         public void ReceiveAvatarChangeRequest(ServerAvatarChangeMessage ServerAvatarChangeMessage)
         {

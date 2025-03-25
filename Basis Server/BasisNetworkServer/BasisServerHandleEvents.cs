@@ -244,6 +244,7 @@ namespace BasisServerHandle
             if (reader.AvailableBytes == 0)
             {
                 BNL.LogError($"Missing Data from peer! {peer.Id} with channel ID {channel}");
+                reader.Recycle();
                 return false;
             }
             return true;
@@ -463,6 +464,12 @@ namespace BasisServerHandle
 
         public static void HandleVoiceMessage(NetPacketReader Reader, NetPeer peer)
         {
+            byte sequenceNumber = Reader.GetByte();
+            if (sequenceNumber > 63)
+            {
+                BNL.LogError("Sequence Number was greater the 63!");
+                sequenceNumber = 0;
+            }
             AudioSegmentDataMessage audioSegment = ThreadSafeMessagePool<AudioSegmentDataMessage>.Rent();
             audioSegment.Deserialize(Reader);
             Reader.Recycle();
@@ -470,11 +477,10 @@ namespace BasisServerHandle
             {
                 audioSegmentData = audioSegment
             };
-            SendVoiceMessageToClients(ServerAudio, BasisNetworkCommons.VoiceChannel, peer);
+            SendVoiceMessageToClients(ServerAudio, BasisNetworkCommons.FallChannel, peer, sequenceNumber);
             ThreadSafeMessagePool<AudioSegmentDataMessage>.Return(audioSegment);
         }
-
-        public static void SendVoiceMessageToClients(ServerAudioSegmentMessage audioSegment, byte channel, NetPeer sender)
+        public static void SendVoiceMessageToClients(ServerAudioSegmentMessage audioSegment, byte channel, NetPeer sender,byte sequenceNumber)
         {
             if (BasisSavedState.GetLastVoiceReceivers(sender, out VoiceReceiversMessage data))
             {
@@ -520,15 +526,17 @@ namespace BasisServerHandle
                 // Add player ID to the audio segment message
                 audioSegment.playerIdMessage = new PlayerIdMessage
                 {
-                    playerID = (ushort)sender.Id
+                    playerID = (ushort)sender.Id,
+                    AdditionalData = sequenceNumber,
                 };
 
                 // Serialize the audio segment message
                 NetDataWriter NetDataWriter = new NetDataWriter(true, 2);
+                NetDataWriter.Put(BasisNetworkCommons.VoiceChannel);
                 audioSegment.Serialize(NetDataWriter);
 
                 // Broadcast the message to the clients
-                NetworkServer.BroadcastMessageToClients(NetDataWriter, channel, ref endPoints, DeliveryMethod.Sequenced);
+                NetworkServer.BroadcastMessageToClients(NetDataWriter, channel, ref endPoints, DeliveryMethod.Unreliable);
             }
             else
             {
