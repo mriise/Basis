@@ -615,7 +615,7 @@ namespace BasisServerHandle
                     if (CreateServerReadyMessageForPeer(peer, out ServerReadyMessage Message))
                     {
                         Message.Serialize(writer, true);
-                        BNL.Log($"Writing Data with size {writer.Length}");
+                      //  BNL.Log($"Writing Data with size {writer.Length}");
                         NetworkServer.SendOutValidated(authClient, writer, BasisNetworkCommons.CreateRemotePlayersForNewPeer, LiteNetLib.DeliveryMethod.ReliableOrdered);
                     }
                 }
