@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public class JitterBuffer
 {
-    private const int MaxSize = 3; // Maximum buffer size
+    private const int MaxSize = 5; // Maximum buffer size
     private readonly List<SequencedVoiceData> sequencedVoiceDatas = new List<SequencedVoiceData>();
     private readonly object lockObj = new object();
 

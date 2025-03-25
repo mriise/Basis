@@ -33,7 +33,7 @@ public static partial class SerializableBasis
                 }
                 else
                 {
-                    BNL.LogError($"Unable to read remaining bytes, available: {reader.AvailableBytes}");
+                    BNL.LogError($"Unable to read remaining bytes, available: {reader.AvailableBytes} Required {payloadSize}");
                 }
             }
             else
