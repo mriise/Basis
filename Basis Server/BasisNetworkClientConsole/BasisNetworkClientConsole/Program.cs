@@ -72,8 +72,8 @@ namespace Basis
                     RM.localAvatarSyncMessage = new LocalAvatarSyncMessage
                     {
                         array = AvatarMessage,
-                        hasAdditionalAvatarData = false,
-                       AdditionalAvatarDatas = null,
+                     //   hasAdditionalAvatarData = false,
+                    //   AdditionalAvatarDatas = null,
                     };
                     byte[] bytes = Encoding.UTF8.GetBytes(Password);
                     LocalPLayer = NetworkClient.StartClient(Ip, Port, RM, bytes, true);

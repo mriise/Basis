@@ -8,8 +8,8 @@ public static partial class SerializableBasis
         public byte[] array;//position -> rotation -> rotation
         public const int AvatarSyncSize = 204;
         public const int StoredBones = 89;
-        public AdditionalAvatarData[] AdditionalAvatarDatas;
-        public bool hasAdditionalAvatarData;
+      //  public AdditionalAvatarData[] AdditionalAvatarDatas;
+      //  public bool hasAdditionalAvatarData;
         public void Deserialize(NetDataReader Writer,bool AttemptAdditionalData)
         {
             int Bytes = Writer.AvailableBytes;
@@ -19,6 +19,7 @@ public static partial class SerializableBasis
                 //now 178 for muscles, 3*4 for position 12, 4*4 for rotation 16-2 (W is half) = 204
                 array ??= new byte[AvatarSyncSize];
                 Writer.GetBytes(array, AvatarSyncSize);
+                /*
                 if (AttemptAdditionalData)
                 {
                     if (Writer.EndOfData)
@@ -40,6 +41,7 @@ public static partial class SerializableBasis
                         hasAdditionalAvatarData = true;
                     }
                 }
+                */
             }
             else
             {
@@ -56,6 +58,7 @@ public static partial class SerializableBasis
             {
                 Writer.Put(array);
             }
+            /*
             if (AttemptAdditionalData && hasAdditionalAvatarData)
             {
                 // BNL.Log("Serialize AAD");
@@ -66,6 +69,7 @@ public static partial class SerializableBasis
                     AAD.Serialize(Writer);
                 }
             }
+            */
         }
     }
 }

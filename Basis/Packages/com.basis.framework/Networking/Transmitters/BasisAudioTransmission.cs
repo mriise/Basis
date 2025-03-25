@@ -90,15 +90,10 @@ namespace Basis.Scripts.Networking.Transmitters
                 // Encode the audio data from the microphone recorder's buffer
                 AudioSegmentData.LengthUsed = encoder.Encode(MicrophoneRecorder.processBufferArray,MicrophoneRecorder.SampleRate, AudioSegmentData.buffer, AudioSegmentData.TotalLength);
 
-                NetDataWriter writer = new NetDataWriter();
-                writer.Put(BasisNetworkCommons.VoiceChannel);
-
-                sequenceNumber = (byte)((sequenceNumber + 1) & 0x3F);
-                writer.Put(sequenceNumber);
-
+                NetDataWriter writer = GenerateWriter();
                 AudioSegmentData.Serialize(writer);
                 BasisNetworkProfiler.AudioSegmentDataMessageCounter.Sample(AudioSegmentData.LengthUsed);
-                BasisNetworkManagement.LocalPlayerPeer.Send(writer, BasisNetworkCommons.FallChannel, AudioSendMethod);
+                SendOutVoice(writer);
                 Local.AudioReceived?.Invoke(true);
             }
             else
@@ -106,20 +101,29 @@ namespace Basis.Scripts.Networking.Transmitters
                 //  UnityEngine.BasisDebug.Log("Rejecting out going Audio");
             }
         }
+        public NetDataWriter GenerateWriter()
+        {
+            NetDataWriter writer = new NetDataWriter();
+            writer.Put(BasisNetworkCommons.VoiceChannel);
+            sequenceNumber = (byte)((sequenceNumber + 1) & 0x3F);
+            writer.Put(sequenceNumber);
+            return writer;
+        }
         private void SendSilenceOverNetwork()
         {
             if (NetworkedPlayer.HasReasonToSendAudio)
             {
-                NetDataWriter writer = new NetDataWriter();
-                writer.Put(BasisNetworkCommons.VoiceChannel);
-                sequenceNumber = (byte)((sequenceNumber + 1) & 0x3F);
-                writer.Put(sequenceNumber);
+                NetDataWriter writer = GenerateWriter();
                 audioSilentSegmentData.LengthUsed = 0;
                 audioSilentSegmentData.Serialize(writer);
                 BasisNetworkProfiler.AudioSegmentDataMessageCounter.Sample(writer.Length);
-                BasisNetworkManagement.LocalPlayerPeer.Send(writer, BasisNetworkCommons.FallChannel, AudioSendMethod);
+                SendOutVoice(writer);
                 Local.AudioReceived?.Invoke(false);
             }
+        }
+        public void SendOutVoice(NetDataWriter writer)
+        {
+            BasisNetworkManagement.LocalPlayerPeer.Send(writer, BasisNetworkCommons.FallChannel, AudioSendMethod);
         }
     }
 }

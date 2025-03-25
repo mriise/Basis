@@ -208,10 +208,10 @@ namespace Basis.Scripts.Networking
             {
                 double TimeAsDouble = Time.timeAsDouble;
                 float deltaTime = Time.deltaTime;
-                //if (float.IsNaN(deltaTime))
-                //{
-                //    return;
-                //}
+                if (float.IsNaN(deltaTime))
+                {
+                    return;
+                }
                 // Complete tasks and apply results
                 for (int Index = 0; Index < ReceiverCount; Index++)
                 {

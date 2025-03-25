@@ -329,10 +329,7 @@ namespace BasisServerHandle
                             }
                             break;
                         case BasisNetworkCommons.AudioRecipients:
-                            if (ValidateSize(reader, peer, channel))
-                            {
-                                UpdateVoiceReceivers(reader, peer);
-                            }
+                            UpdateVoiceReceivers(reader, peer);
                             break;
                         case BasisNetworkCommons.netIDAssign:
                             if (ValidateSize(reader, peer, channel))
@@ -640,7 +637,7 @@ namespace BasisServerHandle
 
                 if (!BasisSavedState.GetLastAvatarSyncState(peer, out var syncState))
                 {
-                    syncState = new LocalAvatarSyncMessage() { array = new byte[386], hasAdditionalAvatarData = false, AdditionalAvatarDatas = null };
+                    syncState = new LocalAvatarSyncMessage() { array = new byte[386] };//, hasAdditionalAvatarData = false, AdditionalAvatarDatas = null };
                     BNL.LogError("Unable to get Last Player Avatar Data! Using Error Fallback");
                 }
 
