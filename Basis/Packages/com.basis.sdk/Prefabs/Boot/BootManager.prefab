@@ -266,25 +266,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ManagerModuleOptions:
-  - OptionName: Selected Microphone
-    Explanation: 
-    Parse: 1
-    Type: 2
-  - OptionName: Mcrophone Volume
-    Explanation: 
-    Parse: 1
-    Type: 3
   - OptionName: Microphone Denoiser
     Explanation: 
     Parse: 1
     Type: 1
   Manager: {fileID: 2948345398921965871}
-  MicrophoneDevice:
-  - Microphone (Virtual Desktop Audio)
-  - Microphone (NVIDIA Broadcast)
-  - Microphone (Antlion Wireless Microphone)
-  - Microphone (Steam Streaming Microphone)
-  - Microphone (RODE NT-USB)
 --- !u!114 &2900259308473471863
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1628,46 +1614,6 @@ MonoBehaviour:
       ValueToggle: 0
       EditorVisable: 0
     SupportedRenderPipeline: 030000000400000000000000
-    Round: 0
-    RoundTo: 2
-    MaxPercentage: 100
-    MinPercentage: 0
-    SliderMaxValue: 100
-    SliderMinValue: 0
-    Name: Selected Microphone
-    ValueDescriptor: 
-    SelectedValueDefault: 
-    ValueDefault: False
-    Explanation: 
-    selectedValue: microphone (virtual desktop audio)
-    Type: 2
-    TextDescription: {fileID: 0}
-    ObjectInput: {fileID: 0}
-    ApplyInput: {fileID: 0}
-    ResetToDefault: {fileID: 0}
-    PlatFormDefaultState: []
-    ExcludeFromThesePlatforms: []
-    MasterQualityState: 0
-    ParseController: 1
-    ReturnedValueTextType: 0
-    SelectableValueList:
-    - realValue: microphone (virtual desktop audio)
-      UserValue: Microphone (Virtual Desktop Audio)
-    - realValue: microphone (nvidia broadcast)
-      UserValue: Microphone (NVIDIA Broadcast)
-    - realValue: microphone (antlion wireless microphone)
-      UserValue: Microphone (Antlion Wireless Microphone)
-    - realValue: microphone (steam streaming microphone)
-      UserValue: Microphone (Steam Streaming Microphone)
-    - realValue: microphone (rode nt-usb)
-      UserValue: Microphone (RODE NT-USB)
-  - EditorBasedUIToggles:
-      SupportedRenderPipelines: 0
-      DefaultPlatform: 0
-      ExcludePlatform: 0
-      ValueToggle: 0
-      EditorVisable: 0
-    SupportedRenderPipeline: 030000000400000000000000
     Round: 1
     RoundTo: 0
     MaxPercentage: 100
@@ -1996,7 +1942,7 @@ MonoBehaviour:
       DefaultPlatform: 1
       ExcludePlatform: 0
       ValueToggle: 0
-      EditorVisable: 1
+      EditorVisable: 0
     SupportedRenderPipeline: 030000000400000000000000
     Round: 0
     RoundTo: 0

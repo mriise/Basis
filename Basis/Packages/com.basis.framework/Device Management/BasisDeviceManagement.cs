@@ -223,7 +223,7 @@ namespace Basis.Scripts.Device_Management
                 BasisCursorManagement.UnlockCursorBypassChecks("Forceful Unlock From Device Management");
             }
             OnBootModeChanged?.Invoke(CurrentMode);
-
+            SMDMicrophone.LoadInMicrophoneData(CurrentMode);
             BasisDebug.Log("Loading " + CurrentMode, BasisDebug.LogTag.Device);
 
             switch (CurrentMode)

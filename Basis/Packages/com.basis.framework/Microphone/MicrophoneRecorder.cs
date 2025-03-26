@@ -34,6 +34,7 @@ public partial class MicrophoneRecorder : MicrophoneRecorderBase
                 BasisDeviceManagement.Instance.OnBootModeChanged += OnBootModeChanged;
                 HasEvents = true;
             }
+            SMDMicrophone.LoadInMicrophoneData(BasisDeviceManagement.Instance.CurrentMode);
             ResetMicrophones(SMDMicrophone.SelectedMicrophone);
             ConfigureDenoiser(SMDMicrophone.SelectedDenoiserMicrophone);
             StartProcessingThread();  // Start the processing thread once

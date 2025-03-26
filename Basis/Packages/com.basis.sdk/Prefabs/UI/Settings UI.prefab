@@ -21200,6 +21200,7 @@ GameObject:
   - component: {fileID: -8689619352384809884}
   - component: {fileID: 163077535810724808}
   - component: {fileID: 120592055573627991}
+  - component: {fileID: 8950482846793513484}
   m_Layer: 5
   m_Name: Settings UI
   m_TagString: Untagged
@@ -21280,7 +21281,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
-  m_PresetInfoIsWorld: 1
+  m_PresetInfoIsWorld: 0
 --- !u!114 &6328418170902668384
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -21407,21 +21408,6 @@ MonoBehaviour:
     ObjectInput: {fileID: 1571773575179432186}
     ApplyInput: {fileID: 0}
     ResetToDefault: {fileID: 0}
-  - Option: Selected Microphone
-    TextDescription: {fileID: 0}
-    ObjectInput: {fileID: 1360204485655631771}
-    ApplyInput: {fileID: 0}
-    ResetToDefault: {fileID: 0}
-  - Option: Microphone Volume
-    TextDescription: {fileID: 3509322287299804352}
-    ObjectInput: {fileID: 6726324713324380645}
-    ApplyInput: {fileID: 0}
-    ResetToDefault: {fileID: 0}
-  - Option: Mcrophone Volume
-    TextDescription: {fileID: 1296154762303717230}
-    ObjectInput: {fileID: 1314951854407227033}
-    ApplyInput: {fileID: 0}
-    ResetToDefault: {fileID: 0}
   - Option: Player Volume
     TextDescription: {fileID: 5373501167617558476}
     ObjectInput: {fileID: 6812720856038687404}
@@ -21536,6 +21522,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxDistance: 4
+--- !u!114 &8950482846793513484
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5776740318662466287}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d687bf377e4fa6498a9aa52183d78ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Dropdown: {fileID: 1360204485655631771}
+  Volume: {fileID: 1314951854407227033}
+  MicrophoneVolume: {fileID: 1296154762303717230}
 --- !u!1 &5778134841089666775
 GameObject:
   m_ObjectHideFlags: 0
