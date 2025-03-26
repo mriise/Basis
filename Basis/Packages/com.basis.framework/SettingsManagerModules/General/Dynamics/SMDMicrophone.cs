@@ -75,7 +75,7 @@ public class SMDMicrophone : SettingsManagerOption
         {
             Manager = SettingsManager.Instance;
         }
-        if (NameReturn(1, Option))
+        if (NameReturn(0, Option))
         {
             SelectedDenoiserMicrophone = CheckIsOn(Option.SelectedValue);
         }
