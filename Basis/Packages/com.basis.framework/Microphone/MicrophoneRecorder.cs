@@ -22,12 +22,22 @@ public partial class MicrophoneRecorder : MicrophoneRecorderBase
     private static NativeArray<float> PBA;
     private static LogarithmicVolumeAdjustmentJob VAJ;
     private static JobHandle handle;
+    public const string MicrophoneState = "MicrophoneState";
     public bool TryInitialize()
     {
         if (!IsInitialize)
         {
             if (!HasEvents)
             {
+               int value = PlayerPrefs.GetInt(MicrophoneState,0);
+                if(value == 0)
+                {
+                    SetPauseState(true);
+                }
+                else
+                {
+                    SetPauseState(false);
+                }
                 SMDMicrophone.OnMicrophoneChanged += ResetMicrophones;
                 SMDMicrophone.OnMicrophoneVolumeChanged += ChangeMicrophoneVolume;
                 SMDMicrophone.OnMicrophoneUseDenoiserChanged += ConfigureDenoiser;
@@ -168,6 +178,7 @@ public partial class MicrophoneRecorder : MicrophoneRecorderBase
         }
         set
         {
+            PlayerPrefs.SetInt(MicrophoneState,isPaused ? 1 : 0);
             isPaused = value;
             if (isPaused)
             {
