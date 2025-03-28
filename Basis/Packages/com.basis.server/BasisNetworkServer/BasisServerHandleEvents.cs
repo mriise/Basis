@@ -329,10 +329,7 @@ namespace BasisServerHandle
                             }
                             break;
                         case BasisNetworkCommons.AudioRecipients:
-                            if (ValidateSize(reader, peer, channel))
-                            {
-                                UpdateVoiceReceivers(reader, peer);
-                            }
+                            UpdateVoiceReceivers(reader, peer);
                             break;
                         case BasisNetworkCommons.netIDAssign:
                             if (ValidateSize(reader, peer, channel))
@@ -464,12 +461,14 @@ namespace BasisServerHandle
 
         public static void HandleVoiceMessage(NetPacketReader Reader, NetPeer peer)
         {
+            /*
             byte sequenceNumber = Reader.GetByte();
             if (sequenceNumber > 63)
             {
                 BNL.LogError("Sequence Number was greater the 63!");
                 sequenceNumber = 0;
             }
+            */
             AudioSegmentDataMessage audioSegment = ThreadSafeMessagePool<AudioSegmentDataMessage>.Rent();
             audioSegment.Deserialize(Reader);
             Reader.Recycle();
@@ -477,10 +476,10 @@ namespace BasisServerHandle
             {
                 audioSegmentData = audioSegment
             };
-            SendVoiceMessageToClients(ServerAudio, BasisNetworkCommons.FallChannel, peer, sequenceNumber);
+            SendVoiceMessageToClients(ServerAudio, BasisNetworkCommons.FallChannel, peer);
             ThreadSafeMessagePool<AudioSegmentDataMessage>.Return(audioSegment);
         }
-        public static void SendVoiceMessageToClients(ServerAudioSegmentMessage audioSegment, byte channel, NetPeer sender,byte sequenceNumber)
+        public static void SendVoiceMessageToClients(ServerAudioSegmentMessage audioSegment, byte channel, NetPeer sender)//byte sequenceNumber
         {
             if (BasisSavedState.GetLastVoiceReceivers(sender, out VoiceReceiversMessage data))
             {
@@ -527,16 +526,15 @@ namespace BasisServerHandle
                 audioSegment.playerIdMessage = new PlayerIdMessage
                 {
                     playerID = (ushort)sender.Id,
-                    AdditionalData = sequenceNumber,
+                    AdditionalData = 0,
                 };
 
                 // Serialize the audio segment message
                 NetDataWriter NetDataWriter = new NetDataWriter(true, 2);
-                NetDataWriter.Put(BasisNetworkCommons.VoiceChannel);
                 audioSegment.Serialize(NetDataWriter);
 
                 // Broadcast the message to the clients
-                NetworkServer.BroadcastMessageToClients(NetDataWriter, channel, ref endPoints, DeliveryMethod.Unreliable);
+                NetworkServer.BroadcastMessageToClients(NetDataWriter, channel, ref endPoints, DeliveryMethod.Sequenced);
             }
             else
             {
@@ -618,7 +616,7 @@ namespace BasisServerHandle
                     if (CreateServerReadyMessageForPeer(peer, out ServerReadyMessage Message))
                     {
                         Message.Serialize(writer, true);
-                        BNL.Log($"Writing Data with size {writer.Length}");
+                      //  BNL.Log($"Writing Data with size {writer.Length}");
                         NetworkServer.SendOutValidated(authClient, writer, BasisNetworkCommons.CreateRemotePlayersForNewPeer, LiteNetLib.DeliveryMethod.ReliableOrdered);
                     }
                 }

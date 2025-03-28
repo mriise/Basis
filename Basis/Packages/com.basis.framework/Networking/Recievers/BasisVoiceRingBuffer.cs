@@ -2,49 +2,36 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
-[System.Serializable]
-public struct SequencedVoiceData
-{
-    public byte SequenceNumber;
-    public byte[] Array;
-    public int Length;
-    public bool IsInsertedSilence;
-}
 public class BasisVoiceRingBuffer
 {
     private readonly float[] buffer;
-    private int head; // Points to the next position to write
-    private int tail; // Points to the next position to read
-    private int size; // Current data size in the buffer
+    private int head;
+    private int tail;
+    private int size;
     private readonly object bufferLock = new();
     public Queue<float[]> BufferedReturn = new Queue<float[]>();
 
-    public BasisVoiceRingBuffer(int capacity)
+    public BasisVoiceRingBuffer()
     {
-        if (capacity <= 0) throw new ArgumentException("Capacity must be greater than zero.");
-        buffer = new float[capacity];
+        buffer = new float[RemoteOpusSettings.TotalFrameBufferSize];
         head = 0;
         tail = 0;
         size = 0;
     }
 
     public int Capacity => buffer.Length;
-
     public bool IsEmpty => Interlocked.CompareExchange(ref size, 0, 0) == 0;
     public bool IsFull => Interlocked.CompareExchange(ref size, 0, 0) == Capacity;
+
     public void Add(float[] segment, int length)
     {
         if (segment == null || segment.Length == 0)
         {
             throw new ArgumentNullException(nameof(segment));
         }
-        if (length <= 0)
+        if (length <= 0 || length > segment.Length)
         {
-            throw new ArgumentOutOfRangeException(nameof(length), "Length must be a positive number.");
-        }
-        if (length > segment.Length)
-        {
-            throw new ArgumentOutOfRangeException(nameof(length), "Length must be less than or equal to the segment's length.");
+            throw new ArgumentOutOfRangeException(nameof(length), "Length must be a positive number and within segment length.");
         }
 
         lock (bufferLock)
@@ -54,7 +41,6 @@ public class BasisVoiceRingBuffer
                 throw new InvalidOperationException("The segment is too large to fit into the buffer.");
             }
 
-            // Remove old data to make room for new data
             int availableSpace = Capacity - Interlocked.CompareExchange(ref size, 0, 0);
             if (length > availableSpace)
             {
@@ -65,13 +51,12 @@ public class BasisVoiceRingBuffer
                 BasisDebug.Log($"Overwriting {itemsToRemove} elements due to lack of space in the Audio buffer.");
             }
 
-            // Add the new segment to the buffer
-            int firstPart = Math.Min(length, Capacity - head); // Space till the end of the buffer
-            Array.Copy(segment, 0, buffer, head, firstPart);   // Copy first part
+            int firstPart = Math.Min(length, Capacity - head);
+            Array.Copy(segment, 0, buffer, head, firstPart);
             int remaining = length - firstPart;
             if (remaining > 0)
             {
-                Array.Copy(segment, firstPart, buffer, 0, remaining); // Copy wrap-around part
+                Array.Copy(segment, firstPart, buffer, 0, remaining);
             }
 
             Interlocked.Add(ref head, length);
@@ -85,7 +70,6 @@ public class BasisVoiceRingBuffer
         if (segmentSize <= 0)
             throw new ArgumentOutOfRangeException(nameof(segmentSize));
 
-        // Try to reuse an array from the buffer pool
         lock (BufferedReturn)
         {
             if (!BufferedReturn.TryDequeue(out segment) || segment.Length != segmentSize)
@@ -99,24 +83,32 @@ public class BasisVoiceRingBuffer
             int currentSize = Interlocked.CompareExchange(ref size, 0, 0);
             int itemsToRemove = Math.Min(segmentSize, currentSize);
 
-            // Remove items in bulk
-            int firstPart = Math.Min(itemsToRemove, Capacity - tail); // Items till the end of the buffer
-            Array.Copy(buffer, tail, segment, 0, firstPart);          // Copy first part
+            int firstPart = Math.Min(itemsToRemove, Capacity - tail);
+            Array.Copy(buffer, tail, segment, 0, firstPart);
             int remaining = itemsToRemove - firstPart;
             if (remaining > 0)
             {
-                Array.Copy(buffer, 0, segment, firstPart, remaining); // Copy wrap-around part
+                Array.Copy(buffer, 0, segment, firstPart, remaining);
             }
 
             Interlocked.Add(ref tail, itemsToRemove);
             tail %= Capacity;
             Interlocked.Add(ref size, -itemsToRemove);
-
-            // Warn if fewer items were available than requested
-            if (itemsToRemove < segmentSize)
-            {
-                BasisDebug.Log($"Warning: Requested {segmentSize} items, but only {itemsToRemove} are available.");
-            }
         }
+    }
+
+    public bool NeedsMoreData(int requiredSize)
+    {
+        int currentSize = Interlocked.CompareExchange(ref size, 0, 0);
+        if (currentSize < requiredSize)
+        {
+            BasisDebug.Log($"Warning: Requested {requiredSize} items, but only {currentSize} are available.");
+            return true;
+        }
+        return false;
+    }
+    public int SamplesToMax()
+    {
+        return Capacity - Interlocked.CompareExchange(ref size, 0, 0);
     }
 }

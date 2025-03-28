@@ -4,6 +4,7 @@ using Basis.Scripts.Drivers;
 using Basis.Scripts.Networking.NetworkedAvatar;
 using OpusSharp.Core;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Basis.Scripts.Networking.Recievers
@@ -22,46 +23,22 @@ namespace Basis.Scripts.Networking.Recievers
         public float[] pcmBuffer;
         public int pcmLength;
         public bool IsReady;
-        public byte LastSequenceID;
         public float[] silentData;
-        /// <summary>
-        /// decodes data into the pcm buffer
-        /// note that the pcm buffer is always going to have more data then submitted.
-        /// the pcm length is how much was actually encoded.
-        /// </summary>
-        /// <param name="data"></param>
+        public byte lastReadIndex = 0;
         public void OnDecode(byte SequenceNumber, byte[] data, int length)
         {
-            bool state = BasisJitterBuffer.IsAheadOf(LastSequenceID, SequenceNumber, out string Error);
-            if (state)
-            {
-                LastSequenceID = SequenceNumber;
-                pcmLength = decoder.Decode(data, length, pcmBuffer, RemoteOpusSettings.NetworkSampleRate, false);
-                InOrderRead.Add(pcmBuffer, pcmLength);
-            }
-            else
-            {
-                BasisDebug.Log(Error);
-            }
+            pcmLength = decoder.Decode(data, length, pcmBuffer, RemoteOpusSettings.NetworkSampleRate, false);
+            InOrderRead.Add(pcmBuffer, pcmLength);
         }
         public void OnDecodeSilence(byte SequenceNumber)
         {
-            bool state = BasisJitterBuffer.IsAheadOf(LastSequenceID, SequenceNumber, out string Error);
-            if (state)
-            {
-                LastSequenceID = SequenceNumber;
-                InOrderRead.Add(silentData, RemoteOpusSettings.Pcmlength);
-            }
-            else
-            {
-                BasisDebug.Log(Error);
-            }
+            InOrderRead.Add(silentData, RemoteOpusSettings.FrameSize);
         }
         public void OnEnable(BasisNetworkPlayer networkedPlayer)
         {
-            if (silentData == null || silentData.Length != RemoteOpusSettings.Pcmlength)
+            if (silentData == null || silentData.Length != RemoteOpusSettings.FrameSize)
             {
-                silentData = new float[RemoteOpusSettings.Pcmlength];
+                silentData = new float[RemoteOpusSettings.FrameSize];
                 Array.Fill(silentData, 0f);
             }
             // Initialize settings and audio source
@@ -76,14 +53,14 @@ namespace Basis.Scripts.Networking.Recievers
             audioSource.dopplerLevel = 0;
             audioSource.volume = 1.0f;
             audioSource.loop = true;
-            InOrderRead = new BasisVoiceRingBuffer(RemoteOpusSettings.RecieverLengthCapacity);
+            InOrderRead = new BasisVoiceRingBuffer();
             // Create AudioClip
-            audioSource.clip = AudioClip.Create($"player [{networkedPlayer.NetId}]", RemoteOpusSettings.RecieverLength, RemoteOpusSettings.Channels, RemoteOpusSettings.PlayBackSampleRate, false, (buf) =>
+            audioSource.clip = AudioClip.Create($"player [{networkedPlayer.NetId}]", RemoteOpusSettings.TotalFrameBufferSize, RemoteOpusSettings.Channels, RemoteOpusSettings.PlayBackSampleRate, false, (buf) =>
             {
                 Array.Fill(buf, 1.0f);
             });
             // Ensure decoder is initialized and subscribe to events
-            pcmLength = RemoteOpusSettings.Pcmlength;
+            pcmLength = RemoteOpusSettings.FrameSize;
             pcmBuffer = new float[RemoteOpusSettings.SampleLength];
             decoder = new OpusDecoder(RemoteOpusSettings.NetworkSampleRate, RemoteOpusSettings.Channels);
             StartAudio();
@@ -134,15 +111,15 @@ namespace Basis.Scripts.Networking.Recievers
             IsPlaying = true;
             audioSource.Play();
         }
-        public void OnAudioFilterRead(float[] data, int channels,int length)
+        public void OnAudioFilterRead(float[] data, int channels, int length)
         {
             int frames = length / channels; // Number of audio frames
             if (InOrderRead.IsEmpty)
             {
                 // No voice data, fill with silence
-                BasisDebug.Log("Missing Audio Data! filling with Silence");
-                   Array.Fill(data, 0);
-                   return;
+              //  BasisDebug.Log("Missing Audio Data! filling with Silence");
+                Array.Fill(data, 0);
+                return;
             }
 
             int outputSampleRate = RemoteOpusSettings.PlayBackSampleRate;
@@ -156,7 +133,6 @@ namespace Basis.Scripts.Networking.Recievers
                 ProcessAudioWithResampling(data, frames, channels, outputSampleRate);
             }
         }
-
         private void ProcessAudioWithoutResampling(float[] data, int frames, int channels)
         {
             InOrderRead.Remove(frames, out float[] segment);
