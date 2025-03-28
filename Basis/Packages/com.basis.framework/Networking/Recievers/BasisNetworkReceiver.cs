@@ -13,7 +13,7 @@ namespace Basis.Scripts.Networking.Recievers
 {
     [DefaultExecutionOrder(15001)]
     [System.Serializable]
-    public partial class BasisNetworkReceiver : BasisNetworkPlayer
+    public class BasisNetworkReceiver : BasisNetworkPlayer
     {
         public ushort[] CopyData = new ushort[LocalAvatarSyncMessage.StoredBones];
         [SerializeField]
@@ -266,16 +266,22 @@ namespace Basis.Scripts.Networking.Recievers
         }
         public void ReceiveNetworkAudio(ServerAudioSegmentMessage audioSegment)
         {
-            byte SequenceNumber = audioSegment.playerIdMessage.AdditionalData;
-            BasisNetworkProfiler.ServerAudioSegmentMessageCounter.Sample(audioSegment.audioSegmentData.LengthUsed);
-            AudioReceiverModule.OnDecode(SequenceNumber, audioSegment.audioSegmentData.buffer, audioSegment.audioSegmentData.LengthUsed);
-            Player.AudioReceived?.Invoke(true);
+            if (Ready)
+            {
+                byte SequenceNumber = audioSegment.playerIdMessage.AdditionalData;
+                BasisNetworkProfiler.ServerAudioSegmentMessageCounter.Sample(audioSegment.audioSegmentData.LengthUsed);
+                AudioReceiverModule.OnDecode(SequenceNumber, audioSegment.audioSegmentData.buffer, audioSegment.audioSegmentData.LengthUsed);
+                Player.AudioReceived?.Invoke(true);
+            }
         }
         public void ReceiveSilentNetworkAudio(ServerAudioSegmentMessage audioSilentSegment)
         {
-            BasisNetworkProfiler.ServerAudioSegmentMessageCounter.Sample(1);
-            AudioReceiverModule.OnDecodeSilence(audioSilentSegment.playerIdMessage.AdditionalData);
-            Player.AudioReceived?.Invoke(false);
+            if (Ready)
+            {
+                BasisNetworkProfiler.ServerAudioSegmentMessageCounter.Sample(1);
+                AudioReceiverModule.OnDecodeSilence(audioSilentSegment.playerIdMessage.AdditionalData);
+                Player.AudioReceived?.Invoke(false);
+            }
         }
         public void ReceiveAvatarChangeRequest(ServerAvatarChangeMessage ServerAvatarChangeMessage)
         {
