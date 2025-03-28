@@ -135,26 +135,31 @@ namespace Basis.Scripts.UI.NamePlate
                             {
                                 StopCoroutine(colorTransitionCoroutine);
                             }
-                            colorTransitionCoroutine = StartCoroutine(TransitionColor(targetColor));
+                            if (targetColor != CurrentColor)
+                            {
+                                colorTransitionCoroutine = StartCoroutine(TransitionColor(targetColor));
+                            }
                         }
                     }
                 }, null);
             }
         }
+        public Color CurrentColor;
         private IEnumerator TransitionColor(Color targetColor)
         {
-            Color initialColor = namePlateImage.color;
+            CurrentColor = namePlateImage.color;
             float elapsedTime = 0f;
 
             while (elapsedTime < transitionDuration)
             {
                 elapsedTime += Time.deltaTime;
                 float lerpProgress = Mathf.Clamp01(elapsedTime / transitionDuration);
-                namePlateImage.color = Color.Lerp(initialColor, targetColor, lerpProgress);
+                namePlateImage.color = Color.Lerp(CurrentColor, targetColor, lerpProgress);
                 yield return cachedEndOfFrame;
             }
 
             namePlateImage.color = targetColor;
+            CurrentColor = targetColor;
             colorTransitionCoroutine = null;
 
             if (targetColor == IsTalkingColor)
