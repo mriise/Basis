@@ -155,7 +155,7 @@ MonoBehaviour:
     Explanation: Vertical Sync
     Parse: 1
     Type: 1
-  CurrentMode: off
+  CurrentMode: on
 --- !u!114 &546850877596679747
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -408,7 +408,7 @@ MonoBehaviour:
     Explanation: 
     Parse: 1
     Type: 3
-  RenderScale: 0.9523397
+  RenderScale: 1
 --- !u!114 &1359221182720975491
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -451,7 +451,7 @@ MonoBehaviour:
     Explanation: 
     Parse: 0
     Type: 3
-  SelectedFOV: 60
+  SelectedFOV: 82
 --- !u!114 &7748182058184839400
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1050,7 +1050,7 @@ MonoBehaviour:
     SelectedValueDefault: on
     ValueDefault: on
     Explanation: Vertical Sync
-    selectedValue: off
+    selectedValue: on
     Type: 1
     TextDescription: {fileID: 0}
     ObjectInput: {fileID: 0}
@@ -1216,7 +1216,7 @@ MonoBehaviour:
     SelectedValueDefault: true
     ValueDefault: normal
     Explanation: HDR Support
-    selectedValue: normal
+    selectedValue: ultra
     Type: 1
     TextDescription: {fileID: 0}
     ObjectInput: {fileID: 0}
@@ -1255,7 +1255,7 @@ MonoBehaviour:
     SelectedValueDefault: ultra
     ValueDefault: ultra
     Explanation: Terrain Quality
-    selectedValue: medium
+    selectedValue: ultra
     Type: 1
     TextDescription: {fileID: 0}
     ObjectInput: {fileID: 0}
@@ -1335,7 +1335,7 @@ MonoBehaviour:
     SelectedValueDefault: 
     ValueDefault: false
     Explanation: 
-    selectedValue: true
+    selectedValue: false
     Type: 1
     TextDescription: {fileID: 0}
     ObjectInput: {fileID: 0}
@@ -1403,7 +1403,7 @@ MonoBehaviour:
     SelectedValueDefault: 
     ValueDefault: True
     Explanation: 
-    selectedValue: off
+    selectedValue: on
     Type: 4
     TextDescription: {fileID: 0}
     ObjectInput: {fileID: 0}
@@ -1440,7 +1440,7 @@ MonoBehaviour:
     SelectedValueDefault: 
     ValueDefault: True
     Explanation: 
-    selectedValue: off
+    selectedValue: on
     Type: 4
     TextDescription: {fileID: 0}
     ObjectInput: {fileID: 0}
@@ -1557,7 +1557,7 @@ MonoBehaviour:
     SelectedValueDefault: 
     ValueDefault: windowed
     Explanation: 
-    selectedValue: windowed
+    selectedValue: fullscreen
     Type: 2
     TextDescription: {fileID: 0}
     ObjectInput: {fileID: 0}
@@ -1621,11 +1621,11 @@ MonoBehaviour:
     SliderMaxValue: 100
     SliderMinValue: 0
     Name: Main Audio
-    ValueDescriptor: 62%
+    ValueDescriptor: 100%
     SelectedValueDefault: 100
     ValueDefault: 100
     Explanation: Main Audio
-    selectedValue: 12
+    selectedValue: 100
     Type: 3
     TextDescription: {fileID: 0}
     ObjectInput: {fileID: 0}
@@ -1651,7 +1651,7 @@ MonoBehaviour:
     SliderMaxValue: 80
     SliderMinValue: 0
     Name: Menus Volume
-    ValueDescriptor: 62%
+    ValueDescriptor: 100%
     SelectedValueDefault: 50
     ValueDefault: 70
     Explanation: UI Sounds
@@ -1681,11 +1681,11 @@ MonoBehaviour:
     SliderMaxValue: 80
     SliderMinValue: 0
     Name: World Volume
-    ValueDescriptor: 62%
+    ValueDescriptor: 100%
     SelectedValueDefault: 50
     ValueDefault: 80
     Explanation: Player Volume
-    selectedValue: 55
+    selectedValue: 80
     Type: 3
     TextDescription: {fileID: 0}
     ObjectInput: {fileID: 0}
@@ -1711,7 +1711,7 @@ MonoBehaviour:
     SliderMaxValue: 80
     SliderMinValue: 0
     Name: Player Volume
-    ValueDescriptor: 
+    ValueDescriptor: 100%
     SelectedValueDefault: 50
     ValueDefault: 70
     Explanation: 
@@ -1775,7 +1775,7 @@ MonoBehaviour:
     SelectedValueDefault: 1
     ValueDefault: 1
     Explanation: 
-    selectedValue: 1.126944
+    selectedValue: 0.9955415
     Type: 3
     TextDescription: {fileID: 0}
     ObjectInput: {fileID: 0}
@@ -1801,11 +1801,11 @@ MonoBehaviour:
     SliderMaxValue: 1.5
     SliderMinValue: 0.25
     Name: Render Resolution
-    ValueDescriptor: Render Resolution
+    ValueDescriptor: 1
     SelectedValueDefault: 1
     ValueDefault: 1
     Explanation: 
-    selectedValue: 0.9523397
+    selectedValue: 1
     Type: 3
     TextDescription: {fileID: 0}
     ObjectInput: {fileID: 0}
@@ -1831,11 +1831,11 @@ MonoBehaviour:
     SliderMaxValue: 0.5
     SliderMinValue: 0
     Name: Controller DeadZone
-    ValueDescriptor: Controller DeadZone
+    ValueDescriptor: 0
     SelectedValueDefault: 0.05
     ValueDefault: 0.1
     Explanation: 
-    selectedValue: 0.1
+    selectedValue: 0
     Type: 3
     TextDescription: {fileID: 0}
     ObjectInput: {fileID: 0}
@@ -1858,12 +1858,12 @@ MonoBehaviour:
     RoundTo: 0
     MaxPercentage: 100
     MinPercentage: 0
-    SliderMaxValue: 25
+    SliderMaxValue: 15
     SliderMinValue: 0
     Name: Microphone Range
-    ValueDescriptor: Microphone Range
+    ValueDescriptor: 15
     SelectedValueDefault: 
-    ValueDefault: 25
+    ValueDefault: 15
     Explanation: 
     selectedValue: 25
     Type: 3
@@ -1882,18 +1882,18 @@ MonoBehaviour:
       DefaultPlatform: 0
       ExcludePlatform: 0
       ValueToggle: 0
-      EditorVisable: 0
+      EditorVisable: 1
     SupportedRenderPipeline: 030000000400000000000000
     Round: 0
     RoundTo: 2
     MaxPercentage: 100
     MinPercentage: 0
-    SliderMaxValue: 25
+    SliderMaxValue: 15
     SliderMinValue: 0
     Name: Hearing Range
-    ValueDescriptor: Hearing Range
+    ValueDescriptor: 15
     SelectedValueDefault: 
-    ValueDefault: 25
+    ValueDefault: 15
     Explanation: 
     selectedValue: 25
     Type: 3
@@ -1921,7 +1921,7 @@ MonoBehaviour:
     SliderMaxValue: 90
     SliderMinValue: -1
     Name: Snap Turn Angle
-    ValueDescriptor: Snap Turn Angle
+    ValueDescriptor: -1
     SelectedValueDefault: 
     ValueDefault: 45
     Explanation: 
@@ -1951,11 +1951,11 @@ MonoBehaviour:
     SliderMaxValue: 1
     SliderMinValue: 0
     Name: Foveated Rendering Level
-    ValueDescriptor: Foveated Rendering Level
+    ValueDescriptor: 1
     SelectedValueDefault: 
     ValueDefault: 0
     Explanation: 
-    selectedValue: 
+    selectedValue: 1
     Type: 3
     TextDescription: {fileID: 0}
     ObjectInput: {fileID: 0}
@@ -1984,11 +1984,11 @@ MonoBehaviour:
     SliderMaxValue: 160
     SliderMinValue: 40
     Name: Field Of View
-    ValueDescriptor: Field Of View
+    ValueDescriptor: 82
     SelectedValueDefault: 
     ValueDefault: 90
     Explanation: 
-    selectedValue: 
+    selectedValue: 82
     Type: 3
     TextDescription: {fileID: 0}
     ObjectInput: {fileID: 0}
@@ -2138,27 +2138,10 @@ MonoBehaviour:
       UserValue: Ultra
     Min: 0
     Max: 0
-  - Name: Ambient Occlusion
-    DefaultValue: ultra
-    SelectedValue: ultra
-    Index: 2
-    SelectableValueList:
-    - realValue: very low
-      UserValue: Very Low
-    - realValue: low
-      UserValue: Low
-    - realValue: medium
-      UserValue: Medium
-    - realValue: high
-      UserValue: High
-    - realValue: ultra
-      UserValue: Ultra
-    Min: 0
-    Max: 0
   - Name: Contact Shadows
     DefaultValue: ultra
-    SelectedValue: ultra
-    Index: 3
+    SelectedValue: 4
+    Index: 2
     SelectableValueList:
     - realValue: very low
       UserValue: Very Low
@@ -2175,7 +2158,7 @@ MonoBehaviour:
   - Name: Quality Level
     DefaultValue: ultra
     SelectedValue: ultra
-    Index: 4
+    Index: 3
     SelectableValueList:
     - realValue: very low
       UserValue: Very Low
@@ -2192,7 +2175,7 @@ MonoBehaviour:
   - Name: Shadow Quality
     DefaultValue: ultra
     SelectedValue: ultra
-    Index: 5
+    Index: 4
     SelectableValueList:
     - realValue: very low
       UserValue: Very Low
@@ -2209,7 +2192,7 @@ MonoBehaviour:
   - Name: Texture Quality
     DefaultValue: ultra
     SelectedValue: ultra
-    Index: 6
+    Index: 5
     SelectableValueList:
     - realValue: very low
       UserValue: Very Low
@@ -2226,7 +2209,7 @@ MonoBehaviour:
   - Name: Vertical Sync
     DefaultValue: on
     SelectedValue: off
-    Index: 7
+    Index: 6
     SelectableValueList:
     - realValue: on
       UserValue: On
@@ -2239,7 +2222,7 @@ MonoBehaviour:
   - Name: Volumetric Quality
     DefaultValue: ultra
     SelectedValue: ultra
-    Index: 8
+    Index: 7
     SelectableValueList:
     - realValue: very low
       UserValue: Very Low
@@ -2256,7 +2239,7 @@ MonoBehaviour:
   - Name: Memory Allocation
     DefaultValue: dynamic
     SelectedValue: dynamic
-    Index: 9
+    Index: 8
     SelectableValueList:
     - realValue: 256
       UserValue: 256
@@ -2276,8 +2259,8 @@ MonoBehaviour:
     Max: 0
   - Name: Close Point Shadows
     DefaultValue: ultra
-    SelectedValue: ultra
-    Index: 10
+    SelectedValue: 4
+    Index: 9
     SelectableValueList:
     - realValue: very low
       UserValue: Very Low
@@ -2294,7 +2277,7 @@ MonoBehaviour:
   - Name: HDR Support
     DefaultValue: true
     SelectedValue: normal
-    Index: 11
+    Index: 10
     SelectableValueList:
     - realValue: ultra
       UserValue: Ultra
@@ -2307,7 +2290,7 @@ MonoBehaviour:
   - Name: Terrain Quality
     DefaultValue: ultra
     SelectedValue: medium
-    Index: 12
+    Index: 11
     SelectableValueList:
     - realValue: very low
       UserValue: Very Low
@@ -2324,7 +2307,7 @@ MonoBehaviour:
   - Name: UpScaler
     DefaultValue: False
     SelectedValue: auto
-    Index: 13
+    Index: 12
     SelectableValueList:
     - realValue: auto
       UserValue: Auto
@@ -2341,7 +2324,7 @@ MonoBehaviour:
   - Name: Microphone Denoiser
     DefaultValue: 
     SelectedValue: true
-    Index: 14
+    Index: 13
     SelectableValueList:
     - realValue: true
       UserValue: true
@@ -2352,7 +2335,7 @@ MonoBehaviour:
   - Name: Debug Visuals
     DefaultValue: 
     SelectedValue: false
-    Index: 15
+    Index: 14
     SelectableValueList:
     - realValue: true
       UserValue: true
@@ -2360,10 +2343,32 @@ MonoBehaviour:
       UserValue: false
     Min: 0
     Max: 0
+  - Name: Depth Support
+    DefaultValue: 
+    SelectedValue: off
+    Index: 15
+    SelectableValueList:
+    - realValue: off
+      UserValue: Off
+    - realValue: on
+      UserValue: On
+    Min: 0
+    Max: 0
+  - Name: Opaque Support
+    DefaultValue: 
+    SelectedValue: off
+    Index: 16
+    SelectableValueList:
+    - realValue: off
+      UserValue: Off
+    - realValue: on
+      UserValue: On
+    Min: 0
+    Max: 0
   - Name: Resolution
     DefaultValue: 
     SelectedValue: 1920x1080
-    Index: 16
+    Index: 17
     SelectableValueList:
     - realValue: 640x480
       UserValue: 640x480
@@ -2420,7 +2425,7 @@ MonoBehaviour:
   - Name: ScreenMode
     DefaultValue: 
     SelectedValue: windowed
-    Index: 17
+    Index: 18
     SelectableValueList:
     - realValue: fullscreen
       UserValue: Fullscreen
@@ -2433,27 +2438,10 @@ MonoBehaviour:
   - Name: Monitor
     DefaultValue: 
     SelectedValue: 0
-    Index: 18
+    Index: 19
     SelectableValueList:
     - realValue: 0
       UserValue: 0
-    Min: 0
-    Max: 0
-  - Name: Selected Microphone
-    DefaultValue: 
-    SelectedValue: microphone (virtual desktop audio)
-    Index: 19
-    SelectableValueList:
-    - realValue: microphone (virtual desktop audio)
-      UserValue: Microphone (Virtual Desktop Audio)
-    - realValue: microphone (nvidia broadcast)
-      UserValue: Microphone (NVIDIA Broadcast)
-    - realValue: microphone (antlion wireless microphone)
-      UserValue: Microphone (Antlion Wireless Microphone)
-    - realValue: microphone (steam streaming microphone)
-      UserValue: Microphone (Steam Streaming Microphone)
-    - realValue: microphone (rode nt-usb)
-      UserValue: Microphone (RODE NT-USB)
     Min: 0
     Max: 0
   - Name: Main Audio
@@ -2490,14 +2478,14 @@ MonoBehaviour:
     Index: 24
     SelectableValueList: []
     Min: 0
-    Max: 0
+    Max: 1
   - Name: Mcrophone Volume
     DefaultValue: 1
-    SelectedValue: 1.126944
+    SelectedValue: 0.9955415
     Index: 25
     SelectableValueList: []
     Min: 0
-    Max: 0
+    Max: 1.5
   - Name: Render Resolution
     DefaultValue: 1
     SelectedValue: 0.9523397
@@ -2526,56 +2514,51 @@ MonoBehaviour:
     SelectableValueList: []
     Min: 0
     Max: 0
-  - Name: Maximum Avatar Distance
-    DefaultValue: 75
-    SelectedValue: 75
+  - Name: Snap Turn Angle
+    DefaultValue: 
+    SelectedValue: -1
     Index: 30
     SelectableValueList: []
     Min: 0
     Max: 0
-  - Name: Snap Turn Angle
-    DefaultValue: 
-    SelectedValue: -1
-    Index: 31
-    SelectableValueList: []
-    Min: 0
-    Max: 0
-  - Name: Depth Support
-    DefaultValue: 
-    SelectedValue: 0
-    Index: 32
-    SelectableValueList:
-    - realValue: off
-      UserValue: Off
-    - realValue: on
-      UserValue: On
-    Min: 0
-    Max: 1
-  - Name: Opaque Support
-    DefaultValue: 
-    SelectedValue: 0
-    Index: 33
-    SelectableValueList:
-    - realValue: off
-      UserValue: Off
-    - realValue: on
-      UserValue: On
-    Min: 40
-    Max: 160
   - Name: Foveated Rendering Level
     DefaultValue: 
     SelectedValue: 
-    Index: 34
+    Index: 31
     SelectableValueList: []
     Min: 0
     Max: 0
   - Name: Field Of View
     DefaultValue: 
-    SelectedValue: 0
-    Index: 35
+    SelectedValue: 
+    Index: 32
     SelectableValueList: []
-    Min: 40
-    Max: 160
+    Min: 0
+    Max: 0
+  - Name: Ambient Occlusion
+    DefaultValue: ultra
+    SelectedValue: ultra
+    Index: 33
+    SelectableValueList:
+    - realValue: very low
+      UserValue: Very Low
+    - realValue: low
+      UserValue: Low
+    - realValue: medium
+      UserValue: Medium
+    - realValue: high
+      UserValue: High
+    - realValue: ultra
+      UserValue: Ultra
+    Min: 0
+    Max: 0
+  - Name: Maximum Avatar Distance
+    DefaultValue: 75
+    SelectedValue: 75
+    Index: 34
+    SelectableValueList: []
+    Min: 0
+    Max: 0
   DefaultSaveType:
     Platform: 0
     SaveType: JSON

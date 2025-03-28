@@ -197,7 +197,6 @@ MonoBehaviour:
       GeneralLocation: 0
     Player: {fileID: 0}
     hasID: 0
-    silentData: []
     CopyData: 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
     AudioReceiverModule:
       BasisRemoteVisemeAudioDriver: {fileID: 0}
@@ -206,6 +205,9 @@ MonoBehaviour:
       IsPlaying: 0
       pcmBuffer: []
       pcmLength: 0
+      IsReady: 0
+      silentData: []
+      lastReadIndex: 0
     delayTime: 0.10000000149011612
     RemotePlayer: {fileID: 0}
     HasEvents: 0
@@ -713,11 +715,11 @@ AudioSource:
   Loop: 1
   Mute: 0
   Spatialize: 1
-  SpatializePostEffects: 0
+  SpatializePostEffects: 1
   Priority: 128
   DopplerLevel: 0
   MinDistance: 1
-  MaxDistance: 20
+  MaxDistance: 15
   Pan2D: 0
   rolloffMode: 2
   BypassEffects: 0
@@ -727,32 +729,50 @@ AudioSource:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: 0
+      time: 0.06666667
       value: 1
-      inSlope: 0
-      outSlope: 0
+      inSlope: -15.005997
+      outSlope: -15.005997
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
+      inWeight: 0
+      outWeight: 0
     - serializedVersion: 3
-      time: 0.48395285
-      value: 0.5004883
-      inSlope: -1.3427557
-      outSlope: -1.3427557
+      time: 0.13333334
+      value: 0.5
+      inSlope: -3.7514992
+      outSlope: -3.7514992
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.1683712
-      outWeight: 0.33333334
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.26886395
+      value: 0.25323486
+      inSlope: -0.9788906
+      outSlope: -0.9788906
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.63487184
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.517922
+      value: 0.06982422
+      inSlope: -0.5149982
+      outSlope: -0.5149982
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.38931724
+      outWeight: 0
     - serializedVersion: 3
       time: 1
       value: 0
-      inSlope: 0
-      outSlope: 0
+      inSlope: -0.031343754
+      outSlope: -0.031343754
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
+      inWeight: 0.2218376
+      outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4

@@ -4,7 +4,6 @@ using Basis.Scripts.Drivers;
 using Basis.Scripts.Networking.NetworkedAvatar;
 using OpusSharp.Core;
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Basis.Scripts.Networking.Recievers
