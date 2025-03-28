@@ -55,7 +55,7 @@ namespace Basis.Scripts.Networking.Recievers
             audioSource.loop = true;
             InOrderRead = new BasisVoiceRingBuffer();
             // Create AudioClip
-            audioSource.clip = AudioClip.Create($"player [{networkedPlayer.NetId}]", RemoteOpusSettings.TotalFrameBufferSize, RemoteOpusSettings.Channels, RemoteOpusSettings.PlayBackSampleRate, false, (buf) =>
+            audioSource.clip = AudioClip.Create($"player [{networkedPlayer.NetId}]", RemoteOpusSettings.FrameSize *4, RemoteOpusSettings.Channels, RemoteOpusSettings.PlayBackSampleRate, false, (buf) =>
             {
                 Array.Fill(buf, 1.0f);
             });

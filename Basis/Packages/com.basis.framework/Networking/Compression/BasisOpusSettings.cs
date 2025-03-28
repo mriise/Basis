@@ -48,6 +48,6 @@ public static class RemoteOpusSettings
     public static int FrameSize => Mathf.CeilToInt(SharedOpusSettings.DesiredDurationInSeconds * NetworkSampleRate);
     public static int TotalFrameBufferSize => FrameSize * AdditionalStoredBufferData;
 
-    public static int AdditionalStoredBufferData = 7;
+    public static int AdditionalStoredBufferData = 14;
     public static int JitterBufferSize = 5;
 }
