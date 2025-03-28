@@ -34,6 +34,8 @@ namespace Basis.Scripts.UI.NamePlate
         public bool IsVisible = true;
         public bool HasProgressBarVisible = false;
         public Mesh bakedMesh;
+        private WaitForSeconds cachedReturnDelay;
+        private WaitForEndOfFrame cachedEndOfFrame;
         /// <summary>
         /// can only be called once after that the text is nuked and a mesh render is just used with a filter
         /// </summary>
@@ -41,6 +43,8 @@ namespace Basis.Scripts.UI.NamePlate
         /// <param name="basisRemotePlayer"></param>
         public void Initalize(BasisBoneControl hipTarget, BasisRemotePlayer basisRemotePlayer)
         {
+            cachedReturnDelay = new WaitForSeconds(returnDelay);
+            cachedEndOfFrame = new WaitForEndOfFrame();
             BasisRemotePlayer = basisRemotePlayer;
             HipTarget = hipTarget;
             MouthTarget = BasisRemotePlayer.MouthControl;
@@ -139,32 +143,20 @@ namespace Basis.Scripts.UI.NamePlate
         }
         private IEnumerator TransitionColor(Color targetColor)
         {
-            // Cache the initial values
             Color initialColor = namePlateImage.color;
             float elapsedTime = 0f;
 
-            // Use a simple loop, minimizing redundant computations
             while (elapsedTime < transitionDuration)
             {
                 elapsedTime += Time.deltaTime;
-
-                // Calculate the interpolation progress
                 float lerpProgress = Mathf.Clamp01(elapsedTime / transitionDuration);
-
-                // Interpolate only when needed
                 namePlateImage.color = Color.Lerp(initialColor, targetColor, lerpProgress);
-
-                // Avoid using `yield return null` directly to reduce allocations
-                yield return new WaitForEndOfFrame();
+                yield return cachedEndOfFrame;
             }
 
-            // Set the final color explicitly to avoid rounding issues
             namePlateImage.color = targetColor;
-
-            // Nullify the reference to clean up
             colorTransitionCoroutine = null;
 
-            // Handle the delayed return logic if necessary
             if (targetColor == IsTalkingColor)
             {
                 if (returnToNormalCoroutine != null)
@@ -174,9 +166,10 @@ namespace Basis.Scripts.UI.NamePlate
                 returnToNormalCoroutine = StartCoroutine(DelayedReturnToNormal());
             }
         }
+
         private IEnumerator DelayedReturnToNormal()
         {
-            yield return new WaitForSeconds(returnDelay);
+            yield return cachedReturnDelay;
             yield return StartCoroutine(TransitionColor(NormalColor));
             returnToNormalCoroutine = null;
         }
