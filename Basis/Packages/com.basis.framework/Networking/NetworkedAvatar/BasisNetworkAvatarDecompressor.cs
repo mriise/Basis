@@ -79,18 +79,16 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
             BasisNetworkProfiler.ServerSideSyncPlayerMessageCounter.Sample(Length);
             avatarBuffer.SecondsInterval = 0.01f;
             baseReceiver.EnQueueAvatarBuffer(ref avatarBuffer);
-            /*
             if (syncMessage.hasAdditionalAvatarData)
             {
                 int Count = syncMessage.AdditionalAvatarDatas.Length;
-               //BasisDebug.Log("Rec out AvatarData " + Count);
+                //BasisDebug.Log("Rec out AvatarData " + Count);
                 for (int Index = 0; Index < Count; Index++)
                 {
                     AdditionalAvatarData Data = syncMessage.AdditionalAvatarDatas[Index];
                     //wont ever work    baseReceiver.Player.BasisAvatar.OnNetworkMessageReceived?.Invoke(PlayerId, Data.messageIndex, Data.array, LiteNetLib.DeliveryMethod.Sequenced);
                 }
             }
-            */
         }
         public static float Decompress(ushort value, float MinValue, float MaxValue)
         {
