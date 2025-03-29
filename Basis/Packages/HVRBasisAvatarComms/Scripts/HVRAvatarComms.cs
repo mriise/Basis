@@ -59,7 +59,7 @@ namespace HVR.Basis.Comms
 
             featureNetworking.AssignGuids(_isWearer);
 
-            avatar.OnServerReductionSystemMessageReceived += OnServerReductionSystemMessageSend;
+            avatar.OnServerReductionSystemMessageReceived += OnServerReductionSystemMessageReceived;
             avatar.OnNetworkMessageReceived += OnNetworkMessageReceived;
             if (_isWearer)
             {
@@ -80,7 +80,7 @@ namespace HVR.Basis.Comms
             }
         }
 
-        private void OnServerReductionSystemMessageSend(byte messageindex, byte[] unsafeBuffer)
+        private void OnServerReductionSystemMessageReceived(byte messageindex, byte[] unsafeBuffer)
         {
             // Ignore all other messages first
             if (OurMessageIndex != messageindex) return;

@@ -10,17 +10,15 @@ public class BasisTestNetwork : MonoBehaviour
     public byte[] SendingOutBytes = new byte[3];
     public void OnEnable()
     {
-     //   avatar = BasisLocalPlayer.Instance.BasisAvatar;
         avatar.OnServerReductionSystemMessageReceived += OnServerReductionSystemMessageReceived;
+    }
+    public void OnDisable()
+    {
+        avatar.OnServerReductionSystemMessageReceived -= OnServerReductionSystemMessageReceived;
     }
     private void OnServerReductionSystemMessageReceived(byte MessageIndex, byte[] buffer)
     {
         Debug.Log($"received {MessageIndex} {buffer.Length}");
-    }
-    public void OnDisable()
-    {
-      //  avatar = BasisLocalPlayer.Instance.BasisAvatar;
-        avatar.OnServerReductionSystemMessageReceived -= OnServerReductionSystemMessageReceived;
     }
     public void LateUpdate()
     {
