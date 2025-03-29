@@ -34,7 +34,7 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
             avatarBuffer.SecondsInterval = syncMessage.interval / 1000.0f;
             baseReceiver.EnQueueAvatarBuffer(ref avatarBuffer);
             int Count = syncMessage.avatarSerialization.AdditionalAvatarDataSize;
-            BasisDebug.Log($"AdditionalAvatarDatas was {Count}");
+         //   BasisDebug.Log($"AdditionalAvatarDatas was {Count}");
             for (int Index = 0; Index < Count; Index++)
             {
                 AdditionalAvatarData Data = syncMessage.avatarSerialization.AdditionalAvatarDatas[Index];
