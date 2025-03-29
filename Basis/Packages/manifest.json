@@ -20,8 +20,6 @@
     "com.xiph.rnnoise": "https://github.com/BasisVR/RNNoise.Net.git",
     "org.basisvr.base128": "file:org.basisvr.base128-1.2.2.tgz",
     "org.basisvr.bouncycastle": "file:org.basisvr.bouncycastle-2.5.0.tgz",
-    "org.basisvr.contrib.auth.did": "file:../../Contrib/Auth/Did",
-    "org.basisvr.contrib.crypto": "file:../../Contrib/Crypto",
     "org.basisvr.generator.equals": "file:org.basisvr.generator.equals-3.2.0.tgz",
     "org.basisvr.newtonsoft.json": "file:org.basisvr.newtonsoft.json-13.0.3.tgz",
     "org.basisvr.simplebase": "file:org.basisvr.simplebase-4.0.2.tgz",
