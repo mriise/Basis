@@ -237,7 +237,7 @@ namespace Basis.Scripts.Networking.Transmitters
                     Player.OnAvatarSwitchedFallBack += OnAvatarCalibrationLocal;
                     Player.OnAvatarSwitched += OnAvatarCalibrationLocal;
                     Player.OnAvatarSwitched += SendOutAvatarChange;
-                    BasisLocalInputActions.AfterAvatarChanges += SendOutLatest;
+                    AfterAvatarChanges += SendOutLatest;
                     HasEvents = true;
                 }
                 Ready = true;
@@ -320,6 +320,7 @@ namespace Basis.Scripts.Networking.Transmitters
 
             distanceJob.smallestDistance = smallestDistance;
         }
+        public static Action AfterAvatarChanges;
         public override void DeInitialize()
         {
             if (Ready)
@@ -331,7 +332,7 @@ namespace Basis.Scripts.Networking.Transmitters
                 Player.OnAvatarSwitchedFallBack -= OnAvatarCalibrationLocal;
                 Player.OnAvatarSwitched -= OnAvatarCalibrationLocal;
                 Player.OnAvatarSwitched -= SendOutAvatarChange;
-                BasisLocalInputActions.AfterAvatarChanges -= SendOutLatest;
+                AfterAvatarChanges -= SendOutLatest;
                 if (targetPositions.IsCreated) targetPositions.Dispose();
                 if (distances.IsCreated) distances.Dispose();
                 if (smallestDistance.IsCreated)

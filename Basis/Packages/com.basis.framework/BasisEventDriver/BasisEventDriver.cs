@@ -3,6 +3,8 @@ using Basis.Scripts.Device_Management;
 using Basis.Scripts.Device_Management.Devices.Desktop;
 using Basis.Scripts.Eye_Follow;
 using Basis.Scripts.Networking;
+using Basis.Scripts.Networking.Transmitters;
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -55,6 +57,6 @@ public class BasisEventDriver : MonoBehaviour
         {
             BasisLocalPlayer.Instance.LocalBoneDriver.Simulate();
         }
-        BasisLocalInputActions.AfterAvatarChanges?.Invoke();
+        BasisNetworkTransmitter.AfterAvatarChanges?.Invoke();
     }
 }

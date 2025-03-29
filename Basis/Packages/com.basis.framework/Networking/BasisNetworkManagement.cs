@@ -2,6 +2,7 @@ using Basis.Network.Core;
 using Basis.Scripts.BasisSdk;
 using Basis.Scripts.BasisSdk.Helpers;
 using Basis.Scripts.BasisSdk.Players;
+using Basis.Scripts.Device_Management.Devices.Desktop;
 using Basis.Scripts.Networking.NetworkedAvatar;
 using Basis.Scripts.Networking.Recievers;
 using Basis.Scripts.Networking.Transmitters;
@@ -278,7 +279,7 @@ namespace Basis.Scripts.Networking
             BasisNetworkAvatarCompressor.InitalAvatarData(BasisLocalPlayer.Instance.BasisAvatar.Animator, out readyMessage.localAvatarSyncMessage);
             BasisDebug.Log("Network Starting Client");
             // BasisDebug.Log("Size is " + BasisNetworkClient.AuthenticationMessage.Message.Length);
-            LocalPlayerPeer = NetworkClient.StartClient(IpString, Port, readyMessage, Encoding.UTF8.GetBytes(PrimitivePassword));
+            LocalPlayerPeer = NetworkClient.StartClient(IpString, Port, readyMessage, Encoding.UTF8.GetBytes(PrimitivePassword),true);
             NetworkClient.listener.PeerConnectedEvent += PeerConnectedEvent;
             NetworkClient.listener.PeerDisconnectedEvent += PeerDisconnectedEvent;
             NetworkClient.listener.NetworkReceiveEvent += NetworkReceiveEvent;
