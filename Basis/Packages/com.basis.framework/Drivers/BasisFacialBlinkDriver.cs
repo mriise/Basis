@@ -45,7 +45,7 @@ namespace Basis.Scripts.Drivers
                 {
                     BasisDebug.Log("Wired up Renderer Check For Blinking", BasisDebug.LogTag.Avatar);
                     LinkedPlayer.FaceRenderer.Check += UpdateFaceVisibility;
-                    UpdateFaceVisibility(LinkedPlayer.FaceisVisible);
+                    UpdateFaceVisibility(LinkedPlayer.FaceIsVisible);
                     HasRendererCheckWiredUp = true;
                 }
             }

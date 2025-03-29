@@ -75,7 +75,7 @@ public class BasisUIAdminPanel : BasisUIBase
         Uban.onClick.AddListener(() => BasisNetworkModeration.UnBan(UUIDSubmission.text));
         AddAdmin.onClick.AddListener(() => BasisNetworkModeration.AddAdmin(UUIDSubmission.text));
         RemoveAdmin.onClick.AddListener(() => BasisNetworkModeration.RemoveAdmin(UUIDSubmission.text));
-        SendMessage.onClick.AddListener(() =>
+        SendFirstMessage.onClick.AddListener(() =>
         {
             if (FindID(UUIDSubmission.text, out ushort Id))
             {
@@ -137,7 +137,7 @@ public class BasisUIAdminPanel : BasisUIBase
     public Button AddAdmin;
     public Button RemoveAdmin;
 
-    public Button SendMessage;
+    public Button SendFirstMessage;
     public Button SendMessageAll;
 
     public Button TeleportTo;

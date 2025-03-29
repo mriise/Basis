@@ -74,7 +74,7 @@ namespace Basis.Scripts.Drivers
         {
             FindSkinnedMeshRenders();
             BasisTransformMapping.AutoDetectReferences(Player.BasisAvatar.Animator, Avatar.transform, out References);
-            Player.FaceisVisible = false;
+            Player.FaceIsVisible = false;
             if (Avatar == null)
             {
                 BasisDebug.LogError("Missing Avatar");

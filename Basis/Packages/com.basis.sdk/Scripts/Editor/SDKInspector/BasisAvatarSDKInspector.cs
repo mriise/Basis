@@ -110,7 +110,7 @@ public partial class BasisAvatarSDKInspector : Editor
 
     public void EventCallbackAnimator(ChangeEvent<UnityEngine.Object> evt, ref Animator Renderer)
     {
-     //  Debug.Log(nameof(EventCallbackAnimator));
+        //  Debug.Log(nameof(EventCallbackAnimator));
         Undo.RecordObject(Avatar, "Change Animator");
         Renderer = (Animator)evt.newValue;
         // Check if the Avatar is part of a prefab
@@ -124,7 +124,7 @@ public partial class BasisAvatarSDKInspector : Editor
 
     public void EventCallbackFaceVisemeMesh(ChangeEvent<UnityEngine.Object> evt, ref SkinnedMeshRenderer Renderer)
     {
-       // Debug.Log(nameof(EventCallbackFaceVisemeMesh));
+        // Debug.Log(nameof(EventCallbackFaceVisemeMesh));
         Undo.RecordObject(Avatar, "Change Face Viseme Mesh");
         Renderer = (SkinnedMeshRenderer)evt.newValue;
 
@@ -140,14 +140,14 @@ public partial class BasisAvatarSDKInspector : Editor
     private void OnMouthHeightValueChanged(ChangeEvent<Vector2> evt)
     {
         Undo.RecordObject(Avatar, "Change Mouth Height");
-        Avatar.AvatarMouthPosition = new Vector3(0, evt.newValue.x, evt.newValue.y);
+        Avatar.AvatarMouthPosition = new Vector3(evt.newValue.x, evt.newValue.y, 0);
         EditorUtility.SetDirty(Avatar);
     }
 
     private void OnEyeHeightValueChanged(ChangeEvent<Vector2> evt)
     {
         Undo.RecordObject(Avatar, "Change Eye Height");
-        Avatar.AvatarEyePosition = new Vector3(0, evt.newValue.x, evt.newValue.y);
+        Avatar.AvatarEyePosition = new Vector3(evt.newValue.x, evt.newValue.y,0);
         EditorUtility.SetDirty(Avatar);
     }
 
@@ -156,7 +156,6 @@ public partial class BasisAvatarSDKInspector : Editor
         BasisAvatar avatar = (BasisAvatar)target;
         BasisAvatarGizmoEditor.UpdateGizmos(this, avatar);
     }
-
     public void SetupItems()
     {
         // Initialize Buttons
@@ -167,8 +166,8 @@ public partial class BasisAvatarSDKInspector : Editor
         Button avatarAutomaticBlinkDetectionClick = BasisHelpersGizmo.Button(uiElementsRoot, BasisSDKConstants.AvatarAutomaticBlinkDetection);
 
         // Initialize Event Callbacks for Vector2 fields (for Avatar Eye and Mouth Position)
-        EventCallback<ChangeEvent<Vector2>> eventCallbackAvatarEyePosition = BasisHelpersGizmo.CallBackVector2Field(uiElementsRoot, BasisSDKConstants.avatarEyePositionField, Avatar.AvatarEyePosition);
-        EventCallback<ChangeEvent<Vector2>> eventCallbackAvatarMouthPosition = BasisHelpersGizmo.CallBackVector2Field(uiElementsRoot, BasisSDKConstants.avatarMouthPositionField, Avatar.AvatarMouthPosition);
+        BasisHelpersGizmo.CallBackVector2Field(uiElementsRoot, BasisSDKConstants.avatarEyePositionField, Avatar.AvatarEyePosition, OnEyeHeightValueChanged);
+        BasisHelpersGizmo.CallBackVector2Field(uiElementsRoot, BasisSDKConstants.avatarMouthPositionField, Avatar.AvatarMouthPosition, OnMouthHeightValueChanged);
 
         // Initialize ObjectFields and assign references
         ObjectField animatorField = uiElementsRoot.Q<ObjectField>(BasisSDKConstants.animatorField);
@@ -239,10 +238,6 @@ public partial class BasisAvatarSDKInspector : Editor
         }
         avatarBundleButton.clicked += () => EventCallbackAvatarBundle(assetBundleObject.selectedTargets);
 
-        // Register change events
-        eventCallbackAvatarEyePosition += OnEyeHeightValueChanged;
-        eventCallbackAvatarMouthPosition += OnMouthHeightValueChanged;
-
         // Register Animator field change event
         animatorField.RegisterCallback<ChangeEvent<UnityEngine.Object>>(evt => EventCallbackAnimator(evt, ref Avatar.Animator));
 
@@ -276,18 +271,16 @@ public partial class BasisAvatarSDKInspector : Editor
             {
                 style = { fontSize = 14 }
             };
-
+            resultLabel.style.color = Color.black; // Error message color
             if (success)
             {
                 resultLabel.text = "Build successful";
                 resultLabel.style.backgroundColor = Color.green;
-                resultLabel.style.color = Color.black; // Success message color
             }
             else
             {
                 resultLabel.text = $"Build failed: {message}";
                 resultLabel.style.backgroundColor = Color.red;
-                resultLabel.style.color = Color.black; // Error message color
             }
 
             // Add the result label to the UI
@@ -308,7 +301,7 @@ public partial class BasisAvatarSDKInspector : Editor
     }
     public bool ValidateAvatar()
     {
-        if(Avatar == null)
+        if (Avatar == null)
         {
             Debug.LogError("Missing Avatar");
             return false;
@@ -366,5 +359,4 @@ public partial class BasisAvatarSDKInspector : Editor
         EditorUtility.SetDirty(Avatar);
         AssetDatabase.Refresh();
     }
-
 }

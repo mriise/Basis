@@ -169,7 +169,7 @@ namespace Basis.Scripts.Drivers
                 Player.FaceRenderer.Check += UpdateFaceVisibility;
                 Player.FaceRenderer.DestroyCalled += TryDeinitalize;
             }
-            UpdateFaceVisibility(Player.FaceisVisible);
+            UpdateFaceVisibility(Player.FaceIsVisible);
             WasSuccessful = true;
             return true;
         }

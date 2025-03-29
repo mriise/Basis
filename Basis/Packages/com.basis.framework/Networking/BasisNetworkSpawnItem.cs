@@ -234,7 +234,7 @@ public static class BasisNetworkSpawnItem
                     catch (Exception ex)
                     {
                         //bad dooly silent error
-                        // BasisDebug.LogError(ex);
+                         BasisDebug.Log($"Reset If Spawn Item {ex.Message}");
                     }
                 }
             }

@@ -1412,8 +1412,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 9221605143853392981}
   m_HandleRect: {fileID: 2021770275469358474}
   m_Direction: 0
-  m_Value: 0
-  m_Size: 0.9999603
+  m_Value: 1
+  m_Size: 0.99995923
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -1967,7 +1967,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -0.02072747, y: 0.011614731}
+  m_AnchoredPosition: {x: 0.03775503, y: 0.00051923323}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &7806932619776584479
@@ -3150,7 +3150,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 3851709021056640443}
   m_Direction: 2
   m_Value: 1
-  m_Size: 0.9999241
+  m_Size: 0.9999962
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -3850,7 +3850,7 @@ MonoBehaviour:
   Uban: {fileID: 4009778931193532683}
   AddAdmin: {fileID: 6658454681199238057}
   RemoveAdmin: {fileID: 7877404845246155630}
-  SendMessage: {fileID: 3390126378799779885}
+  SendFirstMessage: {fileID: 3390126378799779885}
   SendMessageAll: {fileID: 7194927544103154433}
   TeleportTo: {fileID: 792154588408774445}
   TeleportHere: {fileID: 7790480921328408816}
