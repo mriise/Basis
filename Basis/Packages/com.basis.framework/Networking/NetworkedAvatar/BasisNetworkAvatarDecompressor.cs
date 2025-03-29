@@ -66,7 +66,6 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
                 rotation = BasisUnityBitPackerExtensions.ReadQuaternionFromBytes(ref syncMessage.array, BasisNetworkPlayer.RotationCompression, ref baseReceiver.Offset)
             };
             BasisUnityBitPackerExtensions.ReadMusclesFromBytesAsUShort(ref syncMessage.array, ref baseReceiver.CopyData, ref baseReceiver.Offset);
-            //    UnityEngine.BasisDebug.Log("avatar Pos " + avatarBuffer.Position);
             if (avatarBuffer.Muscles == null)
             {
                 avatarBuffer.Muscles = new float[LocalAvatarSyncMessage.StoredBones];
@@ -82,11 +81,10 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
             if (syncMessage.hasAdditionalAvatarData)
             {
                 int Count = syncMessage.AdditionalAvatarDatas.Length;
-                //BasisDebug.Log("Rec out AvatarData " + Count);
                 for (int Index = 0; Index < Count; Index++)
                 {
                     AdditionalAvatarData Data = syncMessage.AdditionalAvatarDatas[Index];
-                    //wont ever work    baseReceiver.Player.BasisAvatar.OnNetworkMessageReceived?.Invoke(PlayerId, Data.messageIndex, Data.array, LiteNetLib.DeliveryMethod.Sequenced);
+                baseReceiver.Player.BasisAvatar.OnServerReductionSystemMessageReceived?.Invoke(Data.messageIndex, Data.array);
                 }
             }
         }

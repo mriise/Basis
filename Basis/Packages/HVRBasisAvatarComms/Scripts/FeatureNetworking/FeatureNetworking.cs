@@ -192,7 +192,7 @@ namespace HVR.Basis.Comms
     public class FeatureEvent : IFeatureReceiver
     {
         private DeliveryMethod DeliveryMethod = DeliveryMethod.Sequenced;
-        
+
         private readonly FeatureNetworking _featureNetworking;
         private readonly int _guidIndex;
         private readonly FeatureNetworking.EventReceived _eventReceived;
@@ -239,7 +239,7 @@ namespace HVR.Basis.Comms
         {
             if (whoAsked == null) throw new ArgumentException("whoAsked cannot be null");
             if (whoAsked.Length == 0) throw new ArgumentException("whoAsked cannot be empty");
-            
+
             SubmitInternal(currentState, whoAsked);
         }
 
@@ -247,10 +247,18 @@ namespace HVR.Basis.Comms
         {
             var buffer = new byte[1 + currentState.Count];
             buffer[0] = (byte)_guidIndex;
-            
+
             currentState.CopyTo(buffer, 1);
-            
-            _avatar.NetworkMessageSend(HVRAvatarComms.OurMessageIndex, buffer, DeliveryMethod, whoAskedNullable);
+
+
+            if (whoAskedNullable == null || whoAskedNullable.Length == 0)
+            {
+                _avatar.ServerReductionSystemMessageSend(HVRAvatarComms.OurMessageIndex, buffer);
+            }
+            else
+            {
+                _avatar.NetworkMessageSend(HVRAvatarComms.OurMessageIndex, buffer, DeliveryMethod, whoAskedNullable);
+            }
         }
     }
 

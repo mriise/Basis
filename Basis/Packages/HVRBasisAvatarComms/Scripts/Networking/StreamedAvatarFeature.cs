@@ -176,8 +176,14 @@ namespace HVR.Basis.Comms
             {
                 buffer[HeaderBytes + i] = (byte)(message.FloatValues[i] * EncodingRange);
             }
-            
-            avatar.NetworkMessageSend(HVRAvatarComms.OurMessageIndex, buffer, DeliveryMethod, recipientsNullable);
+            if (recipientsNullable == null || recipientsNullable.Length == 0)
+            {
+                avatar.ServerReductionSystemMessageSend(HVRAvatarComms.OurMessageIndex, buffer);
+            }
+            else
+            {
+                avatar.NetworkMessageSend(HVRAvatarComms.OurMessageIndex, buffer, DeliveryMethod, recipientsNullable);
+            }
         }
 
         private bool TryDecode(ArraySegment<byte> subBuffer, out StreamedAvatarFeaturePayload result)
