@@ -39,6 +39,7 @@ public static partial class SerializableBasis
                         }
                         AdditionalAvatarDatas = list.ToArray();
                         hasAdditionalAvatarData = true;
+                        BNL.Log("found additional message " + AdditionalAvatarDatas.Length);
                     }
                 }
             }
@@ -66,6 +67,7 @@ public static partial class SerializableBasis
                     AdditionalAvatarData AAD = AdditionalAvatarDatas[Index];
                     AAD.Serialize(Writer);
                 }
+                BNL.Log("sending additional message " + AdditionalAvatarDatas.Length);
             }
         }
     }
