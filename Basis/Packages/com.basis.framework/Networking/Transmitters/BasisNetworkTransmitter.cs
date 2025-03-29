@@ -47,7 +47,7 @@ namespace Basis.Scripts.Networking.Transmitters
         public JobHandle distanceJobHandle;
         public int IndexLength = -1;
         public float SlowestSendRate = 2.5f;
-        public NetDataWriter AvatarSendWriter = new NetDataWriter(true, LocalAvatarSyncMessage.AvatarSyncSize);
+        public NetDataWriter AvatarSendWriter = new NetDataWriter(true, LocalAvatarSyncMessage.AvatarSyncSize + 1);
         public bool[] MicrophoneRangeIndex;
         public bool[] LastMicrophoneRangeIndex;
 

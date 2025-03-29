@@ -21,8 +21,8 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
             baseReceiver.Offset = 0;
             AvatarBuffer avatarBuffer = new AvatarBuffer
             {
-                Position = BasisUnityBitPackerExtensions.ReadVectorFloatFromBytes(ref syncMessage.avatarSerialization.array, ref baseReceiver.Offset),
-                rotation = BasisUnityBitPackerExtensions.ReadQuaternionFromBytes(ref syncMessage.avatarSerialization.array, BasisNetworkPlayer.RotationCompression, ref baseReceiver.Offset)
+                Position = BasisUnityBitPackerExtensions.ReadVectorFloatFromBytes(ref syncMessage.avatarSerialization.array, ref baseReceiver.Offset),//12
+                rotation = BasisUnityBitPackerExtensions.ReadQuaternionFromBytes(ref syncMessage.avatarSerialization.array, BasisNetworkPlayer.RotationCompression, ref baseReceiver.Offset)//14
             };
             BasisUnityBitPackerExtensions.ReadMusclesFromBytes(ref syncMessage.avatarSerialization.array, ref baseReceiver.CopyData, ref baseReceiver.Offset);
             for (int Index = 0; Index < LocalAvatarSyncMessage.StoredBones; Index++)
@@ -45,7 +45,7 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
             }
         }
         /// <summary>
-        /// Inital Payload
+        /// Initial Payload
         /// </summary>
         /// <param name="baseReceiver"></param>
         /// <param name="syncMessage"></param>
@@ -60,15 +60,15 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
             baseReceiver.Offset = 0;
             AvatarBuffer avatarBuffer = new AvatarBuffer
             {
-                Position = BasisUnityBitPackerExtensions.ReadVectorFloatFromBytes(ref syncMessage.array, ref baseReceiver.Offset),
-                rotation = BasisUnityBitPackerExtensions.ReadQuaternionFromBytes(ref syncMessage.array, BasisNetworkPlayer.RotationCompression, ref baseReceiver.Offset)
+                Position = BasisUnityBitPackerExtensions.ReadVectorFloatFromBytes(ref syncMessage.array, ref baseReceiver.Offset),//12
+                rotation = BasisUnityBitPackerExtensions.ReadQuaternionFromBytes(ref syncMessage.array, BasisNetworkPlayer.RotationCompression, ref baseReceiver.Offset)//14
             };
             BasisUnityBitPackerExtensions.ReadMusclesFromBytesAsUShort(ref syncMessage.array, ref baseReceiver.CopyData, ref baseReceiver.Offset);
             if (avatarBuffer.Muscles == null)
             {
                 avatarBuffer.Muscles = new float[LocalAvatarSyncMessage.StoredBones];
             }
-            for (int Index = 0; Index < LocalAvatarSyncMessage.StoredBones; Index++)
+            for (int Index = 0; Index < LocalAvatarSyncMessage.StoredBones; Index++)//89 * 2 = 178
             {
                 avatarBuffer.Muscles[Index] = Decompress(baseReceiver.CopyData[Index], BasisNetworkPlayer.MinMuscle[Index], BasisNetworkPlayer.MaxMuscle[Index]);
             }
@@ -76,7 +76,7 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
             BasisNetworkProfiler.ServerSideSyncPlayerMessageCounter.Sample(Length);
             avatarBuffer.SecondsInterval = 0.01f;
             baseReceiver.EnQueueAvatarBuffer(ref avatarBuffer);
-            int Count = syncMessage.AdditionalAvatarDataSize;
+            int Count = syncMessage.AdditionalAvatarDataSize;//1
           //  BasisDebug.Log($"AdditionalAvatarDatas was {Count}");
             if (baseReceiver.Player != null && baseReceiver.Player.BasisAvatar != null)
             {
