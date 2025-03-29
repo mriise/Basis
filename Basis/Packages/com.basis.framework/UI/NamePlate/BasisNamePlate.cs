@@ -36,6 +36,7 @@ namespace Basis.Scripts.UI.NamePlate
         public Mesh bakedMesh;
         private WaitForSeconds cachedReturnDelay;
         private WaitForEndOfFrame cachedEndOfFrame;
+        public Color CurrentColor;
         /// <summary>
         /// can only be called once after that the text is nuked and a mesh render is just used with a filter
         /// </summary>
@@ -144,7 +145,6 @@ namespace Basis.Scripts.UI.NamePlate
                 }, null);
             }
         }
-        public Color CurrentColor;
         private IEnumerator TransitionColor(Color targetColor)
         {
             CurrentColor = namePlateImage.color;

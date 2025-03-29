@@ -10,7 +10,7 @@ namespace JigglePhysics
         {
             GlobalGravity = Physics.gravity;
         }
-        private void LateUpdate()
+        public void LateUpdate()
         {
 
             //  CachedSphereCollider.DisableSphereCollider();

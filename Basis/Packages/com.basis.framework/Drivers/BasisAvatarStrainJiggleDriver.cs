@@ -40,8 +40,15 @@ namespace Basis.Scripts.Drivers
                     for (int StrainIndex = 0; StrainIndex < Count; StrainIndex++)
                     {
                         BasisJiggleStrain Strain = player.BasisAvatar.JiggleStrains[StrainIndex];
-                        JiggleRig JiggleRig = Conversion(Strain);
-                        Jiggles.Add(JiggleRig);
+                        if (Strain.RootTransform != null)
+                        {
+                            JiggleRig Rig = Conversion(Strain);
+                            Jiggles.Add(Rig);
+                        }
+                        else
+                        {
+                            BasisDebug.LogError("Missing Root Transform of Jiggle Strain!");
+                        }
                     }
                     Jiggler.jiggleRigs = Jiggles;
                     Jiggler.Initialize();

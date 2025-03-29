@@ -52,7 +52,7 @@ namespace JigglePhysics
                     // Update the visibility at the specified index
                     subscriptions[index].visible = visible;
                     // Re-evaluate visibility
-                    RevalulateVisiblity();
+                    RevalulateVisibility();
                 };
                 subscriptions[i] = new RendererSubscription()
                 {
@@ -62,14 +62,14 @@ namespace JigglePhysics
                 };
                 jiggleRigVisibleFlag.VisibilityChange += action;
             }
-            RevalulateVisiblity();
+            RevalulateVisibility();
         }
 
         protected override void Awake()
         {
             base.Awake();
         }
-        private void RevalulateVisiblity()
+        private void RevalulateVisibility()
         {
             for (int visibleIndex = 0; visibleIndex < subscriptionCount; visibleIndex++)
             {
