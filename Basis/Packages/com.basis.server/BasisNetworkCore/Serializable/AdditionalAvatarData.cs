@@ -19,6 +19,10 @@ public static partial class SerializableBasis
                 }
                 if (reader.TryGetByte(out messageIndex))
                 {
+                    if (array == null || array.Length != PayloadSize)
+                    {
+                        array = new byte[PayloadSize];
+                    }
                     reader.GetBytes(array, PayloadSize);
                 }
                 else
