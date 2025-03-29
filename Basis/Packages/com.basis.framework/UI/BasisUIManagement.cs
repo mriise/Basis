@@ -2,7 +2,6 @@ using Basis.Scripts.BasisSdk.Helpers;
 using Basis.Scripts.UI.UI_Panels;
 using System.Collections.Generic;
 using UnityEngine;
-
 public class BasisUIManagement : MonoBehaviour
 {
     public List<BasisUIBase> basisUIBases = new List<BasisUIBase>();

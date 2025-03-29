@@ -1,11 +1,7 @@
 using Basis.Network;
 using Basis.Network.Server;
+using BasisNetworkConsole;
 using BasisNetworking.InitalData;
-using BasisNetworkServer.Security;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Basis
 {
     class Program
@@ -16,7 +12,7 @@ namespace Basis
         private const string LogsFolderName = "Logs";
         private const string InitialResources = "initalresources";
         private const int ThreadSleepTime = 15000;
-        private static bool isRunning = true;
+        public static bool isRunning = true;
         public static void Main(string[] args)
         {
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
@@ -62,46 +58,20 @@ namespace Basis
                 await BasisServerSideLogging.ShutdownAsync();
                 BNL.Log("Server shut down successfully.");
             };
+            BasisConsoleCommands.RegisterCommand("/admin add", BasisConsoleCommands.HandleAddAdmin);
+            BasisConsoleCommands.RegisterCommand("/status", BasisConsoleCommands.HandleStatus);
+            BasisConsoleCommands.RegisterCommand("/shutdown", BasisConsoleCommands.HandleShutdown);
+            BasisConsoleCommands.RegisterCommand("/help", BasisConsoleCommands.HandleHelp);
+            //BasisConsoleCommands.RegisterConfigurationCommands(config);
 
             // Start console command processing
-            Task.Run(() => ProcessConsoleCommands());
+            Task.Run(() => BasisConsoleCommands.ProcessConsoleCommands());
 
             while (isRunning)
             {
                 Thread.Sleep(ThreadSleepTime);
             }
         }
-
-        private static void ProcessConsoleCommands()
-        {
-            while (isRunning)
-            {
-                string? input = Console.ReadLine();
-                if (string.IsNullOrWhiteSpace(input))
-                {
-                    continue;
-                }
-
-                string[] parts = input.Split(' ', 3, StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length >= 3 && parts[0].ToLower() == "/admin" && parts[1].ToLower() == "add")
-                {
-                    string value = parts[2];
-                    if (NetworkServer.authIdentity.AddNetPeerAsAdmin(value))
-                    {
-                        BNL.Log($"Added Admin {value}");
-                    }
-                    else
-                    {
-                        BNL.Log("Already Have Admin Added");
-                    }
-                }
-                else
-                {
-                    BNL.Log("Unknown command. Usage: /admin add <string>");
-                }
-            }
-        }
-
         private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             if (e.ExceptionObject is Exception exception)
