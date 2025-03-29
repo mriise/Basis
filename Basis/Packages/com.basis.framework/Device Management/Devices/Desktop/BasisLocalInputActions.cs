@@ -35,7 +35,6 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
         public BasisLocalPlayer basisLocalPlayer;
         public PlayerInput Input;
         public static string InputActions = "InputActions";
-        public bool HasEvents = false;
         public static bool IgnoreCrouchToggle = false;
         public static Action AfterAvatarChanges;
         [SerializeField]
@@ -49,18 +48,22 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
             }
             InputSystem.settings.SetInternalFeatureFlag("USE_OPTIMIZED_CONTROLS", true);
             InputSystem.settings.SetInternalFeatureFlag("USE_READ_VALUE_CACHING", true);
-            EnableActions();
             BasisLocalCameraDriver.InstanceExists += SetupCamera;
-            AddCallbacks();
-            HasEvents = true;
+            if (BasisDeviceManagement.IsMobile() == false)
+            {
+                EnableActions();
+                AddCallbacks();
+            }
         }
 
         public void OnDisable()
         {
             BasisLocalCameraDriver.InstanceExists -= SetupCamera;
-            RemoveCallbacks();
-            DisableActions();
-            HasEvents = false;
+            if (BasisDeviceManagement.IsMobile() == false)
+            {
+                RemoveCallbacks();
+                DisableActions();
+            }
         }
         public void SetupCamera()
         {
