@@ -13,6 +13,10 @@ public static partial class SerializableBasis
         {
             if (reader.TryGetByte(out PayloadSize))
             {
+                if (PayloadSize == 0)
+                {
+                    return;
+                }
                 if (reader.TryGetByte(out messageIndex))
                 {
                     reader.GetBytes(array, PayloadSize);

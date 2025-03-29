@@ -22,16 +22,16 @@ public static partial class SerializableBasis
                 Writer.GetBytes(array, AvatarSyncSize);
                 if (Writer.TryGetByte(out AdditionalAvatarDataSize))
                 {
-                    List<AdditionalAvatarData> list = new List<AdditionalAvatarData>();
-                    while (Writer.AvailableBytes != 0)
+                    if (AdditionalAvatarDataSize != 0)
                     {
-                        // BNL.Log("Deserialize AAD");
-                        AdditionalAvatarData AAD = new AdditionalAvatarData();
-                        AAD.Deserialize(Writer);
-                        list.Add(AAD);
+                        AdditionalAvatarDatas = new AdditionalAvatarData[AdditionalAvatarDataSize];
+                        for (int Index = 0; Index < AdditionalAvatarDatas.Length; Index++)
+                        {
+                            AdditionalAvatarDatas[Index] = new AdditionalAvatarData();
+                            AdditionalAvatarDatas[Index].Deserialize(Writer);
+                        }
+                        BNL.Log("found additional message " + AdditionalAvatarDatas.Length);
                     }
-                    AdditionalAvatarDatas = list.ToArray();
-                    BNL.Log("found additional message " + AdditionalAvatarDatas.Length);
                 }
                 else
                 {
