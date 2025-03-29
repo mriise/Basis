@@ -16,7 +16,7 @@ namespace Basis.Scripts.Networking
         {
             BasisDebug.Log($"Handling Create Remote Player! {reader.AvailableBytes}");
             ServerReadyMessage ServerReadyMessage = new ServerReadyMessage();
-            ServerReadyMessage.Deserialize(reader, true);
+            ServerReadyMessage.Deserialize(reader);
 
             await CreateRemotePlayer(ServerReadyMessage, Parent);
         }

@@ -5,15 +5,15 @@ public static partial class SerializableBasis
     {
         public PlayerIdMessage playerIdMessage;
         public ReadyMessage localReadyMessage;
-        public void Deserialize(NetDataReader Writer, bool AttemptAdditionalData)
+        public void Deserialize(NetDataReader Writer)
         {
             playerIdMessage.Deserialize(Writer);
-            localReadyMessage.Deserialize(Writer, AttemptAdditionalData);
+            localReadyMessage.Deserialize(Writer);
         }
-        public void Serialize(NetDataWriter Writer, bool AttemptAdditionalData)
+        public void Serialize(NetDataWriter Writer)
         {
             playerIdMessage.Serialize(Writer);
-            localReadyMessage.Serialize(Writer, AttemptAdditionalData);
+            localReadyMessage.Serialize(Writer);
         }
     }
 }

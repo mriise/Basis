@@ -181,7 +181,7 @@ namespace BasisServerHandle
                 else
                 {
                     ReadyMessage readyMessage = new ReadyMessage();
-                    readyMessage.Deserialize(ConReq.Data, false);
+                    readyMessage.Deserialize(ConReq.Data);
 
                     if (readyMessage.WasDeserializedCorrectly())
                     {
@@ -435,7 +435,7 @@ namespace BasisServerHandle
         public static void HandleAvatarMovement(NetPacketReader Reader, NetPeer Peer)
         {
             LocalAvatarSyncMessage LocalAvatarSyncMessage = new LocalAvatarSyncMessage();
-            LocalAvatarSyncMessage.Deserialize(Reader, true);
+            LocalAvatarSyncMessage.Deserialize(Reader);
             Reader.Recycle();
             BasisSavedState.AddLastData(Peer, LocalAvatarSyncMessage);
             ReadOnlySpan<NetPeer> Peers = BasisPlayerArray.GetSnapshot();
@@ -581,7 +581,7 @@ namespace BasisServerHandle
         public static void NotifyExistingClients(ServerReadyMessage serverSideSyncPlayerMessage, NetPeer authClient)
         {
             NetDataWriter Writer = new NetDataWriter(true);
-            serverSideSyncPlayerMessage.Serialize(Writer, false);
+            serverSideSyncPlayerMessage.Serialize(Writer);
             ReadOnlySpan<NetPeer> Peers = BasisPlayerArray.GetSnapshot();
             //  BNL.LogError("Writing Data with size Size " + Writer.Length);
             if (NetworkServer.CheckValidated(Writer))
@@ -615,7 +615,7 @@ namespace BasisServerHandle
                     writer.Reset();
                     if (CreateServerReadyMessageForPeer(peer, out ServerReadyMessage Message))
                     {
-                        Message.Serialize(writer, true);
+                        Message.Serialize(writer);
                       //  BNL.Log($"Writing Data with size {writer.Length}");
                         NetworkServer.SendOutValidated(authClient, writer, BasisNetworkCommons.CreateRemotePlayersForNewPeer, LiteNetLib.DeliveryMethod.ReliableOrdered);
                     }
@@ -638,7 +638,7 @@ namespace BasisServerHandle
 
                 if (!BasisSavedState.GetLastAvatarSyncState(peer, out var syncState))
                 {
-                    syncState = new LocalAvatarSyncMessage() { array = new byte[386], hasAdditionalAvatarData = false, AdditionalAvatarDatas = null };
+                    syncState = new LocalAvatarSyncMessage() { array = new byte[386], AdditionalAvatarDatas = null };
                     BNL.LogError("Unable to get Last Player Avatar Data! Using Error Fallback");
                 }
 

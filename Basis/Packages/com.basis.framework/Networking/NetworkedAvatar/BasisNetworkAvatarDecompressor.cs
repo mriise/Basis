@@ -33,15 +33,12 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
             BasisNetworkProfiler.ServerSideSyncPlayerMessageCounter.Sample(Length);
             avatarBuffer.SecondsInterval = syncMessage.interval / 1000.0f;
             baseReceiver.EnQueueAvatarBuffer(ref avatarBuffer);
-            if (syncMessage.avatarSerialization.hasAdditionalAvatarData)
+            int Count = syncMessage.avatarSerialization.AdditionalAvatarDataSize;
+            BasisDebug.Log($"AdditionalAvatarDatas was {Count}");
+            for (int Index = 0; Index < Count; Index++)
             {
-                int Count = syncMessage.avatarSerialization.AdditionalAvatarDatas.Length;
-                BasisDebug.Log($"AdditionalAvatarDatas was {Count}");
-                for (int Index = 0; Index < Count; Index++)
-                {
-                    AdditionalAvatarData Data = syncMessage.avatarSerialization.AdditionalAvatarDatas[Index];
-                    baseReceiver.Player.BasisAvatar.OnServerReductionSystemMessageReceived?.Invoke(Data.messageIndex, Data.array);
-                }
+                AdditionalAvatarData Data = syncMessage.avatarSerialization.AdditionalAvatarDatas[Index];
+                baseReceiver.Player.BasisAvatar.OnServerReductionSystemMessageReceived?.Invoke(Data.messageIndex, Data.array);
             }
         }
         /// <summary>
@@ -76,15 +73,12 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
             BasisNetworkProfiler.ServerSideSyncPlayerMessageCounter.Sample(Length);
             avatarBuffer.SecondsInterval = 0.01f;
             baseReceiver.EnQueueAvatarBuffer(ref avatarBuffer);
-            if (syncMessage.hasAdditionalAvatarData)
+            int Count = syncMessage.AdditionalAvatarDataSize;
+            BasisDebug.Log($"AdditionalAvatarDatas was {Count}");
+            for (int Index = 0; Index < Count; Index++)
             {
-                int Count = syncMessage.AdditionalAvatarDatas.Length;
-                BasisDebug.Log($"AdditionalAvatarDatas was {Count}");
-                for (int Index = 0; Index < Count; Index++)
-                {
-                    AdditionalAvatarData Data = syncMessage.AdditionalAvatarDatas[Index];
-                    baseReceiver.Player.BasisAvatar.OnServerReductionSystemMessageReceived?.Invoke(Data.messageIndex, Data.array);
-                }
+                AdditionalAvatarData Data = syncMessage.AdditionalAvatarDatas[Index];
+                baseReceiver.Player.BasisAvatar.OnServerReductionSystemMessageReceived?.Invoke(Data.messageIndex, Data.array);
             }
         }
         public static float Decompress(ushort value, float MinValue, float MaxValue)

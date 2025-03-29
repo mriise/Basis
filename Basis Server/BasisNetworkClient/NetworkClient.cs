@@ -41,7 +41,7 @@ public static class NetworkClient
             Writer.Put(BasisNetworkVersion.ServerVersion);
             BytesMessage AuthBytes = new BytesMessage();
             AuthBytes.Serialize(Writer, AuthenticationMessage);
-            ReadyMessage.Serialize(Writer,false);
+            ReadyMessage.Serialize(Writer);
             peer = client.Connect(IP, port, Writer);
             return peer;
         }

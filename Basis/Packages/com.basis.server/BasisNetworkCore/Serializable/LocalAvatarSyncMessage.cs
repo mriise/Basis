@@ -10,8 +10,8 @@ public static partial class SerializableBasis
         public const int StoredBones = 89;
 
         public AdditionalAvatarData[] AdditionalAvatarDatas;
-        public bool hasAdditionalAvatarData;
-        public void Deserialize(NetDataReader Writer,bool AttemptAdditionalData)
+        public byte AdditionalAvatarDataSize;
+        public void Deserialize(NetDataReader Writer)
         {
             int Bytes = Writer.AvailableBytes;
             if (Bytes >= AvatarSyncSize)
@@ -20,26 +20,22 @@ public static partial class SerializableBasis
                 //now 178 for muscles, 3*4 for position 12, 4*4 for rotation 16-2 (W is half) = 204
                 array ??= new byte[AvatarSyncSize];
                 Writer.GetBytes(array, AvatarSyncSize);
-                if (AttemptAdditionalData)
+                if (Writer.TryGetByte(out AdditionalAvatarDataSize))
                 {
-                    if (Writer.EndOfData)
+                    List<AdditionalAvatarData> list = new List<AdditionalAvatarData>();
+                    while (Writer.AvailableBytes != 0)
                     {
-                        AdditionalAvatarDatas = null;
-                        hasAdditionalAvatarData = false;
+                        // BNL.Log("Deserialize AAD");
+                        AdditionalAvatarData AAD = new AdditionalAvatarData();
+                        AAD.Deserialize(Writer);
+                        list.Add(AAD);
                     }
-                    else
-                    {
-                        List<AdditionalAvatarData> list = new List<AdditionalAvatarData>();
-                        while (Writer.AvailableBytes != 0)
-                        {
-                            // BNL.Log("Deserialize AAD");
-                            AdditionalAvatarData AAD = new AdditionalAvatarData();
-                            AAD.Deserialize(Writer);
-                            list.Add(AAD);
-                        }
-                        AdditionalAvatarDatas = list.ToArray();
-                        hasAdditionalAvatarData = true;
-                    }
+                    AdditionalAvatarDatas = list.ToArray();
+                    BNL.Log("found additional message " + AdditionalAvatarDatas.Length);
+                }
+                else
+                {
+                    BNL.LogError("fundamental error missing Additional Avatar Data Byte");
                 }
             }
             else
@@ -47,7 +43,7 @@ public static partial class SerializableBasis
                 BNL.LogError($"Unable to read Remaining bytes where {Bytes} in LocalAvatarSyncMessage");
             }
         }
-        public void Serialize(NetDataWriter Writer,bool AttemptAdditionalData)
+        public void Serialize(NetDataWriter Writer)
         {
             if (array == null)
             {
@@ -57,15 +53,20 @@ public static partial class SerializableBasis
             {
                 Writer.Put(array);
             }
-            if (AttemptAdditionalData && hasAdditionalAvatarData)
+            if (AdditionalAvatarDatas == null || AdditionalAvatarDatas.Length == 0 || AdditionalAvatarDatas.Length > 256)
             {
-                // BNL.Log("Serialize AAD");
-                int count = AdditionalAvatarDatas.Length;
-                for (int Index = 0; Index < count; Index++)
+                Writer.Put(0);
+            }
+            else
+            {
+                AdditionalAvatarDataSize = (byte)AdditionalAvatarDatas.Length;
+                Writer.Put(AdditionalAvatarDataSize);
+                for (int Index = 0; Index < AdditionalAvatarDataSize; Index++)
                 {
                     AdditionalAvatarData AAD = AdditionalAvatarDatas[Index];
                     AAD.Serialize(Writer);
                 }
+                BNL.Log("sending additional message " + AdditionalAvatarDatas.Length);
             }
         }
     }

@@ -79,7 +79,7 @@ namespace BasisDidLink
             {
                 BNL.Log($"Processing connection from peer {newPeer.Id}.");
                 ReadyMessage readyMessage = new ReadyMessage();
-                readyMessage.Deserialize(ConnectionRequest.Data, false);
+                readyMessage.Deserialize(ConnectionRequest.Data);
 
                 if (readyMessage.WasDeserializedCorrectly())
                 {

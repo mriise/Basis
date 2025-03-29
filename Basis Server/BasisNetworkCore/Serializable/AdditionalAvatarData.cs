@@ -5,47 +5,43 @@ public static partial class SerializableBasis
 {
     public struct AdditionalAvatarData
     {
+        public byte PayloadSize;
         public byte messageIndex;
         public byte[] array;
 
         public void Deserialize(NetDataReader reader)
         {
-            int bytesAvailable = reader.AvailableBytes;
-            if (bytesAvailable > 0)
+            if (reader.TryGetByte(out PayloadSize))
             {
-                messageIndex = reader.GetByte();
-
-                byte payloadSize = reader.GetByte();
-
-                if (payloadSize > 0)
+                if (reader.TryGetByte(out messageIndex))
                 {
-                    if (array == null || array.Length != payloadSize)
-                    {
-                        array = new byte[payloadSize];
-                    }
-                    reader.GetBytes(array, payloadSize);
+                    reader.GetBytes(array, PayloadSize);
                 }
                 else
                 {
-                    array = new byte[0]; // Ensure it's not null
+                    BNL.LogError("trying to write data that does not exist! messageIndex");
                 }
             }
             else
             {
-                BNL.LogError($"Unable to read remaining bytes, available: {bytesAvailable}");
+                BNL.LogError("trying to write data that does not exist! PayloadSize");
             }
         }
-
         public void Serialize(NetDataWriter writer)
         {
+            if (array.Length > 256)
+            {
+                BNL.LogError("Larger then 256 cannot send this Additional Avatar Data");
+                return;
+            }
+            PayloadSize = (array != null) ? (byte)array.Length : (byte)0;
+
+            writer.Put(PayloadSize);
             writer.Put(messageIndex);
 
-            byte size = (array != null) ? (byte)array.Length : (byte)0;
-            writer.Put(size);
-
-            if (size > 0)
+            if (PayloadSize > 0)
             {
-                writer.Put(array);
+                writer.Put(array, 0, PayloadSize);
             }
         }
     }

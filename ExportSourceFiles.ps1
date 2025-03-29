@@ -1,27 +1,44 @@
 # Get the directory where the script is located
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
 
-# Navigate up to the "Basis Foundation" level
-$basisFoundationDir = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $scriptDir))
+# Function to search for "Basis Foundation" in parent directories
+function Find-BasisFoundationDir {
+    param (
+        [string]$currentDir
+    )
+    while ($currentDir -and (Split-Path -Leaf $currentDir) -ne "Basis Foundation") {
+        $currentDir = Split-Path -Parent $currentDir
+    }
+    return $currentDir
+}
 
-# Define the source and destination directories relative to "Basis Foundation"
+# Find the "Basis Foundation" directory
+$basisFoundationDir = Find-BasisFoundationDir -currentDir $scriptDir
+
+# Validate that we found the expected directory
+if (-not $basisFoundationDir) {
+    Write-Host "Error: Could not find 'Basis Foundation' directory in parent structure."
+    exit 1
+}
+
+# Define source and destination relative to "Basis Foundation"
 $source = Join-Path $basisFoundationDir "Basis Unity\Basis Server"
 $destination = Join-Path $basisFoundationDir "Basis Unity\Basis\Packages\com.basis.server"
 
 # Ensure source exists before proceeding
 if (-Not (Test-Path -Path $source)) {
-    Write-Host "Source directory not found: $source"
+    Write-Host "Error: Source directory not found - $source"
     exit 1
 }
 
 # Remove all .cs files in the destination directory
 Get-ChildItem -Path $destination -Recurse -Include *.cs | Remove-Item -Force
 
-# Get all files from the source, excluding .dll files, .asmdef files, and obj folders
+# Copy files from source to destination, excluding .dll, .asmdef, and obj folders
 Get-ChildItem -Path $source -Recurse | Where-Object { 
     $_.Extension -notin @('.dll', '.asmdef') -and $_.FullName -notmatch '\\obj\\'
 } | ForEach-Object {
-    # Compute the relative path
+    # Compute relative path and determine destination path
     $relativePath = $_.FullName.Substring($source.Length)
     $destinationPath = Join-Path $destination $relativePath
 

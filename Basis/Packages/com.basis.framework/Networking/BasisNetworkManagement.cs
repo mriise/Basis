@@ -588,7 +588,7 @@ namespace Basis.Scripts.Networking
                         Reader.Recycle();
                         return;
                     }
-                    BasisNetworkHandleAvatar.HandleAvatarUpdate(Reader,true);
+                    BasisNetworkHandleAvatar.HandleAvatarUpdate(Reader);
                     Reader.Recycle();
                     break;
                 case BasisNetworkCommons.SceneChannel:
