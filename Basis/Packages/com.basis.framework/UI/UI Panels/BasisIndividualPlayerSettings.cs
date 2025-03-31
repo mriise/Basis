@@ -40,15 +40,17 @@ public class BasisIndividualPlayerSettings : BasisUIBase
     public TextMeshProUGUI PlayerName;
     public TextMeshProUGUI PlayerUUID;
     public BasisRemotePlayer RemotePlayer;
+    public BasisUIVolumeSampler BasisUIVolumeSampler;
     public async Task Initalize(BasisRemotePlayer remotePlayer)
     {
         RemotePlayer = remotePlayer;
+        BasisUIVolumeSampler.Initalize(remotePlayer);
         PlayerName.text = RemotePlayer.DisplayName;
         PlayerUUID.text = RemotePlayer.UUID;
         string playerUUID = RemotePlayer.UUID;
         // UI Setup
         UserVolumeOverride.wholeNumbers = false;
-        UserVolumeOverride.maxValue = 1.5f;
+        UserVolumeOverride.maxValue = 1f;
         UserVolumeOverride.minValue = 0f;
 
         BasisPlayerSettingsData settings = await BasisPlayerSettingsManager.RequestPlayerSettings(playerUUID);
