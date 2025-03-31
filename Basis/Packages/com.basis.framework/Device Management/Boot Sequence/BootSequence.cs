@@ -37,7 +37,7 @@ namespace Basis.Scripts.Boot_Sequence
                 UseContentRemoval = false,
                 DisableAnimatorEvents = false
             };
-            var data = await AddressableResourceProcess.LoadAsGameObjectsAsync(BootManager, new UnityEngine.ResourceManagement.ResourceProviders.InstantiationParameters(), Required);
+            var data = await AddressableResourceProcess.LoadAsGameObjectsAsync(BootManager, new UnityEngine.ResourceManagement.ResourceProviders.InstantiationParameters(), Required, BundledContentHolder.Selector.System);
             List<GameObject> Gameobjects = data.Item1;
             if (Gameobjects.Count != 0)
             {

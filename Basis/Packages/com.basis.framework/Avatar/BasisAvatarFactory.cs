@@ -60,13 +60,13 @@ namespace Basis.Scripts.Avatar
                         break;
                     case 1://localload
                         BasisDebug.Log("Requested Avatar was a Addressable Avatar " + BasisLoadableBundle.BasisRemoteBundleEncrypted.CombinedURL, BasisDebug.LogTag.Avatar);
-                        var Para = new UnityEngine.ResourceManagement.ResourceProviders.InstantiationParameters(Player.transform.position, Quaternion.identity, null);
+                        UnityEngine.ResourceManagement.ResourceProviders.InstantiationParameters Para = new UnityEngine.ResourceManagement.ResourceProviders.InstantiationParameters(Player.transform.position, Quaternion.identity, null);
                         ChecksRequired Required = new ChecksRequired
                         {
                             UseContentRemoval = true,
                             DisableAnimatorEvents = false
                         };
-                        (List<GameObject> GameObjects, AddressableGenericResource resource) = await AddressableResourceProcess.LoadAsGameObjectsAsync(BasisLoadableBundle.BasisRemoteBundleEncrypted.CombinedURL, Para, Required);
+                        (List<GameObject> GameObjects, AddressableGenericResource resource) = await AddressableResourceProcess.LoadAsGameObjectsAsync(BasisLoadableBundle.BasisRemoteBundleEncrypted.CombinedURL, Para, Required, BundledContentHolder.Selector.Avatar);
 
                         if (GameObjects.Count > 0)
                         {
@@ -124,7 +124,7 @@ namespace Basis.Scripts.Avatar
                             DisableAnimatorEvents = false,
                         };
                         var Para = new UnityEngine.ResourceManagement.ResourceProviders.InstantiationParameters(Player.transform.position, Quaternion.identity, null);
-                        (List<GameObject> GameObjects, AddressableGenericResource resource) = await AddressableResourceProcess.LoadAsGameObjectsAsync(BasisLoadableBundle.BasisRemoteBundleEncrypted.CombinedURL, Para, Required);
+                        (List<GameObject> GameObjects, AddressableGenericResource resource) = await AddressableResourceProcess.LoadAsGameObjectsAsync(BasisLoadableBundle.BasisRemoteBundleEncrypted.CombinedURL, Para, Required, BundledContentHolder.Selector.Avatar);
 
                         if (GameObjects.Count > 0)
                         {
@@ -155,7 +155,7 @@ namespace Basis.Scripts.Avatar
         public static async Task<GameObject> DownloadAndLoadAvatar(BasisLoadableBundle BasisLoadableBundle, BasisPlayer BasisPlayer)
         {
             string UniqueID = BasisGenerateUniqueID.GenerateUniqueID();
-            GameObject Output = await BasisLoadHandler.LoadGameObjectBundle(BasisLoadableBundle, true, BasisPlayer.ProgressReportAvatarLoad, new CancellationToken(), BasisPlayer.transform.position, Quaternion.identity,Vector3.one,false, BasisPlayer.transform);
+            GameObject Output = await BasisLoadHandler.LoadGameObjectBundle(BasisLoadableBundle, true, BasisPlayer.ProgressReportAvatarLoad, new CancellationToken(), BasisPlayer.transform.position, Quaternion.identity,Vector3.one,false, BundledContentHolder.Selector.Avatar, BasisPlayer.transform);
             BasisPlayer.ProgressReportAvatarLoad.ReportProgress(UniqueID, 100, "Setting Position");
             Output.transform.SetPositionAndRotation(BasisPlayer.transform.position, Quaternion.identity);
             return Output;
@@ -208,7 +208,7 @@ namespace Basis.Scripts.Avatar
                     DisableAnimatorEvents = false
                 };
                 var Para = new UnityEngine.ResourceManagement.ResourceProviders.InstantiationParameters(Player.transform.position, Quaternion.identity, null);
-                (List<GameObject> GameObjects, AddressableGenericResource resource) = await AddressableResourceProcess.LoadAsGameObjectsAsync(LoadingAvatar.BasisLocalEncryptedBundle.LocalConnectorPath, Para, Required);
+                (List<GameObject> GameObjects, AddressableGenericResource resource) = await AddressableResourceProcess.LoadAsGameObjectsAsync(LoadingAvatar.BasisLocalEncryptedBundle.LocalConnectorPath, Para, Required, BundledContentHolder.Selector.Avatar);
 
                 if (GameObjects.Count != 0)
                 {

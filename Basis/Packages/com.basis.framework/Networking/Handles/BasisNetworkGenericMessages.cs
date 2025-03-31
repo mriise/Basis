@@ -144,7 +144,7 @@ public static class BasisNetworkGenericMessages
         switch (LocalLoadResource.Mode)
         {
             case 0:
-                await BasisNetworkSpawnItem.SpawnGameObject(LocalLoadResource);
+                await BasisNetworkSpawnItem.SpawnGameObject(LocalLoadResource, BundledContentHolder.Selector.Prop);
                 break;
             case 1:
                 await BasisNetworkSpawnItem.SpawnScene(LocalLoadResource);

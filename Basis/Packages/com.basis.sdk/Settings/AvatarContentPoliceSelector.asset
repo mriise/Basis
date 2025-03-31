@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b20bf104ec1d97d4c99fe5d73dd78d0d, type: 3}
-  m_Name: ContentPoliceSelector
+  m_Name: AvatarContentPoliceSelector
   m_EditorClassIdentifier: 
   selectedTypes:
   - BasisVideoPlayer

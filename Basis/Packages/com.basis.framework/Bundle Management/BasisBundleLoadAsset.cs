@@ -2,9 +2,10 @@ using Basis.Scripts.BasisSdk;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using static BundledContentHolder;
 public static class BasisBundleLoadAsset
 {
-    public static async Task<GameObject> LoadFromWrapper(BasisTrackedBundleWrapper BasisLoadableBundle, bool UseContentRemoval, Vector3 Position, Quaternion Rotation,bool ModifyScale,Vector3 Scale, Transform Parent = null)
+    public static async Task<GameObject> LoadFromWrapper(BasisTrackedBundleWrapper BasisLoadableBundle, bool UseContentRemoval, Vector3 Position, Quaternion Rotation,bool ModifyScale,Vector3 Scale, Selector Selector, Transform Parent = null)
     {
         bool Incremented = false;
         if (BasisLoadableBundle.AssetBundle != null)
@@ -38,7 +39,7 @@ public static class BasisBundleLoadAsset
                                 ChecksRequired.DisableAnimatorEvents = true;
                             }
                             ChecksRequired.UseContentRemoval = UseContentRemoval;
-                            GameObject CreatedCopy = ContentPoliceControl.ContentControl(loadedObject, ChecksRequired, Position, Rotation, ModifyScale, Scale, Parent);
+                            GameObject CreatedCopy = ContentPoliceControl.ContentControl(loadedObject, ChecksRequired, Position, Rotation, ModifyScale, Scale, Selector, Parent);
                             Incremented = BasisLoadableBundle.Increment();
                             return CreatedCopy;
                         }

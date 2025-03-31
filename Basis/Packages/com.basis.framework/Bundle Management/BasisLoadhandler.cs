@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using static BundledContentHolder;
 
 public static class BasisLoadHandler
 {
@@ -82,7 +83,7 @@ public static class BasisLoadHandler
             }
         }
     }
-    public static async Task<GameObject> LoadGameObjectBundle(BasisLoadableBundle loadableBundle, bool useContentRemoval, BasisProgressReport report, CancellationToken cancellationToken, Vector3 Position, Quaternion Rotation, Vector3 Scale, bool ModifyScale, Transform Parent = null)
+    public static async Task<GameObject> LoadGameObjectBundle(BasisLoadableBundle loadableBundle, bool useContentRemoval, BasisProgressReport report, CancellationToken cancellationToken, Vector3 Position, Quaternion Rotation, Vector3 Scale, bool ModifyScale, Selector Selector, Transform Parent = null)
     {
         await EnsureInitializationComplete();
 
@@ -91,7 +92,7 @@ public static class BasisLoadHandler
             try
             {
                 await wrapper.WaitForBundleLoadAsync();
-                return await BasisBundleLoadAsset.LoadFromWrapper(wrapper, useContentRemoval, Position, Rotation, ModifyScale, Scale, Parent);
+                return await BasisBundleLoadAsset.LoadFromWrapper(wrapper, useContentRemoval, Position, Rotation, ModifyScale, Scale, Selector, Parent);
             }
             catch (Exception ex)
             {
@@ -101,7 +102,7 @@ public static class BasisLoadHandler
             }
         }
 
-        return await HandleFirstBundleLoad(loadableBundle, useContentRemoval, report, cancellationToken, Position, Rotation, Scale, ModifyScale, Parent);
+        return await HandleFirstBundleLoad(loadableBundle, useContentRemoval, report, cancellationToken, Position, Rotation, Scale, ModifyScale, Selector, Parent);
     }
 
     public static async Task<Scene> LoadSceneBundle(bool makeActiveScene, BasisLoadableBundle loadableBundle, BasisProgressReport report, CancellationToken cancellationToken)
@@ -133,7 +134,7 @@ public static class BasisLoadHandler
         return await BasisBundleLoadAsset.LoadSceneFromBundleAsync(wrapper, makeActiveScene, report);
     }
 
-    private static async Task<GameObject> HandleFirstBundleLoad(BasisLoadableBundle loadableBundle, bool useContentRemoval, BasisProgressReport report, CancellationToken cancellationToken, Vector3 Position, Quaternion Rotation, Vector3 Scale, bool ModifyScale, Transform Parent = null)
+    private static async Task<GameObject> HandleFirstBundleLoad(BasisLoadableBundle loadableBundle, bool useContentRemoval, BasisProgressReport report, CancellationToken cancellationToken, Vector3 Position, Quaternion Rotation, Vector3 Scale, bool ModifyScale,Selector Selector, Transform Parent = null)
     {
         BasisTrackedBundleWrapper wrapper = new BasisTrackedBundleWrapper
         {
@@ -150,7 +151,7 @@ public static class BasisLoadHandler
         try
         {
             await HandleBundleAndMetaLoading(wrapper, report, cancellationToken);
-            return await BasisBundleLoadAsset.LoadFromWrapper(wrapper, useContentRemoval, Position, Rotation, ModifyScale, Scale, Parent);
+            return await BasisBundleLoadAsset.LoadFromWrapper(wrapper, useContentRemoval, Position, Rotation, ModifyScale, Scale, Selector, Parent);
         }
         catch (Exception ex)
         {
