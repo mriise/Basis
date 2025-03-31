@@ -34,6 +34,7 @@ public class BasisIndividualPlayerSettings : BasisUIBase
 
     public Slider UserVolumeOverride;
     public Button ToggleAvatar;
+
     public TextMeshProUGUI AvatarVisibleText;
     public TextMeshProUGUI SliderVolumePercentage;
 
@@ -41,6 +42,8 @@ public class BasisIndividualPlayerSettings : BasisUIBase
     public TextMeshProUGUI PlayerUUID;
     public BasisRemotePlayer RemotePlayer;
     public BasisUIVolumeSampler BasisUIVolumeSampler;
+
+    public Button RequestAvatarClone;
     public async Task Initalize(BasisRemotePlayer remotePlayer)
     {
         RemotePlayer = remotePlayer;
@@ -62,6 +65,9 @@ public class BasisIndividualPlayerSettings : BasisUIBase
 
         // Event Listeners
         ToggleAvatar.onClick.AddListener(() => ToggleAvatarPressed(playerUUID));
+
+        RequestAvatarClone.onClick.AddListener(() => ToggleAvatarPressed(playerUUID));
+
         UserVolumeOverride.onValueChanged.AddListener(value => ChangePlayersVolume(playerUUID, value));
     }
 
