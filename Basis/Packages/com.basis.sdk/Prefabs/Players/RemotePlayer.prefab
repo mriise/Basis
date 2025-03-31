@@ -86,7 +86,7 @@ MonoBehaviour:
         AssetBundleDescription: 
       BasisBundleGenerated: []
   HasAvatarDriver: 0
-  FaceisVisible: 0
+  FaceIsVisible: 0
   FaceRenderer: {fileID: 0}
   AvatarLoadMode: 0
   BasisAvatarStrainJiggleDriver: {fileID: 0}
@@ -729,35 +729,35 @@ AudioSource:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: 0.06666667
+      time: 0.035828657
       value: 1
-      inSlope: -15.005997
-      outSlope: -15.005997
+      inSlope: -2.2142456
+      outSlope: -2.2142456
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
-      outWeight: 0
+      outWeight: 0.8832598
     - serializedVersion: 3
-      time: 0.13333334
-      value: 0.5
-      inSlope: -3.7514992
-      outSlope: -3.7514992
+      time: 0.23906149
+      value: 0.574646
+      inSlope: -2.304989
+      outSlope: -2.304989
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0
+      inWeight: 0.35260352
       outWeight: 0
     - serializedVersion: 3
-      time: 0.26886395
-      value: 0.25323486
-      inSlope: -0.9788906
-      outSlope: -0.9788906
+      time: 0.37239483
+      value: 0.32788086
+      inSlope: -1.0681823
+      outSlope: -1.0681823
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.63487184
+      inWeight: 0.7161809
       outWeight: 0
     - serializedVersion: 3
-      time: 0.517922
-      value: 0.06982422
+      time: 0.62145287
+      value: 0.14447021
       inSlope: -0.5149982
       outSlope: -0.5149982
       tangentMode: 0
