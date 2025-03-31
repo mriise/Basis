@@ -59,6 +59,7 @@ namespace HVR.Basis.Comms
 
             featureNetworking.AssignGuids(_isWearer);
 
+            avatar.OnServerReductionSystemMessageReceived += OnServerReductionSystemMessageReceived;
             avatar.OnNetworkMessageReceived += OnNetworkMessageReceived;
             if (_isWearer)
             {
@@ -76,6 +77,55 @@ namespace HVR.Basis.Comms
                 // Handle late-joining, or loading the avatar after the wearer does. Ask the wearer to initialize us.
                 // - If the wearer has not finished loading their own avatar, they will initialize us anyways.
                 avatar.NetworkMessageSend(OurMessageIndex, featureNetworking.GetRemoteRequestsInitializationPacket(), MainMessageDeliveryMethod, _wearerNetIdRecipient);
+            }
+        }
+
+        private void OnServerReductionSystemMessageReceived(byte messageindex, byte[] unsafeBuffer)
+        {
+            // Ignore all other messages first
+            if (OurMessageIndex != messageindex) return;
+
+            // Ignore all net messages as long as this is disabled
+            if (!isActiveAndEnabled) return;
+
+            if (unsafeBuffer.Length == 0) { ProtocolError("Protocol error: Missing sub-packet identifier"); return; }
+
+            var isSentByWearer = true;
+
+            var theirs = unsafeBuffer[0];
+            if (theirs == FeatureNetworking.NegotiationPacket)
+            {
+                if (!isSentByWearer) { ProtocolError("Protocol error: Only the wearer can send us this message."); return; }
+                if (_isWearer) { ProtocolError("Protocol error: The wearer cannot receive this message."); return; }
+
+                Debug.Log($"Receiving Negotiation packet from local...");
+                DecodeNegotiationPacket(SubBuffer(unsafeBuffer));
+            }
+            else if (theirs == FeatureNetworking.ReservedPacket)
+            {
+                Debug.Log($"Decoding reserved packet...");
+
+                // Reserved packets are not necessarily sent by the wearer.
+                DecodeReservedPacket(SubBuffer(unsafeBuffer), _wearerNetId, isSentByWearer);
+            }
+            else // Transmission packet
+            {
+                if (!isSentByWearer) { ProtocolError("Protocol error: Only the wearer can send us this message."); return; }
+                if (_isWearer) { ProtocolError("Protocol error: The wearer cannot receive this message."); return; }
+
+                if (_fromTheirsToOurs == null) { ProtocolWarning("Protocol warning: No valid Networking packet was previously received yet."); return; }
+
+                if (_fromTheirsToOurs.TryGetValue(theirs, out var ours))
+                {
+                    featureNetworking.OnPacketReceived(ours, SubBuffer(unsafeBuffer));
+                }
+                else
+                {
+                    // Either:
+                    // - Mismatching avatar structures, or
+                    // - Protocol asset mismatch: Remote has sent a GUID index greater or equal to the previously negotiated GUIDs.
+                    ProtocolAssetMismatch($"Protocol asset mismatch: Cannot handle GUID with index {theirs}");
+                }
             }
         }
 

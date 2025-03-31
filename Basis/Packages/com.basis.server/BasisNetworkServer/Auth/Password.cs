@@ -24,9 +24,10 @@ namespace Basis.Network.Server.Auth
     internal readonly struct Deserialized
     {
         public readonly UserPassword Password { get; }
-        public Deserialized(AuthenticationMessage msg)
+        public Deserialized(byte[] Bytesmsg)
         {
-            Password = new UserPassword(Encoding.UTF8.GetString(msg.bytes));
+            string password = Encoding.UTF8.GetString(Bytesmsg);
+            Password = new UserPassword(password);
         }
     }
 
@@ -42,12 +43,12 @@ namespace Basis.Network.Server.Auth
 
         private static bool CheckPassword(ServerPassword serverPassword, UserPassword userPassword)
         {
-            if (serverPassword.V == string.Empty)
+            if (string.IsNullOrEmpty(serverPassword.V))
             {
                 BNL.Log("No server password set, user is allowed");
                 return true;
             }
-            if (userPassword.V == string.Empty)
+            if (string.IsNullOrEmpty(userPassword.V))
             {
                 BNL.Log("User had an empty password, user is rejected");
                 return false;
@@ -65,9 +66,9 @@ namespace Basis.Network.Server.Auth
             }
         }
 
-        public bool IsAuthenticated(AuthenticationMessage msg)
+        public bool IsAuthenticated(byte[] Bytesmsg)
         {
-            var deserialized = new Deserialized(msg);
+            var deserialized = new Deserialized(Bytesmsg);
             return CheckPassword(serverPassword, deserialized.Password);
         }
     }

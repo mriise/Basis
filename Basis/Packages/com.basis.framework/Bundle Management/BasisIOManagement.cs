@@ -205,10 +205,26 @@ public static class BasisIOManagement
         }
 
         long responseCode = request.responseCode;
-        if (responseCode != 206 && responseCode != 200)
+
+        switch (responseCode)
         {
-            BasisDebug.LogError($"Server did not support range requests. Response code: {responseCode}.");
-            return null;
+            case 200: // OK
+                // TODO: delete the file if loadToMemory is false?
+                // Future Work: cut this off early by performing a HEAD request to see if the server supports range requests?
+                //  peek at response codes/headers while the request isn't finished to abort as soon as possible?
+                BasisDebug.LogError($"Server replied with whole file! Please use a host that supports range requests.");
+                return null;
+            case 206: // Partial Content
+                // Success, continue.
+                break;
+            case 416: // Requested Range Not Satisfiable
+                // TODO: is this considered an error by UnityWebRequest? if it is, than this is likely dead code.
+                BasisDebug.LogError($"Requested Range {startByte}-{(endByte.HasValue ? endByte.ToString() : "end")} not satisfiable.");
+                return null;
+            default:
+                // This case is likely mostly already covered by checking if UnityWebRequest called this a success.
+                BasisDebug.LogError($"Unknown Response code: {responseCode}");
+                return null;
         }
 
         if (loadToMemory)

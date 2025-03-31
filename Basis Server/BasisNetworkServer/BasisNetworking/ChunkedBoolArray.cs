@@ -1,3 +1,4 @@
+using Basis.Network.Core;
 using System;
 using static BasisServerReductionSystem;
 
@@ -7,20 +8,19 @@ public class ChunkedBoolArray
     private readonly bool[][] _chunks;      // Array divided into chunks
     private readonly int _chunkSize;        // Number of elements in each chunk
     private readonly int _numChunks;        // Number of chunks
-    public const int TotalSize = 1024;      // Total size of the array
 
     // Precomputed array size
     private readonly int _totalSize;
 
     public ChunkedBoolArray(int chunkSize = 256)
     {
-        if (TotalSize <= 0)
-            throw new ArgumentOutOfRangeException(nameof(TotalSize), "Total size must be greater than zero.");
+        if (BasisNetworkCommons.MaxConnections <= 0)
+            throw new ArgumentOutOfRangeException(nameof(BasisNetworkCommons.MaxConnections), "Total size must be greater than zero.");
         if (chunkSize <= 0)
             throw new ArgumentOutOfRangeException(nameof(chunkSize), "Chunk size must be greater than zero.");
 
         _chunkSize = chunkSize;
-        _numChunks = (int)Math.Ceiling((double)TotalSize / chunkSize);
+        _numChunks = (int)Math.Ceiling((double)BasisNetworkCommons.MaxConnections / chunkSize);
         _totalSize = _chunkSize * _numChunks;
 
         _chunks = new bool[_numChunks][];
@@ -67,20 +67,19 @@ public class ChunkedServerSideReducablePlayerArray
     private readonly ServerSideReducablePlayer[][] _chunks; // Array divided into chunks
     private readonly int _chunkSize;        // Number of elements in each chunk
     private readonly int _numChunks;        // Number of chunks
-    public const int TotalSize = 1024;      // Total size of the array
 
     // Precomputed array size
     private readonly int _totalSize;
 
     public ChunkedServerSideReducablePlayerArray(int chunkSize = 256)
     {
-        if (TotalSize <= 0)
-            throw new ArgumentOutOfRangeException(nameof(TotalSize), "Total size must be greater than zero.");
+        if (BasisNetworkCommons.MaxConnections <= 0)
+            throw new ArgumentOutOfRangeException(nameof(BasisNetworkCommons.MaxConnections), "Total size must be greater than zero.");
         if (chunkSize <= 0)
             throw new ArgumentOutOfRangeException(nameof(chunkSize), "Chunk size must be greater than zero.");
 
         _chunkSize = chunkSize;
-        _numChunks = (int)Math.Ceiling((double)TotalSize / chunkSize);
+        _numChunks = (int)Math.Ceiling((double)BasisNetworkCommons.MaxConnections / chunkSize);
         _totalSize = _chunkSize * _numChunks;
 
         _chunks = new ServerSideReducablePlayer[_numChunks][];

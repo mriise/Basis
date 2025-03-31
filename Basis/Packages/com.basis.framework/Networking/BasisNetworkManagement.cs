@@ -2,11 +2,13 @@ using Basis.Network.Core;
 using Basis.Scripts.BasisSdk;
 using Basis.Scripts.BasisSdk.Helpers;
 using Basis.Scripts.BasisSdk.Players;
+using Basis.Scripts.Device_Management.Devices.Desktop;
 using Basis.Scripts.Networking.NetworkedAvatar;
 using Basis.Scripts.Networking.Recievers;
 using Basis.Scripts.Networking.Transmitters;
 using Basis.Scripts.Profiler;
 using Basis.Scripts.TransformBinders.BoneControl;
+using BasisNetworkClient;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using System;
@@ -39,9 +41,8 @@ namespace Basis.Scripts.Networking
         public static ConcurrentDictionary<ushort, BasisNetworkPlayer> Players = new ConcurrentDictionary<ushort, BasisNetworkPlayer>();
         public static ConcurrentDictionary<ushort, BasisNetworkReceiver> RemotePlayers = new ConcurrentDictionary<ushort, BasisNetworkReceiver>();
         public static HashSet<ushort> JoiningPlayers = new HashSet<ushort>();
-        public static BasisNetworkReceiver[] ReceiverArray => BasisNetworkManagement.Instance.receiverArray;
         [SerializeField]
-        public BasisNetworkReceiver[] receiverArray;
+        public static BasisNetworkReceiver[] ReceiverArray;
         public static int ReceiverCount = 0;
         public static SynchronizationContext MainThreadContext;
         public static NetPeer LocalPlayerPeer;
@@ -81,7 +82,7 @@ namespace Basis.Scripts.Networking
                     if (NetPlayer.Player.IsLocal == false)
                     {
                         RemotePlayers.TryAdd(NetPlayer.NetId, (BasisNetworkReceiver)NetPlayer);
-                        BasisNetworkManagement.Instance.receiverArray = RemotePlayers.Values.ToArray();
+                        BasisNetworkManagement.ReceiverArray = RemotePlayers.Values.ToArray();
                         ReceiverCount = ReceiverArray.Length;
                         BasisDebug.Log("ReceiverCount was " + ReceiverCount);
                     }
@@ -103,7 +104,7 @@ namespace Basis.Scripts.Networking
             if (Instance != null)
             {
                 RemotePlayers.TryRemove(NetID,out BasisNetworkReceiver A);
-                BasisNetworkManagement.Instance.receiverArray = RemotePlayers.Values.ToArray();
+                BasisNetworkManagement.ReceiverArray = RemotePlayers.Values.ToArray();
                 ReceiverCount = ReceiverArray.Length;
                 //BasisDebug.Log("ReceiverCount was " + ReceiverCount);
                 return Players.Remove(NetID, out var B);
@@ -132,7 +133,7 @@ namespace Basis.Scripts.Networking
         }
         private void LogErrorOutput(string obj)
         {
-           BasisDebug.LogError(obj);
+           BasisDebug.LogError(obj, BasisDebug.LogTag.Networking);
         }
         private void LogWarningOutput(string obj)
         {
@@ -140,14 +141,14 @@ namespace Basis.Scripts.Networking
         }
         private void LogOutput(string obj)
         {
-            BasisDebug.Log(obj);
+            BasisDebug.Log(obj, BasisDebug.LogTag.Networking);
         }
         public void OnDestroy()
         {
             Players.Clear();
             Shutdown();
             BasisAvatarBufferPool.Clear();
-            BasisNetworkClient.Disconnect();
+            NetworkClient.Disconnect();
             NetworkRunning = false;
         }
         public async void Shutdown()
@@ -178,28 +179,31 @@ namespace Basis.Scripts.Networking
             OwnershipPairing.Clear();
             BasisNetworkServerRunner = null;
 
-            if (receiverArray != null)
+            if (BasisNetworkManagement.ReceiverArray != null)
             {
-                Array.Clear(receiverArray, 0, receiverArray.Length);
-                receiverArray = null;
+                Array.Clear(BasisNetworkManagement.ReceiverArray, 0, BasisNetworkManagement.ReceiverArray.Length);
+                BasisNetworkManagement.ReceiverArray = null;
             }
 
             BasisDebug.Log("BasisNetworkManagement has been successfully shutdown.", BasisDebug.LogTag.Networking);
         }
-        public void Update()
+        public static void SimulateNetworkCompute()
         {
-            double TimeAsDouble = Time.timeAsDouble;
-
-            // Schedule multithreaded tasks
-            for (int Index = 0; Index < ReceiverCount; Index++)
+            if (NetworkRunning)
             {
+                double TimeAsDouble = Time.timeAsDouble;
+
+                // Schedule multithreaded tasks
+                for (int Index = 0; Index < ReceiverCount; Index++)
+                {
                     if (ReceiverArray[Index] != null)
                     {
                         ReceiverArray[Index].Compute(TimeAsDouble);
                     }
+                }
             }
         }
-        public static void SimulateNetwork()
+        public static void SimulateNetworkApply()
         {
             if (NetworkRunning)
             {
@@ -237,25 +241,27 @@ namespace Basis.Scripts.Networking
         {
             Connect(Port, Ip, Password, IsHostMode);
         }
-        public void Connect(ushort Port, string IpString,string PrimitivePassword,bool IsHostMode)
+        public void Connect(ushort Port, string IpString, string PrimitivePassword, bool IsHostMode)
         {
             BNL.LogOutput += LogOutput;
             BNL.LogWarningOutput += LogWarningOutput;
             BNL.LogErrorOutput += LogErrorOutput;
 
-            if(IsHostMode)
+            if (IsHostMode)
             {
                 IpString = "localhost";
                 BasisNetworkServerRunner = new BasisNetworkServerRunner();
-                Configuration ServerConfig =   new Configuration() { IPv4Address = IpString };
+                Configuration ServerConfig = new Configuration() { IPv4Address = IpString };
                 ServerConfig.UsingLoggingFile = false;
-                BasisNetworkServerRunner.Initalize(ServerConfig,string.Empty);
+                BasisNetworkServerRunner.Initalize(ServerConfig, string.Empty);
             }
 
             BasisDebug.Log("Connecting with Port " + Port + " IpString " + IpString);
             //   string result = BasisNetworkIPResolve.ResolveHosttoIP(IpString);
             //   BasisDebug.Log($"DNS call: {IpString} resolves to {result}");
             BasisLocalPlayer BasisLocalPlayer = BasisLocalPlayer.Instance;
+           string UUID = BasisDIDAuthIdentityClient.GetOrSaveDID();
+            BasisLocalPlayer.UUID = UUID;
             byte[] Information = BasisBundleConversionNetwork.ConvertBasisLoadableBundleToBytes(BasisLocalPlayer.AvatarMetaData);
             ReadyMessage readyMessage = new ReadyMessage
             {
@@ -272,16 +278,19 @@ namespace Basis.Scripts.Networking
             };
             BasisNetworkAvatarCompressor.InitalAvatarData(BasisLocalPlayer.Instance.BasisAvatar.Animator, out readyMessage.localAvatarSyncMessage);
             BasisDebug.Log("Network Starting Client");
-            BasisNetworkClient.AuthenticationMessage = new Network.Core.Serializable.SerializableBasis.AuthenticationMessage
+            // BasisDebug.Log("Size is " + BasisNetworkClient.AuthenticationMessage.Message.Length);
+            LocalPlayerPeer = NetworkClient.StartClient(IpString, Port, readyMessage, Encoding.UTF8.GetBytes(PrimitivePassword),true);
+            NetworkClient.listener.PeerConnectedEvent += PeerConnectedEvent;
+            NetworkClient.listener.PeerDisconnectedEvent += PeerDisconnectedEvent;
+            NetworkClient.listener.NetworkReceiveEvent += NetworkReceiveEvent;
+            if (LocalPlayerPeer != null)
             {
-                 bytes = Encoding.UTF8.GetBytes(PrimitivePassword)
-            };
-           // BasisDebug.Log("Size is " + BasisNetworkClient.AuthenticationMessage.Message.Length);
-            LocalPlayerPeer = BasisNetworkClient.StartClient(IpString, Port, readyMessage);
-            BasisDebug.Log("Network Client Started " + LocalPlayerPeer.RemoteId);
-            BasisNetworkClient.listener.PeerConnectedEvent += PeerConnectedEvent;
-            BasisNetworkClient.listener.PeerDisconnectedEvent += PeerDisconnectedEvent;
-            BasisNetworkClient.listener.NetworkReceiveEvent += NetworkReceiveEvent;
+                BasisDebug.Log("Network Client Started " + LocalPlayerPeer.RemoteId);
+            }
+            else
+            {
+                ForceShutdown();
+            }
         }
         private async void PeerConnectedEvent(NetPeer peer)
         {
@@ -355,32 +364,110 @@ namespace Basis.Scripts.Networking
                 await Task.Run(() =>
                 {
                     BasisNetworkManagement.MainThreadContext.Post(async _ =>
-                {
-                    if (BasisNetworkManagement.Players.TryGetValue((ushort)LocalPlayerPeer.RemoteId, out BasisNetworkPlayer NetworkedPlayer))
                     {
-                        BasisNetworkManagement.OnLocalPlayerLeft?.Invoke(NetworkedPlayer, (Basis.Scripts.BasisSdk.Players.BasisLocalPlayer)NetworkedPlayer.Player);
-                    }
-                    if (disconnectInfo.Reason == DisconnectReason.RemoteConnectionClose)
-                    {
-                        if (disconnectInfo.AdditionalData.TryGetString(out string Reason))
+                        if (LocalPlayerPeer != null)
                         {
-                            BasisDebug.LogError(Reason);
+                            if (BasisNetworkManagement.Players.TryGetValue((ushort)LocalPlayerPeer.RemoteId, out BasisNetworkPlayer NetworkedPlayer))
+                            {
+                                BasisNetworkManagement.OnLocalPlayerLeft?.Invoke(NetworkedPlayer, (Basis.Scripts.BasisSdk.Players.BasisLocalPlayer)NetworkedPlayer.Player);
+                            }
                         }
-                    }
-                    if(BasisNetworkServerRunner != null)
-                    {
-                        BasisNetworkServerRunner.Stop();
-                        BasisNetworkServerRunner = null;
-                    }
-                    Players.Clear();
-                    OwnershipPairing.Clear();
-                    ReceiverCount = 0;
-                    BasisDebug.Log($"Client disconnected from server [{peer.RemoteId}] [{disconnectInfo.Reason}]");
-                    SceneManager.LoadScene(0, LoadSceneMode.Single);//reset
-                    await Boot_Sequence.BootSequence.OnAddressablesInitializationComplete();
-                }, null);
+                        if (BasisNetworkServerRunner != null)
+                        {
+                            BasisNetworkServerRunner.Stop();
+                            BasisNetworkServerRunner = null;
+                        }
+                        Players.Clear();
+                        OwnershipPairing.Clear();
+                        ReceiverCount = 0;
+                        BasisDebug.Log($"Client disconnected from server [{peer.RemoteId}] [{disconnectInfo.Reason}]");
+                        SceneManager.LoadScene(0, LoadSceneMode.Single);//reset
+                        await Boot_Sequence.BootSequence.OnAddressablesInitializationComplete();
+                        HandleDisconnectionReason(disconnectInfo);
+                    }, null);
                 });
             }
+        }
+        public void HandleDisconnectionReason(DisconnectInfo disconnectInfo)
+        {
+            if (disconnectInfo.Reason == DisconnectReason.RemoteConnectionClose)
+            {
+                if (disconnectInfo.AdditionalData.TryGetString(out string Reason))
+                {
+                    BasisUINotification.OpenNotification(Reason, true, new Vector3(0, 0, 0.9f));
+                    BasisDebug.LogError(Reason);
+                }
+            }
+            else
+            {
+                BasisUINotification.OpenNotification(disconnectInfo.Reason.ToString(), true, new Vector3(0, 0, 0.9f));
+            }
+        }
+        public async void ForceShutdown()
+        {
+                await Task.Run(() =>
+                {
+                    BasisNetworkManagement.MainThreadContext.Post(async _ =>
+                    {
+                        if (LocalPlayerPeer != null)
+                        {
+                            if (BasisNetworkManagement.Players.TryGetValue((ushort)LocalPlayerPeer.RemoteId, out BasisNetworkPlayer NetworkedPlayer))
+                            {
+                                BasisNetworkManagement.OnLocalPlayerLeft?.Invoke(NetworkedPlayer, (Basis.Scripts.BasisSdk.Players.BasisLocalPlayer)NetworkedPlayer.Player);
+                            }
+                        }
+                        if (BasisNetworkServerRunner != null)
+                        {
+                            BasisNetworkServerRunner.Stop();
+                            BasisNetworkServerRunner = null;
+                        }
+                        Players.Clear();
+                        OwnershipPairing.Clear();
+                        ReceiverCount = 0;
+                        SceneManager.LoadScene(0, LoadSceneMode.Single);//reset
+                        await Boot_Sequence.BootSequence.OnAddressablesInitializationComplete();
+                        BasisUINotification.OpenNotification("Unable to connect to Address!",true, new Vector3(0,0,0.9f));
+                    }, null);
+                });
+        }
+        public static bool ValidateSize(NetPacketReader reader, NetPeer peer, byte channel)
+        {
+            if (reader.AvailableBytes == 0)
+            {
+                BasisDebug.LogError($"Missing Data from peer! {peer.Id} with channel ID {channel}");
+                return false;
+            }
+            return true;
+        }
+        public void AuthIdentityMessage(NetPeer peer, NetPacketReader Reader, byte channel)
+        {
+            BasisDebug.Log("Auth is being requested by server!");
+            if (ValidateSize(Reader, peer, channel) == false)
+            {
+                BasisDebug.Log("Auth Failed");
+                Reader.Recycle();
+                return;
+            }
+            BasisDebug.Log("Validated Size " + Reader.AvailableBytes);
+            if (BasisDIDAuthIdentityClient.IdentityMessage(peer, Reader, out NetDataWriter Writer))
+            {
+                BasisDebug.Log("Sent Identity To Server!");
+                LocalPlayerPeer.Send(Writer, BasisNetworkCommons.AuthIdentityMessage, DeliveryMethod.ReliableSequenced);
+                Reader.Recycle();
+            }
+            else
+            {
+                BasisDebug.LogError("Failed Identity Message!");
+                Reader.Recycle();
+                DisconnectInfo info = new DisconnectInfo
+                {
+                    Reason = DisconnectReason.ConnectionRejected,
+                    SocketErrorCode = System.Net.Sockets.SocketError.AccessDenied,
+                    AdditionalData = null
+                };
+                PeerDisconnectedEvent(peer, info);
+            }
+            BasisDebug.Log("Completed");
         }
         private async void NetworkReceiveEvent(NetPeer peer, NetPacketReader Reader, byte channel, LiteNetLib.DeliveryMethod deliveryMethod)
         {
@@ -405,11 +492,24 @@ namespace Basis.Scripts.Networking
                         Reader.Recycle();
                     }
                     break;
+                case BasisNetworkCommons.AuthIdentityMessage:
+                    AuthIdentityMessage(peer,Reader,channel);
+                    break;
                 case BasisNetworkCommons.Disconnection:
+                    if (ValidateSize(Reader, peer, channel) == false)
+                    {
+                        Reader.Recycle();
+                        return;
+                    }
                     BasisNetworkHandleRemoval.HandleDisconnection(Reader);
                     Reader.Recycle();
                     break;
                 case BasisNetworkCommons.AvatarChangeMessage:
+                    if (ValidateSize(Reader, peer, channel) == false)
+                    {
+                        Reader.Recycle();
+                        return;
+                    }
                     BasisNetworkManagement.MainThreadContext.Post(_ =>
                     {
                         BasisNetworkHandleAvatar.HandleAvatarChangeMessage(Reader);
@@ -417,13 +517,37 @@ namespace Basis.Scripts.Networking
                     }, null);
                     break;
                 case BasisNetworkCommons.CreateRemotePlayer:
+                    if (ValidateSize(Reader, peer, channel) == false)
+                    {
+                        Reader.Recycle();
+                        return;
+                    }
                     BasisNetworkManagement.MainThreadContext.Post(async _ =>
                     {
                         await BasisNetworkHandleRemote.HandleCreateRemotePlayer(Reader, this.transform);
                         Reader.Recycle();
                     }, null);
                     break;
+                case BasisNetworkCommons.CreateRemotePlayersForNewPeer:
+                    if (ValidateSize(Reader, peer, channel) == false)
+                    {
+                        Reader.Recycle();
+                        return;
+                    }
+                    //same as remote player but just used at the start
+                    BasisNetworkManagement.MainThreadContext.Post(async _ =>
+                    {
+                        //this one is called first and is also generally where the issues are.
+                        await BasisNetworkHandleRemote.HandleCreateRemotePlayer(Reader, this.transform);
+                        Reader.Recycle();
+                    }, null);
+                    break;
                 case BasisNetworkCommons.GetCurrentOwnerRequest:
+                    if (ValidateSize(Reader, peer, channel) == false)
+                    {
+                        Reader.Recycle();
+                        return;
+                    }
                     BasisNetworkManagement.MainThreadContext.Post(_ =>
                     {
                         BasisNetworkGenericMessages.HandleOwnershipResponse(Reader);
@@ -431,6 +555,11 @@ namespace Basis.Scripts.Networking
                     }, null);
                     break;
                 case BasisNetworkCommons.ChangeCurrentOwnerRequest:
+                    if (ValidateSize(Reader, peer, channel) == false)
+                    {
+                        Reader.Recycle();
+                        return;
+                    }
                     BasisNetworkManagement.MainThreadContext.Post(_ =>
                     {
                         BasisNetworkGenericMessages.HandleOwnershipTransfer(Reader);
@@ -438,6 +567,11 @@ namespace Basis.Scripts.Networking
                     }, null);
                     break;
                 case BasisNetworkCommons.RemoveCurrentOwnerRequest:
+                    if (ValidateSize(Reader, peer, channel) == false)
+                    {
+                        Reader.Recycle();
+                        return;
+                    }
                     BasisNetworkManagement.MainThreadContext.Post(_ =>
                     {
                         BasisNetworkGenericMessages.HandleOwnershipRemove(Reader);
@@ -449,10 +583,20 @@ namespace Basis.Scripts.Networking
                     Reader.Recycle();
                     break;
                 case BasisNetworkCommons.MovementChannel:
-                     BasisNetworkHandleAvatar.HandleAvatarUpdate(Reader,true);
+                    if (ValidateSize(Reader, peer, channel) == false)
+                    {
+                        Reader.Recycle();
+                        return;
+                    }
+                    BasisNetworkHandleAvatar.HandleAvatarUpdate(Reader);
                     Reader.Recycle();
                     break;
                 case BasisNetworkCommons.SceneChannel:
+                    if (ValidateSize(Reader, peer, channel) == false)
+                    {
+                        Reader.Recycle();
+                        return;
+                    }
                     BasisNetworkManagement.MainThreadContext.Post(_ =>
                     {
                         BasisNetworkGenericMessages.HandleServerSceneDataMessage(Reader,deliveryMethod);
@@ -460,6 +604,11 @@ namespace Basis.Scripts.Networking
                     }, null);
                     break;
                 case BasisNetworkCommons.AvatarChannel:
+                    if (ValidateSize(Reader, peer, channel) == false)
+                    {
+                        Reader.Recycle();
+                        return;
+                    }
                     BasisNetworkManagement.MainThreadContext.Post(_ =>
                     {
                         BasisNetworkGenericMessages.HandleServerAvatarDataMessage(Reader, deliveryMethod);
@@ -467,6 +616,11 @@ namespace Basis.Scripts.Networking
                     }, null);
                     break;
                 case BasisNetworkCommons.NetIDAssigns:
+                    if (ValidateSize(Reader, peer, channel) == false)
+                    {
+                        Reader.Recycle();
+                        return;
+                    }
                     BasisNetworkManagement.MainThreadContext.Post(_ =>
                     {
                         BasisNetworkGenericMessages.MassNetIDAssign(Reader, deliveryMethod);
@@ -474,6 +628,11 @@ namespace Basis.Scripts.Networking
                     }, null);
                     break;
                 case BasisNetworkCommons.netIDAssign:
+                    if (ValidateSize(Reader, peer, channel) == false)
+                    {
+                        Reader.Recycle();
+                        return;
+                    }
                     BasisNetworkManagement.MainThreadContext.Post(_ =>
                     {
                         BasisNetworkGenericMessages.NetIDAssign(Reader, deliveryMethod);
@@ -481,6 +640,11 @@ namespace Basis.Scripts.Networking
                     }, null);
                     break;
                 case BasisNetworkCommons.LoadResourceMessage:
+                    if (ValidateSize(Reader, peer, channel) == false)
+                    {
+                        Reader.Recycle();
+                        return;
+                    }
                     BasisNetworkManagement.MainThreadContext.Post(async _ =>
                     {
                      await   BasisNetworkGenericMessages.LoadResourceMessage(Reader, deliveryMethod);
@@ -488,9 +652,26 @@ namespace Basis.Scripts.Networking
                     }, null);
                     break;
                 case BasisNetworkCommons.UnloadResourceMessage:
+                    if (ValidateSize(Reader, peer, channel) == false)
+                    {
+                        Reader.Recycle();
+                        return;
+                    }
                     BasisNetworkManagement.MainThreadContext.Post(_ =>
                     {
                         BasisNetworkGenericMessages.UnloadResourceMessage(Reader, deliveryMethod);
+                        Reader.Recycle();
+                    }, null);
+                    break;
+                case BasisNetworkCommons.AdminMessage:
+                    if (ValidateSize(Reader, peer, channel) == false)
+                    {
+                        Reader.Recycle();
+                        return;
+                    }
+                    BasisNetworkManagement.MainThreadContext.Post(_ =>
+                    {
+                        BasisNetworkModeration.AdminMessage(Reader);
                         Reader.Recycle();
                     }, null);
                     break;

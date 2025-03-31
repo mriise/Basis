@@ -17,24 +17,29 @@ namespace Basis.Scripts.Networking.Recievers
         public AudioSource audioSource;
         [SerializeField]
         public BasisAudioAndVisemeDriver visemeDriver;
-        [SerializeField]
-        public BasisVoiceRingBuffer RingBuffer;
+        public BasisVoiceRingBuffer InOrderRead;
         public bool IsPlaying = false;
         public float[] pcmBuffer;
         public int pcmLength;
-        /// <summary>
-        /// decodes data into the pcm buffer
-        /// note that the pcm buffer is always going to have more data then submited.
-        /// the pcm length is how much was actually encoded.
-        /// </summary>
-        /// <param name="data"></param>
-        public void OnDecode(byte[] data, int length)
+        public bool IsReady;
+        public float[] silentData;
+        public byte lastReadIndex = 0;
+        public void OnDecode(byte SequenceNumber, byte[] data, int length)
         {
             pcmLength = decoder.Decode(data, length, pcmBuffer, RemoteOpusSettings.NetworkSampleRate, false);
-            OnDecoded();
+            InOrderRead.Add(pcmBuffer, pcmLength);
+        }
+        public void OnDecodeSilence(byte SequenceNumber)
+        {
+            InOrderRead.Add(silentData, RemoteOpusSettings.FrameSize);
         }
         public void OnEnable(BasisNetworkPlayer networkedPlayer)
         {
+            if (silentData == null || silentData.Length != RemoteOpusSettings.FrameSize)
+            {
+                silentData = new float[RemoteOpusSettings.FrameSize];
+                Array.Fill(silentData, 0f);
+            }
             // Initialize settings and audio source
             if (audioSource == null)
             {
@@ -47,20 +52,20 @@ namespace Basis.Scripts.Networking.Recievers
             audioSource.dopplerLevel = 0;
             audioSource.volume = 1.0f;
             audioSource.loop = true;
-            RingBuffer = new BasisVoiceRingBuffer(RemoteOpusSettings.RecieverLengthCapacity);
+            InOrderRead = new BasisVoiceRingBuffer();
             // Create AudioClip
-            audioSource.clip = AudioClip.Create($"player [{networkedPlayer.NetId}]", RemoteOpusSettings.RecieverLength, RemoteOpusSettings.Channels, RemoteOpusSettings.PlayBackSampleRate, false, (buf) =>
+            audioSource.clip = AudioClip.Create($"player [{networkedPlayer.NetId}]", RemoteOpusSettings.FrameSize *4, RemoteOpusSettings.Channels, RemoteOpusSettings.PlayBackSampleRate, false, (buf) =>
             {
                 Array.Fill(buf, 1.0f);
             });
             // Ensure decoder is initialized and subscribe to events
-            pcmLength = RemoteOpusSettings.Pcmlength;
+            pcmLength = RemoteOpusSettings.FrameSize;
             pcmBuffer = new float[RemoteOpusSettings.SampleLength];
             decoder = new OpusDecoder(RemoteOpusSettings.NetworkSampleRate, RemoteOpusSettings.Channels);
             StartAudio();
-
             // Perform calibration
             OnCalibration(networkedPlayer);
+            IsReady = true;
         }
         public void OnDestroy()
         {
@@ -95,37 +100,25 @@ namespace Basis.Scripts.Networking.Recievers
             }
             BasisRemoteVisemeAudioDriver.Initalize(visemeDriver);
         }
-        public void OnDecoded()
-        {
-            OnDecoded(pcmBuffer, pcmLength);
-        }
         public void StopAudio()
         {
             IsPlaying = false;
-            //    audioSource.enabled = false;
             audioSource.Stop();
         }
         public void StartAudio()
         {
             IsPlaying = true;
-            //  audioSource.enabled = true;
             audioSource.Play();
         }
-        public void OnDecoded(float[] pcm, int length)
+        public void OnAudioFilterRead(float[] data, int channels, int length)
         {
-            RingBuffer.Add(pcm, length);
-        }
-        public int OnAudioFilterRead(float[] data, int channels)
-        {
-            int length = data.Length;
             int frames = length / channels; // Number of audio frames
-
-            if (RingBuffer.IsEmpty)
+            if (InOrderRead.IsEmpty)
             {
                 // No voice data, fill with silence
-             //   BasisDebug.Log("No Data Filling with Silence");
+              //  BasisDebug.Log("Missing Audio Data! filling with Silence");
                 Array.Fill(data, 0);
-                return length;
+                return;
             }
 
             int outputSampleRate = RemoteOpusSettings.PlayBackSampleRate;
@@ -138,13 +131,10 @@ namespace Basis.Scripts.Networking.Recievers
             {
                 ProcessAudioWithResampling(data, frames, channels, outputSampleRate);
             }
-
-            return length;
         }
-
         private void ProcessAudioWithoutResampling(float[] data, int frames, int channels)
         {
-            RingBuffer.Remove(frames, out float[] segment);
+            InOrderRead.Remove(frames, out float[] segment);
 
             for (int i = 0; i < frames; i++)
             {
@@ -153,10 +143,10 @@ namespace Basis.Scripts.Networking.Recievers
                 {
                     int index = i * channels + c;
                     data[index] *= sample;
+                    data[index] =  Math.Clamp(data[index], -1, 1);
                 }
             }
-
-            RingBuffer.BufferedReturn.Enqueue(segment);
+            InOrderRead.BufferedReturn.Enqueue(segment);
         }
 
         private void ProcessAudioWithResampling(float[] data, int frames, int channels, int outputSampleRate)
@@ -164,7 +154,7 @@ namespace Basis.Scripts.Networking.Recievers
             float resampleRatio = (float)RemoteOpusSettings.NetworkSampleRate / outputSampleRate;
             int neededFrames = Mathf.CeilToInt(frames * resampleRatio);
 
-            RingBuffer.Remove(neededFrames, out float[] inputSegment);
+            InOrderRead.Remove(neededFrames, out float[] inputSegment);
 
             float[] resampledSegment = new float[frames];
 
@@ -193,7 +183,7 @@ namespace Basis.Scripts.Networking.Recievers
                 }
             }
 
-            RingBuffer.BufferedReturn.Enqueue(inputSegment);
+            InOrderRead.BufferedReturn.Enqueue(inputSegment);
         }
     }
 }

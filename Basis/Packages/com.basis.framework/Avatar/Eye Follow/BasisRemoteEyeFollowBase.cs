@@ -39,7 +39,7 @@ public class BasisRemoteEyeFollowBase : MonoBehaviour
         if (LinkedPlayer != null && LinkedPlayer.FaceRenderer != null)
         {
             LinkedPlayer.FaceRenderer.Check += UpdateFaceVisibility;
-            UpdateFaceVisibility(LinkedPlayer.FaceisVisible);
+            UpdateFaceVisibility(LinkedPlayer.FaceIsVisible);
         }
     }
 

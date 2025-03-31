@@ -6,17 +6,17 @@ public static partial class SerializableBasis
         public PlayerMetaDataMessage playerMetaDataMessage;
         public ClientAvatarChangeMessage clientAvatarChangeMessage;
         public LocalAvatarSyncMessage localAvatarSyncMessage;
-        public void Deserialize(NetDataReader Writer, bool AttemptAdditionalData)
+        public void Deserialize(NetDataReader Writer)
         {
             playerMetaDataMessage.Deserialize(Writer);
             clientAvatarChangeMessage.Deserialize(Writer);
-            localAvatarSyncMessage.Deserialize(Writer, AttemptAdditionalData);
+            localAvatarSyncMessage.Deserialize(Writer);
         }
-        public void Serialize(NetDataWriter Writer, bool AttemptAdditionalData)
+        public void Serialize(NetDataWriter Writer)
         {
             playerMetaDataMessage.Serialize(Writer);
             clientAvatarChangeMessage.Serialize(Writer);
-            localAvatarSyncMessage.Serialize(Writer, AttemptAdditionalData);
+            localAvatarSyncMessage.Serialize(Writer);
         }
         public bool WasDeserializedCorrectly()
         {

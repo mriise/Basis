@@ -17,7 +17,14 @@ namespace JigglePhysics
             var timeAsDoubleOneStepBack = timeAsDouble - JiggleRigBuilder.VERLET_TIME_STEP;
             for (int Index = 0; Index < JiggleRigCount; Index++)
             {
-                jiggleRigsArray[Index].Advance(deltaTime, GlobalGravity, timeAsDouble, timeAsDoubleOneStepBack);
+                try
+                {
+                    jiggleRigsArray[Index].Advance(deltaTime, GlobalGravity, timeAsDouble, timeAsDoubleOneStepBack);
+                }
+                catch
+                {
+                    Debug.LogError("Unable to continue for JiggleRigFixedUpdateHandler in Fixed Update " + Index);
+                }
             }
         }
     }

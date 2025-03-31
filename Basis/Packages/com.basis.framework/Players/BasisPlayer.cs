@@ -6,7 +6,7 @@ using System.Threading;
 using UnityEngine;
 namespace Basis.Scripts.BasisSdk.Players
 {
-    public abstract partial class BasisPlayer : MonoBehaviour
+    public abstract class BasisPlayer : MonoBehaviour
     {
         public bool IsLocal { get; set; }
         public string DisplayName;
@@ -21,7 +21,7 @@ namespace Basis.Scripts.BasisSdk.Players
         public const byte LoadModeNetworkDownloadable = 0;
         public const byte LoadModeLocal = 1;
         public const byte LoadModeError = 2;
-        public bool FaceisVisible;
+        public bool FaceIsVisible;
         public BasisMeshRendererCheck FaceRenderer;
         public CancellationToken CurrentAvatarsCancellationToken;
         public byte AvatarLoadMode;//0 downloading 1 local
@@ -41,16 +41,22 @@ namespace Basis.Scripts.BasisSdk.Players
                 BasisDebug.LogError("Mising CharacterIKCalibration");
                 HasAvatarDriver = false;
             }
-            BasisAvatarStrainJiggleDriver = BasisHelpers.GetOrAddComponent<BasisAvatarStrainJiggleDriver>(this.gameObject);
-            BasisAvatarStrainJiggleDriver.OnCalibration();
-            if (BasisAvatarStrainJiggleDriver != null)
+            try
             {
-                BasisAvatarStrainJiggleDriver.OnCalibration();
+                BasisAvatarStrainJiggleDriver = BasisHelpers.GetOrAddComponent<BasisAvatarStrainJiggleDriver>(this.gameObject);
+                if (BasisAvatarStrainJiggleDriver != null)
+                {
+                    BasisAvatarStrainJiggleDriver.OnCalibration();
+                }
+            }
+            catch (Exception e)
+            {
+                BasisDebug.LogError($"{e.ToString()} {e.StackTrace}");
             }
         }
         public void UpdateFaceVisibility(bool State)
         {
-            FaceisVisible = State;
+            FaceIsVisible = State;
         }
         public void AvatarSwitchedFallBack()
         {

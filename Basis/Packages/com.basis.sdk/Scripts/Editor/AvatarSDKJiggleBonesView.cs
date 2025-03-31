@@ -88,7 +88,7 @@ public class AvatarSDKJiggleBonesView
 
             // Set default values
             newJiggleStrain.GravityMultiplier = 0.1f;
-            newJiggleStrain.Friction = 0.05f;
+            newJiggleStrain.Friction = 0.3f;
             newJiggleStrain.AngleElasticity = 0.6f;
             newJiggleStrain.Blend = 1f;
             newJiggleStrain.AirDrag = 0.01f;

@@ -74,10 +74,8 @@ namespace BasisNetworking.InitalData
     <LoadedNetID></LoadedNetID>
     <!-- Unlock password -->
     <UnlockPassword></UnlockPassword>
-    <!-- Meta URL -->
-    <MetaURL></MetaURL>
-    <!-- Bundle URL -->
-    <BundleURL></BundleURL>
+    <!-- Combined URl -->
+    <CombinedURL></CombinedURL>
     <!-- Local load flag -->
     <IsLocalLoad>false</IsLocalLoad>
 

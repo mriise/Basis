@@ -1,4 +1,4 @@
-﻿using BattlePhaze.SettingsManager.Types;
+using BattlePhaze.SettingsManager.Types;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -99,7 +99,7 @@ namespace BattlePhaze.SettingsManager
         }
         public override void FindActiveObject(SettingsManager Manager, ref Object Object, out bool HasValue)
         {
-            Object = GameObject.FindObjectOfType<Canvas>();
+            Object = GameObject.FindAnyObjectByType<Canvas>();
             if (Object != null)
             {
                 HasValue = true;

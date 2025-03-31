@@ -44,7 +44,7 @@ public static class BasisNetworkSpawnItem
         return true;
     }
 
-    public static bool RequestGameObjectLoad(string UnlockPassword, string CombinedURL, bool IsLocal, Vector3 Position, Quaternion Rotation, Vector3 Scale, bool Persistent,bool ModifysScale, out LocalLoadResource LocalLoadResource)
+    public static bool RequestGameObjectLoad(string UnlockPassword, string CombinedURL, bool IsLocal, Vector3 Position, Quaternion Rotation, Vector3 Scale, bool Persistent, bool ModifysScale, out LocalLoadResource LocalLoadResource)
     {
         if (string.IsNullOrEmpty(CombinedURL) || string.IsNullOrEmpty(UnlockPassword))
         {
@@ -73,7 +73,7 @@ public static class BasisNetworkSpawnItem
             ScaleY = Scale.y,
             ScaleZ = Scale.z,
             Persist = Persistent,
-             ModifyScale = ModifysScale,
+            ModifyScale = ModifysScale,
         };
 
         LiteNetLib.Utils.NetDataWriter writer = new LiteNetLib.Utils.NetDataWriter();
@@ -225,9 +225,17 @@ public static class BasisNetworkSpawnItem
         {
             foreach (var reference in SpawnedScenes.Values)
             {
-                if (reference.IsValid())
+                if (reference != null && reference.IsValid())
                 {
-                    await SceneManager.UnloadSceneAsync(reference);
+                    try
+                    {
+                        await SceneManager.UnloadSceneAsync(reference);
+                    }
+                    catch (Exception ex)
+                    {
+                        //bad dooly silent error
+                         BasisDebug.Log($"Reset If Spawn Item {ex.Message}");
+                    }
                 }
             }
         }

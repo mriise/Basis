@@ -45,7 +45,6 @@ public static class BNL
             WriteWithColor(message, ConsoleColor.Red); // Error is red
         }
     }
-
     private static void WriteWithColor(string message, ConsoleColor color)
     {
         ConsoleColor originalColor = Console.ForegroundColor;

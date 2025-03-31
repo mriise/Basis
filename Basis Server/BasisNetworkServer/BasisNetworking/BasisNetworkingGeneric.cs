@@ -42,7 +42,7 @@ namespace Basis.Network.Server.Generic
                 //  BNL.Log("Query Recipients " + recipientsLength);
                 for (int index = 0; index < recipientsLength; index++)
                 {
-                    NetPeer client = BasisNetworkServer.chunkedNetPeerArray.GetPeer(SceneDataMessage.recipients[index]);
+                    NetPeer client = NetworkServer.chunkedNetPeerArray.GetPeer(SceneDataMessage.recipients[index]);
                     if (client != null)
                     {
                      //   BNL.Log("Found Peer! " + SceneDataMessage.recipients[index]);
@@ -57,12 +57,12 @@ namespace Basis.Network.Server.Generic
                 if (targetedClients.Count > 0)
                 {
                     //  BNL.Log("Sending out Target Clients " + targetedClients.Count);
-                    BasisNetworkServer.BroadcastMessageToClients(Writer, Channel,ref targetedClients, DeliveryMethod);
+                    NetworkServer.BroadcastMessageToClients(Writer, Channel,ref targetedClients, DeliveryMethod);
                 }
             }
             else
             {
-                BasisNetworkServer.BroadcastMessageToClients(Writer, Channel, sender,BasisPlayerArray.GetSnapshot(), DeliveryMethod);
+                NetworkServer.BroadcastMessageToClients(Writer, Channel, sender,BasisPlayerArray.GetSnapshot(), DeliveryMethod);
             }
         }
         public static void HandleAvatar(NetPacketReader Reader, DeliveryMethod DeliveryMethod, NetPeer sender)
@@ -99,7 +99,7 @@ namespace Basis.Network.Server.Generic
                 //  BNL.Log("Query Recipients " + recipientsLength);
                 for (int index = 0; index < recipientsLength; index++)
                 {
-                    NetPeer client = BasisNetworkServer.chunkedNetPeerArray.GetPeer(avatarDataMessage.recipients[index]);
+                    NetPeer client = NetworkServer.chunkedNetPeerArray.GetPeer(avatarDataMessage.recipients[index]);
                     if (client != null)
                     {
                         //   BNL.Log("Found Peer! " + SceneDataMessage.recipients[index]);
@@ -114,12 +114,12 @@ namespace Basis.Network.Server.Generic
                 if (targetedClients.Count > 0)
                 {
                     //BNL.Log("Sending out Target Clients " + targetedClients.Count);
-                    BasisNetworkServer.BroadcastMessageToClients(Writer, Channel,ref targetedClients, DeliveryMethod);
+                    NetworkServer.BroadcastMessageToClients(Writer, Channel,ref targetedClients, DeliveryMethod);
                 }
             }
             else
             {
-                BasisNetworkServer.BroadcastMessageToClients(Writer, Channel, sender, BasisPlayerArray.GetSnapshot(), DeliveryMethod);
+                NetworkServer.BroadcastMessageToClients(Writer, Channel, sender, BasisPlayerArray.GetSnapshot(), DeliveryMethod);
             }
         }
     }

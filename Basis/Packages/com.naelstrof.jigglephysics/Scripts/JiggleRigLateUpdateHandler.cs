@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace JigglePhysics
@@ -11,22 +10,29 @@ namespace JigglePhysics
         {
             GlobalGravity = Physics.gravity;
         }
-        private void LateUpdate()
+        public void LateUpdate()
         {
-          //  CachedSphereCollider.DisableSphereCollider();
+
+            //  CachedSphereCollider.DisableSphereCollider();
             var deltaTime = Time.deltaTime;
             var timeAsDouble = Time.timeAsDouble;
             var timeAsDoubleOneStepBack = timeAsDouble - JiggleRigBuilder.VERLET_TIME_STEP;
-          //  if (!CachedSphereCollider.TryGet(out SphereCollider sphereCollider))
-           // {
-           //     throw new UnityException("Failed to create a sphere collider, this should never happen! Is a scene not loaded but a jiggle rig is?");
-           // }
+            //  if (!CachedSphereCollider.TryGet(out SphereCollider sphereCollider))
+            // {
+            //     throw new UnityException("Failed to create a sphere collider, this should never happen! Is a scene not loaded but a jiggle rig is?");
+            // }
             for (int Index = 0; Index < JiggleRigCount; Index++)
             {
-                jiggleRigsArray[Index].Advance(deltaTime, GlobalGravity, timeAsDouble, timeAsDoubleOneStepBack);
+                try
+                {
+                    jiggleRigsArray[Index].Advance(deltaTime, GlobalGravity, timeAsDouble, timeAsDoubleOneStepBack);
+                }
+                catch
+                {
+                    Debug.LogError("Unable to continue for Jiggle Rig in JiggleRigLateUpdateHandler " + Index);
+                }
             }
-         //   CachedSphereCollider.DisableSphereCollider();
+            //   CachedSphereCollider.DisableSphereCollider();
         }
     }
-
 }

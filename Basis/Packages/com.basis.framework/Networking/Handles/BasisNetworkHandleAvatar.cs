@@ -7,13 +7,13 @@ using Basis.Scripts.Networking.NetworkedAvatar;
 public static class BasisNetworkHandleAvatar
 {
     public static Queue<ServerSideSyncPlayerMessage> Message = new Queue<ServerSideSyncPlayerMessage>();
-    public static void HandleAvatarUpdate(NetPacketReader Reader,bool AttemptAdditionalData)
+    public static void HandleAvatarUpdate(NetPacketReader Reader)
     {
         if (Message.TryDequeue(out ServerSideSyncPlayerMessage SSM) == false)
         {
             SSM = new ServerSideSyncPlayerMessage();
         }
-        SSM.Deserialize(Reader, AttemptAdditionalData);
+        SSM.Deserialize(Reader);
         if (BasisNetworkManagement.RemotePlayers.TryGetValue(SSM.playerIdMessage.playerID, out BasisNetworkReceiver player))
         {
             BasisNetworkAvatarDecompressor.DecompressAndProcessAvatar(player, SSM, SSM.playerIdMessage.playerID);

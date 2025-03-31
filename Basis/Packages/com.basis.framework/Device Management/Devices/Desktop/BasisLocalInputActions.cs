@@ -30,182 +30,213 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
 
         [SerializeField] public static bool Crouching;
         [SerializeField] public static Vector2 LookDirection;
-        public BasisAvatarEyeInput CharacterEyeInput;
+        public static BasisAvatarEyeInput CharacterEyeInput;
         public static BasisLocalInputActions Instance;
         public BasisLocalPlayer basisLocalPlayer;
         public PlayerInput Input;
         public static string InputActions = "InputActions";
-        public bool HasEvents = false;
-        public bool IgnoreCrouchToggle = false;
+        public static bool IgnoreCrouchToggle = false;
         public static Action AfterAvatarChanges;
         [SerializeField]
         public BasisInputState InputState = new BasisInputState();
+
         public void OnEnable()
         {
-            InputSystem.settings.SetInternalFeatureFlag("USE_OPTIMIZED_CONTROLS", true);
-            InputSystem.settings.SetInternalFeatureFlag("USE_READ_VALUE_CACHING", true);
-            DesktopSwitch.action.Enable();
-            XRSwitch.action.Enable();
-
-            MoveAction.action.Enable();
-            LookAction.action.Enable();
-            JumpAction.action.Enable();
             if (BasisHelpers.CheckInstance(Instance))
             {
                 Instance = this;
             }
-            if (HasEvents == false)
+            InputSystem.settings.SetInternalFeatureFlag("USE_OPTIMIZED_CONTROLS", true);
+            InputSystem.settings.SetInternalFeatureFlag("USE_READ_VALUE_CACHING", true);
+            BasisLocalCameraDriver.InstanceExists += SetupCamera;
+            if (BasisDeviceManagement.IsMobile() == false)
             {
-                BasisLocalCameraDriver.InstanceExists += SetupCamera;
-                AddCallback();
-                HasEvents = true;
+                EnableActions();
+                AddCallbacks();
+            }
+        }
+
+        public void OnDisable()
+        {
+            BasisLocalCameraDriver.InstanceExists -= SetupCamera;
+            if (BasisDeviceManagement.IsMobile() == false)
+            {
+                RemoveCallbacks();
+                DisableActions();
             }
         }
         public void SetupCamera()
         {
             Input.camera = BasisLocalCameraDriver.Instance.Camera;
         }
-        public void OnDisable()
-        {
-            DesktopSwitch.action.Disable();
-            XRSwitch.action.Disable();
-
-            MoveAction.action.Disable();
-            LookAction.action.Disable();
-            JumpAction.action.Disable();
-            if (HasEvents)
-            {
-                BasisLocalCameraDriver.InstanceExists -= SetupCamera;
-                RemoveCallback();
-                HasEvents = false;
-            }
-        }
         public void Initialize(BasisLocalPlayer localPlayer)
         {
             basisLocalPlayer = localPlayer;
             this.gameObject.SetActive(true);
         }
-        public void AddCallback()
+
+        private void EnableActions()
         {
-
-            MoveAction.action.performed += ctx => MoveActionStarted(ctx.ReadValue<Vector2>());
-            MoveAction.action.canceled += ctx => MoveActionCancelled();
-
-            LookAction.action.performed += ctx => LookActionStarted(ctx.ReadValue<Vector2>());
-            LookAction.action.canceled += ctx => LookActionCancelled();
-
-            JumpAction.action.performed += ctx => JumpActionPerformed();
-            JumpAction.action.canceled += ctx => JumpActionCancelled();
-
-            CrouchAction.action.performed += ctx => CrouchStarted(ctx);
-            CrouchAction.action.canceled += ctx => CrouchCancelled(ctx);
-
-            RunButton.action.performed += ctx => RunStarted();
-            RunButton.action.canceled += ctx => RunCancelled();
-
-            Escape.action.performed += ctx => EscapePerformed();
-            Escape.action.canceled += ctx => EscapeCancelled();
-
-            PrimaryButtonGetState.action.performed += ctx => PrimaryGet();
-            PrimaryButtonGetState.action.canceled += ctx => CancelPrimaryGet();
-
-            DesktopSwitch.action.performed += ctx => SwitchDesktop();
-            XRSwitch.action.performed += ctx => SwitchOpenXR();
-
-            LeftMousePressed.action.performed += ctx => LeftMouse(ctx.ReadValue<float>());
-            RightMousePressed.action.performed += ctx => RightMouse(ctx.ReadValue<float>());
-
-            LeftMousePressed.action.canceled += ctx => LeftMouse(ctx.ReadValue<float>());
-            RightMousePressed.action.canceled += ctx => RightMouse(ctx.ReadValue<float>());
-
-            MiddleMouseScroll.action.performed += ctx => MouseScroll(ctx.ReadValue<Vector2>());
-            MiddleMouseScrollClick.action.performed += ctx => MouseScrollClick(ctx.ReadValue<float>());
-
-            MiddleMouseScroll.action.canceled += ctx => MouseScroll(ctx.ReadValue<Vector2>());
-            MiddleMouseScrollClick.action.canceled += ctx => MouseScrollClick(ctx.ReadValue<float>());
+            DesktopSwitch.action.Enable();
+            XRSwitch.action.Enable();
+            MoveAction.action.Enable();
+            LookAction.action.Enable();
+            JumpAction.action.Enable();
+            CrouchAction.action.Enable();
+            RunButton.action.Enable();
+            Escape.action.Enable();
+            PrimaryButtonGetState.action.Enable();
+            LeftMousePressed.action.Enable();
+            RightMousePressed.action.Enable();
+            MiddleMouseScroll.action.Enable();
+            MiddleMouseScrollClick.action.Enable();
         }
-        public void MouseScroll(Vector2 state)
+
+        private void DisableActions()
         {
-           // Debug.Log($"MouseScroll {state}");
-              InputState.Secondary2DAxis = state;
+            DesktopSwitch.action.Disable();
+            XRSwitch.action.Disable();
+            MoveAction.action.Disable();
+            LookAction.action.Disable();
+            JumpAction.action.Disable();
+            CrouchAction.action.Disable();
+            RunButton.action.Disable();
+            Escape.action.Disable();
+            PrimaryButtonGetState.action.Disable();
+            LeftMousePressed.action.Disable();
+            RightMousePressed.action.Disable();
+            MiddleMouseScroll.action.Disable();
+            MiddleMouseScrollClick.action.Disable();
         }
-        public void MouseScrollClick(float state)
+
+        private void AddCallbacks()
         {
-            InputState.Secondary2DAxisClick = state == 1;
-            //  Debug.Log($"MouseScroll Click {state}");
+            CrouchAction.action.performed += OnCrouchStarted;
+            DesktopSwitch.action.performed += OnSwitchDesktop;
+            Escape.action.performed += OnEscapePerformed;
+            JumpAction.action.performed += OnJumpActionPerformed;
+            LeftMousePressed.action.performed += OnLeftMouse;
+            MiddleMouseScroll.action.performed += OnMouseScroll;
+            MiddleMouseScrollClick.action.performed += OnMouseScrollClick;
+            MoveAction.action.performed += OnMoveActionStarted;
+            PrimaryButtonGetState.action.performed += OnPrimaryGet;
+            RightMousePressed.action.performed += OnRightMouse;
+            RunButton.action.performed += OnRunStarted;
+            LookAction.action.performed += OnLookActionStarted;
+            XRSwitch.action.performed += OnSwitchOpenXR;
+
+            CrouchAction.action.canceled += OnCrouchCancelled;
+            DesktopSwitch.action.canceled += OnSwitchDesktop;
+            Escape.action.canceled += OnEscapeCancelled;
+            JumpAction.action.canceled += OnJumpActionCancelled;
+            LeftMousePressed.action.canceled += OnLeftMouse;
+            MiddleMouseScroll.action.canceled += OnMouseScroll;
+            MiddleMouseScrollClick.action.canceled += OnMouseScrollClick;
+            MoveAction.action.canceled += OnMoveActionCancelled;
+            PrimaryButtonGetState.action.canceled += OnCancelPrimaryGet;
+            RightMousePressed.action.canceled += OnRightMouse;
+            RunButton.action.canceled += OnRunCancelled;
+            LookAction.action.canceled += OnLookActionCancelled;
         }
-        public void PrimaryGet()
+        private void RemoveCallbacks()
         {
-            InputState.PrimaryButtonGetState = true;
+            CrouchAction.action.performed -= OnCrouchStarted;
+            DesktopSwitch.action.performed -= OnSwitchDesktop;
+            Escape.action.performed -= OnEscapePerformed;
+            JumpAction.action.performed -= OnJumpActionPerformed;
+            LeftMousePressed.action.performed -= OnLeftMouse;
+            MiddleMouseScroll.action.performed -= OnMouseScroll;
+            MiddleMouseScrollClick.action.performed -= OnMouseScrollClick;
+            MoveAction.action.performed -= OnMoveActionStarted;
+            PrimaryButtonGetState.action.performed -= OnPrimaryGet;
+            RightMousePressed.action.performed -= OnRightMouse;
+            RunButton.action.performed -= OnRunStarted;
+            LookAction.action.performed -= OnLookActionStarted;
+            XRSwitch.action.performed -= OnSwitchOpenXR;
+
+            CrouchAction.action.canceled -= OnCrouchCancelled;
+            DesktopSwitch.action.canceled -= OnSwitchDesktop;
+            Escape.action.canceled -= OnEscapeCancelled;
+            JumpAction.action.canceled -= OnJumpActionCancelled;
+            LeftMousePressed.action.canceled -= OnLeftMouse;
+            MiddleMouseScroll.action.canceled -= OnMouseScroll;
+            MiddleMouseScrollClick.action.canceled -= OnMouseScrollClick;
+            MoveAction.action.canceled -= OnMoveActionCancelled;
+            PrimaryButtonGetState.action.canceled -= OnCancelPrimaryGet;
+            RightMousePressed.action.canceled -= OnRightMouse;
+            RunButton.action.canceled -= OnRunCancelled;
+            LookAction.action.canceled -= OnLookActionCancelled;
         }
-        public void CancelPrimaryGet()
+        // Input action methods
+        private  void OnMoveActionStarted(InputAction.CallbackContext ctx)
         {
-            InputState.PrimaryButtonGetState = false;
+            basisLocalPlayer.Move.MovementVector = ctx.ReadValue<Vector2>();
         }
-        public void RemoveCallback()
+
+        private static void OnMoveActionCancelled(InputAction.CallbackContext ctx)
         {
-
-            MoveAction.action.performed -= ctx => MoveActionStarted(ctx.ReadValue<Vector2>());
-            MoveAction.action.canceled -= ctx => MoveActionCancelled();
-
-            LookAction.action.performed -= ctx => LookActionStarted(ctx.ReadValue<Vector2>());
-            LookAction.action.canceled -= ctx => LookActionCancelled();
-
-            JumpAction.action.performed -= ctx => JumpActionPerformed();
-            JumpAction.action.canceled -= ctx => JumpActionCancelled();
-
-            CrouchAction.action.started -= ctx => CrouchStarted(ctx);
-            CrouchAction.action.canceled -= ctx => CrouchCancelled(ctx);
-
-            RunButton.action.performed -= ctx => RunStarted();
-            RunButton.action.canceled -= ctx => RunCancelled();
-
-            Escape.action.performed -= ctx => EscapePerformed();
-            Escape.action.canceled -= ctx => EscapeCancelled();
-
-            PrimaryButtonGetState.action.performed -= ctx => PrimaryGet();
-            PrimaryButtonGetState.action.canceled -= ctx => CancelPrimaryGet();
-
-            DesktopSwitch.action.performed -= ctx => SwitchDesktop();
-            XRSwitch.action.performed -= ctx => SwitchOpenXR();
-
-            LeftMousePressed.action.performed -= ctx => LeftMouse(ctx.ReadValue<float>());
-            RightMousePressed.action.performed -= ctx => RightMouse(ctx.ReadValue<float>());
-
-            LeftMousePressed.action.canceled -= ctx => LeftMouse(ctx.ReadValue<float>());
-            RightMousePressed.action.canceled -= ctx => RightMouse(ctx.ReadValue<float>());
-
-            MiddleMouseScroll.action.performed -= ctx => MouseScroll(ctx.ReadValue<Vector2>());
-            MiddleMouseScrollClick.action.performed -= ctx => MouseScrollClick(ctx.ReadValue<float>());
-
-            MiddleMouseScroll.action.canceled -= ctx => MouseScroll(ctx.ReadValue<Vector2>());
-            MiddleMouseScrollClick.action.canceled -= ctx => MouseScrollClick(ctx.ReadValue<float>());
+            BasisLocalInputActions.Instance.basisLocalPlayer.Move.MovementVector = Vector2.zero;
         }
-        public void LeftMouse(float state)
-        {
-            InputState.Trigger = state;
-        }
-        public void RightMouse(float state)
-        {
-        }
-        public void SwitchDesktop()
-        {
-            BasisDeviceManagement.ForceSetDesktop();
-        }
-        public void SwitchOpenXR()
-        {
-            BasisDeviceManagement.ForceLoadXR();
 
-        }
-        public void LookActionStarted(Vector2 LookVector)
+        private static void OnLookActionStarted(InputAction.CallbackContext ctx)
         {
-            if (CharacterEyeInput != null)
+            LookDirection = ctx.ReadValue<Vector2>();
+            BasisLocalInputActions.CharacterEyeInput?.HandleMouseRotation(LookDirection);
+        }
+
+        private static void OnLookActionCancelled(InputAction.CallbackContext ctx)
+        {
+            LookDirection = Vector2.zero;
+            BasisLocalInputActions.CharacterEyeInput?.HandleMouseRotation(LookDirection);
+        }
+
+        private static void OnJumpActionPerformed(InputAction.CallbackContext ctx)
+        {
+            BasisLocalInputActions.Instance.basisLocalPlayer.Move.HandleJump();
+        }
+
+        private static void OnJumpActionCancelled(InputAction.CallbackContext ctx)
+        {
+            // Logic for when jump is cancelled (if needed)
+        }
+
+        private static void OnCrouchStarted(InputAction.CallbackContext ctx)
+        {
+            CrouchToggle(ctx);
+        }
+
+        private static void OnCrouchCancelled(InputAction.CallbackContext ctx)
+        {
+            CrouchToggle(ctx);
+        }
+
+        private static void CrouchToggle(InputAction.CallbackContext context)
+        {
+            if (context.phase == InputActionPhase.Performed)
             {
-                LookDirection = LookVector;
-                CharacterEyeInput.HandleMouseRotation(LookDirection);
+                if (!IgnoreCrouchToggle)
+                    Crouching = !Crouching;
+
+                if (BasisLocalInputActions.CharacterEyeInput != null)
+                {
+                    BasisLocalInputActions.CharacterEyeInput.HandleMouseRotation(LookDirection);
+                }
+
+                BasisLocalInputActions.Instance.basisLocalPlayer.Move.SpeedMultiplyer = Crouching ? 0 : 0.5f;
             }
         }
-        public void EscapePerformed()
+
+        private static void OnRunStarted(InputAction.CallbackContext ctx)
+        {
+            BasisLocalInputActions.Instance.basisLocalPlayer.Move.SpeedMultiplyer = Crouching ? 0 : 1;
+        }
+
+        private static void OnRunCancelled(InputAction.CallbackContext ctx)
+        {
+            BasisLocalInputActions.Instance.basisLocalPlayer.Move.SpeedMultiplyer = Crouching ? 0 : 0.5f;
+        }
+
+        private static void OnEscapePerformed(InputAction.CallbackContext ctx)
         {
             if (BasisHamburgerMenu.Instance == null)
             {
@@ -214,84 +245,53 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
             else
             {
                 BasisHamburgerMenu.Instance.CloseThisMenu();
+                BasisHamburgerMenu.Instance = null;
             }
         }
-        public void EscapeCancelled()
-        {
 
-        }
-        public void JumpActionPerformed()
+        private static void OnEscapeCancelled(InputAction.CallbackContext ctx)
         {
-            basisLocalPlayer.Move.HandleJump();
+            // Logic for escape action cancellation (if needed)
         }
-        public void MoveActionCancelled()
-        {
-            basisLocalPlayer.Move.MovementVector = new Vector2();
-        }
-        public void MoveActionStarted(Vector2 MovementVector)
-        {
-            basisLocalPlayer.Move.MovementVector = MovementVector;
-        }
-        public void LookActionCancelled()
-        {
-            if (CharacterEyeInput != null)
-            {
-                LookDirection = new Vector2();
-                CharacterEyeInput.HandleMouseRotation(LookDirection);
-            }
-        }
-        public void JumpActionCancelled()
-        {
 
-        }
-        public void CrouchStarted(InputAction.CallbackContext context)
+        private static void OnPrimaryGet(InputAction.CallbackContext ctx)
         {
-            CrouchToggle(context);
+            BasisLocalInputActions.Instance.InputState.PrimaryButtonGetState = true;
         }
-        public void CrouchCancelled(InputAction.CallbackContext context)
-        {
-            CrouchToggle(context);
-        }
-        public void CrouchToggle(InputAction.CallbackContext context)
-        {
 
-            if (context.phase == InputActionPhase.Performed)
-            {
-                if (!IgnoreCrouchToggle) Crouching = !Crouching;
-                if (CharacterEyeInput != null)
-                {
-                    CharacterEyeInput.HandleMouseRotation(LookDirection);
-                }
-                if (Crouching)
-                {
-                    basisLocalPlayer.Move.SpeedMultiplyer = 0;
-                }
-                else
-                {
-                    basisLocalPlayer.Move.SpeedMultiplyer = 0.5f;
-                }
-            }
-        }
-        public void RunStarted()
+        private static void OnCancelPrimaryGet(InputAction.CallbackContext ctx)
         {
-            if (Crouching)
-            {
-            }
-            else
-            {
-                basisLocalPlayer.Move.SpeedMultiplyer = 1;
-            }
+            BasisLocalInputActions.Instance.InputState.PrimaryButtonGetState = false;
         }
-        public void RunCancelled()
+
+        private static void OnSwitchDesktop(InputAction.CallbackContext ctx)
         {
-            if (Crouching)
-            {
-                basisLocalPlayer.Move.SpeedMultiplyer = 0;
-            }
-            else
-            {
-                basisLocalPlayer.Move.SpeedMultiplyer = 0.5f;
-            }
+            BasisDeviceManagement.ForceSetDesktop();
+        }
+
+        private static void OnSwitchOpenXR(InputAction.CallbackContext ctx)
+        {
+            BasisDeviceManagement.ForceLoadXR();
+        }
+
+        private static void OnLeftMouse(InputAction.CallbackContext ctx)
+        {
+         BasisLocalInputActions.Instance.InputState.Trigger = ctx.ReadValue<float>();
+        }
+
+        private static void OnRightMouse(InputAction.CallbackContext ctx)
+        {
+            // Handle right mouse press logic here if needed
+        }
+
+        private  static void OnMouseScroll(InputAction.CallbackContext ctx)
+        {
+            BasisLocalInputActions.Instance.InputState.Secondary2DAxis = ctx.ReadValue<Vector2>();
+        }
+
+        private static void OnMouseScrollClick(InputAction.CallbackContext ctx)
+        {
+            BasisLocalInputActions.Instance.InputState.Secondary2DAxisClick = ctx.ReadValue<float>() == 1;
         }
     }
 }
