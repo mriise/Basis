@@ -2305,6 +2305,7 @@ MonoBehaviour:
   PlayerUUID: {fileID: 855598547334294540}
   RemotePlayer: {fileID: 0}
   BasisUIVolumeSampler: {fileID: 4347707213697488483}
+  RequestAvatarClone: {fileID: 7229101000435601265}
 --- !u!1 &5448616847506779544
 GameObject:
   m_ObjectHideFlags: 0
