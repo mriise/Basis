@@ -136,6 +136,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b7151ccf11e9fe47b59aeba34c68e4c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Inputs:
+    desktopCenterEye:
+      Source: {fileID: 0}
+      State: 0
+    leftHand:
+      Source: {fileID: 0}
+      State: 0
+    rightHand:
+      Source: {fileID: 0}
+      State: 0
+    extras: []
+  disableInteract: 0
+  InteractRange: 5
+  Equippable: 0
+  StrictPosition: {x: 0, y: 0, z: 0}
+  StrictRotation: {x: 0, y: 0, z: 0, w: 0}
+  IsPuppeted: 0
   HipTarget:
     LerpAmountNormal: 0
     LerpAmountFastMovement: 0
