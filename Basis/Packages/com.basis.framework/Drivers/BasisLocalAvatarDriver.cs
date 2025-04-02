@@ -107,7 +107,7 @@ namespace Basis.Scripts.Drivers
             BasisLocalPlayer.Instance.LocalBoneDriver.RemoveAllListeners();
             BasisLocalEyeFollowDriver = BasisHelpers.GetOrAddComponent<BasisLocalEyeFollowBase>(Player.BasisAvatar.gameObject);
             BasisLocalEyeFollowDriver.Initalize(this,Player);
-            HeadScaledDown = Vector3.zero;
+            HeadScaledDown = new Vector3(0.0001f, 0.0001f, 0.0001f);
             SetMatrixOverride();
             updateWhenOffscreen(true);
             if (References.Hashead)

@@ -1319,7 +1319,7 @@ MonoBehaviour:
       DefaultPlatform: 1
       ExcludePlatform: 0
       ValueToggle: 1
-      EditorVisable: 0
+      EditorVisable: 1
     SupportedRenderPipeline: 030000000400000000000000
     Round: 0
     RoundTo: 2
@@ -1338,7 +1338,13 @@ MonoBehaviour:
     ObjectInput: {fileID: 0}
     ApplyInput: {fileID: 0}
     ResetToDefault: {fileID: 0}
-    PlatFormDefaultState: []
+    PlatFormDefaultState:
+    - Platform: 2
+      GraphicsVendor: 3
+      SetString: true
+    - Platform: 7
+      GraphicsVendor: 3
+      SetString: true
     ExcludeFromThesePlatforms: []
     MasterQualityState: 0
     ParseController: 1
@@ -2510,7 +2516,7 @@ MonoBehaviour:
     Index: 29
     SelectableValueList: []
     Min: 0
-    Max: 0
+    Max: 15
   - Name: Snap Turn Angle
     DefaultValue: 
     SelectedValue: -1

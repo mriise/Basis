@@ -13,4 +13,16 @@ public static partial class SerializableBasis
             NetDataWriter.Put(requestingUser);
         }
     }
+    public struct BasisAvatarCloneResponse
+    {
+        public ushort requestingUser;
+        public void Deserialize(NetDataReader NetDataReader)
+        {
+            requestingUser = NetDataReader.GetUShort();
+        }
+        public void Serialize(NetDataWriter NetDataWriter)
+        {
+            NetDataWriter.Put(requestingUser);
+        }
+    }
 }
