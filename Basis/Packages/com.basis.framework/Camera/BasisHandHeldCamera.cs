@@ -5,7 +5,7 @@ using UnityEngine.Rendering.Universal;
 using System.Collections;
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Drivers;
-
+using UnityEngine.Rendering;
 public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
 {
     public UniversalAdditionalCameraData CameraData;
@@ -23,7 +23,6 @@ public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
     public Material Material;
     public Material actualMaterial;
     public string captureFormat = "EXR";
-    public int msaaLevel = 2;
     public string picturesFolder;
     public int InstanceID;
     public int depth = 24;
@@ -40,7 +39,16 @@ public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
         captureCamera.useOcclusionCulling = true;
         captureCamera.usePhysicalProperties = true;
         captureCamera.targetTexture = renderTexture;
-        HandHeld.Initalize(this);
+        if (BasisLocalCameraDriver.HasInstance)
+        {
+            Camera PlayerCamera = BasisLocalCameraDriver.Instance.Camera;
+            if (PlayerCamera != null)
+            {
+                captureCamera.backgroundColor = PlayerCamera.backgroundColor;
+                captureCamera.clearFlags = PlayerCamera.clearFlags;
+            }
+        }
+        await HandHeld.Initalize(this);
         if (MetaData.Profile.TryGet(out MetaData.tonemapping))
         {
             ToggleToneMapping(TonemappingMode.Neutral);
@@ -49,30 +57,62 @@ public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
         CameraData.allowHDROutput = true;
         CameraData.antialiasing = AntialiasingMode.SubpixelMorphologicalAntiAliasing;
         CameraData.antialiasingQuality = AntialiasingQuality.High;
+
+        picturesFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Basis");
+        if (!Directory.Exists(picturesFolder))
+        {
+            Directory.CreateDirectory(picturesFolder);
+        }
+
         await HandHeld.SaveSettings();
     }
-
     public new void OnDestroy()
     {
+        if (BasisMeshRendererCheck != null)
+        {
+            BasisMeshRendererCheck.Check -= VisibilityFlag;
+        }
+        if (renderTexture != null)
+        {
+            renderTexture.Release();
+        }
         base.OnDestroy();
-        BasisMeshRendererCheck.Check -= VisibilityFlag;
     }
 
     public void CapturePhoto()
     {
-        StartCoroutine(TakeScreenshot());
+        TextureFormat Format;
+        RenderTextureFormat RenderFormat;
+        if (captureFormat == "EXR")
+        {
+            Format = TextureFormat.RGBAFloat;
+            RenderFormat = RenderTextureFormat.ARGBFloat;
+
+
+        }
+        else
+        {
+            Format = TextureFormat.RGBA32;
+            RenderFormat = RenderTextureFormat.ARGB32;
+        }
+
+        StartCoroutine(TakeScreenshot(Format, RenderFormat));
     }
 
-    public void SetResolution(int width, int height, AntialiasingQuality AQ)
+    public void SetResolution(int width, int height, AntialiasingQuality AQ, RenderTextureFormat RenderTextureFormat = RenderTextureFormat.ARGBFloat)
     {
         if (renderTexture != null)
         {
             renderTexture.Release();
         }
-        renderTexture = new RenderTexture(width, height, depth, RenderTextureFormat.ARGBFloat)
+        RenderTextureDescriptor descriptor = new RenderTextureDescriptor(captureWidth, captureHeight, RenderTextureFormat, depth)
         {
-            antiAliasing = msaaLevel
+            msaaSamples = 2,
+            useMipMap = false,
+            autoGenerateMips = false,
+            sRGB = true
         };
+        renderTexture = new RenderTexture(descriptor);
         renderTexture.Create();
         captureCamera.targetTexture = renderTexture;
         CameraData.antialiasing = AntialiasingMode.SubpixelMorphologicalAntiAliasing;
@@ -80,7 +120,6 @@ public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
         actualMaterial.SetTexture("_MainTex", renderTexture);
         actualMaterial.mainTexture = renderTexture;
         Renderer.sharedMaterial = actualMaterial;
-        BasisDebug.Log($"Resolution set to {width}x{height}, Format: {captureFormat}, MSAA: {msaaLevel}");
     }
 
     public void ChangeResolution(int index)
@@ -97,50 +136,53 @@ public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
         BasisDebug.Log($"Capture format changed to {captureFormat}");
     }
 
-    public void ChangeMSAA(int index)
+    public IEnumerator TakeScreenshot(TextureFormat TextureFormat, RenderTextureFormat Format = RenderTextureFormat.ARGBFloat)
     {
-        msaaLevel = MetaData.MSAALevels[index];
-        BasisDebug.Log($"MSAA level changed to {msaaLevel}");
-    }
-
-    public IEnumerator TakeScreenshot()
-    {
-        SetResolution(captureWidth, captureHeight, AntialiasingQuality.High);
+        SetResolution(captureWidth, captureHeight, AntialiasingQuality.High, Format);
         yield return new WaitForEndOfFrame();
         BasisLocalCameraDriver.Instance.ScaleHeadToNormal();
         ToggleToneMapping(TonemappingMode.ACES);
         captureCamera.Render();
-        RenderTexture.active = renderTexture;
+        yield return new WaitForEndOfFrame();
 
-        Texture2D screenshot = new Texture2D(renderTexture.width, renderTexture.height,
-            captureFormat == "EXR" ? TextureFormat.RGBAFloat : TextureFormat.RGBA32, false);
-        screenshot.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
-        screenshot.Apply();
+        Texture2D screenshot = new Texture2D(renderTexture.width, renderTexture.height, TextureFormat, false);
+        AsyncGPUReadback.Request(renderTexture, 0, request =>
+        {
+            if (request.hasError)
+            {
+                Debug.LogError("GPU Readback failed.");
+                SetNormalAfterCapture();
+                return;
+            }
 
-        RenderTexture.active = null;
-        SaveScreenshot(screenshot);
+            Unity.Collections.NativeArray<byte> data = request.GetData<byte>();
+            screenshot.LoadRawTextureData(data);
+            screenshot.Apply(false);
+
+            SetNormalAfterCapture();
+            SaveScreenshotAsync(screenshot);
+        });
+    }
+    public void SetNormalAfterCapture()
+    {
         ToggleToneMapping(TonemappingMode.Neutral);
         BasisLocalCameraDriver.Instance.ScaleheadToZero();
         SetResolution(PreviewCaptureWidth, PreviewCaptureHeight, AntialiasingQuality.Low);
     }
-
-    public async void SaveScreenshot(Texture2D screenshot)
+    public async void SaveScreenshotAsync(Texture2D screenshot)
     {
         string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-        string filename = $"Screenshot_{timestamp}_{captureWidth}x{captureHeight}.{(captureFormat == "EXR" ? "exr" : "png")}";
+        string extension = captureFormat == "EXR" ? "exr" : "png";
+        string filename = $"Screenshot_{timestamp}_{captureWidth}x{captureHeight}.{extension}";
         string path = GetSavePath(filename);
-        try
-        {
-            byte[] bytes = captureFormat == "EXR" ? screenshot.EncodeToEXR(Texture2D.EXRFlags.OutputAsFloat) : screenshot.EncodeToPNG();
-            await File.WriteAllBytesAsync(path, bytes);
-            BasisDebug.Log("Screenshot saved to: " + path);
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError("Failed to save screenshot: " + ex.Message);
-        }
-    }
 
+
+        // Encode the screenshot (biggest performance cost)
+        byte[] imageData = captureFormat == "EXR"
+            ? screenshot.EncodeToEXR(Texture2D.EXRFlags.CompressZIP)
+            : screenshot.EncodeToPNG();
+        await File.WriteAllBytesAsync(path, imageData);
+    }
     public string GetSavePath(string filename)
     {
 #if UNITY_STANDALONE_WIN

@@ -8,13 +8,10 @@ using UnityEngine.UI;
 public class BasisHandHeldCameraUI
 {
     public Button TakePhotoButton;
-    public Button SaveSettingsButton;
-    public Button LoadSettingsButton;
     public Button ResetButton;
 
     public TMP_Dropdown ResolutionDropdown;
     public TMP_Dropdown FormatDropdown;
-    public TMP_Dropdown MSAA_Dropdown;
     public TMP_Dropdown CameraApertureDropdown;
     public TMP_Dropdown ShutterSpeedDropdown;
     public TMP_Dropdown ISODropdown;
@@ -30,15 +27,17 @@ public class BasisHandHeldCameraUI
     public Slider BloomThresholdSlider;
     public Slider ContrastSlider;
     public Slider SaturationSlider;
-    public Slider HueShiftSlider;
+  //  public Slider HueShiftSlider;
     public BasisHandHeldCamera HHC;
     private string settingsFilePath = "CameraSettings.json";
-    public void Initalize(BasisHandHeldCamera hhc)
+    public async Task Initalize(BasisHandHeldCamera hhc)
     {
         HHC = hhc;
+
+       await LoadSettings();
+
         PopulateDropdown(ResolutionDropdown, HHC.MetaData.resolutions.Select(r => $"{r.width}x{r.height}").ToArray());
         PopulateDropdown(FormatDropdown, HHC.MetaData.formats);
-        PopulateDropdown(MSAA_Dropdown, HHC.MetaData.MSAALevels.Select(l => l.ToString()).ToArray());
         PopulateDropdown(CameraApertureDropdown, HHC.MetaData.apertures);
         PopulateDropdown(ShutterSpeedDropdown, HHC.MetaData.shutterSpeeds);
         PopulateDropdown(ISODropdown, HHC.MetaData.isoValues);
@@ -47,7 +46,6 @@ public class BasisHandHeldCameraUI
         TakePhotoButton.onClick.AddListener(HHC.CapturePhoto);
         ResolutionDropdown.onValueChanged.AddListener(HHC.ChangeResolution);
         FormatDropdown.onValueChanged.AddListener(HHC.ChangeFormat);
-        MSAA_Dropdown.onValueChanged.AddListener(HHC.ChangeMSAA);
         CameraApertureDropdown.onValueChanged.AddListener(ChangeAperture);
         ShutterSpeedDropdown.onValueChanged.AddListener(ChangeShutterSpeed);
         ISODropdown.onValueChanged.AddListener(ChangeISO);
@@ -71,7 +69,7 @@ public class BasisHandHeldCameraUI
         {
             ContrastSlider.onValueChanged.AddListener(ChangeContrast);
             SaturationSlider.onValueChanged.AddListener(ChangeSaturation);
-            HueShiftSlider.onValueChanged.AddListener(ChangeHueShift);
+           // HueShiftSlider.onValueChanged.AddListener(ChangeHueShift);
         }
         DepthApertureSlider.minValue = 0;
         DepthApertureSlider.maxValue = 32;
@@ -93,8 +91,8 @@ public class BasisHandHeldCameraUI
         ContrastSlider.maxValue = 100;
         SaturationSlider.minValue = -100;
         SaturationSlider.maxValue = 100;
-        HueShiftSlider.minValue = -180;
-        HueShiftSlider.maxValue = 180;
+       // HueShiftSlider.minValue = -180;
+      //  HueShiftSlider.maxValue = 180;
 
         FOVSlider.value = HHC.captureCamera.fieldOfView;
         FocusDistanceSlider.value = HHC.captureCamera.focalLength;
@@ -107,7 +105,6 @@ public class BasisHandHeldCameraUI
         {
             resolutionIndex = ResolutionDropdown.value,
             formatIndex = FormatDropdown.value,
-            msaaIndex = MSAA_Dropdown.value,
             apertureIndex = CameraApertureDropdown.value,
             shutterSpeedIndex = ShutterSpeedDropdown.value,
             isoIndex = ISODropdown.value,
@@ -119,18 +116,18 @@ public class BasisHandHeldCameraUI
             bloomThreshold = BloomThresholdSlider.value,
             contrast = ContrastSlider.value,
             saturation = SaturationSlider.value,
-            hueShift = HueShiftSlider.value,
+         //   hueShift = HueShiftSlider.value,
             depthAperture = DepthApertureSlider.value,
             depthFocusDistance = DepthFocusDistanceSlider.value
         };
-       await File.WriteAllTextAsync(settingsFilePath, JsonUtility.ToJson(settings, true));
+        await File.WriteAllTextAsync(settingsFilePath, JsonUtility.ToJson(settings, true));
     }
 
-    public void LoadSettings()
+    public async Task LoadSettings()
     {
         if (File.Exists(settingsFilePath))
         {
-            string json = File.ReadAllText(settingsFilePath);
+            string json = await File.ReadAllTextAsync(settingsFilePath);
             CameraSettings settings = JsonUtility.FromJson<CameraSettings>(json);
             ApplySettings(settings);
         }
@@ -145,7 +142,6 @@ public class BasisHandHeldCameraUI
     {
         ResolutionDropdown.value = settings.resolutionIndex;
         FormatDropdown.value = settings.formatIndex;
-        MSAA_Dropdown.value = settings.msaaIndex;
         CameraApertureDropdown.value = settings.apertureIndex;
         ShutterSpeedDropdown.value = settings.shutterSpeedIndex;
         ISODropdown.value = settings.isoIndex;
@@ -158,7 +154,7 @@ public class BasisHandHeldCameraUI
         BloomThresholdSlider.value = settings.bloomThreshold;
         ContrastSlider.value = settings.contrast;
         SaturationSlider.value = settings.saturation;
-        HueShiftSlider.value = settings.hueShift;
+      //  HueShiftSlider.value = settings.hueShift;
         DepthApertureSlider.value = settings.depthAperture;
         DepthFocusDistanceSlider.value = settings.depthFocusDistance;
     }
@@ -255,9 +251,8 @@ public class BasisHandHeldCameraUI
     [System.Serializable]
     public class CameraSettings
     {
-        public int resolutionIndex;
-        public int formatIndex;
-        public int msaaIndex;
+        public int resolutionIndex = 2;
+        public int formatIndex = 1;
         public int apertureIndex;
         public int shutterSpeedIndex;
         public int isoIndex;
@@ -273,5 +268,4 @@ public class BasisHandHeldCameraUI
         public float depthAperture;
         public float depthFocusDistance;
     }
-
 }

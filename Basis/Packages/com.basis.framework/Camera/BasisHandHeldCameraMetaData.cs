@@ -8,8 +8,9 @@ public class BasisHandHeldCameraMetaData
     {
         (1280, 720),  // 720p
         (1920, 1080), // 1080p
-        (3840, 2160), // 4K
-        (7680, 4320), // 8K
+        (4960, 4960), // 4K
+        (8192, 8192), // 8K
+       // (16384,16384), // 16k
     };
 
     public readonly string[] formats = { "PNG", "EXR" };
