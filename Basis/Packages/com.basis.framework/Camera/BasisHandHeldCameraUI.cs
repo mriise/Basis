@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,7 +10,7 @@ public class BasisHandHeldCameraUI
 {
     public Button TakePhotoButton;
     public Button ResetButton;
-
+    public Button ClsoeButton;
     public TMP_Dropdown ResolutionDropdown;
     public TMP_Dropdown FormatDropdown;
     public TMP_Dropdown CameraApertureDropdown;
@@ -27,14 +28,13 @@ public class BasisHandHeldCameraUI
     public Slider BloomThresholdSlider;
     public Slider ContrastSlider;
     public Slider SaturationSlider;
-  //  public Slider HueShiftSlider;
+    //  public Slider HueShiftSlider;
     public BasisHandHeldCamera HHC;
-    private string settingsFilePath = "CameraSettings.json";
     public async Task Initalize(BasisHandHeldCamera hhc)
     {
         HHC = hhc;
 
-       await LoadSettings();
+        await LoadSettings();
 
         PopulateDropdown(ResolutionDropdown, HHC.MetaData.resolutions.Select(r => $"{r.width}x{r.height}").ToArray());
         PopulateDropdown(FormatDropdown, HHC.MetaData.formats);
@@ -44,6 +44,7 @@ public class BasisHandHeldCameraUI
 
         DepthApertureSlider.onValueChanged.AddListener(ChangeAperture);
         TakePhotoButton.onClick.AddListener(HHC.CapturePhoto);
+        ResetButton.onClick.AddListener(ResetSettings);
         ResolutionDropdown.onValueChanged.AddListener(HHC.ChangeResolution);
         FormatDropdown.onValueChanged.AddListener(HHC.ChangeFormat);
         CameraApertureDropdown.onValueChanged.AddListener(ChangeAperture);
@@ -53,6 +54,7 @@ public class BasisHandHeldCameraUI
         FocusDistanceSlider.onValueChanged.AddListener(ChangeFocusDistance);
         SensorSizeXSlider.onValueChanged.AddListener(ChangeSensorSizeX);
         SensorSizeYSlider.onValueChanged.AddListener(ChangeSensorSizeY);
+        ClsoeButton.onClick.AddListener(CloseUI);
 
         if (HHC.MetaData.Profile.TryGet(out HHC.MetaData.depthOfField))
         {
@@ -69,7 +71,7 @@ public class BasisHandHeldCameraUI
         {
             ContrastSlider.onValueChanged.AddListener(ChangeContrast);
             SaturationSlider.onValueChanged.AddListener(ChangeSaturation);
-           // HueShiftSlider.onValueChanged.AddListener(ChangeHueShift);
+            // HueShiftSlider.onValueChanged.AddListener(ChangeHueShift);
         }
         DepthApertureSlider.minValue = 0;
         DepthApertureSlider.maxValue = 32;
@@ -91,72 +93,148 @@ public class BasisHandHeldCameraUI
         ContrastSlider.maxValue = 100;
         SaturationSlider.minValue = -100;
         SaturationSlider.maxValue = 100;
-       // HueShiftSlider.minValue = -180;
-      //  HueShiftSlider.maxValue = 180;
+        // HueShiftSlider.minValue = -180;
+        //  HueShiftSlider.maxValue = 180;
 
         FOVSlider.value = HHC.captureCamera.fieldOfView;
         FocusDistanceSlider.value = HHC.captureCamera.focalLength;
         SensorSizeXSlider.value = HHC.captureCamera.sensorSize.x;
         SensorSizeYSlider.value = HHC.captureCamera.sensorSize.y;
     }
+    public void CloseUI()
+    {
+        GameObject.Destroy(HHC.gameObject);
+    }
+    public const string CameraSettingsJson = "CameraSettings.json";
     public async Task SaveSettings()
     {
-        CameraSettings settings = new CameraSettings()
+        try
         {
-            resolutionIndex = ResolutionDropdown.value,
-            formatIndex = FormatDropdown.value,
-            apertureIndex = CameraApertureDropdown.value,
-            shutterSpeedIndex = ShutterSpeedDropdown.value,
-            isoIndex = ISODropdown.value,
-            fov = FOVSlider.value,
-            focusDistance = FocusDistanceSlider.value,
-            sensorSizeX = SensorSizeXSlider.value,
-            sensorSizeY = SensorSizeYSlider.value,
-            bloomIntensity = BloomIntensitySlider.value,
-            bloomThreshold = BloomThresholdSlider.value,
-            contrast = ContrastSlider.value,
-            saturation = SaturationSlider.value,
-         //   hueShift = HueShiftSlider.value,
-            depthAperture = DepthApertureSlider.value,
-            depthFocusDistance = DepthFocusDistanceSlider.value
-        };
-        await File.WriteAllTextAsync(settingsFilePath, JsonUtility.ToJson(settings, true));
+            CameraSettings settings = new CameraSettings()
+            {
+                resolutionIndex = ResolutionDropdown.value,
+                formatIndex = FormatDropdown.value,
+                apertureIndex = CameraApertureDropdown.value,
+                shutterSpeedIndex = ShutterSpeedDropdown.value,
+                isoIndex = ISODropdown.value,
+                fov = FOVSlider.value,
+                focusDistance = FocusDistanceSlider.value,
+                sensorSizeX = SensorSizeXSlider.value,
+                sensorSizeY = SensorSizeYSlider.value,
+                bloomIntensity = BloomIntensitySlider.value,
+                bloomThreshold = BloomThresholdSlider.value,
+                contrast = ContrastSlider.value,
+                saturation = SaturationSlider.value,
+                depthAperture = DepthApertureSlider.value,
+                depthFocusDistance = DepthFocusDistanceSlider.value
+            };
+
+            string json = JsonUtility.ToJson(settings, true);
+            string settingsFilePath = Path.Combine(Application.persistentDataPath, CameraSettingsJson);
+            await File.WriteAllTextAsync(settingsFilePath, json);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Error saving settings: {ex.Message}");
+
+            // Attempt to resave settings
+            try
+            {
+                CameraSettings defaultSettings = new CameraSettings()
+                {
+                    resolutionIndex = 0,
+                    formatIndex = 0,
+                    apertureIndex = 0,
+                    shutterSpeedIndex = 0,
+                    isoIndex = 0,
+                    fov = 60f,
+                    focusDistance = 10f,
+                    sensorSizeX = 36f,
+                    sensorSizeY = 24f,
+                    bloomIntensity = 0.5f,
+                    bloomThreshold = 0.5f,
+                    contrast = 1f,
+                    saturation = 1f,
+                    depthAperture = 1f,
+                    depthFocusDistance = 10f
+                };
+
+                string defaultJson = JsonUtility.ToJson(defaultSettings, true);
+                string settingsFilePath = Path.Combine(Application.persistentDataPath, CameraSettingsJson);
+                await File.WriteAllTextAsync(settingsFilePath, defaultJson);
+                Debug.Log("Settings have been reset to default values.");
+            }
+            catch (Exception resaveEx)
+            {
+                Debug.LogError($"Error resaving settings: {resaveEx.Message}");
+            }
+        }
     }
 
     public async Task LoadSettings()
     {
-        if (File.Exists(settingsFilePath))
+        try
         {
-            string json = await File.ReadAllTextAsync(settingsFilePath);
-            CameraSettings settings = JsonUtility.FromJson<CameraSettings>(json);
-            ApplySettings(settings);
+            string settingsFilePath = Path.Combine(Application.persistentDataPath, CameraSettingsJson);
+            if (File.Exists(settingsFilePath))
+            {
+                string json = await File.ReadAllTextAsync(settingsFilePath);
+                CameraSettings settings = JsonUtility.FromJson<CameraSettings>(json);
+                ApplySettings(settings);
+            }
+            else
+            {
+                Debug.LogWarning("Settings file not found, applying default settings.");
+                ApplySettings(new CameraSettings()); // Apply default settings if file doesn't exist
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Error loading settings: {ex.Message}");
+            // Optionally apply default settings if loading fails
+            ApplySettings(new CameraSettings());
         }
     }
 
     public void ResetSettings()
     {
-        ApplySettings(new CameraSettings());
+        try
+        {
+            ApplySettings(new CameraSettings());
+            Debug.Log("Settings have been reset to default values.");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Error resetting settings: {ex.Message}");
+        }
     }
 
     private void ApplySettings(CameraSettings settings)
     {
-        ResolutionDropdown.value = settings.resolutionIndex;
-        FormatDropdown.value = settings.formatIndex;
-        CameraApertureDropdown.value = settings.apertureIndex;
-        ShutterSpeedDropdown.value = settings.shutterSpeedIndex;
-        ISODropdown.value = settings.isoIndex;
+        try
+        {
+            ResolutionDropdown.value = settings.resolutionIndex;
+            FormatDropdown.value = settings.formatIndex;
+            CameraApertureDropdown.value = settings.apertureIndex;
+            ShutterSpeedDropdown.value = settings.shutterSpeedIndex;
+            ISODropdown.value = settings.isoIndex;
 
-        FOVSlider.value = settings.fov;
-        FocusDistanceSlider.value = settings.focusDistance;
-        SensorSizeXSlider.value = settings.sensorSizeX;
-        SensorSizeYSlider.value = settings.sensorSizeY;
-        BloomIntensitySlider.value = settings.bloomIntensity;
-        BloomThresholdSlider.value = settings.bloomThreshold;
-        ContrastSlider.value = settings.contrast;
-        SaturationSlider.value = settings.saturation;
-      //  HueShiftSlider.value = settings.hueShift;
-        DepthApertureSlider.value = settings.depthAperture;
-        DepthFocusDistanceSlider.value = settings.depthFocusDistance;
+            FOVSlider.value = settings.fov;
+            FocusDistanceSlider.value = settings.focusDistance;
+            SensorSizeXSlider.value = settings.sensorSizeX;
+            SensorSizeYSlider.value = settings.sensorSizeY;
+            BloomIntensitySlider.value = settings.bloomIntensity;
+            BloomThresholdSlider.value = settings.bloomThreshold;
+            ContrastSlider.value = settings.contrast;
+            SaturationSlider.value = settings.saturation;
+            // HueShiftSlider.value = settings.hueShift; // Uncomment if needed
+            DepthApertureSlider.value = settings.depthAperture;
+            DepthFocusDistanceSlider.value = settings.depthFocusDistance;
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Error applying settings: {ex.Message}");
+        }
     }
     public void DepthChangeFocusDistance(float value)
     {
@@ -251,6 +329,24 @@ public class BasisHandHeldCameraUI
     [System.Serializable]
     public class CameraSettings
     {
+        public CameraSettings()
+        {
+            resolutionIndex = 0;
+            formatIndex = 0;
+            apertureIndex = 0;
+            shutterSpeedIndex = 0;
+            isoIndex = 0;
+            fov = 60f;
+            focusDistance = 10f;
+            sensorSizeX = 36f;
+            sensorSizeY = 24f;
+            bloomIntensity = 0.5f;
+            bloomThreshold = 0.5f;
+            contrast = 1f;
+            saturation = 1f;
+            depthAperture = 1f;
+            depthFocusDistance = 10;
+        }
         public int resolutionIndex = 2;
         public int formatIndex = 1;
         public int apertureIndex;

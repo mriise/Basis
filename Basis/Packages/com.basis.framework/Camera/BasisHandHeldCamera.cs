@@ -30,15 +30,16 @@ public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
     [SerializeField]
     public BasisHandHeldCameraUI HandHeld = new BasisHandHeldCameraUI();
     public BasisHandHeldCameraMetaData MetaData = new BasisHandHeldCameraMetaData();
-    public async void OnEnable()
+    public new async void Awake()
     {
-        actualMaterial = Instantiate(Material);
         captureCamera.forceIntoRenderTexture = true;
         captureCamera.allowHDR = true;
         captureCamera.allowMSAA = true;
         captureCamera.useOcclusionCulling = true;
         captureCamera.usePhysicalProperties = true;
         captureCamera.targetTexture = renderTexture;
+        captureCamera.targetDisplay = 1;
+        actualMaterial = Instantiate(Material);
         if (BasisLocalCameraDriver.HasInstance)
         {
             Camera PlayerCamera = BasisLocalCameraDriver.Instance.Camera;
@@ -65,6 +66,8 @@ public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
         }
 
         await HandHeld.SaveSettings();
+        base.Awake();
+        captureCamera.gameObject.SetActive(true);
     }
     public new void OnDestroy()
     {
