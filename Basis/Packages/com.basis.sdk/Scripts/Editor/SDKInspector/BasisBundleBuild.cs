@@ -6,17 +6,42 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEditor;
+using UnityEditor.Build;
 using UnityEngine;
 
 public static class BasisBundleBuild
 {
     public static async Task<(bool, string)> GameObjectBundleBuild(BasisContentBase BasisContentBase, List<BuildTarget> Targets)
     {
+        int TargetCount = Targets.Count;
+        for (int Index = 0; Index < TargetCount; Index++)
+        {
+            if(CheckTarget(Targets[Index]) == false)
+            {
+                return new(false, "Please Install build Target for " + Targets[Index].ToString());
+            }
+        }
         return await BuildBundle(BasisContentBase, Targets, (content, obj, hex, target) => BasisAssetBundlePipeline.BuildAssetBundle(content.gameObject, obj, hex, target));
     }
 
+    public static bool CheckTarget(BuildTarget target)
+    {
+        bool isSupported = BuildPipeline.IsBuildTargetSupported(BuildTargetGroup.Standalone, target) ||
+                           BuildPipeline.IsBuildTargetSupported(BuildTargetGroup.Android, target);
+
+        Debug.Log($"{target.ToString()} Build Target Installed: {isSupported}");
+        return isSupported;
+    }
     public static async Task<(bool, string)> SceneBundleBuild(BasisContentBase BasisContentBase, List<BuildTarget> Targets)
     {
+        int TargetCount = Targets.Count;
+        for (int Index = 0; Index < TargetCount; Index++)
+        {
+            if (CheckTarget(Targets[Index]) == false)
+            {
+                return new(false, "Please Install build Target for " + Targets[Index].ToString());
+            }
+        }
         UnityEngine.SceneManagement.Scene Scene = BasisContentBase.gameObject.scene;
         return await BuildBundle(BasisContentBase, Targets, (content, obj, hex, target) => BasisAssetBundlePipeline.BuildAssetBundle(Scene, obj, hex, target));
     }
