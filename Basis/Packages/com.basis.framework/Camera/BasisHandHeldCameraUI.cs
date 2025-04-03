@@ -10,7 +10,7 @@ public class BasisHandHeldCameraUI
 {
     public Button TakePhotoButton;
     public Button ResetButton;
-    public Button ClsoeButton;
+    public Button CloseButton;
     public TMP_Dropdown ResolutionDropdown;
     public TMP_Dropdown FormatDropdown;
     public TMP_Dropdown CameraApertureDropdown;
@@ -54,7 +54,7 @@ public class BasisHandHeldCameraUI
         FocusDistanceSlider.onValueChanged.AddListener(ChangeFocusDistance);
         SensorSizeXSlider.onValueChanged.AddListener(ChangeSensorSizeX);
         SensorSizeYSlider.onValueChanged.AddListener(ChangeSensorSizeY);
-        ClsoeButton.onClick.AddListener(CloseUI);
+        CloseButton.onClick.AddListener(CloseUI);
 
         if (HHC.MetaData.Profile.TryGet(out HHC.MetaData.depthOfField))
         {
@@ -171,6 +171,19 @@ public class BasisHandHeldCameraUI
         }
     }
 
+    public void ResetSettings()
+    {
+        try
+        {
+            ApplySettings(new CameraSettings());
+            Debug.Log("Settings have been reset to default values.");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Error resetting settings: {ex.Message}");
+        }
+    }
+
     public async Task LoadSettings()
     {
         try
@@ -196,40 +209,55 @@ public class BasisHandHeldCameraUI
         }
     }
 
-    public void ResetSettings()
-    {
-        try
-        {
-            ApplySettings(new CameraSettings());
-            Debug.Log("Settings have been reset to default values.");
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError($"Error resetting settings: {ex.Message}");
-        }
-    }
-
     private void ApplySettings(CameraSettings settings)
     {
         try
         {
-            ResolutionDropdown.value = settings.resolutionIndex;
-            FormatDropdown.value = settings.formatIndex;
-            CameraApertureDropdown.value = settings.apertureIndex;
-            ShutterSpeedDropdown.value = settings.shutterSpeedIndex;
-            ISODropdown.value = settings.isoIndex;
+            // Set UI values without triggering event listeners
+            ResolutionDropdown.SetValueWithoutNotify(settings.resolutionIndex);
+            FormatDropdown.SetValueWithoutNotify(settings.formatIndex);
+            CameraApertureDropdown.SetValueWithoutNotify(settings.apertureIndex);
+            ShutterSpeedDropdown.SetValueWithoutNotify(settings.shutterSpeedIndex);
+            ISODropdown.SetValueWithoutNotify(settings.isoIndex);
 
-            FOVSlider.value = settings.fov;
-            FocusDistanceSlider.value = settings.focusDistance;
-            SensorSizeXSlider.value = settings.sensorSizeX;
-            SensorSizeYSlider.value = settings.sensorSizeY;
-            BloomIntensitySlider.value = settings.bloomIntensity;
-            BloomThresholdSlider.value = settings.bloomThreshold;
-            ContrastSlider.value = settings.contrast;
-            SaturationSlider.value = settings.saturation;
-            // HueShiftSlider.value = settings.hueShift; // Uncomment if needed
-            DepthApertureSlider.value = settings.depthAperture;
-            DepthFocusDistanceSlider.value = settings.depthFocusDistance;
+            FOVSlider.SetValueWithoutNotify(settings.fov);
+            FocusDistanceSlider.SetValueWithoutNotify(settings.focusDistance);
+            SensorSizeXSlider.SetValueWithoutNotify(settings.sensorSizeX);
+            SensorSizeYSlider.SetValueWithoutNotify(settings.sensorSizeY);
+            BloomIntensitySlider.SetValueWithoutNotify(settings.bloomIntensity);
+            BloomThresholdSlider.SetValueWithoutNotify(settings.bloomThreshold);
+            ContrastSlider.SetValueWithoutNotify(settings.contrast);
+            SaturationSlider.SetValueWithoutNotify(settings.saturation);
+            DepthApertureSlider.SetValueWithoutNotify(settings.depthAperture);
+            DepthFocusDistanceSlider.SetValueWithoutNotify(settings.depthFocusDistance);
+
+            HHC.captureFormat = HHC.MetaData.formats[settings.resolutionIndex];
+
+            // Apply values to HHC after setting UI
+            HHC.captureCamera.fieldOfView = settings.fov;
+            HHC.captureCamera.focalLength = settings.focusDistance;
+            HHC.captureCamera.sensorSize = new Vector2(settings.sensorSizeX, settings.sensorSizeY);
+            HHC.captureCamera.aperture = float.Parse(HHC.MetaData.apertures[settings.apertureIndex].TrimStart('f', '/'));
+            HHC.captureCamera.shutterSpeed = 1 / float.Parse(HHC.MetaData.shutterSpeeds[settings.shutterSpeedIndex].Split('/')[1]);
+            HHC.captureCamera.iso = int.Parse(HHC.MetaData.isoValues[settings.isoIndex]);
+
+            if (HHC.MetaData.depthOfField != null)
+            {
+                HHC.MetaData.depthOfField.aperture.value = settings.depthAperture;
+                HHC.MetaData.depthOfField.focusDistance.value = settings.depthFocusDistance;
+            }
+            if (HHC.MetaData.bloom != null)
+            {
+                HHC.MetaData.bloom.intensity.value = settings.bloomIntensity;
+                HHC.MetaData.bloom.threshold.value = settings.bloomThreshold;
+            }
+            if (HHC.MetaData.colorAdjustments != null)
+            {
+                HHC.MetaData.colorAdjustments.contrast.value = settings.contrast;
+                HHC.MetaData.colorAdjustments.saturation.value = settings.saturation;
+            }
+
+            Debug.Log("Settings applied successfully.");
         }
         catch (Exception ex)
         {

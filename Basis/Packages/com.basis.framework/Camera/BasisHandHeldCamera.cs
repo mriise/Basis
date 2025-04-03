@@ -108,7 +108,7 @@ public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
         {
             renderTexture.Release();
         }
-        RenderTextureDescriptor descriptor = new RenderTextureDescriptor(captureWidth, captureHeight, RenderTextureFormat, depth)
+        RenderTextureDescriptor descriptor = new RenderTextureDescriptor(width, height, RenderTextureFormat, depth)
         {
             msaaSamples = 2,
             useMipMap = false,

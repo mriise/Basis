@@ -6883,7 +6883,7 @@ MonoBehaviour:
   HandHeld:
     TakePhotoButton: {fileID: 1297826875009475296}
     ResetButton: {fileID: 6855351031773626456}
-    ClsoeButton: {fileID: 2066681685506997307}
+    CloseButton: {fileID: 2066681685506997307}
     ResolutionDropdown: {fileID: 6543054473304138628}
     FormatDropdown: {fileID: 2198322059500430309}
     CameraApertureDropdown: {fileID: 3014888501351672153}
@@ -9892,7 +9892,7 @@ Camera:
   m_FOVAxisMode: 0
   m_Iso: 200
   m_ShutterSpeed: 0.005
-  m_Aperture: 16
+  m_Aperture: 15.14
   m_FocusDistance: 10
   m_FocalLength: 12
   m_BladeCount: 5
