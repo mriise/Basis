@@ -5,26 +5,32 @@ public static partial class SerializableBasis
     public struct AudioSegmentDataMessage
     {
         public byte[] buffer;
+        public int TotalLength;
         public int LengthUsed;
+        public AudioSegmentDataMessage(byte[] buffer) : this()
+        {
+            this.buffer = buffer;
+            TotalLength = buffer.Length;
+        }
         public void Deserialize(NetDataReader Writer)
         {
-            if (Writer.AvailableBytes == 0)
+            if (Writer.EndOfData)
             {
                 LengthUsed = 0;
             }
             else
             {
-                if (buffer != null && buffer.Length == Writer.AvailableBytes)
+                if (TotalLength == Writer.AvailableBytes)
                 {
                     Writer.GetBytes(buffer, Writer.AvailableBytes);
-                    LengthUsed = buffer.Length;
+                    LengthUsed = TotalLength;
                 }
                 else
                 {
                     buffer = Writer.GetRemainingBytes();
-                    LengthUsed = buffer.Length;
+                    TotalLength = buffer.Length;
+                    LengthUsed = TotalLength;
                 }
-               // BNL.Log("Get Length was " + LengthUsed);
             }
         }
         public void Serialize(NetDataWriter Writer)
@@ -32,7 +38,7 @@ public static partial class SerializableBasis
             if (LengthUsed != 0)
             {
                 Writer.Put(buffer, 0, LengthUsed);
-              //  BNL.Log("Put Length was " + LengthUsed);
+                //  BNL.Log("Put Length was " + LengthUsed);
             }
         }
     }

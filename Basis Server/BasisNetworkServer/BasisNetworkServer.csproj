@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 	<Import Project="$(ProjectDir)..\.props" />
 
 	<PropertyGroup>
@@ -19,7 +19,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\Contrib\Auth\Did\Did.csproj" />
+		<ProjectReference Include="..\..\Contrib\Crypto\Crypto.csproj" />
 		<ProjectReference Include="..\BasisNetworkCore\BasisNetworkCore.csproj" />
+		<ProjectReference Include="..\Contrib\Auth\Did\Did.csproj" />
+		<ProjectReference Include="..\Contrib\Crypto\Crypto.csproj" />
 		<ProjectReference Include="..\LiteNetLib\LiteNetLib.csproj" />
 	</ItemGroup>
 	

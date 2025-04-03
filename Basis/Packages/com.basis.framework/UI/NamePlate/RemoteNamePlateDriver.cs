@@ -99,13 +99,16 @@ namespace Basis.Scripts.UI.NamePlate
             Vector3 Position = BasisLocalCameraDriver.Position;
             for (int Index = 0; Index < count; Index++)
             {
-                BasisNamePlate NamePlate =  basisRemotePlayers[Index];
-                NamePlate.cachedDirection = NamePlate.HipTarget.OutgoingWorldData.position;
-                NamePlate.cachedDirection.y += NamePlate.MouthTarget.TposeLocal.position.y / NamePlate.YHeightMultiplier;
-                NamePlate.dirToCamera = Position - NamePlate.cachedDirection;
-              //  Vector3 Euler = NamePlate.transform.rotation.eulerAngles;
-                NamePlate.cachedRotation = Quaternion.Euler(x, Mathf.Atan2(NamePlate.dirToCamera.x, NamePlate.dirToCamera.z) * Mathf.Rad2Deg, z);
-                NamePlate.transform.SetPositionAndRotation(NamePlate.cachedDirection, NamePlate.cachedRotation);
+                BasisNamePlate NamePlate = basisRemotePlayers[Index];
+                if (NamePlate.IsVisible)
+                {
+                    NamePlate.cachedDirection = NamePlate.HipTarget.OutgoingWorldData.position;
+                    NamePlate.cachedDirection.y += NamePlate.MouthTarget.TposeLocal.position.y / NamePlate.YHeightMultiplier;
+                    NamePlate.dirToCamera = Position - NamePlate.cachedDirection;
+                    //  Vector3 Euler = NamePlate.transform.rotation.eulerAngles;
+                    NamePlate.cachedRotation = Quaternion.Euler(x, Mathf.Atan2(NamePlate.dirToCamera.x, NamePlate.dirToCamera.z) * Mathf.Rad2Deg, z);
+                    NamePlate.transform.SetPositionAndRotation(NamePlate.cachedDirection, NamePlate.cachedRotation);
+                }
             }
         }
     }

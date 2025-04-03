@@ -1,3 +1,4 @@
+using BasisNetworkServer.Security;
 using System;
 using System.IO;
 using System.Reflection;
@@ -46,7 +47,11 @@ public class Configuration
     public string Password = "default_password";
     public int MinThreadPoolThreads = 100;
     public int MaxThreadPoolThreads = 500;
-
+    public bool UseAuth = true;
+    public bool UseAuthIdentity = true;
+    public BasisUserRestrictionMode BasisUserRestrictionMode;
+    public int HowManyDuplicateAuthCanExist = 2;
+    public int AuthValidationTimeOutMiliseconds = 9000;
     /// <summary>
     /// Read config from file. If no file is found create a default config file at filePath
     /// </summary>

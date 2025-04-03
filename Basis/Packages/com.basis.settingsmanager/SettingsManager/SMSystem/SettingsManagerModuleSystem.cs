@@ -1,4 +1,4 @@
-﻿using BattlePhaze.SettingsManager.Types;
+using BattlePhaze.SettingsManager.Types;
 using System.Linq;
 using UnityEngine;
 namespace BattlePhaze.SettingsManager
@@ -16,7 +16,7 @@ namespace BattlePhaze.SettingsManager
         public static void AutoAssignModules(SettingsManager Manager)
         {
             Manager.SettingsManagerOptions.Clear();
-            SettingsManagerOption[] smo = GameObject.FindObjectsOfType<SettingsManagerOption>();
+            SettingsManagerOption[] smo = GameObject.FindObjectsByType<SettingsManagerOption>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
             for (int SettingsManagerOptionIndex = 0; SettingsManagerOptionIndex < smo.Length; SettingsManagerOptionIndex++)
             {
                 if (!Manager.SettingsManagerOptions.Contains(smo[SettingsManagerOptionIndex]))
@@ -32,7 +32,7 @@ namespace BattlePhaze.SettingsManager
             Manager.SettingsManagerAbstractTypeSlider.Clear();
             Manager.SettingsManagerAbstractTypeManagement.Clear();
             Manager.SettingsManagerAbstractTypeText.Clear();
-            SettingsManagerAbstractType[] AbstractModule = GameObject.FindObjectsOfType<SettingsManagerAbstractType>();
+            SettingsManagerAbstractType[] AbstractModule = GameObject.FindObjectsByType<SettingsManagerAbstractType>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
             for (int SettingsManagerOptionIndex = 0; SettingsManagerOptionIndex < AbstractModule.Length; SettingsManagerOptionIndex++)
             {
                 switch (AbstractModule[SettingsManagerOptionIndex].GetActiveType())

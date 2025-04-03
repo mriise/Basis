@@ -131,16 +131,17 @@
       "dependencies": {}
     },
     "com.unity.addressables": {
-      "version": "2.2.2",
+      "version": "2.3.16",
       "depth": 0,
       "source": "registry",
       "dependencies": {
         "com.unity.profiling.core": "1.0.2",
+        "com.unity.test-framework": "1.4.5",
         "com.unity.modules.assetbundle": "1.0.0",
         "com.unity.modules.jsonserialize": "1.0.0",
         "com.unity.modules.imageconversion": "1.0.0",
         "com.unity.modules.unitywebrequest": "1.0.0",
-        "com.unity.scriptablebuildpipeline": "2.1.4",
+        "com.unity.scriptablebuildpipeline": "2.2.11",
         "com.unity.modules.unitywebrequestassetbundle": "1.0.0"
       },
       "url": "https://packages.unity.com"
@@ -187,12 +188,11 @@
     "com.unity.ext.nunit": {
       "version": "2.0.5",
       "depth": 1,
-      "source": "registry",
-      "dependencies": {},
-      "url": "https://packages.unity.com"
+      "source": "builtin",
+      "dependencies": {}
     },
     "com.unity.ide.rider": {
-      "version": "3.0.31",
+      "version": "3.0.34",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -296,10 +296,13 @@
       }
     },
     "com.unity.scriptablebuildpipeline": {
-      "version": "2.1.4",
+      "version": "2.2.11",
       "depth": 1,
       "source": "registry",
-      "dependencies": {},
+      "dependencies": {
+        "com.unity.test-framework": "1.4.5",
+        "com.unity.modules.assetbundle": "1.0.0"
+      },
       "url": "https://packages.unity.com"
     },
     "com.unity.searcher": {
@@ -335,15 +338,14 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.test-framework": {
-      "version": "1.4.6",
+      "version": "1.5.1",
       "depth": 1,
-      "source": "registry",
+      "source": "builtin",
       "dependencies": {
         "com.unity.ext.nunit": "2.0.3",
         "com.unity.modules.imgui": "1.0.0",
         "com.unity.modules.jsonserialize": "1.0.0"
-      },
-      "url": "https://packages.unity.com"
+      }
     },
     "com.unity.test-framework.performance": {
       "version": "3.0.3",
@@ -364,6 +366,16 @@
         "com.unity.modules.director": "1.0.0",
         "com.unity.modules.animation": "1.0.0",
         "com.unity.modules.particlesystem": "1.0.0"
+      },
+      "url": "https://packages.unity.com"
+    },
+    "com.unity.toolchain.macos-arm64-linux-x86_64": {
+      "version": "2.0.4",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.sysroot": "2.0.10",
+        "com.unity.sysroot.linux-x86_64": "2.0.9"
       },
       "url": "https://packages.unity.com"
     },
@@ -396,7 +408,7 @@
       }
     },
     "com.unity.xr.core-utils": {
-      "version": "2.5.1",
+      "version": "2.5.2",
       "depth": 1,
       "source": "registry",
       "dependencies": {
@@ -478,23 +490,11 @@
       "source": "local-tarball",
       "dependencies": {}
     },
-    "org.basisvr.contrib.auth.did": {
-      "version": "file:../../Contrib/Auth/Did",
+    "org.basisvr.generator.equals": {
+      "version": "file:org.basisvr.generator.equals-3.2.0.tgz",
       "depth": 0,
-      "source": "local",
-      "dependencies": {
-        "org.basisvr.base128": "1.2.2",
-        "org.basisvr.newtonsoft.json": "13.0.3",
-        "org.basisvr.simplebase": "4.0.2"
-      }
-    },
-    "org.basisvr.contrib.crypto": {
-      "version": "file:../../Contrib/Crypto",
-      "depth": 0,
-      "source": "local",
-      "dependencies": {
-        "org.basisvr.bouncycastle": "2.5.0"
-      }
+      "source": "local-tarball",
+      "dependencies": {}
     },
     "org.basisvr.newtonsoft.json": {
       "version": "file:org.basisvr.newtonsoft.json-13.0.3.tgz",

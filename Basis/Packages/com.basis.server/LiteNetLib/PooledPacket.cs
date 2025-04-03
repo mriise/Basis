@@ -1,4 +1,4 @@
-namespace LiteNetLib
+﻿namespace LiteNetLib
 {
     public readonly ref struct PooledPacket
     {

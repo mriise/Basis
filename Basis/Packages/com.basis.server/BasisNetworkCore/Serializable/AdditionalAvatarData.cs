@@ -1,44 +1,55 @@
 using LiteNetLib.Utils;
 using System;
+
 public static partial class SerializableBasis
 {
     public struct AdditionalAvatarData
     {
+        public byte PayloadSize;
         public byte messageIndex;
         public byte[] array;
-        public void Deserialize(NetDataReader Writer)
-        {
-            int Bytes = Writer.AvailableBytes;
-            if (Bytes != 0)
-            {
-                messageIndex = Writer.GetByte();
 
-                byte PayloadSize = Writer.GetByte();
-                if (array == null || array.Length != PayloadSize)
+        public void Deserialize(NetDataReader reader)
+        {
+            if (reader.TryGetByte(out PayloadSize))
+            {
+                if (PayloadSize == 0)
                 {
-                    array = new byte[PayloadSize];
+                    return;
                 }
-                Writer.GetBytes(array, PayloadSize);
-                //89 * 2 = 178 + 12 + 14 = 204
-                //now 178 for muscles, 3*4 for position 12, 4*4 for rotation 16-2 (W is half) = 204
+                if (reader.TryGetByte(out messageIndex))
+                {
+                    if (array == null || array.Length != PayloadSize)
+                    {
+                        array = new byte[PayloadSize];
+                    }
+                    reader.GetBytes(array, PayloadSize);
+                }
+                else
+                {
+                    BNL.LogError("trying to write data that does not exist! messageIndex");
+                }
             }
             else
             {
-                BNL.LogError($"Unable to read Remaing bytes where {Bytes}");
+                BNL.LogError("trying to write data that does not exist! PayloadSize");
             }
         }
-        public void Serialize(NetDataWriter Writer)
+        public void Serialize(NetDataWriter writer)
         {
-            if (array == null)
+            if (array.Length > 256)
             {
-                BNL.LogError("array was null!!");
+                BNL.LogError("Larger then 256 cannot send this Additional Avatar Data");
+                return;
             }
-            else
+            PayloadSize = (array != null) ? (byte)array.Length : (byte)0;
+
+            writer.Put(PayloadSize);
+            writer.Put(messageIndex);
+
+            if (PayloadSize > 0)
             {
-                Writer.Put(messageIndex);
-                byte Size = (byte)array.Length;
-                Writer.Put(Size);
-                Writer.Put(array);
+                writer.Put(array, 0, PayloadSize);
             }
         }
     }

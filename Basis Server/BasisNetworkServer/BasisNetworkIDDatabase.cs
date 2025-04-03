@@ -27,7 +27,7 @@ namespace BasisNetworkCore
                 };
                 NetDataWriter Writer = new NetDataWriter(true);
                 SUIMA.Serialize(Writer);
-                HeWhoAsked.Send(Writer, BasisNetworkCommons.netIDAssign, DeliveryMethod.ReliableOrdered);
+                NetworkServer.SendOutValidated(HeWhoAsked, Writer, BasisNetworkCommons.netIDAssign, DeliveryMethod.ReliableOrdered);
                 BNL.Log($"Sent existing NetID ({Value}) for {UniqueStringID} to peer {HeWhoAsked.Address}");
             }
             else
@@ -60,15 +60,14 @@ namespace BasisNetworkCore
                 NetDataWriter Writer = new NetDataWriter(true);
                 SUIMA.Serialize(Writer);
 
-                BasisNetworkServer.BroadcastMessageToClients(Writer, BasisNetworkCommons.netIDAssign, BasisPlayerArray.GetSnapshot(), DeliveryMethod.ReliableOrdered);
+                NetworkServer.BroadcastMessageToClients(Writer, BasisNetworkCommons.netIDAssign, BasisPlayerArray.GetSnapshot(), DeliveryMethod.ReliableOrdered);
                 BNL.Log($"Broadcasted new ID ({newID}) for {UniqueStringID} to all connected peers.");
             }
         }
 
-        public static ServerNetIDMessage[] GetAllNetworkID()
+        public static bool GetAllNetworkID(out List<ServerNetIDMessage> ServerUniqueIDMessages)
         {
-            BNL.Log("Fetching all network IDs...");
-            List<ServerNetIDMessage> ServerUniqueIDMessages = new List<ServerNetIDMessage>();
+            ServerUniqueIDMessages = new List<ServerNetIDMessage>();
             foreach (KeyValuePair<string, ushort> pair in UshortNetworkDatabase)
             {
                 ServerNetIDMessage SUIM = new ServerNetIDMessage
@@ -78,10 +77,9 @@ namespace BasisNetworkCore
                 };
                 ServerUniqueIDMessages.Add(SUIM);
             }
-            BNL.Log($"Total network IDs fetched: {ServerUniqueIDMessages.Count}");
-            return ServerUniqueIDMessages.ToArray();
+            int Count = ServerUniqueIDMessages.Count;
+            return Count != 0;
         }
-
         public static void RemoveUshortNetworkID(ushort netID)
         {
             BNL.Log($"Attempting to remove NetID: {netID}");

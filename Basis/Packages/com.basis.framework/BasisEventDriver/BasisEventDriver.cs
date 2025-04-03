@@ -3,6 +3,8 @@ using Basis.Scripts.Device_Management;
 using Basis.Scripts.Device_Management.Devices.Desktop;
 using Basis.Scripts.Eye_Follow;
 using Basis.Scripts.Networking;
+using Basis.Scripts.Networking.Transmitters;
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -20,6 +22,7 @@ public class BasisEventDriver : MonoBehaviour
     }
     public void Update()
     {
+        BasisNetworkManagement.SimulateNetworkCompute();
         InputSystem.Update();
         timeSinceLastUpdate += Time.deltaTime;
 
@@ -28,7 +31,6 @@ public class BasisEventDriver : MonoBehaviour
             timeSinceLastUpdate -= updateInterval; // Subtract interval instead of resetting to zero
             BasisConsoleLogger.QueryLogDisplay();
         }
-
         if (!BasisDeviceManagement.hasPendingActions) return;
 
         while (BasisDeviceManagement.mainThreadActions.TryDequeue(out System.Action action))
@@ -47,7 +49,7 @@ public class BasisEventDriver : MonoBehaviour
             BasisLocalEyeFollowBase.Instance.Simulate();
         }
         MicrophoneRecorder.MicrophoneUpdate();
-        BasisNetworkManagement.SimulateNetwork();
+        BasisNetworkManagement.SimulateNetworkApply();
     }
     private void OnBeforeRender()
     {
@@ -55,6 +57,6 @@ public class BasisEventDriver : MonoBehaviour
         {
             BasisLocalPlayer.Instance.LocalBoneDriver.Simulate();
         }
-        BasisLocalInputActions.AfterAvatarChanges?.Invoke();
+        BasisNetworkTransmitter.AfterAvatarChanges?.Invoke();
     }
 }

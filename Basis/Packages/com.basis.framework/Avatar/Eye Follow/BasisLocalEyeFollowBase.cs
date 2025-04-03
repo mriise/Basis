@@ -111,7 +111,7 @@ namespace Basis.Scripts.Eye_Follow
                 {
                     BasisDebug.Log("Wired up Renderer Check For Blinking");
                     LinkedPlayer.FaceRenderer.Check += UpdateFaceVisibility;
-                    UpdateFaceVisibility(LinkedPlayer.FaceisVisible);
+                    UpdateFaceVisibility(LinkedPlayer.FaceIsVisible);
                     HasRendererCheckWiredUp = true;
                 }
             }

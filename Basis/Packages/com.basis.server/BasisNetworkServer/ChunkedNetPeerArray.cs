@@ -1,59 +1,71 @@
-﻿using LiteNetLib;
 using System;
-public static partial class BasisNetworkServer
+using System.Threading;
+using Basis.Network.Core;
+using LiteNetLib;
+
+public class StripedNetPeerArray
 {
-    public class ChunkedNetPeerArray
+    private readonly NetPeer[][] _chunks;           // Data storage in chunks
+    private readonly ReaderWriterLockSlim[] _locks; // Striped locks
+    private readonly ushort _chunkSize;            // Size of each chunk
+    private readonly ushort _lockCount;            // Number of locks
+    public StripedNetPeerArray(ushort chunkSize = 64, ushort lockCount = 32)
     {
-        private readonly object[] _chunkLocks; // Locks for each chunk
-        private readonly NetPeer[][] _chunks;  // Array divided into chunks
-        private readonly ushort _chunkSize;    // Number of elements in each chunk
-        public const ushort totalSize = 1024;  // Total size
+        if (BasisNetworkCommons.MaxConnections <= 0)
+            throw new ArgumentOutOfRangeException(nameof(BasisNetworkCommons.MaxConnections), "Total size must be greater than zero.");
+        if (chunkSize <= 0)
+            throw new ArgumentOutOfRangeException(nameof(chunkSize), "Chunk size must be greater than zero.");
+        if (lockCount <= 0)
+            throw new ArgumentOutOfRangeException(nameof(lockCount), "Lock count must be greater than zero.");
 
-        public ChunkedNetPeerArray(ushort chunkSize = 256)
+        _chunkSize = chunkSize;
+        _lockCount = lockCount;
+
+        ushort numChunks = (ushort)Math.Ceiling((double)BasisNetworkCommons.MaxConnections / chunkSize);
+        _chunks = new NetPeer[numChunks][];
+        _locks = new ReaderWriterLockSlim[lockCount];
+
+        for (ushort i = 0; i < numChunks; i++)
         {
-            if (totalSize <= 0)
-                throw new ArgumentOutOfRangeException(nameof(totalSize), "Total size must be greater than zero.");
-            if (chunkSize <= 0)
-                throw new ArgumentOutOfRangeException(nameof(chunkSize), "Chunk size must be greater than zero.");
-
-            _chunkSize = chunkSize;
-            ushort numChunks = (ushort)Math.Ceiling((double)totalSize / chunkSize); // Now using ushort
-            _chunks = new NetPeer[numChunks][];
-            _chunkLocks = new object[numChunks];
-
-            for (ushort i = 0; i < numChunks; i++) // Changed to ushort
-            {
-                _chunks[i] = new NetPeer[chunkSize];
-                _chunkLocks[i] = new object();
-            }
+            _chunks[i] = new NetPeer[chunkSize];
         }
 
-        public void SetPeer(ushort index, NetPeer value)
+        for (ushort i = 0; i < lockCount; i++)
         {
-            if (index < 0 || index >= _chunkSize * _chunks.Length)
-                throw new ArgumentOutOfRangeException(nameof(index), "Index is out of range.");
-
-            ushort chunkIndex = (ushort)(index / _chunkSize); // Changed to ushort
-            ushort localIndex = (ushort)(index % _chunkSize); // Changed to ushort
-
-            lock (_chunkLocks[chunkIndex])
-            {
-                _chunks[chunkIndex][localIndex] = value;
-            }
+            _locks[i] = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
         }
+    }
 
-        public NetPeer GetPeer(ushort index)
+    public void SetPeer(ushort index, NetPeer value)
+    {
+        if (index >= BasisNetworkCommons.MaxConnections)
+            throw new ArgumentOutOfRangeException(nameof(index), "Index is out of range.");
+
+        ushort chunkIndex = (ushort)(index / _chunkSize);
+        ushort localIndex = (ushort)(index % _chunkSize);
+        ushort lockIndex = (ushort)(index % _lockCount); // Lock striping
+
+        var lockObj = _locks[lockIndex];
+        lockObj.EnterWriteLock();
+        try
         {
-            if (index < 0 || index >= _chunkSize * _chunks.Length)
-                throw new ArgumentOutOfRangeException(nameof(index), "Index is out of range.");
-
-            ushort chunkIndex = (ushort)(index / _chunkSize); // Changed to ushort
-            ushort localIndex = (ushort)(index % _chunkSize); // Changed to ushort
-
-            lock (_chunkLocks[chunkIndex])
-            {
-                return _chunks[chunkIndex][localIndex];
-            }
+            _chunks[chunkIndex][localIndex] = value;
         }
+        finally
+        {
+            lockObj.ExitWriteLock();
+        }
+    }
+
+    public NetPeer GetPeer(ushort index)
+    {
+        if (index >= BasisNetworkCommons.MaxConnections)
+            throw new ArgumentOutOfRangeException(nameof(index), "Index is out of range.");
+
+        ushort chunkIndex = (ushort)(index / _chunkSize);
+        ushort localIndex = (ushort)(index % _chunkSize);
+
+        // Use Volatile.Read to avoid locking for read-only access
+        return Volatile.Read(ref _chunks[chunkIndex][localIndex]);
     }
 }

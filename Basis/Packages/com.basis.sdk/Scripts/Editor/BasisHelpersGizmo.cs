@@ -29,24 +29,23 @@ namespace Basis.Scripts.BasisSdk.Helpers.Editor
                 return null;
             }
         }
-        public static EventCallback<ChangeEvent<Vector2>> CallBackVector2Field(VisualElement visualElement, string fieldNameIdentifier, Vector2 InitalValue)
+        public static EventCallback<ChangeEvent<Vector2>> CallBackVector2Field(
+            VisualElement visualElement,
+            string fieldNameIdentifier,
+            Vector2 initialValue,
+            EventCallback<ChangeEvent<Vector2>> callback)
         {
-            Vector2Field Field = visualElement.Q<Vector2Field>(fieldNameIdentifier);
-            if (Field != null)
+            Vector2Field field = visualElement.Q<Vector2Field>(fieldNameIdentifier);
+            if (field != null)
             {
-                Field.value = InitalValue;
-                var changeEvent = new EventCallback<ChangeEvent<Vector2>>(evt => OnVector2FieldValueChanged(evt));
-                Field.RegisterCallback(changeEvent);
-                return changeEvent;
+                field.value = initialValue;
+                field.RegisterCallback(callback);
+                return callback;
             }
             else
             {
                 return null;
             }
-        }
-
-        private static void OnVector2FieldValueChanged(ChangeEvent<Vector2> evt)
-        {
         }
 
         public static void SetValueVector2Field(VisualElement visualElement, string fieldNameIdentifier, Vector2 Value)

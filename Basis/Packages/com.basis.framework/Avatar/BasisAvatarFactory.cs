@@ -167,27 +167,33 @@ namespace Basis.Scripts.Avatar
                 DeleteLastAvatar(Player, true);
                 Player.BasisAvatar = Avatar;
                 Player.BasisAvatar.Renders = Player.BasisAvatar.GetComponentsInChildren<Renderer>(true);
-                if (Player is BasisLocalPlayer localPlayer)
+                switch (Player)
                 {
-                    Player.BasisAvatar.IsOwnedLocally = true;
-                    CreateLocal(localPlayer);
-                    localPlayer.InitalizeIKCalibration(localPlayer.AvatarDriver);
-                    for (int Index = 0; Index < Avatar.Renders.Length; Index++)
-                    {
-                        Avatar.Renders[Index].gameObject.layer = 6;
-                    }
-                    Avatar.OnAvatarReady?.Invoke(true);
-                }
-                else if (Player is BasisRemotePlayer remotePlayer)
-                {
-                    Player.BasisAvatar.IsOwnedLocally = false;
-                    CreateRemote(remotePlayer);
-                    remotePlayer.InitalizeIKCalibration(remotePlayer.RemoteAvatarDriver);
-                    for (int Index = 0; Index < Avatar.Renders.Length; Index++)
-                    {
-                        Avatar.Renders[Index].gameObject.layer = 7;
-                    }
-                    Avatar.OnAvatarReady?.Invoke(false);
+                    case BasisLocalPlayer localPlayer:
+                        {
+                            Player.BasisAvatar.IsOwnedLocally = true;
+                            CreateLocal(localPlayer);
+                            localPlayer.InitalizeIKCalibration(localPlayer.AvatarDriver);
+                            for (int Index = 0; Index < Avatar.Renders.Length; Index++)
+                            {
+                                Avatar.Renders[Index].gameObject.layer = 6;
+                            }
+                            Avatar.OnAvatarReady?.Invoke(true);
+                            break;
+                        }
+
+                    case BasisRemotePlayer remotePlayer:
+                        {
+                            Player.BasisAvatar.IsOwnedLocally = false;
+                            CreateRemote(remotePlayer);
+                            remotePlayer.InitalizeIKCalibration(remotePlayer.RemoteAvatarDriver);
+                            for (int Index = 0; Index < Avatar.Renders.Length; Index++)
+                            {
+                                Avatar.Renders[Index].gameObject.layer = 7;
+                            }
+                            Avatar.OnAvatarReady?.Invoke(false);
+                            break;
+                        }
                 }
             }
         }

@@ -33,6 +33,9 @@ namespace Basis.Scripts.Networking.Transmitters
 
                 // Initialize the Opus encoder with the retrieved settings
                 encoder = new OpusEncoder(LocalOpusSettings.MicrophoneSampleRate, LocalOpusSettings.Channels, LocalOpusSettings.OpusApplication);
+                //  encoder.Ctl(EncoderCTL.OPUS_SET_COMPLEXITY, ref Complexity);
+                //  bool VBR = true;
+                //encoder.Ctl(EncoderCTL.OPUS_SET_VBR,ref VBR);
                 // Cast the networked player to a local player to access the microphone recorder
                 Local = (BasisLocalPlayer)networkedPlayer.Player;
                 Recorder = Local.MicrophoneRecorder;
@@ -72,7 +75,6 @@ namespace Basis.Scripts.Networking.Transmitters
             encoder.Dispose();
             encoder = null;
         }
-        public const DeliveryMethod AudioSendMethod = DeliveryMethod.Sequenced;
         public void OnAudioReady()
         {
             if (NetworkedPlayer.HasReasonToSendAudio)
@@ -83,11 +85,12 @@ namespace Basis.Scripts.Networking.Transmitters
                     AudioSegmentData = new AudioSegmentDataMessage(new byte[MicrophoneRecorder.PacketSize]);
                 }
                 // Encode the audio data from the microphone recorder's buffer
-                AudioSegmentData.LengthUsed = encoder.Encode(MicrophoneRecorder.processBufferArray, LocalOpusSettings.SampleRate(), AudioSegmentData.buffer, AudioSegmentData.TotalLength);
+                AudioSegmentData.LengthUsed = encoder.Encode(MicrophoneRecorder.processBufferArray,MicrophoneRecorder.SampleRate, AudioSegmentData.buffer, AudioSegmentData.TotalLength);
+
                 NetDataWriter writer = new NetDataWriter();
                 AudioSegmentData.Serialize(writer);
                 BasisNetworkProfiler.AudioSegmentDataMessageCounter.Sample(AudioSegmentData.LengthUsed);
-                BasisNetworkManagement.LocalPlayerPeer.Send(writer, BasisNetworkCommons.VoiceChannel, AudioSendMethod);
+                SendOutVoice(writer);
                 Local.AudioReceived?.Invoke(true);
             }
             else
@@ -95,6 +98,16 @@ namespace Basis.Scripts.Networking.Transmitters
                 //  UnityEngine.BasisDebug.Log("Rejecting out going Audio");
             }
         }
+        /*
+        public NetDataWriter GenerateWriter()
+        {
+            NetDataWriter writer = new NetDataWriter();
+            writer.Put(BasisNetworkCommons.VoiceChannel);
+            sequenceNumber = (byte)((sequenceNumber + 1) & 0x3F);
+            writer.Put(sequenceNumber);
+            return writer;
+        }
+        */
         private void SendSilenceOverNetwork()
         {
             if (NetworkedPlayer.HasReasonToSendAudio)
@@ -103,9 +116,13 @@ namespace Basis.Scripts.Networking.Transmitters
                 audioSilentSegmentData.LengthUsed = 0;
                 audioSilentSegmentData.Serialize(writer);
                 BasisNetworkProfiler.AudioSegmentDataMessageCounter.Sample(writer.Length);
-                BasisNetworkManagement.LocalPlayerPeer.Send(writer, BasisNetworkCommons.VoiceChannel, AudioSendMethod);
+                SendOutVoice(writer);
                 Local.AudioReceived?.Invoke(false);
             }
+        }
+        public void SendOutVoice(NetDataWriter writer)
+        {
+            BasisNetworkManagement.LocalPlayerPeer.Send(writer, BasisNetworkCommons.VoiceChannel, LocalOpusSettings.AudioSendMethod);
         }
     }
 }

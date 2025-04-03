@@ -1,6 +1,7 @@
 using Basis.Scripts.BasisSdk.Players;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TMPro;
@@ -17,9 +18,6 @@ namespace Basis.Scripts.UI.UI_Panels
 
         public const string AvatarSelection = "BasisUIAvatarSelection";
 
-        [SerializeField] public TMP_InputField ConnectorField;
-        [SerializeField] public TMP_InputField PasswordField;
-
         [SerializeField] public Button AddAvatarApply;
         [SerializeField] public BasisProgressReport Report = new BasisProgressReport();
         [SerializeField]
@@ -27,65 +25,56 @@ namespace Basis.Scripts.UI.UI_Panels
         [SerializeField]
         public List<GameObject> createdCopies = new List<GameObject>();
         public CancellationToken CancellationToken = new CancellationToken();
+
+        public GameObject AvatarSelectionPanel;
+        public GameObject AvatarInformationPanel;
+
+        public Button DeleteAvatar;
+        public Button ShowAvatarPassword;
+        public Button GoBack;
+        public Button ChangeIntoAvatar;
+        public BasisLoadableBundle SelectedBundle;
+        public TMP_InputField AvatarPassword;
+        public TextMeshProUGUI Name;
+        public TextMeshProUGUI Description;
         private async void Start()
         {
             BasisDataStoreAvatarKeys.DisplayKeys();
             AddAvatarApply.onClick.AddListener(AddAvatar);
+
+            GoBack.onClick.AddListener(ShowAvatarSelectionPanel);
+            DeleteAvatar.onClick.AddListener(SelectedDeleteAvatar);
+            ShowAvatarPassword.onClick.AddListener(SelectedShowAvatarPassword);
+            ShowAvatarSelectionPanel();
+            AvatarPassword.gameObject.SetActive(false);
             await Initialize();
         }
-
+        public async void SelectedDeleteAvatar()
+        {
+            BasisDataStoreAvatarKeys.AvatarKey Key = new BasisDataStoreAvatarKeys.AvatarKey()
+            {
+                Pass = SelectedBundle.UnlockPassword,
+                Url = SelectedBundle.BasisRemoteBundleEncrypted.CombinedURL
+            };
+            await BasisDataStoreAvatarKeys.RemoveKey(Key);
+            CloseThisMenu();
+        }
+        public void SelectedShowAvatarPassword()
+        {
+            AvatarPassword.gameObject.SetActive(!AvatarPassword.gameObject.activeSelf);
+            AvatarPassword.text = SelectedBundle.UnlockPassword;
+            AvatarPassword.readOnly = true;
+        }
         public override void InitalizeEvent()
         {
             BasisCursorManagement.UnlockCursor(AvatarSelection);
             BasisUINeedsVisibleTrackers.Instance.Add(this);
         }
 
-        private async void AddAvatar()
+        private void AddAvatar()
         {
-            if (string.IsNullOrEmpty(ConnectorField.text) || string.IsNullOrEmpty(PasswordField.text))
-            {
-                BasisDebug.LogError("All fields must be filled.");
-                return;
-            }
-
-            // Check if the avatar key already exists to prevent duplicates
-            List<BasisDataStoreAvatarKeys.AvatarKey> activeKeys = BasisDataStoreAvatarKeys.DisplayKeys();
-            bool keyExists = activeKeys.Exists(key => key.Url == ConnectorField.text && key.Pass == PasswordField.text);
-
-            if (keyExists)
-            {
-                Debug.LogWarning("The avatar key with the same URL and Password already exists. No duplicate will be added.");
-                return;
-            }
-
-            // Avoid duplicate in avatarUrlsRuntime
-            if (avatarUrlsRuntime.Exists(b => b.BasisRemoteBundleEncrypted.CombinedURL == ConnectorField.text))
-            {
-                Debug.LogWarning("Avatar with the same Meta URL already exists in runtime list.");
-                return;
-            }
-
-            BasisLoadableBundle loadableBundle = new BasisLoadableBundle
-            {
-                UnlockPassword = PasswordField.text,
-                BasisRemoteBundleEncrypted = new BasisRemoteEncyptedBundle
-                {
-                    CombinedURL = ConnectorField.text
-                },
-                BasisBundleConnector = new BasisBundleConnector(),
-                BasisLocalEncryptedBundle = new BasisStoredEncryptedBundle()
-            };
-
-            await BasisLocalPlayer.Instance.CreateAvatar(0, loadableBundle);
-
-            var avatarKey = new BasisDataStoreAvatarKeys.AvatarKey
-            {
-                Url = ConnectorField.text,
-                Pass = PasswordField.text,
-            };
-
-            await BasisDataStoreAvatarKeys.AddNewKey(avatarKey);
-            await Initialize();
+            CloseThisMenu();
+            BasisUIAddAvatar.OpenAddAvatarUI();
         }
 
         private async Task Initialize()
@@ -97,7 +86,11 @@ namespace Basis.Scripts.UI.UI_Panels
             for (int Index = 0; Index < preLoadedBundles.Count; Index++)
             {
                 BasisLoadableBundle loadableBundle = preLoadedBundles[Index];
-                BasisDataStoreAvatarKeys.AvatarKey Key = new BasisDataStoreAvatarKeys.AvatarKey() { Pass = loadableBundle.UnlockPassword, Url = loadableBundle.BasisRemoteBundleEncrypted.CombinedURL };
+                BasisDataStoreAvatarKeys.AvatarKey Key = new BasisDataStoreAvatarKeys.AvatarKey()
+                {
+                    Pass = loadableBundle.UnlockPassword,
+                    Url = loadableBundle.BasisRemoteBundleEncrypted.CombinedURL
+                };
 
                 // Prevent duplicate keys in the store
                 if (!BasisDataStoreAvatarKeys.DisplayKeys().Exists(k => k.Url == Key.Url && k.Pass == Key.Pass))
@@ -151,7 +144,6 @@ namespace Basis.Scripts.UI.UI_Panels
 
             await CreateAvatarButtons(activeKeys);
         }
-
         private async Task CreateAvatarButtons(List<BasisDataStoreAvatarKeys.AvatarKey> activeKeys)
         {
             foreach (var bundle in avatarUrlsRuntime)
@@ -169,7 +161,7 @@ namespace Basis.Scripts.UI.UI_Panels
 
                 if (buttonObject.TryGetComponent<Button>(out var button))
                 {
-                    button.onClick.AddListener(() => OnButtonPressed(bundle));
+                    button.onClick.AddListener(() => ShowInformation(bundle));
 
                     TextMeshProUGUI buttonText = buttonObject.GetComponentInChildren<TextMeshProUGUI>();
                     if (buttonText != null)
@@ -212,8 +204,44 @@ namespace Basis.Scripts.UI.UI_Panels
             }
             createdCopies.Clear();
         }
+        public void ShowAvatarSelectionPanel()
+        {
+            AvatarSelectionPanel.SetActive(true);
+            AvatarInformationPanel.SetActive(false);
+        }
+        public void ShowInformationPanel()
+        {
+            AvatarSelectionPanel.SetActive(false);
+            AvatarInformationPanel.SetActive(true);
+        }
+        public TextMeshProUGUI UniqueVersion;
+        public TextMeshProUGUI SupportedPlatformsText;
+        private void ShowInformation(BasisLoadableBundle avatarLoadRequest)
+        {
+            if (BasisLocalPlayer.Instance != null)
+            {
+                ChangeIntoAvatar.onClick.RemoveAllListeners();
+                SelectedBundle = avatarLoadRequest;
+                ChangeIntoAvatar.onClick.AddListener(async () => await LoadAvatar(avatarLoadRequest)); // Fix: Use lambda
 
-        private async void OnButtonPressed(BasisLoadableBundle avatarLoadRequest)
+                if (SelectedBundle.BasisBundleConnector.GetPlatform(out BasisBundleGenerated platformBundle))
+                {
+                    string assetMode = platformBundle.AssetMode;
+                }
+                Name.text = $"Avatar Name: {SelectedBundle.BasisBundleConnector.BasisBundleDescription.AssetBundleName}";
+                Description.text = $"Avatar Description: {SelectedBundle.BasisBundleConnector.BasisBundleDescription.AssetBundleDescription}";
+                UniqueVersion.text = $"Version ID: {SelectedBundle.BasisBundleConnector.UniqueVersion}";
+                string SupportedPlatforms = string.Join(", ", SelectedBundle.BasisBundleConnector.BasisBundleGenerated
+                    .Select(pair => pair.Platform));
+                SupportedPlatformsText.text = "Supported Platforms : " + SupportedPlatforms;
+                ShowInformationPanel();
+            }
+            else
+            {
+                BasisDebug.LogError("Missing LocalPlayer!");
+            }
+        }
+        private async Task LoadAvatar(BasisLoadableBundle avatarLoadRequest)
         {
             if (BasisLocalPlayer.Instance != null)
             {

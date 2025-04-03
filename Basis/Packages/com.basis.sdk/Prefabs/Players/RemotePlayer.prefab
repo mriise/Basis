@@ -53,8 +53,10 @@ MonoBehaviour:
   Player: {fileID: 3578141255088103770}
   CurrentlyTposing: 0
   HasEvents: 0
+  ActiveMatrixOverrides: 
+  SkinnedMeshRendererLength: 0
   RemotePlayer: {fileID: 3578141255088103770}
-  BasisEyeFollowDriver: {fileID: 0}
+  BasisRemoteEyeFollowBase: {fileID: 0}
 --- !u!114 &3578141255088103770
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -69,36 +71,31 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   DisplayName: 
   UUID: 
-  Avatar: {fileID: 0}
+  BasisAvatar: {fileID: 0}
   AvatarMetaData:
     UnlockPassword: 
     BasisRemoteBundleEncrypted:
       IsLocal: 0
-      MetaURL: 
-      BundleURL: 
+      CombinedURL: 
     BasisLocalEncryptedBundle:
-      LocalMetaFile: 
-      LocalBundleFile: 
-    BasisBundleInformation:
-      HasError: 0
+      LocalConnectorPath: 
+    BasisBundleConnector:
+      UniqueVersion: 
       BasisBundleDescription:
         AssetBundleName: 
         AssetBundleDescription: 
-      BasisBundleGenerated:
-        AssetBundleHash: 
-        AssetMode: 
-        AssetToLoadName: 
-        AssetBundleCRC: 0
+      BasisBundleGenerated: []
   HasAvatarDriver: 0
-  FaceisVisible: 0
+  FaceIsVisible: 0
   FaceRenderer: {fileID: 0}
   AvatarLoadMode: 0
   BasisAvatarStrainJiggleDriver: {fileID: 0}
   RemoteBoneDriver: {fileID: 8753016558906673911}
   RemoteAvatarDriver: {fileID: 4496089132972522230}
-  AudioSourceTransform: {fileID: 3207512861414392396}
-  MouthControl:
-    TargetControl:
+  NetworkReceiver:
+    Ready: 0
+    Offset: 0
+    MouthBone:
       LerpAmountNormal: 0
       LerpAmountFastMovement: 0
       AngleBeforeSpeedup: 0
@@ -111,6 +108,235 @@ MonoBehaviour:
         y: 0
         z: 0
       LerpAmount: 0
+      OutGoingData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      LastRunData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      TposeLocal:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      InverseOffsetFromBone:
+        Use: 0
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      IncomingData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      OutgoingWorldData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      GizmoReference: -1
+      HasGizmo: 0
+      TposeGizmoReference: -1
+      TposeHasGizmo: 0
+      HasVirtualOverride: 0
+      HasInverseOffsetOverride: 0
+      trackersmooth: 25
+      IsHintRoleIgnoreRotation: 0
+      Cullable: 0
+      Name: 
+      gizmoColor: {r: 0, g: 0, b: 1, a: 1}
+      HasBone: 0
+      BoneTransform: {fileID: 0}
+      HasEvents: 0
+      hasTrackerDriver: 1
+      NotProcessing: 0
+      hasRigLayer: 1
+      positionWeight: 1
+      rotationWeight: 1
+      GeneralLocation: 0
+    Player: {fileID: 0}
+    hasID: 0
+    CopyData: 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+    AudioReceiverModule:
+      BasisRemoteVisemeAudioDriver: {fileID: 0}
+      audioSource: {fileID: 0}
+      visemeDriver: {fileID: 0}
+      IsPlaying: 0
+      pcmBuffer: []
+      pcmLength: 0
+      IsReady: 0
+      silentData: []
+      lastReadIndex: 0
+    delayTime: 0.10000000149011612
+    RemotePlayer: {fileID: 0}
+    HasEvents: 0
+    MuscleFinalStageOutput:
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    OutputRotation:
+      value:
+        x: 0
+        y: 0
+        z: 0
+        w: 0
+    interpolationTime: 0
+    TimeBeforeCompletion: 0
+    TimeInThePast: 0
+    HasAvatarInitalized: 0
+    MinCutoff: 0.001
+    Beta: 5
+    DerivativeCutoff: 1
+    updateFilters: 0
+    enableEuroFilter: 1
+    PositionOffset: {x: 0, y: 0, z: 0}
+    LogFirstError: 0
+    Eyes:
+    - 0
+    - 0
+    - 0
+    - 0
+  AudioSourceTransform: {fileID: 3207512861414392396}
+  MouthControl:
+    LerpAmountNormal: 0
+    LerpAmountFastMovement: 0
+    AngleBeforeSpeedup: 0
+    HasRotationalTarget: 0
+    HasLineDraw: 0
+    LineDrawIndex: 0
+    HasTarget: 0
+    Offset:
+      x: 0
+      y: 0
+      z: 0
+    LerpAmount: 0
     OutGoingData:
       rotation:
         value:
@@ -183,6 +409,7 @@ MonoBehaviour:
     TposeGizmoReference: -1
     TposeHasGizmo: 0
     HasVirtualOverride: 0
+    HasInverseOffsetOverride: 0
     trackersmooth: 25
     IsHintRoleIgnoreRotation: 0
     Cullable: 0
@@ -193,12 +420,6 @@ MonoBehaviour:
     HasEvents: 0
     hasTrackerDriver: 1
     NotProcessing: 0
-    OnHasRigChanged:
-      m_PersistentCalls:
-        m_Calls: []
-    WeightsChanged:
-      m_PersistentCalls:
-        m_Calls: []
     hasRigLayer: 1
     positionWeight: 1
     rotationWeight: 1
@@ -237,28 +458,22 @@ MonoBehaviour:
   Controls: []
   trackedRoles: 
   HasControls: 0
-  ProvidedTime: 0
-  DeltaTime: 0
-  QatCalibrationHeading: {x: 0, y: 0, z: 0, w: 0}
-  CalibrationHeading: {x: 0, y: 0, z: 0}
-  CalibrationHeadingY: 0
   RemotePlayer: {fileID: 3578141255088103770}
   HeadAvatar: {fileID: 0}
   HipsAvatar: {fileID: 0}
   Head:
-    TargetControl:
-      LerpAmountNormal: 0
-      LerpAmountFastMovement: 0
-      AngleBeforeSpeedup: 0
-      HasRotationalTarget: 0
-      HasLineDraw: 0
-      LineDrawIndex: 0
-      HasTarget: 0
-      Offset:
-        x: 0
-        y: 0
-        z: 0
-      LerpAmount: 0
+    LerpAmountNormal: 0
+    LerpAmountFastMovement: 0
+    AngleBeforeSpeedup: 0
+    HasRotationalTarget: 0
+    HasLineDraw: 0
+    LineDrawIndex: 0
+    HasTarget: 0
+    Offset:
+      x: 0
+      y: 0
+      z: 0
+    LerpAmount: 0
     OutGoingData:
       rotation:
         value:
@@ -331,6 +546,7 @@ MonoBehaviour:
     TposeGizmoReference: -1
     TposeHasGizmo: 0
     HasVirtualOverride: 0
+    HasInverseOffsetOverride: 0
     trackersmooth: 25
     IsHintRoleIgnoreRotation: 0
     Cullable: 0
@@ -341,30 +557,23 @@ MonoBehaviour:
     HasEvents: 0
     hasTrackerDriver: 1
     NotProcessing: 0
-    OnHasRigChanged:
-      m_PersistentCalls:
-        m_Calls: []
-    WeightsChanged:
-      m_PersistentCalls:
-        m_Calls: []
     hasRigLayer: 1
     positionWeight: 1
     rotationWeight: 1
     GeneralLocation: 0
   Hips:
-    TargetControl:
-      LerpAmountNormal: 0
-      LerpAmountFastMovement: 0
-      AngleBeforeSpeedup: 0
-      HasRotationalTarget: 0
-      HasLineDraw: 0
-      LineDrawIndex: 0
-      HasTarget: 0
-      Offset:
-        x: 0
-        y: 0
-        z: 0
-      LerpAmount: 0
+    LerpAmountNormal: 0
+    LerpAmountFastMovement: 0
+    AngleBeforeSpeedup: 0
+    HasRotationalTarget: 0
+    HasLineDraw: 0
+    LineDrawIndex: 0
+    HasTarget: 0
+    Offset:
+      x: 0
+      y: 0
+      z: 0
+    LerpAmount: 0
     OutGoingData:
       rotation:
         value:
@@ -437,6 +646,7 @@ MonoBehaviour:
     TposeGizmoReference: -1
     TposeHasGizmo: 0
     HasVirtualOverride: 0
+    HasInverseOffsetOverride: 0
     trackersmooth: 25
     IsHintRoleIgnoreRotation: 0
     Cullable: 0
@@ -447,17 +657,13 @@ MonoBehaviour:
     HasEvents: 0
     hasTrackerDriver: 1
     NotProcessing: 0
-    OnHasRigChanged:
-      m_PersistentCalls:
-        m_Calls: []
-    WeightsChanged:
-      m_PersistentCalls:
-        m_Calls: []
     hasRigLayer: 1
     positionWeight: 1
     rotationWeight: 1
     GeneralLocation: 0
   HasEvent: 0
+  HasHead: 0
+  HasHips: 0
 --- !u!1 &5669630751523980901
 GameObject:
   m_ObjectHideFlags: 0
@@ -509,11 +715,11 @@ AudioSource:
   Loop: 1
   Mute: 0
   Spatialize: 1
-  SpatializePostEffects: 0
+  SpatializePostEffects: 1
   Priority: 128
   DopplerLevel: 0
   MinDistance: 1
-  MaxDistance: 20
+  MaxDistance: 15
   Pan2D: 0
   rolloffMode: 2
   BypassEffects: 0
@@ -523,32 +729,50 @@ AudioSource:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: 0
+      time: 0.035828657
       value: 1
-      inSlope: 0
-      outSlope: 0
+      inSlope: -2.2142456
+      outSlope: -2.2142456
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
+      inWeight: 0
+      outWeight: 0.8832598
     - serializedVersion: 3
-      time: 0.48395285
-      value: 0.5004883
-      inSlope: -1.3427557
-      outSlope: -1.3427557
+      time: 0.23906149
+      value: 0.574646
+      inSlope: -2.304989
+      outSlope: -2.304989
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.1683712
-      outWeight: 0.33333334
+      inWeight: 0.35260352
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.37239483
+      value: 0.32788086
+      inSlope: -1.0681823
+      outSlope: -1.0681823
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.7161809
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.62145287
+      value: 0.14447021
+      inSlope: -0.5149982
+      outSlope: -0.5149982
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.38931724
+      outWeight: 0
     - serializedVersion: 3
       time: 1
       value: 0
-      inSlope: 0
-      outSlope: 0
+      inSlope: -0.031343754
+      outSlope: -0.031343754
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
+      inWeight: 0.2218376
+      outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
@@ -639,7 +863,7 @@ MonoBehaviour:
   transmissionHigh: 1
   maxTransmissionSurfaces: 4
   directMixLevel: 1
-  reflections: 1
+  reflections: 0
   reflectionsType: 0
   useDistanceCurveForReflections: 1
   currentBakedSource: {fileID: 0}

@@ -1,5 +1,4 @@
 using Basis.Network.Core;
-using Basis.Scripts.Device_Management.Devices.Desktop;
 using Basis.Scripts.Networking.NetworkedAvatar;
 using Basis.Scripts.Profiler;
 using LiteNetLib;
@@ -48,7 +47,7 @@ namespace Basis.Scripts.Networking.Transmitters
         public JobHandle distanceJobHandle;
         public int IndexLength = -1;
         public float SlowestSendRate = 2.5f;
-        public NetDataWriter AvatarSendWriter = new NetDataWriter(true, LocalAvatarSyncMessage.AvatarSyncSize);
+        public NetDataWriter AvatarSendWriter = new NetDataWriter(true, LocalAvatarSyncMessage.AvatarSyncSize + 1);
         public bool[] MicrophoneRangeIndex;
         public bool[] LastMicrophoneRangeIndex;
 
@@ -237,7 +236,7 @@ namespace Basis.Scripts.Networking.Transmitters
                     Player.OnAvatarSwitchedFallBack += OnAvatarCalibrationLocal;
                     Player.OnAvatarSwitched += OnAvatarCalibrationLocal;
                     Player.OnAvatarSwitched += SendOutAvatarChange;
-                    BasisLocalInputActions.AfterAvatarChanges += SendOutLatest;
+                    AfterAvatarChanges += SendOutLatest;
                     HasEvents = true;
                 }
                 Ready = true;
@@ -320,6 +319,7 @@ namespace Basis.Scripts.Networking.Transmitters
 
             distanceJob.smallestDistance = smallestDistance;
         }
+        public static Action AfterAvatarChanges;
         public override void DeInitialize()
         {
             if (Ready)
@@ -331,7 +331,7 @@ namespace Basis.Scripts.Networking.Transmitters
                 Player.OnAvatarSwitchedFallBack -= OnAvatarCalibrationLocal;
                 Player.OnAvatarSwitched -= OnAvatarCalibrationLocal;
                 Player.OnAvatarSwitched -= SendOutAvatarChange;
-                BasisLocalInputActions.AfterAvatarChanges -= SendOutLatest;
+                AfterAvatarChanges -= SendOutLatest;
                 if (targetPositions.IsCreated) targetPositions.Dispose();
                 if (distances.IsCreated) distances.Dispose();
                 if (smallestDistance.IsCreated)

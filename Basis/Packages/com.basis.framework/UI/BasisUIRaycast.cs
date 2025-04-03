@@ -140,8 +140,8 @@ namespace Basis.Scripts.UI
 
             // NOTE: only first collider hit counted for UI
             // TODO: this should never be null at this point, right? yet it sometimes is with this! wtf!
-            bool hitObject = hitCollider && BasisPointRaycaster.PhysicHits[0].transform != null;
-            PhysicHit = BasisPointRaycaster.PhysicHits[0];
+            bool hitObject = hitCollider && BasisPointRaycaster.ClosestRayCastHit.transform != null;
+            PhysicHit = BasisPointRaycaster.ClosestRayCastHit;
 
             bool hitCanvas = false;
             if (hitObject)

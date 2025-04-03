@@ -54,6 +54,7 @@ namespace Basis.Scripts.BasisSdk
         public BasisJiggleStrain[] JiggleStrains;
 
         public bool HasSendEvent;
+        public AvatarNetworkMessageSendEventServerReductionSystem OnServerReductionSystemMessageReceived;
         public AvatarNetworkMessageReceiveEvent OnNetworkMessageReceived;
         public AvatarNetworkMessageSendEvent OnNetworkMessageSend;
         public AvatarNetworkMessageSendEventServerReductionSystem OnServerReductionSystemMessageSend;

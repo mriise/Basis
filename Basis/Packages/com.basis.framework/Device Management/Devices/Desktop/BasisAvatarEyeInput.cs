@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Basis.Scripts.BasisSdk.Helpers;
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Drivers;
@@ -13,14 +12,13 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
     {
         public Camera Camera;
         public BasisLocalAvatarDriver AvatarDriver;
-        public BasisLocalInputActions characterInputActions;
         public static BasisAvatarEyeInput Instance;
         public float crouchPercentage = 0.5f;
         public float rotationSpeed = 0.1f;
         public float rotationY;
         public float rotationX;
-        public float minimumY = -80f;
-        public float maximumY = 80f;
+        public float minimumY = -89f;
+        public float maximumY = 50f;
         [HideInInspector]
         public float FallBackHeight = 1.73f;
         public bool BlockCrouching;
@@ -52,7 +50,7 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
                 Instance = this;
             }
             PlayerInitialized();
-            BasisCursorManagement.OverrideableLock(nameof(BasisAvatarEyeInput));
+            BasisCursorManagement.OverrideAbleLock(nameof(BasisAvatarEyeInput));
             if (HasEyeEvents == false)
             {
                 BasisLocalPlayer.Instance.OnLocalAvatarChanged += PlayerInitialized;
@@ -103,11 +101,7 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
         }
         public void PlayerInitialized()
         {
-            characterInputActions = BasisLocalInputActions.Instance;
-            if (characterInputActions != null)
-            {
-                characterInputActions.CharacterEyeInput = this;
-            }
+            BasisLocalInputActions.CharacterEyeInput = this;
             AvatarDriver = BasisLocalPlayer.Instance.AvatarDriver;
             Camera = BasisLocalCameraDriver.Instance.Camera;
             BasisDeviceManagement Device = BasisDeviceManagement.Instance;
@@ -137,7 +131,10 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
         {
             if (hasRoleAssigned)
             {
-                characterInputActions.InputState.CopyTo(InputState);
+                if (BasisLocalInputActions.Instance != null)
+                {
+                    BasisLocalInputActions.Instance.InputState.CopyTo(InputState);
+                }
                 // InputState.CopyTo(characterInputActions.InputState);
                 // Apply modulo operation to keep rotation within 0 to 360 range
                 rotationX %= 360f;

@@ -97,12 +97,12 @@ namespace Basis.Network.Server
 
                     using (StreamWriter writer = new StreamWriter(context.Response.OutputStream))
                     {
-                        if (  BasisNetworkServer.Configuration.EnableStatistics )
+                        if (  NetworkServer.Configuration.EnableStatistics )
                         {
-			    int ServerCount = BasisNetworkServer.server.ConnectedPeersCount; // Current user count
-			    long sent = BasisNetworkServer.server.Statistics.BytesSent; 
-			    long recv = BasisNetworkServer.server.Statistics.BytesReceived;
-			    int capacity = BasisNetworkServer.Configuration.PeerLimit;
+			    int ServerCount = NetworkServer.server.ConnectedPeersCount; // Current user count
+			    long sent = NetworkServer.server.Statistics.BytesSent; 
+			    long recv = NetworkServer.server.Statistics.BytesReceived;
+			    int capacity = NetworkServer.Configuration.PeerLimit;
 			    DateTime accessed = DateTime.Now;
 
                             string output = $"{{\"listening\": true, " +

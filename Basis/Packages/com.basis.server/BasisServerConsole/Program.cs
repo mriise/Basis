@@ -1,92 +1,80 @@
 using Basis.Network;
 using Basis.Network.Server;
+using BasisNetworkConsole;
 using BasisNetworking.InitalData;
-
 namespace Basis
 {
     class Program
     {
         public static BasisNetworkHealthCheck Check;
 
+        private const string ConfigFileName = "config.xml";
+        private const string LogsFolderName = "Logs";
+        private const string InitialResources = "initalresources";
+        private const int ThreadSleepTime = 15000;
+        public static bool isRunning = true;
         public static void Main(string[] args)
         {
-            // Set up global exception handlers
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
 
-            // Get the path to the config.xml file in the application's directory
-            string configFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.xml");
-
-            // Load configuration from the XML file
+            string configFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ConfigFileName);
             Configuration config = Configuration.LoadFromXml(configFilePath);
             config.ProcessEnvironmentalOverrides();
 
             ThreadPool.SetMinThreads(config.MinThreadPoolThreads, config.MinThreadPoolThreads);
             ThreadPool.SetMaxThreads(config.MaxThreadPoolThreads, config.MaxThreadPoolThreads);
-            // Initialize server-side logging
-            string folderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
+
+            string folderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, LogsFolderName);
             BasisServerSideLogging.Initialize(config, folderPath);
 
             BNL.Log("Server Booting");
 
-            // Create a cancellation token source
-            var cancellationTokenSource = new CancellationTokenSource();
-            var cancellationToken = cancellationTokenSource.Token;
-
-            // Initialize health check
+            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
             Check = new BasisNetworkHealthCheck(config);
 
-            // Start the server in a background task and prevent it from exiting
             Task serverTask = Task.Run(() =>
             {
                 try
                 {
-                    BasisNetworkServer.StartServer(config);
-                    BasisLoadableLoader.LoadXML("initalresources");
+                    NetworkServer.StartServer(config);
+                    BasisLoadableLoader.LoadXML(InitialResources);
                 }
                 catch (Exception ex)
                 {
-                    BNL.LogError($"Server encountered an error: {ex.Message}");
-                    // Optionally, handle server restart or log critical errors
+                    BNL.LogError($"Server encountered an error: {ex.Message} {ex.StackTrace}");
                 }
-            }, cancellationToken);
-            // Register a shutdown hook to clean up resources when the application is terminated
+            }, cancellationTokenSource.Token);
+
             AppDomain.CurrentDomain.ProcessExit += async (sender, eventArgs) =>
             {
                 BNL.Log("Shutting down server...");
-
-                // Perform graceful shutdown of the server and logging
                 cancellationTokenSource.Cancel();
 
-                try
-                {
-                    await serverTask; // Wait for the server to finish
-                }
-                catch (Exception ex)
-                {
-                    BNL.LogError($"Error during server shutdown: {ex.Message}");
-                }
+                try { await serverTask; }
+                catch (Exception ex) { BNL.LogError($"Error during server shutdown: {ex.Message}"); }
 
-                // BasisPrometheus.StopPrometheus();
-                if (config.EnableStatistics)
-                {
-                    BasisStatistics.StopWorkerThread();
-                }
+                if (config.EnableStatistics) BasisStatistics.StopWorkerThread();
                 await BasisServerSideLogging.ShutdownAsync();
                 BNL.Log("Server shut down successfully.");
             };
+            BasisConsoleCommands.RegisterCommand("/admin add", BasisConsoleCommands.HandleAddAdmin);
+            BasisConsoleCommands.RegisterCommand("/status", BasisConsoleCommands.HandleStatus);
+            BasisConsoleCommands.RegisterCommand("/shutdown", BasisConsoleCommands.HandleShutdown);
+            BasisConsoleCommands.RegisterCommand("/help", BasisConsoleCommands.HandleHelp);
+            //BasisConsoleCommands.RegisterConfigurationCommands(config);
 
-            // Keep the application running
-            while (true)
+            // Start console command processing
+            Task.Run(() => BasisConsoleCommands.ProcessConsoleCommands());
+
+            while (isRunning)
             {
-                Thread.Sleep(15000);
+                Thread.Sleep(ThreadSleepTime);
             }
         }
-
         private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            var exception = e.ExceptionObject as Exception;
-            if (exception != null)
+            if (e.ExceptionObject is Exception exception)
             {
                 BNL.LogError($"Fatal exception: {exception.Message}");
                 BNL.LogError($"Stack trace: {exception.StackTrace}");
@@ -104,7 +92,7 @@ namespace Basis
                 BNL.LogError($"Unobserved task exception: {exception.Message}");
                 BNL.LogError($"Stack trace: {exception.StackTrace}");
             }
-            e.SetObserved(); // Prevents the application from crashing
+            e.SetObserved();
         }
     }
 }

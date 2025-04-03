@@ -130,8 +130,8 @@ MonoBehaviour:
   Animator: {fileID: 7103285763428802826}
   FaceVisemeMesh: {fileID: 8839165641088738499}
   FaceBlinkMesh: {fileID: 8839165641088738499}
-  AvatarEyePosition: {x: 1.5230026, y: 0.15810776}
-  AvatarMouthPosition: {x: 1.3779702, y: 0.12749863}
+  AvatarEyePosition: {x: 1.5329204, y: 0.13793945}
+  AvatarMouthPosition: {x: 1.4465508, y: 0.13414764}
   FaceVisemeMovement: ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
   BlinkViseme: ffffffffffffffff
   laughterBlendTarget: -1

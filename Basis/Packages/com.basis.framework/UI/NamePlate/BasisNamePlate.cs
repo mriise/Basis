@@ -14,6 +14,7 @@ namespace Basis.Scripts.UI.NamePlate
         public BasisBoneControl MouthTarget;
         public TextMeshPro Text;
         public SpriteRenderer Loadingbar;
+        public MeshFilter Filter;
         public TextMeshPro Loadingtext;
         public float YHeightMultiplier = 1.25f;
         public BasisRemotePlayer BasisRemotePlayer;
@@ -32,8 +33,19 @@ namespace Basis.Scripts.UI.NamePlate
         public bool HasRendererCheckWiredUp = false;
         public bool IsVisible = true;
         public bool HasProgressBarVisible = false;
+        public Mesh bakedMesh;
+        private WaitForSeconds cachedReturnDelay;
+        private WaitForEndOfFrame cachedEndOfFrame;
+        public Color CurrentColor;
+        /// <summary>
+        /// can only be called once after that the text is nuked and a mesh render is just used with a filter
+        /// </summary>
+        /// <param name="hipTarget"></param>
+        /// <param name="basisRemotePlayer"></param>
         public void Initalize(BasisBoneControl hipTarget, BasisRemotePlayer basisRemotePlayer)
         {
+            cachedReturnDelay = new WaitForSeconds(returnDelay);
+            cachedEndOfFrame = new WaitForEndOfFrame();
             BasisRemotePlayer = basisRemotePlayer;
             HipTarget = hipTarget;
             MouthTarget = BasisRemotePlayer.MouthControl;
@@ -43,6 +55,25 @@ namespace Basis.Scripts.UI.NamePlate
             BasisRemotePlayer.OnAvatarSwitched += RebuildRenderCheck;
             BasisRemotePlayer.OnAvatarSwitchedFallBack += RebuildRenderCheck;
             RemoteNamePlateDriver.Instance.AddNamePlate(this);
+            Loadingtext.enableVertexGradient = false;
+            // Text.enableCulling = true;
+            // Text.enableAutoSizing = false;
+            GenerateText();
+            GameObject.Destroy(Text.gameObject);
+            if (BasisDeviceManagement.IsMobile())
+            {
+                NormalColor.a = 1;
+                IsTalkingColor.a = 1;
+                OutOfRangeColor.a = 1;
+            }
+        }
+        public void GenerateText()
+        {
+            // Force update to ensure the mesh is generated
+            Text.ForceMeshUpdate();
+            // Store the generated mesh
+            bakedMesh = Mesh.Instantiate(Text.mesh);
+            Filter.sharedMesh = bakedMesh;
         }
         public void RebuildRenderCheck()
         {
@@ -56,7 +87,7 @@ namespace Basis.Scripts.UI.NamePlate
                 BasisDebug.Log("Wired up Renderer Check For Blinking");
                 BasisRemotePlayer.FaceRenderer.Check += UpdateFaceVisibility;
                 BasisRemotePlayer.FaceRenderer.DestroyCalled += AvatarUnloaded;
-                UpdateFaceVisibility(BasisRemotePlayer.FaceisVisible);
+                UpdateFaceVisibility(BasisRemotePlayer.FaceIsVisible);
                 HasRendererCheckWiredUp = true;
             }
         }
@@ -97,45 +128,40 @@ namespace Basis.Scripts.UI.NamePlate
                 }
                 BasisNetworkManagement.MainThreadContext.Post(_ =>
                 {
-                    if (isActiveAndEnabled)
+                    if (this != null)
                     {
-                        if (colorTransitionCoroutine != null)
+                        if (isActiveAndEnabled)
                         {
-                            StopCoroutine(colorTransitionCoroutine);
+                            if (colorTransitionCoroutine != null)
+                            {
+                                StopCoroutine(colorTransitionCoroutine);
+                            }
+                            if (targetColor != CurrentColor)
+                            {
+                                colorTransitionCoroutine = StartCoroutine(TransitionColor(targetColor));
+                            }
                         }
-                        colorTransitionCoroutine = StartCoroutine(TransitionColor(targetColor));
                     }
                 }, null);
             }
         }
         private IEnumerator TransitionColor(Color targetColor)
         {
-            // Cache the initial values
-            Color initialColor = namePlateImage.color;
+            CurrentColor = namePlateImage.color;
             float elapsedTime = 0f;
 
-            // Use a simple loop, minimizing redundant computations
             while (elapsedTime < transitionDuration)
             {
                 elapsedTime += Time.deltaTime;
-
-                // Calculate the interpolation progress
                 float lerpProgress = Mathf.Clamp01(elapsedTime / transitionDuration);
-
-                // Interpolate only when needed
-                namePlateImage.color = Color.Lerp(initialColor, targetColor, lerpProgress);
-
-                // Avoid using `yield return null` directly to reduce allocations
-                yield return new WaitForEndOfFrame();
+                namePlateImage.color = Color.Lerp(CurrentColor, targetColor, lerpProgress);
+                yield return cachedEndOfFrame;
             }
 
-            // Set the final color explicitly to avoid rounding issues
             namePlateImage.color = targetColor;
-
-            // Nullify the reference to clean up
+            CurrentColor = targetColor;
             colorTransitionCoroutine = null;
 
-            // Handle the delayed return logic if necessary
             if (targetColor == IsTalkingColor)
             {
                 if (returnToNormalCoroutine != null)
@@ -145,9 +171,10 @@ namespace Basis.Scripts.UI.NamePlate
                 returnToNormalCoroutine = StartCoroutine(DelayedReturnToNormal());
             }
         }
+
         private IEnumerator DelayedReturnToNormal()
         {
-            yield return new WaitForSeconds(returnDelay);
+            yield return cachedReturnDelay;
             yield return StartCoroutine(TransitionColor(NormalColor));
             returnToNormalCoroutine = null;
         }
@@ -185,7 +212,10 @@ namespace Basis.Scripts.UI.NamePlate
                           HasProgressBarVisible = true;
                       }
 
-                      Loadingtext.text = info;
+                      if (Loadingtext.text != info)
+                      {
+                          Loadingtext.text = info;
+                      }
                       UpdateProgressBar(UniqueID, progress);
                   }
               });
@@ -193,8 +223,12 @@ namespace Basis.Scripts.UI.NamePlate
         public void UpdateProgressBar(string UniqueID,float progress)
         {
             Vector2 scale = Loadingbar.size;
-            scale.x = progress/2;
-            Loadingbar.size = scale;
+            float NewX = progress / 2;
+            if (scale.x != NewX)
+            {
+                scale.x = NewX;
+                Loadingbar.size = scale;
+            }
         }
     }
 }

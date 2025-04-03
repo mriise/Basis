@@ -126,10 +126,7 @@ namespace Basis.Scripts.UI
                         {
                             BasisLocalPlayer.Instance.Move.BlockMovement = true;
                         }
-                        if (BasisLocalInputActions.Instance != null)
-                        {
-                            BasisLocalInputActions.Instance.IgnoreCrouchToggle = true;
-                        }
+                        BasisLocalInputActions.IgnoreCrouchToggle = true;
                         if (BasisDeviceManagement.Instance.CurrentMode == "OpenVRLoader" || BasisDeviceManagement.Instance.CurrentMode == "OpenXRLoader" || ForceKeyboard)
                         {
                             BasisVirtualKeyboard.CreateMenu(CurrentSelectedInputField, CurrentSelectedTMP_InputField);
@@ -149,10 +146,7 @@ namespace Basis.Scripts.UI
                             {
                                 BasisLocalPlayer.Instance.Move.BlockMovement = true;
                             }
-                            if (BasisLocalInputActions.Instance != null)
-                            {
-                                BasisLocalInputActions.Instance.IgnoreCrouchToggle = true;
-                            }
+                            BasisLocalInputActions.IgnoreCrouchToggle = true;
                             if (BasisDeviceManagement.Instance.CurrentMode == "OpenVRLoader" || BasisDeviceManagement.Instance.CurrentMode == "OpenXRLoader" || ForceKeyboard)
                             {
                                 BasisVirtualKeyboard.CreateMenu(CurrentSelectedInputField, CurrentSelectedTMP_InputField);
@@ -174,10 +168,7 @@ namespace Basis.Scripts.UI
                     {
                         BasisLocalPlayer.Instance.Move.BlockMovement = false;
                     }
-                    if (BasisLocalInputActions.Instance != null)
-                    {
-                        BasisLocalInputActions.Instance.IgnoreCrouchToggle = false;
-                    }
+                    BasisLocalInputActions.IgnoreCrouchToggle = false;
                     var data = GetBaseEventData();
                     ExecuteEvents.Execute(EventSystem.currentSelectedGameObject, data, ExecuteEvents.submitHandler);
                 }

@@ -13,9 +13,8 @@ namespace Basis.Scripts.Networking.Recievers
 {
     [DefaultExecutionOrder(15001)]
     [System.Serializable]
-    public partial class BasisNetworkReceiver : BasisNetworkPlayer
+    public class BasisNetworkReceiver : BasisNetworkPlayer
     {
-        public float[] silentData;
         public ushort[] CopyData = new ushort[LocalAvatarSyncMessage.StoredBones];
         [SerializeField]
         public BasisAudioReceiver AudioReceiverModule = new BasisAudioReceiver();
@@ -126,14 +125,17 @@ namespace Basis.Scripts.Networking.Recievers
         }
         public Vector3 GetScale()
         {
-            if (Player != null && Player.BasisAvatar != null && Player.BasisAvatar.Animator != null)
+            if (Player != null && Player.BasisAvatar != null)
             {
-                Vector3 Scale = Player.BasisAvatar.Animator.transform.localScale;
-               if(Scale != Vector3.zero)
+                Vector3 Scale = Player.BasisAvatar.transform.localScale;
+                if (Scale != Vector3.zero)
                 {
                     return Scale;
                 }
-               else { return Vector3.one; }
+                else
+                {
+                    return Vector3.one;
+                }
             }
             else
             {
@@ -264,24 +266,20 @@ namespace Basis.Scripts.Networking.Recievers
         }
         public void ReceiveNetworkAudio(ServerAudioSegmentMessage audioSegment)
         {
-            if (AudioReceiverModule.decoder != null)
+            if (Ready)
             {
+                byte SequenceNumber = audioSegment.playerIdMessage.AdditionalData;
                 BasisNetworkProfiler.ServerAudioSegmentMessageCounter.Sample(audioSegment.audioSegmentData.LengthUsed);
-                AudioReceiverModule.OnDecode(audioSegment.audioSegmentData.buffer, audioSegment.audioSegmentData.LengthUsed);
+                AudioReceiverModule.OnDecode(SequenceNumber, audioSegment.audioSegmentData.buffer, audioSegment.audioSegmentData.LengthUsed);
                 Player.AudioReceived?.Invoke(true);
             }
         }
         public void ReceiveSilentNetworkAudio(ServerAudioSegmentMessage audioSilentSegment)
         {
-            if (AudioReceiverModule.decoder != null)
+            if (Ready)
             {
-                if (silentData == null || silentData.Length != RemoteOpusSettings.Pcmlength)
-                {
-                    silentData = new float[RemoteOpusSettings.Pcmlength];
-                    Array.Fill(silentData, 0f);
-                }
                 BasisNetworkProfiler.ServerAudioSegmentMessageCounter.Sample(1);
-                AudioReceiverModule.OnDecoded(silentData, RemoteOpusSettings.Pcmlength);
+                AudioReceiverModule.OnDecodeSilence(audioSilentSegment.playerIdMessage.AdditionalData);
                 Player.AudioReceived?.Invoke(false);
             }
         }
@@ -319,7 +317,6 @@ namespace Basis.Scripts.Networking.Recievers
 
                 RemotePlayer = (BasisRemotePlayer)Player;
                 AudioReceiverModule.OnEnable(this);
-               //this wont work here OnAvatarCalibrationRemote();
                 if (HasEvents == false)
                 {
                     RemotePlayer.RemoteAvatarDriver.CalibrationComplete += OnCalibration;

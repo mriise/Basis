@@ -22,18 +22,29 @@ public partial class MicrophoneRecorder : MicrophoneRecorderBase
     private static NativeArray<float> PBA;
     private static LogarithmicVolumeAdjustmentJob VAJ;
     private static JobHandle handle;
+    public const string MicrophoneState = "MicrophoneState";
     public bool TryInitialize()
     {
         if (!IsInitialize)
         {
             if (!HasEvents)
             {
+               int value = PlayerPrefs.GetInt(MicrophoneState,0);
+                if(value == 0)
+                {
+                    SetPauseState(true);
+                }
+                else
+                {
+                    SetPauseState(false);
+                }
                 SMDMicrophone.OnMicrophoneChanged += ResetMicrophones;
                 SMDMicrophone.OnMicrophoneVolumeChanged += ChangeMicrophoneVolume;
                 SMDMicrophone.OnMicrophoneUseDenoiserChanged += ConfigureDenoiser;
                 BasisDeviceManagement.Instance.OnBootModeChanged += OnBootModeChanged;
                 HasEvents = true;
             }
+            SMDMicrophone.LoadInMicrophoneData(BasisDeviceManagement.Instance.CurrentMode);
             ResetMicrophones(SMDMicrophone.SelectedMicrophone);
             ConfigureDenoiser(SMDMicrophone.SelectedDenoiserMicrophone);
             StartProcessingThread();  // Start the processing thread once
@@ -73,6 +84,7 @@ public partial class MicrophoneRecorder : MicrophoneRecorderBase
     }
     public int minFreq = 48000;
     public int maxFreq = 48000;
+    public static int SampleRate;
     public void ResetMicrophones(string newMicrophone)
     {
         if (string.IsNullOrEmpty(newMicrophone))
@@ -109,6 +121,7 @@ public partial class MicrophoneRecorder : MicrophoneRecorderBase
                 microphoneBufferArray = new float[LocalOpusSettings.RecordingFullLength * LocalOpusSettings.MicrophoneSampleRate];
                 MicrophoneIsStarted = true;
                 processBufferArray = LocalOpusSettings.CalculateProcessBuffer();
+                SampleRate = LocalOpusSettings.SampleRate();
                 PBA = new NativeArray<float>(processBufferArray, Allocator.Persistent);
                 VAJ = new LogarithmicVolumeAdjustmentJob
                 {
@@ -165,6 +178,7 @@ public partial class MicrophoneRecorder : MicrophoneRecorderBase
         }
         set
         {
+            PlayerPrefs.SetInt(MicrophoneState,isPaused ? 1 : 0);
             isPaused = value;
             if (isPaused)
             {
