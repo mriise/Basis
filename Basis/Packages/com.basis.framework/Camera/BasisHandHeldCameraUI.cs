@@ -135,7 +135,7 @@ public class BasisHandHeldCameraUI
         }
         catch (Exception ex)
         {
-            Debug.LogError($"Error saving settings: {ex.Message}");
+            BasisDebug.LogError($"Error saving settings: {ex.Message}");
 
             // Attempt to resave settings
             try
@@ -162,11 +162,11 @@ public class BasisHandHeldCameraUI
                 string defaultJson = JsonUtility.ToJson(defaultSettings, true);
                 string settingsFilePath = Path.Combine(Application.persistentDataPath, CameraSettingsJson);
                 await File.WriteAllTextAsync(settingsFilePath, defaultJson);
-                Debug.Log("Settings have been reset to default values.");
+                BasisDebug.Log("Settings have been reset to default values.");
             }
             catch (Exception resaveEx)
             {
-                Debug.LogError($"Error resaving settings: {resaveEx.Message}");
+                BasisDebug.LogError($"Error resaving settings: {resaveEx.Message}");
             }
         }
     }
@@ -176,11 +176,11 @@ public class BasisHandHeldCameraUI
         try
         {
             ApplySettings(new CameraSettings());
-            Debug.Log("Settings have been reset to default values.");
+            BasisDebug.Log("Settings have been reset to default values.");
         }
         catch (Exception ex)
         {
-            Debug.LogError($"Error resetting settings: {ex.Message}");
+            BasisDebug.LogError($"Error resetting settings: {ex.Message}");
         }
     }
 
@@ -197,13 +197,13 @@ public class BasisHandHeldCameraUI
             }
             else
             {
-                Debug.LogWarning("Settings file not found, applying default settings.");
+                BasisDebug.Log("Settings file not found, applying default settings.");
                 ApplySettings(new CameraSettings()); // Apply default settings if file doesn't exist
             }
         }
         catch (Exception ex)
         {
-            Debug.LogError($"Error loading settings: {ex.Message}");
+            BasisDebug.LogError($"Error loading settings: {ex.Message}");
             // Optionally apply default settings if loading fails
             ApplySettings(new CameraSettings());
         }
@@ -257,11 +257,11 @@ public class BasisHandHeldCameraUI
                 HHC.MetaData.colorAdjustments.saturation.value = settings.saturation;
             }
 
-            Debug.Log("Settings applied successfully.");
+            BasisDebug.Log("Settings applied successfully.");
         }
         catch (Exception ex)
         {
-            Debug.LogError($"Error applying settings: {ex.Message}");
+            BasisDebug.LogError($"Error applying settings: {ex.Message}");
         }
     }
     public void DepthChangeFocusDistance(float value)

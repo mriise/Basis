@@ -153,7 +153,7 @@ public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
         {
             if (request.hasError)
             {
-                Debug.LogError("GPU Readback failed.");
+                BasisDebug.LogError("GPU Readback failed.");
                 SetNormalAfterCapture();
                 return;
             }
