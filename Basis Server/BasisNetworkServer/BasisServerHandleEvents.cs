@@ -388,14 +388,14 @@ namespace BasisServerHandle
                         case BasisNetworkCommons.AvatarCloneRequestMessage:
                             if (ValidateSize(reader, peer, channel))
                             {
-                                BasisAvatarRequestMessages.AvatarCloneRequestMessage();
+                               // BasisAvatarRequestMessages.AvatarCloneRequestMessage();
                             }
                             reader.Recycle();
                             break;
                         case BasisNetworkCommons.AvatarCloneResponseMessage:
                             if (ValidateSize(reader, peer, channel))
                             {
-                                BasisAvatarRequestMessages.AvatarCloneResponseMessage();
+                              //  BasisAvatarRequestMessages.AvatarCloneResponseMessage();
                             }
                             reader.Recycle();
                             break;
