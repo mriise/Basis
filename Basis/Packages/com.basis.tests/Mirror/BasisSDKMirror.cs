@@ -35,7 +35,7 @@ public class BasisSDKMirror : MonoBehaviour
 
     public int XSize = 2048;
     public int YSize = 2048;
-    public int Antialising = 4;
+    public int Antialiasing = 4;
     public Material MirrorsMaterial;
     public bool IsActive;
     public int depth = 24;
@@ -242,7 +242,7 @@ public class BasisSDKMirror : MonoBehaviour
         {
             name = "__MirrorReflection" + eye.ToString() + GetInstanceID(),
             isPowerOfTwo = true,
-            antiAliasing = Antialising,
+            antiAliasing = Antialiasing,
         };
         string Property = "_ReflectionTex" + eye.ToString();
         Renderer.material = MirrorsMaterial;

@@ -628,11 +628,8 @@ MonoBehaviour:
   RightMousePressed: {fileID: -240064975923332847, guid: 5e4c3601c6a155f43af19da3bdd35a64, type: 3}
   MiddleMouseScroll: {fileID: 3017921969231114889, guid: 5e4c3601c6a155f43af19da3bdd35a64, type: 3}
   MiddleMouseScrollClick: {fileID: -4813832520851000306, guid: 5e4c3601c6a155f43af19da3bdd35a64, type: 3}
-  CharacterEyeInput: {fileID: 0}
   basisLocalPlayer: {fileID: 0}
   Input: {fileID: 297858091515769489}
-  HasEvents: 0
-  IgnoreCrouchToggle: 0
   InputState:
     gripButton: 0
     menuButton: 0
@@ -1322,7 +1319,7 @@ MonoBehaviour:
       DefaultPlatform: 1
       ExcludePlatform: 0
       ValueToggle: 1
-      EditorVisable: 0
+      EditorVisable: 1
     SupportedRenderPipeline: 030000000400000000000000
     Round: 0
     RoundTo: 2
@@ -1341,7 +1338,13 @@ MonoBehaviour:
     ObjectInput: {fileID: 0}
     ApplyInput: {fileID: 0}
     ResetToDefault: {fileID: 0}
-    PlatFormDefaultState: []
+    PlatFormDefaultState:
+    - Platform: 2
+      GraphicsVendor: 3
+      SetString: true
+    - Platform: 7
+      GraphicsVendor: 3
+      SetString: true
     ExcludeFromThesePlatforms: []
     MasterQualityState: 0
     ParseController: 1
@@ -2513,7 +2516,7 @@ MonoBehaviour:
     Index: 29
     SelectableValueList: []
     Min: 0
-    Max: 0
+    Max: 15
   - Name: Snap Turn Angle
     DefaultValue: 
     SelectedValue: -1
@@ -2757,7 +2760,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fdb5e09f1283a764f81a90ea1c3112c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Selector: {fileID: 11400000, guid: 8393424ebf34934449c2d1309a700837, type: 2}
+  AvatarScriptSelector: {fileID: 11400000, guid: 8393424ebf34934449c2d1309a700837, type: 2}
+  SystemScriptSelector: {fileID: 11400000, guid: d6de2f5cd4ac5e246b01ce86d2078282, type: 2}
+  PropScriptSelector: {fileID: 11400000, guid: 85698603c757bf749b527a1278cd01ec, type: 2}
   DefaultScene:
     UnlockPassword: 
     BasisRemoteBundleEncrypted:

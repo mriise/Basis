@@ -128,18 +128,21 @@ namespace uLipSync
         {
             if (!skinnedMeshRenderer) return;
 
-            // Iterate through blendShapes once and set blend shape weights
-            for (int Index = 0; Index < blendShapes.Count; Index++)
+            if (skinnedMeshRenderer.sharedMesh.blendShapeCount != 0)
             {
-                BlendShapeInfo bs = blendShapes[Index];
-                if (bs.index < 0) continue;
+                // Iterate through blendShapes once and set blend shape weights
+                for (int Index = 0; Index < blendShapes.Count; Index++)
+                {
+                    BlendShapeInfo bs = blendShapes[Index];
+                    if (bs.index < 0) continue;
 
-                // Reset the blend shape weight to zero
-                skinnedMeshRenderer.SetBlendShapeWeight(bs.index, 0f);
+                    // Reset the blend shape weight to zero
+                    skinnedMeshRenderer.SetBlendShapeWeight(bs.index, 0f);
 
-                // Calculate and apply the new weight
-                float weight = bs.weight * bs.maxWeight * volume * maxBlendShapeValue;
-                skinnedMeshRenderer.SetBlendShapeWeight(bs.index, weight);
+                    // Calculate and apply the new weight
+                    float weight = bs.weight * bs.maxWeight * volume * maxBlendShapeValue;
+                    skinnedMeshRenderer.SetBlendShapeWeight(bs.index, weight);
+                }
             }
         }
 

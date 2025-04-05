@@ -287,7 +287,7 @@ namespace Basis.Scripts.Device_Management
         {
             ChecksRequired Required = new ChecksRequired();
             Required.UseContentRemoval = false;
-            (List<GameObject>, Addressable_Driver.AddressableGenericResource) data = await AddressableResourceProcess.LoadAsGameObjectsAsync(playerAddressableID, instantiationParameters, Required);
+            (List<GameObject>, Addressable_Driver.AddressableGenericResource) data = await AddressableResourceProcess.LoadAsGameObjectsAsync(playerAddressableID, instantiationParameters, Required, BundledContentHolder.Selector.System);
             List<GameObject> gameObjects = data.Item1;
 
             if (gameObjects.Count == 0)

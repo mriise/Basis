@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Assertions.Must;
 using UnityEngine.SceneManagement;
+using static BundledContentHolder;
 using static SerializableBasis;
 
 public static class BasisNetworkSpawnItem
@@ -161,7 +162,7 @@ public static class BasisNetworkSpawnItem
             }
         }
     }
-    public static async Task<GameObject> SpawnGameObject(LocalLoadResource localLoadResource)
+    public static async Task<GameObject> SpawnGameObject(LocalLoadResource localLoadResource, Selector Selector)
     {
         BasisDebug.Log($"Spawning GameObject with NetID: {localLoadResource.LoadedNetID}", BasisDebug.LogTag.Networking);
 
@@ -180,7 +181,7 @@ public static class BasisNetworkSpawnItem
             new Vector3(localLoadResource.PositionX, localLoadResource.PositionY, localLoadResource.PositionZ),
             new Quaternion(localLoadResource.QuaternionX, localLoadResource.QuaternionY, localLoadResource.QuaternionZ, localLoadResource.QuaternionW),
             new Vector3(localLoadResource.ScaleX, localLoadResource.ScaleY, localLoadResource.ScaleZ),
-            localLoadResource.ModifyScale, BasisNetworkManagement.Instance.transform);
+            localLoadResource.ModifyScale, Selector, BasisNetworkManagement.Instance.transform);
 
         if (reference.TryGetComponent<BasisContentBase>(out BasisContentBase BasisContentBase))
         {

@@ -53,7 +53,7 @@ namespace Basis.Scripts.Networking
                 BasisNetworkManagement.OnRemotePlayerJoined?.Invoke(BasisNetworkReceiver, remote);
 
                 BasisNetworkManagement.JoiningPlayers.Remove(ServerReadyMessage.playerIdMessage.playerID);
-                await remote.LoadAvatarFromInital(avatarID);
+                await remote.LoadAvatarFromInitial(avatarID);
 
                 return BasisNetworkReceiver;
             }

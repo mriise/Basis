@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4494292021840262793}
   - component: {fileID: 5725633349513894560}
   - component: {fileID: 1488654443174357740}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: OptimizedRenderer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -96,7 +96,8 @@ GameObject:
   m_Component:
   - component: {fileID: 6920831483515304550}
   - component: {fileID: 5095296861897830868}
-  m_Layer: 0
+  - component: {fileID: 6483676036050795538}
+  m_Layer: 5
   m_Name: NamePlate
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -135,7 +136,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b7151ccf11e9fe47b59aeba34c68e4c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dirToCamera: {x: 0, y: 0, z: 0}
+  Inputs:
+    desktopCenterEye:
+      Source: {fileID: 0}
+      State: 0
+    leftHand:
+      Source: {fileID: 0}
+      State: 0
+    rightHand:
+      Source: {fileID: 0}
+      State: 0
+    extras: []
+  disableInteract: 0
+  InteractRange: 5
+  Equippable: 0
+  StrictPosition: {x: 0, y: 0, z: 0}
+  StrictRotation: {x: 0, y: 0, z: 0, w: 0}
+  IsPuppeted: 0
   HipTarget:
     LerpAmountNormal: 0
     LerpAmountFastMovement: 0
@@ -340,21 +357,34 @@ MonoBehaviour:
   Loadingbar: {fileID: 8893221546737895467}
   Filter: {fileID: 5725633349513894560}
   Loadingtext: {fileID: 2611666320113233794}
-  YHeightMultiplier: 1.25
   BasisRemotePlayer: {fileID: 0}
   namePlateImage: {fileID: 5746518068726380582}
-  NormalColor: {r: 0.25490198, g: 0.25490198, b: 0.25490198, a: 0.4509804}
-  IsTalkingColor: {r: 0.35457456, g: 0.7219653, b: 0.9056604, a: 0.7490196}
-  OutOfRangeColor: {r: 0.10622106, g: 0.23037562, b: 0.2924528, a: 0.7490196}
-  transitionDuration: 0.3
-  returnDelay: 0.4
-  cachedDirection: {x: 0, y: 0, z: 0}
-  cachedRotation: {x: 0, y: 0, z: 0, w: 0}
   HasRendererCheckWiredUp: 0
   IsVisible: 1
   HasProgressBarVisible: 0
   bakedMesh: {fileID: 0}
   CurrentColor: {r: 0, g: 0, b: 0, a: 0}
+--- !u!65 &6483676036050795538
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3179804321282538486}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 50, y: 9, z: 0.2}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &3714582096794801474
 GameObject:
   m_ObjectHideFlags: 0
@@ -366,7 +396,7 @@ GameObject:
   - component: {fileID: 3884037394948311099}
   - component: {fileID: 8189282691617666699}
   - component: {fileID: 2611666320113233794}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Loading Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -541,7 +571,7 @@ GameObject:
   m_Component:
   - component: {fileID: 333444482512362832}
   - component: {fileID: 8893221546737895467}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Loadingbar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -628,7 +658,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1271464633897851129}
   - component: {fileID: 5746518068726380582}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: NamePlate
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -716,7 +746,7 @@ GameObject:
   - component: {fileID: 8532320099643455332}
   - component: {fileID: 2052422378934720081}
   - component: {fileID: 4085243222378181685}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: TempText
   m_TagString: Untagged
   m_Icon: {fileID: 0}

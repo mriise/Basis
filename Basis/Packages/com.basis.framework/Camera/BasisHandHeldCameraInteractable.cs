@@ -1,0 +1,253 @@
+using Basis.Scripts.Device_Management.Devices.Desktop;
+using Basis.Scripts.Device_Management.Devices;
+using Basis.Scripts.Drivers;
+using Basis.Scripts.TransformBinders.BoneControl;
+using UnityEngine;
+using static InteractableObject;
+using UnityEngine.Windows;
+using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.AddressableAssets;
+
+public abstract class BasisHandHeldCameraInteractable : InteractableObject
+{
+    [Tooltip("Generate a mesh on start to approximate the referenced collider")]
+    public bool GenerateColliderMesh = true;
+
+    [Header("References")]
+    public Collider ColliderRef;
+
+    [SerializeReference]
+    private BasisParentConstraint InputConstraint;
+
+    // internal values
+    private GameObject HighlightClone;
+    private AsyncOperationHandle<Material> asyncOperationHighlightMat;
+    private Material ColliderHighlightMat;
+
+    // constants
+    const string k_LoadMaterialAddress = "Interactable/InteractHighlightMat.mat";
+    const string k_CloneName = "HighlightClone";
+
+    private static string headPauseRequestName;
+    public void Start()
+    {
+        if (ColliderRef == null)
+        {
+            TryGetComponent(out ColliderRef);
+        }
+        InputConstraint = new BasisParentConstraint();
+        InputConstraint.sources = new BasisParentConstraint.SourceData[] { new() { weight = 1f } };
+        InputConstraint.Enabled = false;
+
+        headPauseRequestName = $"{nameof(PickupInteractable)}: {gameObject.GetInstanceID()}";
+
+        AsyncOperationHandle<Material> op = Addressables.LoadAssetAsync<Material>(k_LoadMaterialAddress);
+        ColliderHighlightMat = op.WaitForCompletion();
+        asyncOperationHighlightMat = op;
+
+        if (GenerateColliderMesh)
+        {
+            HighlightClone = ColliderClone.CloneColliderMesh(ColliderRef, gameObject.transform, k_CloneName);
+
+            if (HighlightClone != null)
+            {
+                if (HighlightClone.TryGetComponent(out MeshRenderer meshRenderer))
+                {
+                    meshRenderer.material = ColliderHighlightMat;
+                }
+                else
+                {
+                    BasisDebug.LogWarning("Pickup Interactable could not find MeshRenderer component on mesh clone. Highlights will be broken");
+                }
+            }
+        }
+    }
+    public void HighlightObject(bool highlight)
+    {
+        if (ColliderRef && HighlightClone)
+        {
+            HighlightClone.SetActive(highlight);
+        }
+    }
+
+    public override bool CanHover(BasisInput input)
+    {
+        return !DisableInteract &&
+            !IsPuppeted &&
+            Inputs.IsInputAdded(input) &&
+            input.TryGetRole(out BasisBoneTrackedRole role) &&
+            Inputs.TryGetByRole(role, out BasisInputWrapper found) &&
+            found.GetState() == InteractInputState.Ignored &&
+            IsWithinRange(input.transform.position);
+    }
+    public override bool CanInteract(BasisInput input)
+    {
+        return !DisableInteract &&
+            !IsPuppeted &&
+            Inputs.IsInputAdded(input) &&
+            input.TryGetRole(out BasisBoneTrackedRole role) &&
+            Inputs.TryGetByRole(role, out BasisInputWrapper found) &&
+            found.GetState() == InteractInputState.Hovering &&
+            IsWithinRange(input.transform.position);
+    }
+
+    public override void OnHoverStart(BasisInput input)
+    {
+        var found = Inputs.FindExcludeExtras(input);
+        if (found != null && found.Value.GetState() != InteractInputState.Ignored)
+            BasisDebug.LogWarning(nameof(PickupInteractable) + " input state is not ignored OnHoverStart, this shouldn't happen");
+        var added = Inputs.ChangeStateByRole(found.Value.Role, InteractInputState.Hovering);
+        if (!added)
+            BasisDebug.LogWarning(nameof(PickupInteractable) + " did not find role for input on hover");
+
+        OnHoverStartEvent?.Invoke(input);
+        HighlightObject(true);
+    }
+
+    public override void OnHoverEnd(BasisInput input, bool willInteract)
+    {
+        if (input.TryGetRole(out BasisBoneTrackedRole role) && Inputs.TryGetByRole(role, out _))
+        {
+            if (!willInteract)
+            {
+                if (!Inputs.ChangeStateByRole(role, InteractInputState.Ignored))
+                {
+                    BasisDebug.LogWarning(nameof(PickupInteractable) + " found input by role but could not remove by it, this is a bug.");
+                }
+            }
+            OnHoverEndEvent?.Invoke(input, willInteract);
+            HighlightObject(false);
+        }
+    }
+    public override void OnInteractStart(BasisInput input)
+    {
+        if (input.TryGetRole(out BasisBoneTrackedRole role) && Inputs.TryGetByRole(role, out BasisInputWrapper wrapper))
+        {
+            if (wrapper.GetState() == InteractInputState.Hovering)
+            {
+                Inputs.ChangeStateByRole(wrapper.Role, InteractInputState.Interacting);
+                RequiresUpdateLoop = true;
+
+                transform.GetPositionAndRotation(out Vector3 restPos, out Quaternion restRot);
+                InputConstraint.SetRestPositionAndRotation(restPos, restRot);
+                var offsetPos = Quaternion.Inverse(input.transform.rotation) * (transform.position - input.transform.position);
+                var offsetRot = Quaternion.Inverse(input.transform.rotation) * transform.rotation;
+                InputConstraint.SetOffsetPositionAndRotation(0, offsetPos, offsetRot);
+                InputConstraint.Enabled = true;
+
+                OnInteractStartEvent?.Invoke(input);
+            }
+            else
+            {
+                Debug.LogWarning("Input source interacted with ReparentInteractable without highlighting first.");
+            }
+        }
+        else
+        {
+            BasisDebug.LogWarning(nameof(PickupInteractable) + " did not find role for input on Interact start");
+        }
+    }
+
+    public override void OnInteractEnd(BasisInput input)
+    {
+        if (input.TryGetRole(out BasisBoneTrackedRole role) && Inputs.TryGetByRole(role, out BasisInputWrapper wrapper))
+        {
+            if (wrapper.GetState() == InteractInputState.Interacting)
+            {
+                Inputs.ChangeStateByRole(wrapper.Role, InteractInputState.Ignored);
+                RequiresUpdateLoop = false;
+                // cleanup Desktop Manipulation since InputUpdate isnt run again till next pickup
+                if (pauseHead)
+                {
+                    BasisAvatarEyeInput.Instance.UnPauseHead(headPauseRequestName);
+                    pauseHead = false;
+                }
+
+                InputConstraint.Enabled = false;
+                OnInteractEndEvent?.Invoke(input);
+            }
+        }
+    }
+
+    public override void InputUpdate()
+    {
+        var interactingInput = GetActiveInteracting();
+        if (interactingInput != null)
+        {
+            Vector3 inPos = interactingInput.Value.BoneControl.OutgoingWorldData.position;
+            Quaternion inRot = interactingInput.Value.BoneControl.OutgoingWorldData.rotation;
+            if (Basis.Scripts.Device_Management.BasisDeviceManagement.IsUserInDesktop())
+            {
+                BasisLocalCameraDriver.Instance.Camera.transform.GetPositionAndRotation(out inPos, out inRot);
+
+                PollDesktopManipulation(Inputs.desktopCenterEye.Source);
+            }
+
+            InputConstraint.UpdateSourcePositionAndRotation(0, inPos, inRot);
+            if (InputConstraint.Evaluate(out Vector3 pos, out Quaternion rot))
+            {
+                this.transform.SetPositionAndRotation(pos, rot);
+            }
+        }
+    }
+
+    public override bool IsInteractingWith(BasisInput input)
+    {
+        var found = Inputs.FindExcludeExtras(input);
+        return found.HasValue && found.Value.GetState() == InteractInputState.Interacting;
+    }
+
+    public override bool IsHoveredBy(BasisInput input)
+    {
+        var found = Inputs.FindExcludeExtras(input);
+        return found.HasValue && found.Value.GetState() == InteractInputState.Hovering;
+    }
+
+    // this is cached, use it
+    public override Collider GetCollider()
+    {
+        return ColliderRef;
+    }
+
+    private bool pauseHead = false;
+    private void PollDesktopManipulation(BasisInput DesktopEye)
+    {
+        if (pauseHead)
+        {
+            pauseHead = false;
+            if (!BasisAvatarEyeInput.Instance.UnPauseHead(headPauseRequestName))
+            {
+                BasisDebug.LogWarning(nameof(PickupInteractable) + " was unable to un-pause head movement, this is a bug!");
+            }
+        }
+    }
+    private BasisInputWrapper? GetActiveInteracting()
+    {
+
+        if (Inputs.desktopCenterEye.GetState() == InteractInputState.Interacting)
+            return Inputs.desktopCenterEye;
+        else if (Inputs.leftHand.GetState() == InteractInputState.Interacting)
+            return Inputs.leftHand;
+        else if (Inputs.rightHand.GetState() == InteractInputState.Interacting)
+            return Inputs.rightHand;
+        else
+            return null;
+    }
+
+    public override void StartRemoteControl()
+    {
+    }
+    public override void StopRemoteControl()
+    {
+    }
+
+    public override void OnDestroy()
+    {
+        Destroy(HighlightClone);
+        if (asyncOperationHighlightMat.IsValid())
+        {
+            asyncOperationHighlightMat.Release();
+        }
+        base.OnDestroy();
+    }
+}
