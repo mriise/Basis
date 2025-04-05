@@ -18,7 +18,6 @@ namespace Basis.Scripts.BasisSdk.Players
         public BasisBoneControl MouthControl;
         public bool HasEvents = false;
         public bool LockAvatarFromChanging;
-        public bool IsNotFallBack = false;
         public bool OutOfRangeFromLocal = false;
         public ClientAvatarChangeMessage CACM;
         public async Task RemoteInitialize(ClientAvatarChangeMessage cACM, PlayerMetaDataMessage PlayerMetaDataMessage)
@@ -38,20 +37,23 @@ namespace Basis.Scripts.BasisSdk.Players
             AudioSourceTransform.parent = MouthControl.BoneTransform;
             await BasisRemoteNamePlate.LoadRemoteNamePlate(this);
         }
-        public async Task LoadAvatarFromInital(ClientAvatarChangeMessage CACM)
+        public async Task LoadAvatarFromInitial(ClientAvatarChangeMessage CACM)
         {
             if (BasisAvatar == null)
             {
                 this.CACM = CACM;
-              //  if (IsNotFallBack)
-               // {
-                    BasisLoadableBundle BasisLoadedBundle = BasisBundleConversionNetwork.ConvertNetworkBytesToBasisLoadableBundle(CACM.byteArray);
+                BasisLoadableBundle BasisLoadedBundle = BasisBundleConversionNetwork.ConvertNetworkBytesToBasisLoadableBundle(CACM.byteArray);
+                AlwaysRequestedAvatar = BasisLoadedBundle;
+                BasisPlayerSettingsData BasisPlayerSettingsData = await BasisPlayerSettingsManager.RequestPlayerSettings(UUID);
+                if (BasisPlayerSettingsData.AvatarVisible)
+                {
                     await BasisAvatarFactory.LoadAvatarRemote(this, CACM.loadMode, BasisLoadedBundle);
-               // }
-              //  else
-              //  {
-               //     BasisAvatarFactory.LoadLoadingAvatar(this, BasisAvatarFactory.LoadingAvatar.BasisLocalEncryptedBundle.LocalBundleFile);
-               // }
+                }
+                else
+                {
+                    BasisAvatarFactory.DeleteLastAvatar(this, false);
+                    BasisAvatarFactory.LoadLoadingAvatar(this, BasisAvatarFactory.LoadingAvatar.BasisLocalEncryptedBundle.LocalConnectorPath);
+                }
             }
         }
         public void OnDestroy()
@@ -66,10 +68,15 @@ namespace Basis.Scripts.BasisSdk.Players
             }
 
         }
+        public BasisLoadableBundle AlwaysRequestedAvatar;
+        public byte AlwaysRequestedMode;
         public async void CreateAvatar(byte Mode, BasisLoadableBundle BasisLoadableBundle)
         {
-          //  if (IsNotFallBack)
-          //  {
+            AlwaysRequestedMode = Mode;
+            AlwaysRequestedAvatar = BasisLoadableBundle;
+            BasisPlayerSettingsData BasisPlayerSettingsData = await BasisPlayerSettingsManager.RequestPlayerSettings(UUID);
+            if (BasisPlayerSettingsData.AvatarVisible)
+            {
                 if (BasisLoadableBundle.BasisLocalEncryptedBundle.LocalConnectorPath == BasisAvatarFactory.LoadingAvatar.BasisLocalEncryptedBundle.LocalConnectorPath)
                 {
                     BasisDebug.Log("Avatar Load string was null or empty using fallback!");
@@ -83,11 +90,12 @@ namespace Basis.Scripts.BasisSdk.Players
                         await BasisAvatarFactory.LoadAvatarRemote(this, Mode, BasisLoadableBundle);
                     }
                 }
-          //  }
-          //  else
-           // {
-           //     BasisAvatarFactory.LoadLoadingAvatar(this, BasisAvatarFactory.LoadingAvatar.BasisLocalEncryptedBundle.LocalBundleFile);
-           // }
+            }
+            else
+            {
+                BasisAvatarFactory.DeleteLastAvatar(this,false);
+                BasisAvatarFactory.LoadLoadingAvatar(this, BasisAvatarFactory.LoadingAvatar.BasisLocalEncryptedBundle.LocalConnectorPath);
+            }
         }
         public void RemoteCalibration()
         {

@@ -279,7 +279,7 @@ namespace Basis.Scripts.Drivers
         {
             if (LocalPlayer.AvatarDriver && LocalPlayer.AvatarDriver.References != null && LocalPlayer.AvatarDriver.References.head != null)
             {
-                LocalPlayer.AvatarDriver.References.head.localScale = LocalPlayer.AvatarDriver.HeadScale;
+                LocalPlayer.AvatarDriver.References.head.localScale = BasisLocalAvatarDriver.HeadScale;
             }
             if (HasEvents)
             {
@@ -322,7 +322,7 @@ namespace Basis.Scripts.Drivers
         {
             if (IsNormalHead == false)
             {
-                LocalPlayer.AvatarDriver.References.head.localScale = LocalPlayer.AvatarDriver.HeadScale;
+                LocalPlayer.AvatarDriver.References.head.localScale = BasisLocalAvatarDriver.HeadScale;
                 IsNormalHead = true;
             }
         }
@@ -330,7 +330,7 @@ namespace Basis.Scripts.Drivers
         {
             if (IsNormalHead)
             {
-                LocalPlayer.AvatarDriver.References.head.localScale = LocalPlayer.AvatarDriver.HeadScaledDown;
+                LocalPlayer.AvatarDriver.References.head.localScale = BasisLocalAvatarDriver.HeadScaledDown;
                 IsNormalHead = false;
             }
         }

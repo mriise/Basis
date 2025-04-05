@@ -1,6 +1,5 @@
+using Basis.Scripts.Device_Management;
 using Basis.Scripts.Drivers;
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Basis.Scripts.UI.NamePlate
@@ -11,10 +10,33 @@ namespace Basis.Scripts.UI.NamePlate
         private BasisNamePlate[] basisRemotePlayers = new BasisNamePlate[0];
         private int count = 0; // Track the number of active elements
         public static RemoteNamePlateDriver Instance;
+        public Color NormalColor;
+        public Color IsTalkingColor;
+        public Color OutOfRangeColor;
+        [SerializeField]
+        public static float transitionDuration = 0.3f;
+        [SerializeField]
+        public static float returnDelay = 0.4f;
+        public static float YHeightMultiplier = 1.25f;
 
+        public static Color StaticNormalColor;
+        public static Color StaticIsTalkingColor;
+        public static Color StaticOutOfRangeColor;
+        public static Vector3 dirToCamera;
+        public static Vector3 cachedDirection;
+        public static Quaternion cachedRotation;
         public void Awake()
         {
             Instance = this;
+            if (BasisDeviceManagement.IsMobile())
+            {
+                NormalColor.a = 1;
+                IsTalkingColor.a = 1;
+                OutOfRangeColor.a = 1;
+            }
+            StaticNormalColor = NormalColor;
+            StaticIsTalkingColor = IsTalkingColor;
+            StaticOutOfRangeColor = OutOfRangeColor;
         }
 
         /// <summary>
@@ -102,12 +124,11 @@ namespace Basis.Scripts.UI.NamePlate
                 BasisNamePlate NamePlate = basisRemotePlayers[Index];
                 if (NamePlate.IsVisible)
                 {
-                    NamePlate.cachedDirection = NamePlate.HipTarget.OutgoingWorldData.position;
-                    NamePlate.cachedDirection.y += NamePlate.MouthTarget.TposeLocal.position.y / NamePlate.YHeightMultiplier;
-                    NamePlate.dirToCamera = Position - NamePlate.cachedDirection;
-                    //  Vector3 Euler = NamePlate.transform.rotation.eulerAngles;
-                    NamePlate.cachedRotation = Quaternion.Euler(x, Mathf.Atan2(NamePlate.dirToCamera.x, NamePlate.dirToCamera.z) * Mathf.Rad2Deg, z);
-                    NamePlate.transform.SetPositionAndRotation(NamePlate.cachedDirection, NamePlate.cachedRotation);
+                    cachedDirection = NamePlate.HipTarget.OutgoingWorldData.position;
+                    cachedDirection.y += NamePlate.MouthTarget.TposeLocal.position.y / YHeightMultiplier;
+                    dirToCamera = Position - cachedDirection;
+                    cachedRotation = Quaternion.Euler(x, Mathf.Atan2(dirToCamera.x, dirToCamera.z) * Mathf.Rad2Deg, z);
+                    NamePlate.transform.SetPositionAndRotation(cachedDirection, cachedRotation);
                 }
             }
         }

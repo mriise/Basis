@@ -16,7 +16,7 @@ namespace Basis.Scripts.UI.NamePlate
                 UseContentRemoval = false,
                 DisableAnimatorEvents = false
             };
-            var data = await AddressableResourceProcess.LoadAsGameObjectsAsync(RemoteNamePlate, new UnityEngine.ResourceManagement.ResourceProviders.InstantiationParameters(), Required);
+            var data = await AddressableResourceProcess.LoadAsGameObjectsAsync(RemoteNamePlate, new UnityEngine.ResourceManagement.ResourceProviders.InstantiationParameters(), Required, BundledContentHolder.Selector.System);
             List<GameObject> Gameobjects = data.Item1;
             if (Gameobjects.Count != 0)
             {

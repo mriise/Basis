@@ -7,6 +7,8 @@ using Basis.Scripts.Device_Management.Devices;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using UnityEngine;
+using UnityEngine.ResourceManagement.ResourceProviders;
 using UnityEngine.UI;
 
 namespace Basis.Scripts.UI.UI_Panels
@@ -17,6 +19,7 @@ namespace Basis.Scripts.UI.UI_Panels
         public Button AvatarButton;
         public Button FullBody;
         public Button Respawn;
+        public Button Camera;
         public static string MainMenuAddressableID = "MainMenu";
         public static BasisHamburgerMenu Instance;
         public bool OverrideForceCalibration;
@@ -27,13 +30,14 @@ namespace Basis.Scripts.UI.UI_Panels
             AvatarButton.onClick.AddListener(AvatarButtonPanel);
             FullBody.onClick.AddListener(PutIntoCalibrationMode);
             Respawn.onClick.AddListener(RespawnLocalPlayer);
+            Camera.onClick.AddListener(() => OpenCamera(this));
             BasisCursorManagement.UnlockCursor(nameof(BasisHamburgerMenu));
             BasisUINeedsVisibleTrackers.Instance.Add(this);
         }
         private Dictionary<BasisInput, Action> TriggerDelegates = new Dictionary<BasisInput, Action>();
         public void RespawnLocalPlayer()
         {
-            if(BasisLocalPlayer.Instance != null && BasisSceneFactory.Instance != null)
+            if (BasisLocalPlayer.Instance != null && BasisSceneFactory.Instance != null)
             {
                 BasisSceneFactory.Instance.SpawnPlayer(BasisLocalPlayer.Instance);
             }
@@ -92,6 +96,13 @@ namespace Basis.Scripts.UI.UI_Panels
             BasisUIManagement.Instance.CloseAllMenus();
             AddressableGenericResource resource = new AddressableGenericResource(MainMenuAddressableID, AddressableExpectedResult.SingleItem);
             OpenMenuNow(resource);
+        }
+        public static async void OpenCamera(BasisHamburgerMenu BasisHamburgerMenu)
+        {
+            BasisHamburgerMenu.transform.GetPositionAndRotation(out Vector3 Position, out Quaternion Rotation);
+            BasisUIManagement.Instance.CloseAllMenus();
+            InstantiationParameters Pars = new InstantiationParameters(Position, Rotation, null);
+            await BasisHandHeldCameraFactory.CreateCamera(Pars);
         }
 
         public override void DestroyEvent()

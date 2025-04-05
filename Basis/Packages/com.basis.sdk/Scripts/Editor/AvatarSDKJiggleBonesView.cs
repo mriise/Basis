@@ -40,16 +40,7 @@ public class AvatarSDKJiggleBonesView
             bindItem = BindListItem,
             itemsSource = new List<BasisJiggleStrain>(),
         };
-
-        Foldout foldout = new Foldout {
-            text = "Jiggle Strains",
-            value = false, // Set the initial value to expanded
-            style = {
-                marginLeft = 10,
-            }
-        };
-        foldout.Add(JiggleStrainsList);
-        AddButtonhere.Add(foldout);
+        AddButtonhere.Add(JiggleStrainsList);
     }
     private Foldout MakeListItem()
     {
@@ -62,7 +53,7 @@ public class AvatarSDKJiggleBonesView
 
         // Add a foldout for each JiggleStrain
         Foldout foldout = new Foldout {
-            text = "Jiggle Strain",
+            text = "Jiggle Bone",
             value = false, // Set the initial value to expanded
             style = {
                 marginLeft = 10,

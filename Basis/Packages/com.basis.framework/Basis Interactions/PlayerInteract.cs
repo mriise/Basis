@@ -47,9 +47,6 @@ public class PlayerInteract : MonoBehaviour
     private bool interactLinesActive = false;
 
     public static string LoadMaterialAddress = "Interactable/InteractLineMat.mat";
-
-    const string k_DefaultLayer = "Default";
-    const string k_InteractableLayer = "Interactable";
     const int k_UpdatePriority = 201;
     public LayerMask InteractableLayerMask;
     private void Start()
@@ -58,9 +55,6 @@ public class PlayerInteract : MonoBehaviour
         var Devices = BasisDeviceManagement.Instance.AllInputDevices;
         Devices.OnListAdded += OnInputChanged;
         Devices.OnListItemRemoved += OnInputRemoved;
-
-        InteractableLayerMask = (1 << LayerMask.NameToLayer(k_InteractableLayer)) | (1 << LayerMask.NameToLayer(k_DefaultLayer));
-
         AsyncOperationHandle<Material> op = Addressables.LoadAssetAsync<Material>(LoadMaterialAddress);
         LineMaterial = op.WaitForCompletion();
         asyncOperationLineMaterial = op;

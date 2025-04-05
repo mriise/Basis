@@ -17,8 +17,8 @@ namespace Basis.Scripts.Drivers
 {
     public class BasisLocalAvatarDriver : BasisAvatarDriver
     {
-        public Vector3 HeadScale;
-        public Vector3 HeadScaledDown;
+        public static Vector3 HeadScale = Vector3.one;
+        public static Vector3 HeadScaledDown = new Vector3(0.0001f, 0.0001f, 0.0001f);
         public BasisLocalBoneDriver LocalDriver;
         public BasisLocalAnimatorDriver AnimatorDriver;
         public BasisLocalPlayer LocalPlayer;
@@ -107,7 +107,6 @@ namespace Basis.Scripts.Drivers
             BasisLocalPlayer.Instance.LocalBoneDriver.RemoveAllListeners();
             BasisLocalEyeFollowDriver = BasisHelpers.GetOrAddComponent<BasisLocalEyeFollowBase>(Player.BasisAvatar.gameObject);
             BasisLocalEyeFollowDriver.Initalize(this,Player);
-            HeadScaledDown = Vector3.zero;
             SetMatrixOverride();
             updateWhenOffscreen(true);
             if (References.Hashead)

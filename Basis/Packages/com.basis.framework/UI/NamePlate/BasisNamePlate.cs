@@ -1,5 +1,6 @@
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Device_Management;
+using Basis.Scripts.Device_Management.Devices;
 using Basis.Scripts.Networking;
 using Basis.Scripts.TransformBinders.BoneControl;
 using System.Collections;
@@ -7,29 +8,18 @@ using TMPro;
 using UnityEngine;
 namespace Basis.Scripts.UI.NamePlate
 {
-    public abstract class BasisNamePlate : MonoBehaviour
+    public abstract class BasisNamePlate : InteractableObject
     {
-        public Vector3 dirToCamera;
         public BasisBoneControl HipTarget;
         public BasisBoneControl MouthTarget;
         public TextMeshPro Text;
         public SpriteRenderer Loadingbar;
         public MeshFilter Filter;
         public TextMeshPro Loadingtext;
-        public float YHeightMultiplier = 1.25f;
         public BasisRemotePlayer BasisRemotePlayer;
         public SpriteRenderer namePlateImage;
-        public Color NormalColor;
-        public Color IsTalkingColor;
-        public Color OutOfRangeColor;
-        [SerializeField]
-        public float transitionDuration = 0.3f;
-        [SerializeField]
-        public float returnDelay = 0.4f;
         public Coroutine colorTransitionCoroutine;
         public Coroutine returnToNormalCoroutine;
-        public Vector3 cachedDirection;
-        public Quaternion cachedRotation;
         public bool HasRendererCheckWiredUp = false;
         public bool IsVisible = true;
         public bool HasProgressBarVisible = false;
@@ -44,7 +34,13 @@ namespace Basis.Scripts.UI.NamePlate
         /// <param name="basisRemotePlayer"></param>
         public void Initalize(BasisBoneControl hipTarget, BasisRemotePlayer basisRemotePlayer)
         {
-            cachedReturnDelay = new WaitForSeconds(returnDelay);
+            if (BasisDeviceManagement.IsMobile())
+            {
+                Color Color = namePlateImage.color;
+                Color.a = 1;
+                namePlateImage.color = Color;
+            }
+            cachedReturnDelay = new WaitForSeconds(RemoteNamePlateDriver.returnDelay);
             cachedEndOfFrame = new WaitForEndOfFrame();
             BasisRemotePlayer = basisRemotePlayer;
             HipTarget = hipTarget;
@@ -60,12 +56,6 @@ namespace Basis.Scripts.UI.NamePlate
             // Text.enableAutoSizing = false;
             GenerateText();
             GameObject.Destroy(Text.gameObject);
-            if (BasisDeviceManagement.IsMobile())
-            {
-                NormalColor.a = 1;
-                IsTalkingColor.a = 1;
-                OutOfRangeColor.a = 1;
-            }
         }
         public void GenerateText()
         {
@@ -120,11 +110,11 @@ namespace Basis.Scripts.UI.NamePlate
                 Color targetColor;
                 if (BasisRemotePlayer.OutOfRangeFromLocal)
                 {
-                    targetColor = hasRealAudio ? OutOfRangeColor : NormalColor;
+                    targetColor = hasRealAudio ? RemoteNamePlateDriver.StaticOutOfRangeColor : RemoteNamePlateDriver.StaticNormalColor;
                 }
                 else
                 {
-                    targetColor = hasRealAudio ? IsTalkingColor : NormalColor;
+                    targetColor = hasRealAudio ? RemoteNamePlateDriver.StaticIsTalkingColor : RemoteNamePlateDriver.StaticNormalColor;
                 }
                 BasisNetworkManagement.MainThreadContext.Post(_ =>
                 {
@@ -150,10 +140,10 @@ namespace Basis.Scripts.UI.NamePlate
             CurrentColor = namePlateImage.color;
             float elapsedTime = 0f;
 
-            while (elapsedTime < transitionDuration)
+            while (elapsedTime < RemoteNamePlateDriver.transitionDuration)
             {
                 elapsedTime += Time.deltaTime;
-                float lerpProgress = Mathf.Clamp01(elapsedTime / transitionDuration);
+                float lerpProgress = Mathf.Clamp01(elapsedTime / RemoteNamePlateDriver.transitionDuration);
                 namePlateImage.color = Color.Lerp(CurrentColor, targetColor, lerpProgress);
                 yield return cachedEndOfFrame;
             }
@@ -162,7 +152,7 @@ namespace Basis.Scripts.UI.NamePlate
             CurrentColor = targetColor;
             colorTransitionCoroutine = null;
 
-            if (targetColor == IsTalkingColor)
+            if (targetColor == RemoteNamePlateDriver.StaticIsTalkingColor)
             {
                 if (returnToNormalCoroutine != null)
                 {
@@ -175,15 +165,16 @@ namespace Basis.Scripts.UI.NamePlate
         private IEnumerator DelayedReturnToNormal()
         {
             yield return cachedReturnDelay;
-            yield return StartCoroutine(TransitionColor(NormalColor));
+            yield return StartCoroutine(TransitionColor(RemoteNamePlateDriver.StaticNormalColor));
             returnToNormalCoroutine = null;
         }
-        public void OnDestroy()
+        public new void OnDestroy()
         {
             BasisRemotePlayer.ProgressReportAvatarLoad.OnProgressReport -= ProgressReport;
             BasisRemotePlayer.AudioReceived -= OnAudioReceived;
             DeInitalizeCallToRender();
             RemoteNamePlateDriver.Instance.RemoveNamePlate(this);
+            base.OnDestroy();
         }
         public void DeInitalizeCallToRender()
         {
@@ -220,7 +211,7 @@ namespace Basis.Scripts.UI.NamePlate
                   }
               });
         }
-        public void UpdateProgressBar(string UniqueID,float progress)
+        public void UpdateProgressBar(string UniqueID, float progress)
         {
             Vector2 scale = Loadingbar.size;
             float NewX = progress / 2;
@@ -229,6 +220,115 @@ namespace Basis.Scripts.UI.NamePlate
                 scale.x = NewX;
                 Loadingbar.size = scale;
             }
+        }
+        public override bool CanHover(BasisInput input)
+        {
+            return !DisableInteract &&
+                !IsPuppeted &&
+                Inputs.IsInputAdded(input) &&
+                input.TryGetRole(out BasisBoneTrackedRole role) &&
+                Inputs.TryGetByRole(role, out BasisInputWrapper found) &&
+                found.GetState() == InteractInputState.Ignored &&
+                IsWithinRange(input.transform.position);
+        }
+        public override bool CanInteract(BasisInput input)
+        {
+            return !DisableInteract &&
+                !IsPuppeted &&
+                Inputs.IsInputAdded(input) &&
+                input.TryGetRole(out BasisBoneTrackedRole role) &&
+                Inputs.TryGetByRole(role, out BasisInputWrapper found) &&
+                found.GetState() == InteractInputState.Hovering &&
+                IsWithinRange(input.transform.position);
+        }
+
+        public override void OnHoverStart(BasisInput input)
+        {
+            var found = Inputs.FindExcludeExtras(input);
+            if (found != null && found.Value.GetState() != InteractInputState.Ignored)
+                BasisDebug.LogWarning(nameof(PickupInteractable) + " input state is not ignored OnHoverStart, this shouldn't happen");
+            var added = Inputs.ChangeStateByRole(found.Value.Role, InteractInputState.Hovering);
+            if (!added)
+                BasisDebug.LogWarning(nameof(PickupInteractable) + " did not find role for input on hover");
+
+            OnHoverStartEvent?.Invoke(input);
+            HighlightObject(true);
+        }
+
+        public override void OnHoverEnd(BasisInput input, bool willInteract)
+        {
+            if (input.TryGetRole(out BasisBoneTrackedRole role) && Inputs.TryGetByRole(role, out _))
+            {
+                if (!willInteract)
+                {
+                    if (!Inputs.ChangeStateByRole(role, InteractInputState.Ignored))
+                    {
+                        BasisDebug.LogWarning(nameof(PickupInteractable) + " found input by role but could not remove by it, this is a bug.");
+                    }
+                }
+                OnHoverEndEvent?.Invoke(input, willInteract);
+                HighlightObject(false);
+            }
+        }
+        public override void OnInteractStart(BasisInput input)
+        {
+            if (input.TryGetRole(out BasisBoneTrackedRole role) && Inputs.TryGetByRole(role, out BasisInputWrapper wrapper))
+            {
+                // same input that was highlighting previously
+                if (wrapper.GetState() == InteractInputState.Hovering)
+                {
+                    WasPressed();
+                    OnInteractStartEvent?.Invoke(input);
+                }
+                else
+                {
+                    Debug.LogWarning("Input source interacted with ReparentInteractable without highlighting first.");
+                }
+            }
+            else
+            {
+                BasisDebug.LogWarning(nameof(PickupInteractable) + " did not find role for input on Interact start");
+            }
+        }
+
+        public override void OnInteractEnd(BasisInput input)
+        {
+            if (input.TryGetRole(out BasisBoneTrackedRole role) && Inputs.TryGetByRole(role, out BasisInputWrapper wrapper))
+            {
+                if (wrapper.GetState() == InteractInputState.Interacting)
+                {
+                    Inputs.ChangeStateByRole(wrapper.Role, InteractInputState.Ignored);
+
+                    WasPressed();
+                    OnInteractEndEvent?.Invoke(input);
+                }
+            }
+        }
+        public void HighlightObject(bool IsHighlighted)
+        {
+
+        }
+        public void WasPressed()
+        {
+            if (BasisRemotePlayer != null)
+            {
+                BasisIndividualPlayerSettings.OpenPlayerSettings(BasisRemotePlayer);
+            }
+        }
+        public override bool IsInteractingWith(BasisInput input)
+        {
+            var found = Inputs.FindExcludeExtras(input);
+            return found.HasValue && found.Value.GetState() == InteractInputState.Interacting;
+        }
+
+        public override bool IsHoveredBy(BasisInput input)
+        {
+            var found = Inputs.FindExcludeExtras(input);
+            return found.HasValue && found.Value.GetState() == InteractInputState.Hovering;
+        }
+
+        public override void InputUpdate()
+        {
         }
     }
 }

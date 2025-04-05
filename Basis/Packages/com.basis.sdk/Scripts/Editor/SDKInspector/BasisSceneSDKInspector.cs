@@ -37,7 +37,7 @@ public class BasisSceneSDKInspector : Editor
             rootElement.Add(uiElementsRoot);
 
             // Multi-select dropdown (Foldout with Toggles)
-            Foldout buildTargetFoldout = new Foldout { text = "Select Build Targets", value = true }; // Expanded by default
+            Foldout buildTargetFoldout = new Foldout { text = "Select Build Targets", value = false }; // Expanded by default
             uiElementsRoot.Add(buildTargetFoldout);
             if (assetBundleObject == null)
             {

@@ -331,6 +331,7 @@ MonoBehaviour:
   UnMutedMutedIconColorInactive: {r: 0.5, g: 0.5, b: 0.5, a: 0.6745098}
   MutedColor: {r: 1, g: 0, b: 0, a: 0.6784314}
   LocalIsTransmitting: 0
+  IsNormalHead: 0
 --- !u!114 &3806033592985501336
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -472,7 +473,7 @@ MonoBehaviour:
   renderInteractLines: 1
   InteractableLayerMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 289
 --- !u!1 &8538648612911191307
 GameObject:
   m_ObjectHideFlags: 0
@@ -530,32 +531,35 @@ MonoBehaviour:
     UnlockPassword: 
     BasisRemoteBundleEncrypted:
       IsLocal: 0
-      MetaURL: 
-      BundleURL: 
+      CombinedURL: 
     BasisLocalEncryptedBundle:
-      LocalMetaFile: 
-      LocalBundleFile: 
-    BasisBundleInformation:
-      HasError: 0
+      LocalConnectorPath: 
+    BasisBundleConnector:
+      UniqueVersion: 
       BasisBundleDescription:
         AssetBundleName: 
         AssetBundleDescription: 
-      BasisBundleGenerated:
-        AssetBundleHash: 
-        AssetMode: 
-        AssetToLoadName: 
-        AssetBundleCRC: 0
+      BasisBundleGenerated: []
   HasAvatarDriver: 0
-  FaceisVisible: 0
+  FaceIsVisible: 0
   FaceRenderer: {fileID: 0}
   AvatarLoadMode: 0
   BasisAvatarStrainJiggleDriver: {fileID: 0}
   Move: {fileID: 8783102315984964394}
-  PlayerEyeHeight: 1.64
-  AvatarEyeHeight: 1.64
-  RatioPlayerToAvatarScale: 1
-  EyeRatioPlayerToDefaultScale: 1
-  EyeRatioAvatarToAvatarDefaultScale: 1
+  CurrentHeight:
+    AvatarName: 
+    PlayerEyeHeight: 1.64
+    AvatarEyeHeight: 1.64
+    RatioPlayerToAvatarScale: 1
+    EyeRatioPlayerToDefaultScale: 1
+    EyeRatioAvatarToAvatarDefaultScale: 1
+  LastHeight:
+    AvatarName: 
+    PlayerEyeHeight: 1.64
+    AvatarEyeHeight: 1.64
+    RatioPlayerToAvatarScale: 1
+    EyeRatioPlayerToDefaultScale: 1
+    EyeRatioAvatarToAvatarDefaultScale: 1
   LocalBoneDriver: {fileID: 1116109802514353462}
   AvatarDriver: {fileID: 5000096567804979388}
   VisemeDriver: {fileID: 0}
@@ -601,6 +605,8 @@ MonoBehaviour:
   Player: {fileID: 4587526044252889482}
   CurrentlyTposing: 0
   HasEvents: 0
+  ActiveMatrixOverrides: 
+  SkinnedMeshRendererLength: 0
   HeadScale: {x: 0, y: 0, z: 0}
   HeadScaledDown: {x: 0, y: 0, z: 0}
   LocalDriver: {fileID: 1116109802514353462}
@@ -611,6 +617,7 @@ MonoBehaviour:
   RightFootTwoBoneIK: {fileID: 0}
   LeftHandTwoBoneIK: {fileID: 0}
   RightHandTwoBoneIK: {fileID: 0}
+  UpperChestTwoBoneIK: {fileID: 0}
   LeftFingers: []
   RightFingers: []
   LeftToeRig: {fileID: 0}
@@ -621,6 +628,7 @@ MonoBehaviour:
   RightHandRig: {fileID: 0}
   LeftFootRig: {fileID: 0}
   RightFootRig: {fileID: 0}
+  ChestSpineRig: {fileID: 0}
   LeftShoulderRig: {fileID: 0}
   RightShoulderRig: {fileID: 0}
   LeftHandLayer:
@@ -645,6 +653,9 @@ MonoBehaviour:
     m_Rig: {fileID: 0}
     m_Active: 0
   RigChestLayer:
+    m_Rig: {fileID: 0}
+    m_Active: 0
+  ChestSpineLayer:
     m_Rig: {fileID: 0}
     m_Active: 0
   LeftShoulderLayer:

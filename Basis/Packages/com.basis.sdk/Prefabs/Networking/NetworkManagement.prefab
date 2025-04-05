@@ -50,7 +50,6 @@ MonoBehaviour:
   Port: 4296
   Password: default_password
   IsHostMode: 0
-  receiverArray: []
   Transmitter:
     Ready: 0
     Offset: 0
@@ -139,6 +138,7 @@ MonoBehaviour:
       TposeGizmoReference: -1
       TposeHasGizmo: 0
       HasVirtualOverride: 0
+      HasInverseOffsetOverride: 0
       trackersmooth: 25
       IsHintRoleIgnoreRotation: 0
       Cullable: 0
@@ -149,12 +149,6 @@ MonoBehaviour:
       HasEvents: 0
       hasTrackerDriver: 1
       NotProcessing: 0
-      OnHasRigChanged:
-        m_PersistentCalls:
-          m_Calls: []
-      WeightsChanged:
-        m_PersistentCalls:
-          m_Calls: []
       hasRigLayer: 1
       positionWeight: 1
       rotationWeight: 1
@@ -166,17 +160,18 @@ MonoBehaviour:
     interval: 0.033333335
     SmallestDistanceToAnotherPlayer: 0
     AudioTransmission:
-      settings: {fileID: 0}
       Local: {fileID: 0}
       Recorder: {fileID: 0}
       IsInitalized: 0
+      HasEvents: 0
       AudioSegmentData:
         buffer: 
+        TotalLength: 0
         LengthUsed: 0
       audioSilentSegmentData:
         buffer: 
+        TotalLength: 0
         LengthUsed: 0
-      HasEvents: 0
     FloatArray:
     - 0
     - 0
@@ -292,6 +287,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 161554c19f252554381f719b6d345b97, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  NormalColor: {r: 0.25490198, g: 0.25490198, b: 0.25490198, a: 0.4509804}
+  IsTalkingColor: {r: 0.3529412, g: 0.72156864, b: 0.90588236, a: 0.7490196}
+  OutOfRangeColor: {r: 0.105882354, g: 0.23137255, b: 0.29411766, a: 0.7490196}
   x: 0
   z: 0
 --- !u!114 &5938374156961068045
@@ -306,3 +304,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f56fc2c74db6c14a8788f282a92ea73, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  BatchSize: 16

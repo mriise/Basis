@@ -311,7 +311,7 @@ namespace Basis.Scripts.Networking
                         ushort LocalPlayerID = (ushort)peer.RemoteId;
                         // Create the local networked player asynchronously.
                         this.transform.GetPositionAndRotation(out Vector3 Position, out Quaternion Rotation);
-                        BasisNetworkPlayer LocalNetworkedPlayer = new BasisNetworkTransmitter();
+                        LocalNetworkedPlayer = new BasisNetworkTransmitter();
                         BasisDebug.Log("Network Id Updated " + LocalPlayerPeer.RemoteId);
 
                         LocalNetworkedPlayer.ProvideNetworkKey(LocalPlayerID);
@@ -337,6 +337,7 @@ namespace Basis.Scripts.Networking
                 }), null);
             });
         }
+        public static BasisNetworkPlayer LocalNetworkedPlayer;
         public static void LocalInitalize(BasisNetworkPlayer BasisNetworkPlayer, BasisLocalPlayer BasisLocalPlayer)
         {
             BasisNetworkPlayer.Player = BasisLocalPlayer;

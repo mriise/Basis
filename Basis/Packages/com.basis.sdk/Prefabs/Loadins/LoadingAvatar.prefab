@@ -125,15 +125,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   BasisBundleDescription:
-    AssetBundleName: 
-    AssetBundleDescription: 
+    AssetBundleName: Loading Avatar
+    AssetBundleDescription: Avatar used While We Load
   Animator: {fileID: 7103285763428802826}
   FaceVisemeMesh: {fileID: 8839165641088738499}
   FaceBlinkMesh: {fileID: 8839165641088738499}
-  AvatarEyePosition: {x: 1.5329204, y: 0.13793945}
-  AvatarMouthPosition: {x: 1.4465508, y: 0.13414764}
+  AvatarEyePosition: {x: 1.6041789, y: 0.09706497}
+  AvatarMouthPosition: {x: 1.4667249, y: 0.12704468}
   FaceVisemeMovement: ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-  BlinkViseme: ffffffffffffffff
+  BlinkViseme: ffffffff
   laughterBlendTarget: -1
   IsOwnedLocally: 0
   Renders:

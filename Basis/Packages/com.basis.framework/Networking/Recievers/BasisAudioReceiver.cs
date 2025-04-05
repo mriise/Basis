@@ -4,6 +4,7 @@ using Basis.Scripts.Drivers;
 using Basis.Scripts.Networking.NetworkedAvatar;
 using OpusSharp.Core;
 using System;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Basis.Scripts.Networking.Recievers
@@ -33,7 +34,15 @@ namespace Basis.Scripts.Networking.Recievers
         {
             InOrderRead.Add(silentData, RemoteOpusSettings.FrameSize);
         }
-        public void OnEnable(BasisNetworkPlayer networkedPlayer)
+        public void ChangeRemotePlayersVolumeSettings(float Volume = 1.0f,float dopplerLevel = 0,float spatialBlend = 1.0f, bool spatialize = true,bool spatializePostEffects = true)
+        {
+            audioSource.spatialize = spatialize;
+            audioSource.spatializePostEffects = spatializePostEffects; //revist later!
+            audioSource.spatialBlend = spatialBlend;
+            audioSource.dopplerLevel = dopplerLevel;
+            audioSource.volume = Volume;
+        }
+        public async void OnEnable(BasisNetworkPlayer networkedPlayer)
         {
             if (silentData == null || silentData.Length != RemoteOpusSettings.FrameSize)
             {
@@ -46,12 +55,9 @@ namespace Basis.Scripts.Networking.Recievers
                 BasisRemotePlayer remotePlayer = (BasisRemotePlayer)networkedPlayer.Player;
                 audioSource = BasisHelpers.GetOrAddComponent<AudioSource>(remotePlayer.AudioSourceTransform.gameObject);
             }
-            audioSource.spatialize = true;
-            audioSource.spatializePostEffects = true; //revist later!
-            audioSource.spatialBlend = 1.0f;
-            audioSource.dopplerLevel = 0;
-            audioSource.volume = 1.0f;
             audioSource.loop = true;
+            BasisPlayerSettingsData BasisPlayerSettingsData = await BasisPlayerSettingsManager.RequestPlayerSettings(networkedPlayer.Player.UUID);
+            ChangeRemotePlayersVolumeSettings(BasisPlayerSettingsData.VolumeLevel);
             InOrderRead = new BasisVoiceRingBuffer();
             // Create AudioClip
             audioSource.clip = AudioClip.Create($"player [{networkedPlayer.NetId}]", RemoteOpusSettings.FrameSize *4, RemoteOpusSettings.Channels, RemoteOpusSettings.PlayBackSampleRate, false, (buf) =>

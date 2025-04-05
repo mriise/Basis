@@ -29,7 +29,7 @@ namespace Basis.Scripts.Player
         {
             ChecksRequired Required = new ChecksRequired();
             Required.UseContentRemoval = false;
-            var data = await AddressableResourceProcess.LoadAsGameObjectsAsync(PlayerAddressableID, InstantiationParameters, Required);
+            var data = await AddressableResourceProcess.LoadAsGameObjectsAsync(PlayerAddressableID, InstantiationParameters, Required, BundledContentHolder.Selector.System);
             List<GameObject> Gameobjects = data.Item1;
             if (Gameobjects.Count != 0)
             {
