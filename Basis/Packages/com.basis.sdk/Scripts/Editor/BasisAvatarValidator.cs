@@ -164,6 +164,15 @@ public class BasisAvatarValidator
         if (Avatar.Animator != null)
         {
             passes.Add("Animator is assigned.");
+
+            if(Avatar.Animator.runtimeAnimatorController  != null)
+            {
+                warnings.Add("Animator Controller Exists, please check that it supports basis before usage");
+            }
+            if (Avatar.Animator.avatar == null)
+            {
+                errors.Add("Animator Exists but has not Avatar! please check import settings!");
+            }
         }
         else
         {
@@ -223,16 +232,6 @@ public class BasisAvatarValidator
         {
             errors.Add("Avatar Mouth Position is not set.");
         }
-        if (Avatar.FaceBlinkMesh != null && !CheckMeshNormal(Avatar.FaceBlinkMesh))
-        {
-            warnings.Add("FaceBlinkMesh does not have legacy blendshapes enabled, which may increase file size.");
-        }
-
-        if (Avatar.FaceVisemeMesh != null && !CheckMeshNormal(Avatar.FaceVisemeMesh))
-        {
-            warnings.Add("FaceVisemeMesh does not have legacy blendshapes enabled, which may increase file size.");
-        }
-
         if (string.IsNullOrEmpty(Avatar.BasisBundleDescription.AssetBundleName))
         {
             errors.Add("Avatar Name Is Empty.");
@@ -240,13 +239,23 @@ public class BasisAvatarValidator
 
         if (string.IsNullOrEmpty(Avatar.BasisBundleDescription.AssetBundleDescription))
         {
-            errors.Add("Avatar Description Is empty");
+            warnings.Add("Avatar Description Is empty");
         }
         if (ReportIfNoIll2CPP())
         {
             warnings.Add("IL2CPP Is Potentially Missing, Check Unity Hub, Normally needed is Linux,Windows,Android Ill2CPP");
         }
+        Renderer[] renderers = Avatar.GetComponentsInChildren<Renderer>();
+        SkinnedMeshRenderer[] SMRS = Avatar.GetComponentsInChildren<SkinnedMeshRenderer>();
+        foreach (Renderer renderer in renderers)
+        {
+            CheckTextures(renderer, ref warnings);
+        }
+        foreach (SkinnedMeshRenderer SMR in SMRS)
+        {
+            CheckMesh(SMR, ref errors,ref warnings);
 
+        }
         if (Avatar.JiggleStrains != null && Avatar.JiggleStrains.Length != 0)
         {
             for (int JiggleStrainIndex = 0; JiggleStrainIndex < Avatar.JiggleStrains.Length; JiggleStrainIndex++)
@@ -309,18 +318,94 @@ public class BasisAvatarValidator
         }
         return errors.Count == 0;
     }
-    public bool CheckMeshNormal(SkinnedMeshRenderer skinnedMeshRenderer)
+    public void CheckTextures(Renderer Renderer,ref List<string> warnings)
     {
-        string assetPath = AssetDatabase.GetAssetPath(skinnedMeshRenderer?.sharedMesh);
-        if (!string.IsNullOrEmpty(assetPath))
+        // Check for texture streaming
+        List<Texture> texturesToCheck = new List<Texture>();
+        foreach (Material mat in Renderer.sharedMaterials)
         {
-            ModelImporter modelImporter = AssetImporter.GetAtPath(assetPath) as ModelImporter;
-            if (modelImporter != null)
+            if (mat == null)
             {
-                return ModelImporterExtensions.IsLegacyBlendShapeNormalsEnabled(modelImporter);
+                continue;
+            }
+
+            Shader shader = mat.shader;
+            int propertyCount = ShaderUtil.GetPropertyCount(shader);
+            for (int Index = 0; Index < propertyCount; Index++)
+            {
+                if (ShaderUtil.GetPropertyType(shader, Index) == ShaderUtil.ShaderPropertyType.TexEnv)
+                {
+                    string propName = ShaderUtil.GetPropertyName(shader, Index);
+                    if (mat.HasProperty(propName))
+                    {
+                        Texture tex = mat.GetTexture(propName);
+                        if (tex != null && !texturesToCheck.Contains(tex))
+                        {
+                            texturesToCheck.Add(tex);
+                        }
+                    }
+                }
             }
         }
-        return false;
+
+        foreach (Texture tex in texturesToCheck)
+        {
+            string texPath = AssetDatabase.GetAssetPath(tex);
+            if (!string.IsNullOrEmpty(texPath))
+            {
+                TextureImporter texImporter = AssetImporter.GetAtPath(texPath) as TextureImporter;
+                if (texImporter != null)
+                {
+                    if (!texImporter.streamingMipmaps)
+                    {
+                        warnings.Add($"Texture \"{tex.name}\" does not have Streaming Mip Maps enabled. this will effect negatively its performance ranking");
+                    }
+                    if(texImporter.maxTextureSize > 4096)
+                    {
+                        warnings.Add($"Texture \"{tex.name}\" is {texImporter.maxTextureSize} this will impact performance negatively");
+                    }
+                }
+            }
+        }
+    }
+    public void CheckMesh(SkinnedMeshRenderer skinnedMeshRenderer, ref List<string> Errors, ref List<string> Warnings)
+    {
+        if(skinnedMeshRenderer.sharedMesh == null)
+        {
+            Errors.Add(skinnedMeshRenderer.gameObject.name + " does not have a mesh assigned to its SkinnedMeshRenderer!");
+            return;
+        }
+        if (skinnedMeshRenderer.sharedMesh.triangles.Length > 100000)
+        {
+            Warnings.Add(skinnedMeshRenderer.gameObject.name + " Has More then 100000 Triangles. This will cause performance issues");
+        }
+        if (skinnedMeshRenderer.sharedMesh.vertices.Length > 65535)
+        {
+            Warnings.Add(skinnedMeshRenderer.gameObject.name + " Has more vertices then what can be properly renderer. this will cause performance issues");
+        }
+        if (skinnedMeshRenderer.sharedMesh.blendShapeCount != 0)
+        {
+            string assetPath = AssetDatabase.GetAssetPath(skinnedMeshRenderer?.sharedMesh);
+            if (!string.IsNullOrEmpty(assetPath))
+            {
+                ModelImporter modelImporter = AssetImporter.GetAtPath(assetPath) as ModelImporter;
+                if (modelImporter != null)
+                {
+                   if(ModelImporterExtensions.IsLegacyBlendShapeNormalsEnabled(modelImporter))
+                    {
+                        Warnings.Add("FaceVisemeMesh does not have legacy blendshapes enabled, which may increase file size.");
+                    }
+                   else
+                    {
+                        Warnings.Add("FaceVisemeMesh does not have legacy blendshapes enabled, which may increase file size.");
+                    }
+                }
+            }
+        }
+        if(skinnedMeshRenderer.allowOcclusionWhenDynamic == false)
+        {
+            Errors.Add("Avatar has Dynamic Occlusion disabled on Skinned Mesh Renderer " + skinnedMeshRenderer.gameObject.name);
+        }
     }
     public static bool ReportIfNoIll2CPP()
     {
@@ -337,29 +422,24 @@ public class BasisAvatarValidator
         errorMessageLabel.text = string.Join("\n", errors);
         errorPanel.style.display = DisplayStyle.Flex;
     }
-
     private void HideErrorPanel()
     {
         errorPanel.style.display = DisplayStyle.None;
     }
-
     private void ShowWarningPanel(List<string> warnings)
     {
         warningMessageLabel.text = string.Join("\n", warnings);
         warningPanel.style.display = DisplayStyle.Flex;
     }
-
     private void HideWarningPanel()
     {
         warningPanel.style.display = DisplayStyle.None;
     }
-
     private void ShowPassedPanel(List<string> passes)
     {
         passedMessageLabel.text = string.Join("\n", passes);
         passedPanel.style.display = DisplayStyle.Flex;
     }
-
     private void HidePassedPanel()
     {
         passedPanel.style.display = DisplayStyle.None;
