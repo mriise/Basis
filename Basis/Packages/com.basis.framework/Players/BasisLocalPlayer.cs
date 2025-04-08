@@ -9,6 +9,7 @@ using Basis.Scripts.Avatar;
 using Basis.Scripts.Common;
 using System.Collections.Generic;
 using Basis.Scripts.UI.UI_Panels;
+using Basis.Scripts.TransformBinders.BoneControl;
 namespace Basis.Scripts.BasisSdk.Players
 {
     public class BasisLocalPlayer : BasisPlayer
@@ -39,7 +40,7 @@ namespace Basis.Scripts.BasisSdk.Players
             {
                 if (target == null) return;
 
-                target.AvatarName  = this.AvatarName;
+                target.AvatarName = this.AvatarName;
                 target.PlayerEyeHeight = this.PlayerEyeHeight;
                 target.AvatarEyeHeight = this.AvatarEyeHeight;
                 target.RatioPlayerToAvatarScale = this.RatioPlayerToAvatarScale;
@@ -79,7 +80,7 @@ namespace Basis.Scripts.BasisSdk.Players
             IsLocal = true;
             LocalBoneDriver.CreateInitialArrays(LocalBoneDriver.transform, true);
             BasisDeviceManagement.Instance.InputActions.Initialize(this);
-            CameraDriver.gameObject.SetActive(true);  
+            CameraDriver.gameObject.SetActive(true);
             //  FootPlacementDriver = BasisHelpers.GetOrAddComponent<BasisFootPlacementDriver>(this.gameObject);
             //  FootPlacementDriver.Initialize();
             Move.Initialize();
@@ -92,7 +93,7 @@ namespace Basis.Scripts.BasisSdk.Players
             bool LoadedState = BasisDataStore.LoadAvatar(LoadFileNameAndExtension, DefaultAvatar, BasisPlayer.LoadModeLocal, out BasisDataStore.BasisSavedAvatar LastUsedAvatar);
             if (LoadedState)
             {
-                await LoadInitalAvatar(LastUsedAvatar);
+                await LoadInitialAvatar(LastUsedAvatar);
             }
             else
             {
@@ -124,7 +125,7 @@ namespace Basis.Scripts.BasisSdk.Players
             }
             BasisUILoadingBar.Initalize();
         }
-        public async Task LoadInitalAvatar(BasisDataStore.BasisSavedAvatar LastUsedAvatar)
+        public async Task LoadInitialAvatar(BasisDataStore.BasisSavedAvatar LastUsedAvatar)
         {
             if (BasisLoadHandler.IsMetaDataOnDisc(LastUsedAvatar.UniqueID, out OnDiscInformation info))
             {
@@ -137,7 +138,7 @@ namespace Basis.Scripts.BasisSdk.Players
                         BasisLoadableBundle bundle = new BasisLoadableBundle
                         {
                             BasisRemoteBundleEncrypted = info.StoredRemote,
-                             BasisBundleConnector = new BasisBundleConnector("1", new BasisBundleDescription("Loading Avatar", "Loading Avatar"),new BasisBundleGenerated[] { new BasisBundleGenerated()}),
+                            BasisBundleConnector = new BasisBundleConnector("1", new BasisBundleDescription("Loading Avatar", "Loading Avatar"), new BasisBundleGenerated[] { new BasisBundleGenerated() }),
                             BasisLocalEncryptedBundle = info.StoredLocal,
                             UnlockPassword = Key.Pass
                         };
@@ -222,7 +223,7 @@ namespace Basis.Scripts.BasisSdk.Players
         }
         public void DriveAudioToViseme()
         {
-            VisemeDriver.ProcessAudioSamples(MicrophoneRecorder.processBufferArray,1, MicrophoneRecorder.processBufferArray.Length);
+            VisemeDriver.ProcessAudioSamples(MicrophoneRecorder.processBufferArray, 1, MicrophoneRecorder.processBufferArray.Length);
         }
         private void OnPausedEvent(bool IsPaused)
         {
@@ -240,6 +241,21 @@ namespace Basis.Scripts.BasisSdk.Players
                 {
                     VisemeDriver.uLipSyncBlendShape.maxVolume = -1.5f;
                     VisemeDriver.uLipSyncBlendShape.minVolume = -2.5f;
+                }
+            }
+        }
+        public void SimulateAvatar()
+        {
+            if (BasisAvatar != null)
+            {
+                if (Instance.LocalBoneDriver.FindBone(out BasisBoneControl Hips, BasisBoneTrackedRole.Hips))
+                {
+                    Vector3 Position = BasisLocalPlayer.Instance.transform.position;
+                    Vector3 HipsVector = Hips.OutgoingWorldData.position;
+
+                    Vector3 Output = new Vector3(HipsVector.x, HipsVector.y - Hips.TposeLocal.position.y, HipsVector.z);
+                    BasisAvatar.transform.SetPositionAndRotation(Output, Hips.OutGoingData.rotation);
+                    BasisAvatar.Animator.GetBoneTransform(HumanBodyBones.Hips).transform.position = Hips.OutgoingWorldData.position;
                 }
             }
         }

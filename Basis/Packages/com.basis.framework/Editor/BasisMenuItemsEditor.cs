@@ -29,7 +29,7 @@ public static class BasisMenuItemsEditor
     {
         if (BasisDataStore.LoadAvatar(BasisLocalPlayer.LoadFileNameAndExtension, BasisLocalPlayer.DefaultAvatar, BasisPlayer.LoadModeLocal, out BasisDataStore.BasisSavedAvatar LastSavedAvatar))
         {
-            await BasisLocalPlayer.Instance.LoadInitalAvatar(LastSavedAvatar);
+            await BasisLocalPlayer.Instance.LoadInitialAvatar(LastSavedAvatar);
         }
     }
     [MenuItem("Basis/Trackers/Hide Trackers")]

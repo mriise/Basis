@@ -121,7 +121,7 @@ namespace Basis.Scripts.Networking.Transmitters
         {
             for (int Index = 0; Index < IndexLength; Index++)
             {
-                Recievers.BasisNetworkReceiver Rec = BasisNetworkManagement.ReceiverArray[Index];
+                Receivers.BasisNetworkReceiver Rec = BasisNetworkManagement.ReceiverArray[Index];
                 if (Rec.AudioReceiverModule.IsPlaying != HearingIndex[Index])
                 {
                     if (HearingIndex[Index])

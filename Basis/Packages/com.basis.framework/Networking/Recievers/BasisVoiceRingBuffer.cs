@@ -48,7 +48,7 @@ public class BasisVoiceRingBuffer
                 Interlocked.Add(ref tail, itemsToRemove);
                 Interlocked.Add(ref size, -itemsToRemove);
                 tail %= Capacity;
-                BasisDebug.Log($"Overwriting {itemsToRemove} elements due to lack of space in the Audio buffer.");
+            //    BasisDebug.Log($"Overwriting {itemsToRemove} elements due to lack of space in the Audio buffer.");
             }
 
             int firstPart = Math.Min(length, Capacity - head);

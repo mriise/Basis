@@ -1,6 +1,6 @@
 using Basis.Scripts.Avatar;
 using Basis.Scripts.Drivers;
-using Basis.Scripts.Networking.Recievers;
+using Basis.Scripts.Networking.Receivers;
 using Basis.Scripts.TransformBinders.BoneControl;
 using Basis.Scripts.UI.NamePlate;
 using System.Threading.Tasks;

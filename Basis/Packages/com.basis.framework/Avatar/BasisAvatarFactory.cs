@@ -197,7 +197,6 @@ namespace Basis.Scripts.Avatar
                 }
             }
         }
-
         public static async Task LoadAvatarAfterError(BasisPlayer Player)
         {
             try
@@ -205,9 +204,10 @@ namespace Basis.Scripts.Avatar
                 ChecksRequired Required = new ChecksRequired
                 {
                     UseContentRemoval = false,
-                    DisableAnimatorEvents = false
+                    DisableAnimatorEvents = false,
+                     RemoveColliders = true,
                 };
-                var Para = new UnityEngine.ResourceManagement.ResourceProviders.InstantiationParameters(Player.transform.position, Quaternion.identity, null);
+                UnityEngine.ResourceManagement.ResourceProviders.InstantiationParameters Para = new UnityEngine.ResourceManagement.ResourceProviders.InstantiationParameters(Player.transform.position, Quaternion.identity, null);
                 (List<GameObject> GameObjects, AddressableGenericResource resource) = await AddressableResourceProcess.LoadAsGameObjectsAsync(LoadingAvatar.BasisLocalEncryptedBundle.LocalConnectorPath, Para, Required, BundledContentHolder.Selector.Avatar);
 
                 if (GameObjects.Count != 0)

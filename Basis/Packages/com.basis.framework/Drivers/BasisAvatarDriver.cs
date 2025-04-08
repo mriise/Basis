@@ -287,6 +287,15 @@ namespace Basis.Scripts.Drivers
         }
         public GameObject CreateAndSetParent(Transform parent, string name)
         {
+            Transform[] Children = parent.transform.GetComponentsInChildren<Transform>();
+            foreach (Transform child in Children)
+            {
+                if (child.name == $"Bone Role {name}")
+                {
+                    return child.gameObject;
+                }
+            }
+
             // Create a new empty GameObject
             GameObject newObject = new GameObject(name);
 
@@ -370,7 +379,7 @@ namespace Basis.Scripts.Drivers
         public void Damp(BaseBoneDriver driver, GameObject Parent, Transform Source, BasisBoneTrackedRole Role, float rotationWeight = 1, float positionWeight = 1)
         {
             driver.FindBone(out BasisBoneControl Target, Role);
-            GameObject DTData = CreateAndSetParent(Parent.transform, "Bone Role " + Role.ToString());
+            GameObject DTData = CreateAndSetParent(Parent.transform, $"Bone Role {Role.ToString()}");
             DampedTransform DT = BasisHelpers.GetOrAddComponent<DampedTransform>(DTData);
 
             DT.data.constrainedObject = Source;
@@ -403,7 +412,7 @@ namespace Basis.Scripts.Drivers
         public void MultiRotation(BaseBoneDriver driver, GameObject Parent, Transform Source, BasisBoneTrackedRole Role, float rotationWeight = 1)
         {
             driver.FindBone(out BasisBoneControl Target, Role);
-            GameObject DTData = CreateAndSetParent(Parent.transform, "Bone Role " + Role.ToString());
+            GameObject DTData = CreateAndSetParent(Parent.transform, $"Bone Role {Role.ToString()}");
             MultiAimConstraint DT = BasisHelpers.GetOrAddComponent<MultiAimConstraint>(DTData);
             DT.data.constrainedObject = Source;
             WeightedTransformArray Array = new WeightedTransformArray(0);
@@ -423,7 +432,7 @@ namespace Basis.Scripts.Drivers
         public void MultiPositional(BaseBoneDriver driver, GameObject Parent, Transform Source, BasisBoneTrackedRole Role, float positionWeight = 1)
         {
             driver.FindBone(out BasisBoneControl Target, Role);
-            GameObject DTData = CreateAndSetParent(Parent.transform, "Bone Role " + Role.ToString());
+            GameObject DTData = CreateAndSetParent(Parent.transform, $"Bone Role {Role.ToString()}");
             MultiPositionConstraint DT = BasisHelpers.GetOrAddComponent<MultiPositionConstraint>(DTData);
             DT.data.constrainedObject = Source;
             WeightedTransformArray Array = new WeightedTransformArray(0);
@@ -440,7 +449,7 @@ namespace Basis.Scripts.Drivers
         public void OverrideTransform(BaseBoneDriver driver, GameObject Parent, Transform Source, BasisBoneTrackedRole Role, float rotationWeight = 1, float positionWeight = 1, OverrideTransformData.Space Space = OverrideTransformData.Space.World)
         {
             driver.FindBone(out BasisBoneControl Target, Role);
-            GameObject DTData = CreateAndSetParent(Parent.transform, "Bone Role " + Role.ToString());
+            GameObject DTData = CreateAndSetParent(Parent.transform, $"Bone Role {Role.ToString()}");
             OverrideTransform DT = BasisHelpers.GetOrAddComponent<OverrideTransform>(DTData);
             DT.data.constrainedObject = Source;
             DT.data.sourceObject = Target.BoneTransform;
@@ -452,7 +461,7 @@ namespace Basis.Scripts.Drivers
         public void TwistChain(BaseBoneDriver driver, GameObject Parent, Transform Source, BasisBoneTrackedRole Role, float rotationWeight = 1, float positionWeight = 1, OverrideTransformData.Space Space = OverrideTransformData.Space.World)
         {
             driver.FindBone(out BasisBoneControl Target, Role);
-            GameObject DTData = CreateAndSetParent(Parent.transform, "Bone Role " + Role.ToString());
+            GameObject DTData = CreateAndSetParent(Parent.transform, $"Bone Role {Role.ToString()}");
             TwistChainConstraint DT = BasisHelpers.GetOrAddComponent<TwistChainConstraint>(DTData);
             DT.data.root = Source;
             DT.data.tip = Source;
@@ -463,7 +472,9 @@ namespace Basis.Scripts.Drivers
         public void CreateTwoBone(BaseBoneDriver driver, GameObject Parent, Transform root, Transform mid, Transform tip, BasisBoneTrackedRole TargetRole, BasisBoneTrackedRole BendRole, bool UseBoneRole, out TwoBoneIKConstraint TwoBoneIKConstraint, bool maintainTargetPositionOffset, bool maintainTargetRotationOffset)
         {
             driver.FindBone(out BasisBoneControl BoneControl, TargetRole);
-            GameObject BoneRole = CreateAndSetParent(Parent.transform, "Bone Role " + TargetRole.ToString());
+
+
+            GameObject BoneRole = CreateAndSetParent(Parent.transform, $"Bone Role {TargetRole.ToString()}");
             TwoBoneIKConstraint = BasisHelpers.GetOrAddComponent<TwoBoneIKConstraint>(BoneRole);
             EnableTwoBoneIk(TwoBoneIKConstraint, maintainTargetPositionOffset, maintainTargetRotationOffset);
             TwoBoneIKConstraint.data.target = BoneControl.BoneTransform;

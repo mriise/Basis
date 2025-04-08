@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEditor;
-using Basis.Scripts.Networking.Recievers;
+using Basis.Scripts.Networking.Receivers;
 using Basis.Scripts.Networking;
 
 [CustomEditor(typeof(BasisNetworkManagement))]

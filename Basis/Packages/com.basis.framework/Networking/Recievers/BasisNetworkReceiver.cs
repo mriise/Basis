@@ -9,7 +9,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using static SerializableBasis;
 
-namespace Basis.Scripts.Networking.Recievers
+namespace Basis.Scripts.Networking.Receivers
 {
     [DefaultExecutionOrder(15001)]
     [System.Serializable]

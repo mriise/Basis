@@ -4,10 +4,9 @@ using Basis.Scripts.Drivers;
 using Basis.Scripts.Networking.NetworkedAvatar;
 using OpusSharp.Core;
 using System;
-using System.Threading.Tasks;
 using UnityEngine;
 
-namespace Basis.Scripts.Networking.Recievers
+namespace Basis.Scripts.Networking.Receivers
 {
     [System.Serializable]
     public class BasisAudioReceiver
@@ -60,7 +59,7 @@ namespace Basis.Scripts.Networking.Recievers
             ChangeRemotePlayersVolumeSettings(BasisPlayerSettingsData.VolumeLevel);
             InOrderRead = new BasisVoiceRingBuffer();
             // Create AudioClip
-            audioSource.clip = AudioClip.Create($"player [{networkedPlayer.NetId}]", RemoteOpusSettings.FrameSize *4, RemoteOpusSettings.Channels, RemoteOpusSettings.PlayBackSampleRate, false, (buf) =>
+            audioSource.clip = AudioClip.Create($"player [{networkedPlayer.NetId}]", RemoteOpusSettings.FrameSize * (2 * 2), RemoteOpusSettings.Channels, RemoteOpusSettings.PlayBackSampleRate, false, (buf) =>
             {
                 Array.Fill(buf, 1.0f);
             });
@@ -141,20 +140,10 @@ namespace Basis.Scripts.Networking.Recievers
         private void ProcessAudioWithoutResampling(float[] data, int frames, int channels)
         {
             InOrderRead.Remove(frames, out float[] segment);
-
-            for (int i = 0; i < frames; i++)
-            {
-                float sample = segment[i]; // Single-channel sample from the RingBuffer
-                for (int c = 0; c < channels; c++)
-                {
-                    int index = i * channels + c;
-                    data[index] *= sample;
-                    data[index] =  Math.Clamp(data[index], -1, 1);
-                }
-            }
+            ProcessSegment(segment,data,frames,channels);
             InOrderRead.BufferedReturn.Enqueue(segment);
         }
-
+        public float[] resampledSegment;
         private void ProcessAudioWithResampling(float[] data, int frames, int channels, int outputSampleRate)
         {
             float resampleRatio = (float)RemoteOpusSettings.NetworkSampleRate / outputSampleRate;
@@ -162,34 +151,43 @@ namespace Basis.Scripts.Networking.Recievers
 
             InOrderRead.Remove(neededFrames, out float[] inputSegment);
 
-            float[] resampledSegment = new float[frames];
-
-            // Resampling using linear interpolation
-            for (int i = 0; i < frames; i++)
+            if (resampledSegment.Length != frames)
             {
-                float srcIndex = i * resampleRatio;
+                resampledSegment = new float[frames];
+            }
+            // Resampling using linear interpolation
+            for (int FrameIndex = 0; FrameIndex < frames; FrameIndex++)
+            {
+                float srcIndex = FrameIndex * resampleRatio;
                 int indexLow = Mathf.FloorToInt(srcIndex);
                 int indexHigh = Mathf.CeilToInt(srcIndex);
                 float frac = srcIndex - indexLow;
 
-                float sampleLow = (indexLow < inputSegment.Length) ? inputSegment[indexLow] : 0;
-                float sampleHigh = (indexHigh < inputSegment.Length) ? inputSegment[indexHigh] : 0;
+                int InputSegmentLength = inputSegment.Length;
+                float sampleLow = (indexLow < InputSegmentLength) ? inputSegment[indexLow] : 0;
+                float sampleHigh = (indexHigh < InputSegmentLength) ? inputSegment[indexHigh] : 0;
 
-                resampledSegment[i] = Mathf.Lerp(sampleLow, sampleHigh, frac);
+                resampledSegment[FrameIndex] = Mathf.Lerp(sampleLow, sampleHigh, frac);
             }
 
-            // Apply resampled audio to output buffer
-            for (int i = 0; i < frames; i++)
-            {
-                float sample = resampledSegment[i];
-                for (int c = 0; c < channels; c++)
-                {
-                    int index = i * channels + c;
-                    data[index] *= sample;
-                }
-            }
+            ProcessSegment(resampledSegment, data, frames, channels);
 
             InOrderRead.BufferedReturn.Enqueue(inputSegment);
+        }
+        private void ProcessSegment(float[] segment, float[] data, int frames, int channels)
+        {
+            for (int frameIndex = 0; frameIndex < frames; frameIndex++)
+            {
+                float sample = segment[frameIndex];
+                int baseIndex = frameIndex * channels;
+
+                for (int channelIndex = 0; channelIndex < channels; channelIndex++)
+                {
+                    int index = baseIndex + channelIndex;
+                    float value = data[index] * sample;
+                    data[index] = Math.Clamp(value, -1f, 1f);
+                }
+            }
         }
     }
 }

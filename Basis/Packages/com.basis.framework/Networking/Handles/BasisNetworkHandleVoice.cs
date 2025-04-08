@@ -1,5 +1,5 @@
 using Basis.Scripts.Networking;
-using Basis.Scripts.Networking.Recievers;
+using Basis.Scripts.Networking.Receivers;
 using System.Threading;
 using System;
 using System.Threading.Tasks;
