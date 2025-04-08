@@ -142,7 +142,8 @@ namespace Basis.Scripts.Drivers
                 Spine.HasRigLayer = BasisHasRigLayer.HasRigLayer;
             }
             StoredRolesTransforms = BasisAvatarIKStageCalibration.GetAllRolesAsTransform();
-            Player.BasisAvatar.transform.parent = Player.transform;//Hips.BoneTransform
+          //  Player.BasisAvatar.transform.parent = Player.transform; //Hips.BoneTransform;// Player.transform;
+            Player.BasisAvatar.transform.parent = Hips.BoneTransform;
             Player.BasisAvatar.transform.SetLocalPositionAndRotation(-Hips.TposeLocal.position, Quaternion.identity);
             CalibrateOffsets();
             BuildBuilder();
@@ -308,7 +309,8 @@ namespace Basis.Scripts.Drivers
         }
         public void SetBodySettings(BasisLocalBoneDriver driver)
         {
-          //  SetupTwistBoneSpine(driver);
+            SetupHeadRig(driver);
+            //  SetupTwistBoneSpine(driver);
             //  SetupRightShoulderRig(driver);
             //  SetupLeftShoulderRig(driver);
             LeftHand(driver);
@@ -318,8 +320,10 @@ namespace Basis.Scripts.Drivers
 
             LeftToe(driver);
             RightToe(driver);
-
-            SetupHeadRig(driver);
+            if (References.Hips.gameObject.TryGetComponent<RigTransform>(out RigTransform RigTransform) == false)
+            {
+                RigTransform Hips = References.Hips.gameObject.AddComponent<RigTransform>();
+            }
         }
         /// <summary>
         /// Sets up the Head rig, including chest, neck, and head bones.
@@ -347,18 +351,18 @@ namespace Basis.Scripts.Drivers
             GameObject HeadRig = CreateOrGetRig("Chest, Neck, Head", true, out RigHeadRig, out RigHeadLayer);
             if (References.HasUpperchest)
             {
-                CreateTwoBone(driver, HeadRig, References.Hips, References.neck, References.head, BasisBoneTrackedRole.Head, BasisBoneTrackedRole.Chest, true, out HeadTwoBoneIK, true, true);
+                CreateTwoBone(driver, HeadRig, References.Upperchest, References.neck, References.head, BasisBoneTrackedRole.Head, BasisBoneTrackedRole.Chest, true, out HeadTwoBoneIK, true, true);
             }
             else
             {
                 if (References.Haschest)
                 {
-                    CreateTwoBone(driver, HeadRig, References.Hips, References.neck, References.head, BasisBoneTrackedRole.Head, BasisBoneTrackedRole.Chest, true, out HeadTwoBoneIK, true, true);
+                    CreateTwoBone(driver, HeadRig, References.chest, References.neck, References.head, BasisBoneTrackedRole.Head, BasisBoneTrackedRole.Chest, true, out HeadTwoBoneIK, true, true);
 
                 }
                 else
                 {
-                    CreateTwoBone(driver, HeadRig, References.Hips, References.neck, References.head, BasisBoneTrackedRole.Head, BasisBoneTrackedRole.Chest, true, out HeadTwoBoneIK, true, true);
+                    CreateTwoBone(driver, HeadRig, null, References.neck, References.head, BasisBoneTrackedRole.Head, BasisBoneTrackedRole.Chest, true, out HeadTwoBoneIK, true, true);
 
                 }
             }

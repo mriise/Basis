@@ -248,14 +248,14 @@ namespace Basis.Scripts.BasisSdk.Players
         {
             if (BasisAvatar != null)
             {
+
                 if (Instance.LocalBoneDriver.FindBone(out BasisBoneControl Hips, BasisBoneTrackedRole.Hips))
                 {
-                    Vector3 Position = BasisLocalPlayer.Instance.transform.position;
                     Vector3 HipsVector = Hips.OutgoingWorldData.position;
 
-                    Vector3 Output = new Vector3(HipsVector.x, HipsVector.y - Hips.TposeLocal.position.y, HipsVector.z);
-                    BasisAvatar.transform.SetPositionAndRotation(Output, Hips.OutGoingData.rotation);
-                    BasisAvatar.Animator.GetBoneTransform(HumanBodyBones.Hips).transform.position = Hips.OutgoingWorldData.position;
+                    Vector3 Output = new Vector3(BasisAvatar.transform.position.x, HipsVector.y - Hips.TposeLocal.position.y, BasisAvatar.transform.position.z);
+
+                    BasisAvatar.transform.position = Output;
                 }
             }
         }
