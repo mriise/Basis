@@ -458,16 +458,22 @@ namespace Basis.Scripts.Drivers
             DT.data.space = Space;
             GeneratedRequiredTransforms(Source, References.Hips);
         }
-        public void TwistChain(BaseBoneDriver driver, GameObject Parent, Transform Source, BasisBoneTrackedRole Role, float rotationWeight = 1, float positionWeight = 1, OverrideTransformData.Space Space = OverrideTransformData.Space.World)
+        public void TwistChain(BaseBoneDriver driver, GameObject Parent, Transform root, Transform tip, BasisBoneTrackedRole Root, BasisBoneTrackedRole Tip, float rotationWeight = 1, float positionWeight = 1)
         {
-            driver.FindBone(out BasisBoneControl Target, Role);
-            GameObject DTData = CreateAndSetParent(Parent.transform, $"Bone Role {Role.ToString()}");
+            driver.FindBone(out BasisBoneControl RootTarget, Root);
+            driver.FindBone(out BasisBoneControl TipTarget, Tip);
+            GameObject DTData = CreateAndSetParent(Parent.transform, $"Bone Role {Root.ToString()}");
             TwistChainConstraint DT = BasisHelpers.GetOrAddComponent<TwistChainConstraint>(DTData);
-            DT.data.root = Source;
-            DT.data.tip = Source;
-            // DT.data.curve = new AnimationCurve(new Keyframe[2] {);
-            DT.data.tipTarget = Target.BoneTransform;
-            GeneratedRequiredTransforms(Source, References.Hips);
+            Keyframe[] Frame = new Keyframe[2];
+            Frame[0] = new Keyframe(0, 0);
+            Frame[1] = new Keyframe(1, 1);
+            DT.data.curve = new AnimationCurve(Frame);
+
+            DT.data.tip = TipTarget.BoneTransform;
+            DT.data.root = RootTarget.BoneTransform;
+            DT.data.tipTarget = tip;
+            DT.data.rootTarget = root;
+            //GeneratedRequiredTransforms(root, References.Hips);
         }
         public void CreateTwoBone(BaseBoneDriver driver, GameObject Parent, Transform root, Transform mid, Transform tip, BasisBoneTrackedRole TargetRole, BasisBoneTrackedRole BendRole, bool UseBoneRole, out TwoBoneIKConstraint TwoBoneIKConstraint, bool maintainTargetPositionOffset, bool maintainTargetRotationOffset)
         {
