@@ -162,6 +162,12 @@ namespace Basis.Scripts.Networking.Receivers
                         PoseHandler.SetHumanPose(ref HumanPose);
 
                         RemotePlayer.RemoteBoneDriver.SimulateAndApply(DeltaTime);
+
+                        if (RemotePlayer.HasJiggles)
+                        {
+                            RemotePlayer.BasisAvatarStrainJiggleDriver.Simulate();
+                        }
+                        AudioReceiverModule.AudioSourceTransform.SetPositionAndRotation(Player.Mouth.OutgoingWorldData.position, Player.Mouth.OutgoingWorldData.rotation);
                      //   RemotePlayer.BasisAvatar.FaceVisemeMesh.transform.position = RemotePlayer.RemoteBoneDriver.Hips.OutgoingWorldData.position;
                     }
                     if (interpolationTime >= 1 && PayloadQueue.TryDequeue(out AvatarBuffer result))

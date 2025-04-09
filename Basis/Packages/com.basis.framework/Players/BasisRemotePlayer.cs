@@ -14,12 +14,11 @@ namespace Basis.Scripts.BasisSdk.Players
         public BasisRemoteBoneDriver RemoteBoneDriver;
         public BasisRemoteAvatarDriver RemoteAvatarDriver;
         public BasisNetworkReceiver NetworkReceiver;
-        public Transform AudioSourceTransform;
-        public BasisBoneControl MouthControl;
         public bool HasEvents = false;
         public bool LockAvatarFromChanging;
         public bool OutOfRangeFromLocal = false;
         public ClientAvatarChangeMessage CACM;
+        public Transform NetworkedVoice;
         public async Task RemoteInitialize(ClientAvatarChangeMessage cACM, PlayerMetaDataMessage PlayerMetaDataMessage)
         {
             CACM = cACM;
@@ -33,9 +32,7 @@ namespace Basis.Scripts.BasisSdk.Players
                 RemoteAvatarDriver.CalibrationComplete += RemoteCalibration;
                 HasEvents = true;
             }
-            RemoteBoneDriver.FindBone(out MouthControl, BasisBoneTrackedRole.Mouth);
-            BasisDebug.LogError("AudioSourceTransform was not implemented");
-          //here LD  AudioSourceTransform.parent = MouthControl.
+            RemoteBoneDriver.FindBone(out Mouth, BasisBoneTrackedRole.Mouth);
             await BasisRemoteNamePlate.LoadRemoteNamePlate(this);
         }
         public async Task LoadAvatarFromInitial(ClientAvatarChangeMessage CACM)

@@ -90,6 +90,106 @@ MonoBehaviour:
   FaceRenderer: {fileID: 0}
   AvatarLoadMode: 0
   BasisAvatarStrainJiggleDriver: {fileID: 0}
+  Mouth:
+    LerpAmountNormal: 0
+    LerpAmountFastMovement: 0
+    AngleBeforeSpeedup: 0
+    HasRotationalTarget: 0
+    HasLineDraw: 0
+    LineDrawIndex: 0
+    HasTarget: 0
+    Offset:
+      x: 0
+      y: 0
+      z: 0
+    LerpAmount: 0
+    OutGoingData:
+      rotation:
+        value:
+          x: 0
+          y: 0
+          z: 0
+          w: 0
+      position:
+        x: 0
+        y: 0
+        z: 0
+    LastRunData:
+      rotation:
+        value:
+          x: 0
+          y: 0
+          z: 0
+          w: 0
+      position:
+        x: 0
+        y: 0
+        z: 0
+    TposeLocal:
+      rotation:
+        value:
+          x: 0
+          y: 0
+          z: 0
+          w: 0
+      position:
+        x: 0
+        y: 0
+        z: 0
+    InverseOffsetFromBone:
+      Use: 0
+      rotation:
+        value:
+          x: 0
+          y: 0
+          z: 0
+          w: 0
+      position:
+        x: 0
+        y: 0
+        z: 0
+    IncomingData:
+      rotation:
+        value:
+          x: 0
+          y: 0
+          z: 0
+          w: 0
+      position:
+        x: 0
+        y: 0
+        z: 0
+    OutgoingWorldData:
+      rotation:
+        value:
+          x: 0
+          y: 0
+          z: 0
+          w: 0
+      position:
+        x: 0
+        y: 0
+        z: 0
+    GizmoReference: -1
+    HasGizmo: 0
+    TposeGizmoReference: -1
+    TposeHasGizmo: 0
+    HasVirtualOverride: 0
+    HasInverseOffsetOverride: 0
+    trackersmooth: 25
+    IsHintRoleIgnoreRotation: 0
+    Cullable: 0
+    Name: 
+    gizmoColor: {r: 0, g: 0, b: 1, a: 1}
+    HasBone: 0
+    HasEvents: 0
+    hasTrackerDriver: 1
+    NotProcessing: 0
+    hasRigLayer: 1
+    positionWeight: 1
+    rotationWeight: 1
+    GeneralLocation: 0
+  HasJiggles: 0
   RemoteBoneDriver: {fileID: 8753016558906673911}
   RemoteAvatarDriver: {fileID: 4496089132972522230}
   NetworkReceiver:
@@ -187,7 +287,6 @@ MonoBehaviour:
       Name: 
       gizmoColor: {r: 0, g: 0, b: 1, a: 1}
       HasBone: 0
-      BoneTransform: {fileID: 0}
       HasEvents: 0
       hasTrackerDriver: 1
       NotProcessing: 0
@@ -208,6 +307,8 @@ MonoBehaviour:
       IsReady: 0
       silentData: []
       lastReadIndex: 0
+      AudioSourceTransform: {fileID: 0}
+      resampledSegment: []
     delayTime: 0.10000000149011612
     RemotePlayer: {fileID: 0}
     HasEvents: 0
@@ -323,111 +424,24 @@ MonoBehaviour:
     - 0
     - 0
     - 0
-  AudioSourceTransform: {fileID: 3207512861414392396}
-  MouthControl:
-    LerpAmountNormal: 0
-    LerpAmountFastMovement: 0
-    AngleBeforeSpeedup: 0
-    HasRotationalTarget: 0
-    HasLineDraw: 0
-    LineDrawIndex: 0
-    HasTarget: 0
-    Offset:
-      x: 0
-      y: 0
-      z: 0
-    LerpAmount: 0
-    OutGoingData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    LastRunData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    TposeLocal:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    InverseOffsetFromBone:
-      Use: 0
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    IncomingData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    OutgoingWorldData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    GizmoReference: -1
-    HasGizmo: 0
-    TposeGizmoReference: -1
-    TposeHasGizmo: 0
-    HasVirtualOverride: 0
-    HasInverseOffsetOverride: 0
-    trackersmooth: 25
-    IsHintRoleIgnoreRotation: 0
-    Cullable: 0
-    Name: 
-    gizmoColor: {r: 0, g: 0, b: 1, a: 1}
-    HasBone: 0
-    BoneTransform: {fileID: 0}
-    HasEvents: 0
-    hasTrackerDriver: 1
-    NotProcessing: 0
-    hasRigLayer: 1
-    positionWeight: 1
-    rotationWeight: 1
-    GeneralLocation: 0
   HasEvents: 0
   LockAvatarFromChanging: 0
-  IsNotFallBack: 0
   OutOfRangeFromLocal: 0
+  NetworkedVoice: {fileID: 3207512861414392396}
+  AlwaysRequestedAvatar:
+    UnlockPassword: 
+    BasisRemoteBundleEncrypted:
+      IsLocal: 0
+      CombinedURL: 
+    BasisLocalEncryptedBundle:
+      LocalConnectorPath: 
+    BasisBundleConnector:
+      UniqueVersion: 
+      BasisBundleDescription:
+        AssetBundleName: 
+        AssetBundleDescription: 
+      BasisBundleGenerated: []
+  AlwaysRequestedMode: 0
 --- !u!114 &7026422538752026465
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -442,6 +456,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   player: {fileID: 3578141255088103770}
   Jiggler: {fileID: 0}
+  JiggleRigRendererLOD: {fileID: 0}
 --- !u!114 &8753016558906673911
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -458,6 +473,7 @@ MonoBehaviour:
   Controls: []
   trackedRoles: 
   HasControls: 0
+  TrackedBone: {fileID: 0}
   RemotePlayer: {fileID: 3578141255088103770}
   HeadAvatar: {fileID: 0}
   HipsAvatar: {fileID: 0}
@@ -553,7 +569,6 @@ MonoBehaviour:
     Name: 
     gizmoColor: {r: 0, g: 0, b: 1, a: 1}
     HasBone: 0
-    BoneTransform: {fileID: 0}
     HasEvents: 0
     hasTrackerDriver: 1
     NotProcessing: 0
@@ -653,7 +668,6 @@ MonoBehaviour:
     Name: 
     gizmoColor: {r: 0, g: 0, b: 1, a: 1}
     HasBone: 0
-    BoneTransform: {fileID: 0}
     HasEvents: 0
     hasTrackerDriver: 1
     NotProcessing: 0

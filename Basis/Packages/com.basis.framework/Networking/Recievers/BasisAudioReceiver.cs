@@ -24,6 +24,7 @@ namespace Basis.Scripts.Networking.Receivers
         public bool IsReady;
         public float[] silentData;
         public byte lastReadIndex = 0;
+        public Transform AudioSourceTransform;
         public void OnDecode(byte SequenceNumber, byte[] data, int length)
         {
             pcmLength = decoder.Decode(data, length, pcmBuffer, RemoteOpusSettings.NetworkSampleRate, false);
@@ -41,6 +42,10 @@ namespace Basis.Scripts.Networking.Receivers
             audioSource.dopplerLevel = dopplerLevel;
             audioSource.volume = Volume;
         }
+        public void Simulate()
+        {
+
+        }
         public async void OnEnable(BasisNetworkPlayer networkedPlayer)
         {
             if (silentData == null || silentData.Length != RemoteOpusSettings.FrameSize)
@@ -52,7 +57,8 @@ namespace Basis.Scripts.Networking.Receivers
             if (audioSource == null)
             {
                 BasisRemotePlayer remotePlayer = (BasisRemotePlayer)networkedPlayer.Player;
-                audioSource = BasisHelpers.GetOrAddComponent<AudioSource>(remotePlayer.AudioSourceTransform.gameObject);
+                AudioSourceTransform = remotePlayer.NetworkedVoice;
+                audioSource = BasisHelpers.GetOrAddComponent<AudioSource>(AudioSourceTransform.gameObject);
             }
             audioSource.loop = true;
             BasisPlayerSettingsData BasisPlayerSettingsData = await BasisPlayerSettingsManager.RequestPlayerSettings(networkedPlayer.Player.UUID);

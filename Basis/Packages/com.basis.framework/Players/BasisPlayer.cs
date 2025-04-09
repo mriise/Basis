@@ -1,6 +1,7 @@
 using Basis.Scripts.Addressable_Driver;
 using Basis.Scripts.BasisSdk.Helpers;
 using Basis.Scripts.Drivers;
+using Basis.Scripts.TransformBinders.BoneControl;
 using System;
 using System.Threading;
 using UnityEngine;
@@ -30,6 +31,8 @@ namespace Basis.Scripts.BasisSdk.Players
         public CancellationToken CancellationToken;
         public BasisAvatarStrainJiggleDriver BasisAvatarStrainJiggleDriver;
         public Action<bool> AudioReceived;
+        public BasisBoneControl Mouth;
+        public bool HasJiggles = false;
         public void InitalizeIKCalibration(BasisAvatarDriver BasisAvatarDriver)
         {
             if (BasisAvatarDriver != null)
@@ -43,10 +46,11 @@ namespace Basis.Scripts.BasisSdk.Players
             }
             try
             {
+                HasJiggles = false;
                 BasisAvatarStrainJiggleDriver = BasisHelpers.GetOrAddComponent<BasisAvatarStrainJiggleDriver>(this.gameObject);
                 if (BasisAvatarStrainJiggleDriver != null)
                 {
-                    BasisAvatarStrainJiggleDriver.OnCalibration();
+                    HasJiggles = BasisAvatarStrainJiggleDriver.OnCalibration();
                 }
             }
             catch (Exception e)

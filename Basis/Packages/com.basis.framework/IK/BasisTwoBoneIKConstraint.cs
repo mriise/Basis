@@ -1,7 +1,3 @@
-using UnityEngine.UIElements;
-using static BasisAnimationRuntimeUtils;
-using static UnityEngine.GraphicsBuffer;
-
 namespace UnityEngine.Animations.Rigging
 {
     /// <summary>

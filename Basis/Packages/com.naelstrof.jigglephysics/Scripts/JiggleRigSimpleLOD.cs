@@ -10,12 +10,12 @@ namespace JigglePhysics
         [Tooltip("Distance past distance from which it blends out rather than instantly disabling.")]
         [SerializeField] float blend = 5f;
 
-        public static Camera currentCamera;
-        public Transform TargetPoint;
+        public static Vector3 CameraPosition;
+        public Vector3 TargetPoint;
         protected override bool CheckActive()
         {
-            var cameraDistance = Vector3.Distance(currentCamera.transform.position, TargetPoint.position);
-            var currentBlend = (cameraDistance - distance + blend) / blend;
+            float cameraDistance = Vector3.Distance(CameraPosition, TargetPoint);
+            float currentBlend = (cameraDistance - distance + blend) / blend;
             currentBlend = Mathf.Clamp01(1f - currentBlend);
             for (int Index = 0; Index < JiggleCount; Index++)
             {

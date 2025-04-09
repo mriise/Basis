@@ -11,7 +11,8 @@ namespace Basis.Scripts.Drivers
     {
         public BasisPlayer player;
         public JiggleRigBuilder Jiggler;
-        public void OnCalibration()
+        public JiggleRigRendererLOD JiggleRigRendererLOD;
+        public bool OnCalibration()
         {
             if (Jiggler != null)
             {
@@ -22,19 +23,9 @@ namespace Basis.Scripts.Drivers
                 if (player.BasisAvatar.JiggleStrains != null && player.BasisAvatar.JiggleStrains.Length != 0)
                 {
                     int Count = player.BasisAvatar.JiggleStrains.Length;
-                    JiggleRigRendererLOD JiggleRigRendererLOD = BasisHelpers.GetOrAddComponent<JiggleRigRendererLOD>(player.BasisAvatar.Animator.gameObject);
-                    JiggleRigRendererLOD.currentCamera = BasisLocalCameraDriver.Instance.Camera;
-                    if(player.IsLocal)
-                    {
-                        BasisLocalPlayer Local = (BasisLocalPlayer)player;
-                        JiggleRigRendererLOD.TargetPoint = Local.FaceRenderer.transform;
-                    }
-                    else
-                    {
-                        BasisRemotePlayer Remote = (BasisRemotePlayer)player;
-                        BasisDebug.LogError("JiggleRigRendererLOD was not implemented");
-                      //here LD  JiggleRigRendererLOD.TargetPoint = Remote.MouthControl.BoneTransform;
-                    }
+                    JiggleRigRendererLOD = BasisHelpers.GetOrAddComponent<JiggleRigRendererLOD>(player.BasisAvatar.Animator.gameObject);
+                    JiggleRigRendererLOD.CameraPosition = BasisLocalCameraDriver.Position;
+                    JiggleRigRendererLOD.TargetPoint = player.Mouth.OutgoingWorldData.position;
                     JiggleRigRendererLOD.SetRenderers(player.BasisAvatar.Renders);
                     Jiggler = player.BasisAvatar.Animator.gameObject.AddComponent<JiggleRigBuilder>();
                     List<JiggleRig> Jiggles = new List<JiggleRig>();
@@ -53,8 +44,15 @@ namespace Basis.Scripts.Drivers
                     }
                     Jiggler.jiggleRigs = Jiggles;
                     Jiggler.Initialize();
+                    return true;
                 }
             }
+            return false;
+        }
+        public void Simulate()
+        {
+            JiggleRigRendererLOD.CameraPosition = BasisLocalCameraDriver.Position;
+            JiggleRigRendererLOD.TargetPoint = player.Mouth.OutgoingWorldData.position;
         }
         public void PrepareTeleport()
         {

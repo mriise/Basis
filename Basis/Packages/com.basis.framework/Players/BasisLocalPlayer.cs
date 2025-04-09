@@ -84,6 +84,7 @@ namespace Basis.Scripts.BasisSdk.Players
             LocalBoneDriver.CreateInitialArrays(LocalBoneDriver.transform, true);
             LocalBoneDriver.FindBone(out Head, BasisBoneTrackedRole.Head);
             LocalBoneDriver.FindBone(out Hips, BasisBoneTrackedRole.Hips);
+            LocalBoneDriver.FindBone(out Mouth, BasisBoneTrackedRole.Mouth);
 
             BasisDeviceManagement.Instance.InputActions.Initialize(this);
             CameraDriver.gameObject.SetActive(true);
@@ -259,7 +260,10 @@ namespace Basis.Scripts.BasisSdk.Players
         public float3 output;
         public void SimulateAvatar()
         {
-            if (BasisAvatar == null) return;
+            if (BasisAvatar == null)
+            {
+                return;
+            }
 
 
             // Current world positions
@@ -300,6 +304,10 @@ namespace Basis.Scripts.BasisSdk.Players
             BasisAvatar.transform.SetPositionAndRotation(childWorldPosition, childWorldRotation);
 
             AvatarDriver.Simulate();
+            if (HasJiggles)
+            {
+                BasisAvatarStrainJiggleDriver.Simulate();
+            }
         }
     }
 }
