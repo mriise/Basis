@@ -6,6 +6,7 @@ using Unity.Burst;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.UIElements;
 namespace Basis.Scripts.TransformBinders.BoneControl
 {
     [System.Serializable]
@@ -51,79 +52,83 @@ namespace Basis.Scripts.TransformBinders.BoneControl
 
         public bool IsHintRoleIgnoreRotation = false;
         [BurstCompile]
-        public void ComputeMovement(float DeltaTime)
+        public void ComputeMovement(BaseBoneDriver BaseBoneDriver, float DeltaTime)
         {
-            NotProcessing = !HasBone || Cullable;
-            if (NotProcessing)
+            if (HasBone)
             {
-                return;
-            }
-            if (HasTracked == BasisHasTracked.HasTracker)
-            {
-
-                ///this needs to be refactored to understand each part of the body and a generic mode.
-                ///start off with a distance limiter for the hips.
-                ///could also be a step at the end for every targeted type
-                if (InverseOffsetFromBone.Use)
+                if (HasTracked == BasisHasTracked.HasTracker)
                 {
 
-                    if (HasInverseOffsetOverride)
+                    ///this needs to be refactored to understand each part of the body and a generic mode.
+                    ///start off with a distance limiter for the hips.
+                    ///could also be a step at the end for every targeted type
+                    if (InverseOffsetFromBone.Use)
                     {
-                        VirtualInverseOffsetRun?.Invoke();
-                    }
-                    else
-                    {
-                        if (IsHintRoleIgnoreRotation == false)
+
+                        if (HasInverseOffsetOverride)
                         {
-                            // Update the position of the secondary transform to maintain the initial offset
-                            OutGoingData.position = Vector3.Lerp(OutGoingData.position, IncomingData.position + math.mul(IncomingData.rotation, InverseOffsetFromBone.position), trackersmooth);
-                            // Update the rotation of the secondary transform to maintain the initial offset
-                            OutGoingData.rotation = Quaternion.Slerp(OutGoingData.rotation, math.mul(IncomingData.rotation, InverseOffsetFromBone.rotation), trackersmooth);
+                            VirtualInverseOffsetRun?.Invoke();
                         }
                         else
                         {
-                            OutGoingData.rotation = Quaternion.identity;
-                            // Update the position of the secondary transform to maintain the initial offset
-                            OutGoingData.position = Vector3.Lerp(OutGoingData.position, IncomingData.position + math.mul(IncomingData.rotation, InverseOffsetFromBone.position), trackersmooth);
+                            if (IsHintRoleIgnoreRotation == false)
+                            {
+                                // Update the position of the secondary transform to maintain the initial offset
+                                OutGoingData.position = Vector3.Lerp(OutGoingData.position, IncomingData.position + math.mul(IncomingData.rotation, InverseOffsetFromBone.position), trackersmooth);
+                                // Update the rotation of the secondary transform to maintain the initial offset
+                                OutGoingData.rotation = Quaternion.Slerp(OutGoingData.rotation, math.mul(IncomingData.rotation, InverseOffsetFromBone.rotation), trackersmooth);
+                            }
+                            else
+                            {
+                                OutGoingData.rotation = Quaternion.identity;
+                                // Update the position of the secondary transform to maintain the initial offset
+                                OutGoingData.position = Vector3.Lerp(OutGoingData.position, IncomingData.position + math.mul(IncomingData.rotation, InverseOffsetFromBone.position), trackersmooth);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        ///this is going to the generic always accurate fake skeleton
+                        OutGoingData.rotation = IncomingData.rotation;
+                        OutGoingData.position = IncomingData.position;
+                    }
+                }
+                else
+                {
+                    if (HasVirtualOverride)
+                    {
+                        VirtualRun?.Invoke();
+                    }
+                    else
+                    {
+                        //this is essentially the default behaviour, most of it is normally Virtually Overriden
+                        //relying on a one size fits all shoe is wrong and as of such we barely use this anymore.
+                        if (HasRotationalTarget)
+                        {
+                            OutGoingData.rotation = ApplyLerpToQuaternion(DeltaTime, LastRunData.rotation, Target.OutGoingData.rotation);
+                        }
+
+                        if (HasTarget)
+                        {
+                            // Apply the rotation offset using math.mul
+                            float3 customDirection = math.mul(Target.OutGoingData.rotation, Offset);
+
+                            // Calculate the target outgoing position with the rotated offset
+                            float3 targetPosition = Target.OutGoingData.position + customDirection;
+
+                            float lerpFactor = ClampInterpolationFactor(LerpAmount, DeltaTime);
+
+                            // Interpolate between the last position and the target position
+                            OutGoingData.position = math.lerp(LastRunData.position, targetPosition, lerpFactor);
                         }
                     }
                 }
-                else
-                {
-                    ///this is going to the generic always accurate fake skeleton
-                    OutGoingData.rotation = IncomingData.rotation;
-                    OutGoingData.position = IncomingData.position;
-                }
-            }
-            else
-            {
-                if (HasVirtualOverride)
-                {
-                    VirtualRun?.Invoke();
-                }
-                else
-                {
-                    //this is essentially the default behaviour, most of it is normally Virtually Overriden
-                    //relying on a one size fits all shoe is wrong and as of such we barely use this anymore.
-                    if (HasRotationalTarget)
-                    {
-                        OutGoingData.rotation = ApplyLerpToQuaternion(DeltaTime, LastRunData.rotation, Target.OutGoingData.rotation);
-                    }
 
-                    if (HasTarget)
-                    {
-                        // Apply the rotation offset using math.mul
-                        float3 customDirection = math.mul(Target.OutGoingData.rotation, Offset);
+                BaseBoneDriver.TrackedBone.SetLocalPositionAndRotation(OutGoingData.position, OutGoingData.rotation);
+                BaseBoneDriver.TrackedBone.GetPositionAndRotation(out Vector3 position, out Quaternion Rotation);
 
-                        // Calculate the target outgoing position with the rotated offset
-                        float3 targetPosition = Target.OutGoingData.position + customDirection;
-
-                        float lerpFactor = ClampInterpolationFactor(LerpAmount, DeltaTime);
-
-                        // Interpolate between the last position and the target position
-                        OutGoingData.position = math.lerp(LastRunData.position, targetPosition, lerpFactor);
-                    }
-                }
+                OutgoingWorldData.position = position;
+                OutgoingWorldData.rotation = Rotation;
             }
         }
         [BurstCompile]
@@ -169,17 +174,12 @@ namespace Basis.Scripts.TransformBinders.BoneControl
             // Clamp the interpolation factor to ensure it stays between 0 and 1
             return math.clamp(lerpAmount * DeltaTime, 0f, 1f);
         }
-
-        [HideInInspector]
-        public bool Cullable = false;
         [SerializeField]
         public string Name;
         [SerializeField]
         [HideInInspector]
         private Color gizmoColor = Color.blue;
         [SerializeField]
-        [HideInInspector]
-        public bool HasBone = false;
         //  [SerializeField]
         //  public Transform BoneTransform;
         [HideInInspector]
@@ -203,8 +203,6 @@ namespace Basis.Scripts.TransformBinders.BoneControl
                 }
             }
         }
-        [HideInInspector]
-        public bool NotProcessing = false;
         // Events for property changes
         public Action OnHasRigChanged;
 
@@ -258,29 +256,27 @@ namespace Basis.Scripts.TransformBinders.BoneControl
         [HideInInspector]
         public BasisGeneralLocation GeneralLocation;
         public Color Color { get => gizmoColor; set => gizmoColor = value; }
+        public bool HasBone { get; internal set; }
+
         public void Initialize()
         {
-            if (HasBone)
-            {
-                LastRunData.position = OutGoingData.position;
-                LastRunData.rotation = OutGoingData.rotation;
-            }
+            OutgoingWorldData.position = Vector3.zero;
+            OutgoingWorldData.rotation = Quaternion.identity;
+            LastRunData.position = OutGoingData.position;
+            LastRunData.rotation = OutGoingData.rotation;
+            HasBone = true; 
         }
         public void ApplyMovement(BaseBoneDriver BaseBoneDriver)
         {
-            if (NotProcessing)
-            {
-                return;
-            }
 
             LastRunData.position = OutGoingData.position;
             LastRunData.rotation = OutGoingData.rotation;
 
-            BaseBoneDriver.TrackedBone.transform.SetLocalPositionAndRotation(OutGoingData.position, OutGoingData.rotation);
-            BaseBoneDriver.TrackedBone.transform.GetPositionAndRotation(out Vector3 position, out Quaternion Rotation);
+            BaseBoneDriver.TrackedBone.SetLocalPositionAndRotation(OutGoingData.position, OutGoingData.rotation);
+            BaseBoneDriver.TrackedBone.GetPositionAndRotation(out Vector3 position, out Quaternion Rotation);
 
-             OutgoingWorldData.position = position;
-             OutgoingWorldData.rotation = Rotation;
+            OutgoingWorldData.position = position;
+            OutgoingWorldData.rotation = Rotation;
         }
     }
 }

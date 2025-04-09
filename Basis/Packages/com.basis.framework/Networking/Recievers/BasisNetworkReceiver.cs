@@ -41,7 +41,7 @@ namespace Basis.Scripts.Networking.Receivers
         public float interpolationTime;
         public double TimeBeforeCompletion;
         public double TimeInThePast;
-        public bool HasAvatarInitalized;
+        public bool HasAvatarInitialized;
 
         public BasisOneEuroFilterParallelJob oneEuroFilterJob;
         public  float MinCutoff = 0.001f;
@@ -58,7 +58,7 @@ namespace Basis.Scripts.Networking.Receivers
         {
             if (Ready)
             {
-                if (HasAvatarInitalized)
+                if (HasAvatarInitialized)
                 {
                     // Calculate interpolation time
                     interpolationTime = Mathf.Clamp01((float)((TimeAsDouble - TimeInThePast) / TimeBeforeCompletion));
@@ -150,7 +150,7 @@ namespace Basis.Scripts.Networking.Receivers
             {
                 try
                 {
-                    if (HasAvatarInitalized)
+                    if (HasAvatarInitialized)
                     {
                         OutputRotation = math.slerp(First.rotation, Last.rotation, interpolationTime);
 
@@ -162,11 +162,6 @@ namespace Basis.Scripts.Networking.Receivers
                         PoseHandler.SetHumanPose(ref HumanPose);
 
                         RemotePlayer.RemoteBoneDriver.SimulateAndApply(DeltaTime);
-
-                        if (RemotePlayer.HasJiggles)
-                        {
-                            RemotePlayer.BasisAvatarStrainJiggleDriver.Simulate();
-                        }
                         AudioReceiverModule.AudioSourceTransform.SetPositionAndRotation(Player.Mouth.OutgoingWorldData.position, Player.Mouth.OutgoingWorldData.rotation);
                      //   RemotePlayer.BasisAvatar.FaceVisemeMesh.transform.position = RemotePlayer.RemoteBoneDriver.Hips.OutgoingWorldData.position;
                     }
@@ -206,7 +201,7 @@ namespace Basis.Scripts.Networking.Receivers
             }
             if (Ready)
             {
-                if (HasAvatarInitalized)
+                if (HasAvatarInitialized)
                 {
                     PayloadQueue.Enqueue(avatarBuffer);
                     while (PayloadQueue.Count > BufferCapacityBeforeCleanup)
@@ -218,7 +213,7 @@ namespace Basis.Scripts.Networking.Receivers
                 {
                     First = avatarBuffer;
                     Last = avatarBuffer;
-                    HasAvatarInitalized = true;
+                    HasAvatarInitialized = true;
                 }
             }
             else

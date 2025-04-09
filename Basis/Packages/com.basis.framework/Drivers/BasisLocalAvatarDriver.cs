@@ -208,12 +208,12 @@ namespace Basis.Scripts.Drivers
         public void CalibrateOffsets()
         {
             BasisLocalBoneDriver Driver = BasisLocalPlayer.Instance.LocalBoneDriver;
-            /* HERE LD
+            Driver.transform.GetPositionAndRotation(out Vector3 Position, out Quaternion Rotation);
             for (int Index = 0; Index < Driver.ControlsLength; Index++)
             {
-                Driver.Controls[Index].BoneTransform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+                Driver.Controls[Index].OutgoingWorldData.position = Position;
+                Driver.Controls[Index].OutgoingWorldData.rotation = Rotation;
             }
-            */
             if (Driver.FindBone(out BasisBoneControl Head, BasisBoneTrackedRole.Head) && Driver.FindBone(out BasisBoneControl Hips, BasisBoneTrackedRole.Hips))
             {
                 // Default T-pose local positions
@@ -298,6 +298,10 @@ namespace Basis.Scripts.Drivers
             {
                 Destroy(RightToeRig.gameObject);
             }
+            // if (Builder != null)
+            // {
+            // Destroy(Builder);
+            // }
         }
         public void ComputeOffsets(BaseBoneDriver BaseBoneDriver)
         {

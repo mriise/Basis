@@ -111,13 +111,15 @@ namespace Basis.Scripts.Networking.Transmitters
             distanceJob.HearingResults.CopyTo(HearingIndex);
             distanceJob.AvatarResults.CopyTo(AvatarIndex);
 
+            distanceJob.distances.CopyTo(CalculatedDistances);
+
             MicrophoneOutputCheck();
-            Iteration();
+            IterationOverRemotePlayers();
         }
         /// <summary>
         /// how far we can hear locally
         /// </summary>
-        public void Iteration()
+        public void IterationOverRemotePlayers()
         {
             for (int Index = 0; Index < IndexLength; Index++)
             {
@@ -134,6 +136,14 @@ namespace Basis.Scripts.Networking.Transmitters
                         Rec.AudioReceiverModule.StopAudio();
                         Rec.RemotePlayer.OutOfRangeFromLocal = true;
                     }
+                }
+                if (Rec.RemotePlayer.HasJiggles)
+                {
+                   if(float.IsNaN(CalculatedDistances[Index]) || CalculatedDistances[Index] == 0)
+                    {
+                        CalculatedDistances[Index] = 0.1f;
+                    }
+                    Rec.RemotePlayer.BasisAvatarStrainJiggleDriver.Simulate(CalculatedDistances[Index]);
                 }
                 /*
                 if (Rec.RemotePlayer.IsNotFallBack != AvatarIndex[Index])
@@ -246,6 +256,7 @@ namespace Basis.Scripts.Networking.Transmitters
                 BasisDebug.Log("Already Ready");
             }
         }
+        public float[] CalculatedDistances;
         public void ScheduleCheck()
         {
             distanceJob.AvatarDistance = SMModuleDistanceBasedReductions.AvatarRange;
@@ -259,6 +270,7 @@ namespace Basis.Scripts.Networking.Transmitters
                 MicrophoneRangeIndex = new bool[BasisNetworkManagement.ReceiverCount];
                 HearingIndex = new bool[BasisNetworkManagement.ReceiverCount];
                 AvatarIndex = new bool[BasisNetworkManagement.ReceiverCount];
+                CalculatedDistances = new float[BasisNetworkManagement.ReceiverCount];
 
                 IndexLength = BasisNetworkManagement.ReceiverCount;
                 HearingIndexToId = BasisNetworkManagement.RemotePlayers.Keys.ToArray();

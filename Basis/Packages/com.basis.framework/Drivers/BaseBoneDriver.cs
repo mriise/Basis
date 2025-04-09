@@ -32,9 +32,17 @@ namespace Basis.Scripts.Drivers
             OnSimulate?.Invoke();
             for (int Index = 0; Index < ControlsLength; Index++)
             {
-                Controls[Index].ComputeMovement(deltaTime);
+                Controls[Index].ComputeMovement(this, deltaTime);
             }
             OnPostSimulate?.Invoke();
+            ReadyToRead?.Invoke();
+            if (BasisGizmoManager.UseGizmos)
+            {
+                for (int Index = 0; Index < ControlsLength; Index++)
+                {
+                    DrawGizmos(Controls[Index]);
+                }
+            }
         }
         public void SimulateWithoutLerp()
         {
@@ -46,16 +54,9 @@ namespace Basis.Scripts.Drivers
             {
                 Controls[Index].LastRunData.position = Controls[Index].OutGoingData.position;
                 Controls[Index].LastRunData.rotation = Controls[Index].OutGoingData.rotation;
-                Controls[Index].ComputeMovement(DeltaTime);
+                Controls[Index].ComputeMovement(this,DeltaTime);
             }
             OnPostSimulate?.Invoke();
-        }
-        public void ApplyMovement()
-        {
-            for (int Index = 0; Index < ControlsLength; Index++)
-            {
-                Controls[Index].ApplyMovement(this);
-            }
             ReadyToRead?.Invoke();
             if (BasisGizmoManager.UseGizmos)
             {
@@ -68,12 +69,10 @@ namespace Basis.Scripts.Drivers
         public void SimulateAndApply( float deltaTime)
         {
             Simulate(deltaTime);
-            ApplyMovement();
         }
         public void SimulateAndApplyWithoutLerp()
         {
             SimulateWithoutLerp();
-            ApplyMovement();
         }
         public void RemoveAllListeners()
         {
@@ -151,12 +150,10 @@ namespace Basis.Scripts.Drivers
         public void SetupRole(int Index,Transform Parent, Color Color,out BasisBoneControl BasisBoneControl, out BasisBoneTrackedRole role)
         {
             role = (BasisBoneTrackedRole)Index;
-            BasisBoneControl = new BasisBoneControl();
-          //  GameObject TrackedBone = new GameObject(role.ToString());
-        //    TrackedBone.transform.parent = Parent;
-          //  BasisBoneControl.BoneTransform = TrackedBone.transform;
-            BasisBoneControl.HasBone = true;
-            BasisBoneControl.GeneralLocation = BasisAvatarIKStageCalibration.FindGeneralLocation(role);
+            BasisBoneControl = new BasisBoneControl
+            {
+                GeneralLocation = BasisAvatarIKStageCalibration.FindGeneralLocation(role)
+            };
             BasisBoneControl.Initialize();
             FillOutBasicInformation(BasisBoneControl, role.ToString(), Color);
         }
@@ -253,10 +250,6 @@ namespace Basis.Scripts.Drivers
         public static float HandGizmoSize = 0.015f;
         public void DrawGizmos(BasisBoneControl Control)
         {
-            if (Control.Cullable)
-            {
-                return;
-            }
             if (Control.HasBone)
             {
                 Vector3 BonePosition = Control.OutgoingWorldData.position;

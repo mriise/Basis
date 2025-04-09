@@ -306,8 +306,7 @@ namespace Basis.Scripts.BasisSdk.Players
             AvatarDriver.Simulate();
             if (HasJiggles)
             {
-                BasisAvatarStrainJiggleDriver.Simulate();
-               BasisAvatarStrainJiggleDriver.LocalSimulate();
+                BasisAvatarStrainJiggleDriver.Simulate(0);
             }
         }
     }
