@@ -10,6 +10,7 @@ using Basis.Scripts.Common;
 using System.Collections.Generic;
 using Basis.Scripts.UI.UI_Panels;
 using Basis.Scripts.TransformBinders.BoneControl;
+using Unity.Mathematics;
 namespace Basis.Scripts.BasisSdk.Players
 {
     public class BasisLocalPlayer : BasisPlayer
@@ -69,6 +70,8 @@ namespace Basis.Scripts.BasisSdk.Players
         public MicrophoneRecorder MicrophoneRecorder;
         public bool SpawnPlayerOnSceneLoad = true;
         public const string DefaultAvatar = "LoadingAvatar";
+        public BasisBoneControl Head;
+        public BasisBoneControl Hips;
         public async Task LocalInitialize()
         {
             if (BasisHelpers.CheckInstance(Instance))
@@ -79,6 +82,9 @@ namespace Basis.Scripts.BasisSdk.Players
             OnLocalPlayerCreated?.Invoke();
             IsLocal = true;
             LocalBoneDriver.CreateInitialArrays(LocalBoneDriver.transform, true);
+            LocalBoneDriver.FindBone(out Head, BasisBoneTrackedRole.Head);
+            LocalBoneDriver.FindBone(out Hips, BasisBoneTrackedRole.Hips);
+
             BasisDeviceManagement.Instance.InputActions.Initialize(this);
             CameraDriver.gameObject.SetActive(true);
             //  FootPlacementDriver = BasisHelpers.GetOrAddComponent<BasisFootPlacementDriver>(this.gameObject);
@@ -124,6 +130,7 @@ namespace Basis.Scripts.BasisSdk.Players
                 BasisDebug.LogError("Cant Find Scene Factory");
             }
             BasisUILoadingBar.Initalize();
+
         }
         public async Task LoadInitialAvatar(BasisDataStore.BasisSavedAvatar LastUsedAvatar)
         {
@@ -244,20 +251,55 @@ namespace Basis.Scripts.BasisSdk.Players
                 }
             }
         }
+        public bool ToggleAvatarSim = false;
+        public float currentDistance;
+        public float3 direction;
+        public float overshoot;
+        public float3 correction;
+        public float3 output;
         public void SimulateAvatar()
         {
-            if (BasisAvatar != null)
+            if (BasisAvatar == null) return;
+
+
+            // Current world positions
+            Vector3 headPosition = Head.OutgoingWorldData.position;
+            Vector3 hipsPosition = Hips.OutgoingWorldData.position;
+            currentDistance = Vector3.Distance(headPosition, hipsPosition);
+
+
+            if (currentDistance <= AvatarDriver.MaxExtendedDistance)
             {
-
-                if (Instance.LocalBoneDriver.FindBone(out BasisBoneControl Hips, BasisBoneTrackedRole.Hips))
-                {
-                    Vector3 HipsVector = Hips.OutgoingWorldData.position;
-
-                    Vector3 Output = new Vector3(BasisAvatar.transform.position.x, HipsVector.y - Hips.TposeLocal.position.y, BasisAvatar.transform.position.z);
-
-                    BasisAvatar.transform.position = Output;
-                }
+                // Within range: follow hips freely
+                output = -Hips.TposeLocal.position;
             }
+            else
+            {
+                // Direction from hips to head
+                direction = (hipsPosition - headPosition).normalized;
+                // Head too far: pull hips toward head to reduce the stretch
+                overshoot = currentDistance - AvatarDriver.MaxExtendedDistance;
+
+                // Move hips slightly toward head to restore default distance
+                correction = direction * overshoot;
+
+                // Apply correction to T-pose hips
+                float3 correctedHips = Hips.TposeLocal.position + correction;
+
+                // Negate to match transform.localPosition logic
+                output = -correctedHips;
+            }
+
+            //    BasisAvatar.transform.position = Hips.OutgoingWorldData.position + output;
+
+            Vector3 parentWorldPosition = Hips.OutgoingWorldData.position;
+            Quaternion parentWorldRotation = Hips.OutgoingWorldData.rotation;
+
+            Vector3 childWorldPosition = parentWorldPosition + parentWorldRotation * output;
+            Quaternion childWorldRotation = parentWorldRotation * quaternion.identity;
+            BasisAvatar.transform.SetPositionAndRotation(childWorldPosition, childWorldRotation);
+
+            AvatarDriver.Simulate();
         }
     }
 }

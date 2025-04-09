@@ -149,7 +149,7 @@ namespace Basis.Scripts.Drivers
             [SerializeField] public BasisBoneControl lowerLeg;
             [SerializeField] public BasisBoneControl foot;
             [SerializeField] public BasisFootPlacementDriver driver;
-            [SerializeField] public TwoBoneIKConstraint ikConstraint;
+            [SerializeField] public BasisTwoBoneIKConstraint ikConstraint;
             [SerializeField] public BasisIKFootSolver otherFoot;
 
             [SerializeField] public float percentage = 0.25f;
