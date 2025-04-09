@@ -34,7 +34,8 @@ namespace Basis.Scripts.BasisSdk.Players
                 HasEvents = true;
             }
             RemoteBoneDriver.FindBone(out MouthControl, BasisBoneTrackedRole.Mouth);
-            AudioSourceTransform.parent = MouthControl.BoneTransform;
+            BasisDebug.LogError("AudioSourceTransform was not implemented");
+          //here LD  AudioSourceTransform.parent = MouthControl.
             await BasisRemoteNamePlate.LoadRemoteNamePlate(this);
         }
         public async Task LoadAvatarFromInitial(ClientAvatarChangeMessage CACM)

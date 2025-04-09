@@ -90,7 +90,7 @@ public static class BasisMenuItemsEditor
     {
         BasisLocalPlayer.Instance.LocalBoneDriver.FindBone(out BasisBoneControl RightHand, BasisBoneTrackedRole.RightHand);
         BasisInputXRSimulate RightTracker =  FindSimulate().CreatePhysicalTrackedDevice("{indexcontroller}valve_controller_knu_3_0_right" + UnityEngine.Random.Range(-9999999999999, 999999999999), "{indexcontroller}valve_controller_knu_3_0_right", BasisBoneTrackedRole.RightHand, true);
-        RightTracker.FollowMovement.position = RightHand.BoneTransform.position;
+        RightTracker.FollowMovement.position = RightHand.OutgoingWorldData.position;
         RightTracker.FollowMovement.rotation = Quaternion.identity;
         BasisDeviceManagement.ShowTrackers();
     }
@@ -99,7 +99,7 @@ public static class BasisMenuItemsEditor
     {
         BasisLocalPlayer.Instance.LocalBoneDriver.FindBone(out BasisBoneControl LeftHand, BasisBoneTrackedRole.LeftHand);
         BasisInputXRSimulate LeftTracker =  FindSimulate().CreatePhysicalTrackedDevice("{indexcontroller}valve_controller_knu_3_0_left" + UnityEngine.Random.Range(-9999999999999, 999999999999), "{indexcontroller}valve_controller_knu_3_0_left", BasisBoneTrackedRole.LeftHand, true);
-        LeftTracker.FollowMovement.position = LeftHand.BoneTransform.position;
+        LeftTracker.FollowMovement.position = LeftHand.OutgoingWorldData.position;
         LeftTracker.FollowMovement.rotation = Quaternion.identity;
         BasisDeviceManagement.ShowTrackers();
     }
@@ -108,7 +108,7 @@ public static class BasisMenuItemsEditor
     {
         BasisLocalPlayer.Instance.LocalBoneDriver.FindBone(out BasisBoneControl LeftHand, BasisBoneTrackedRole.LeftHand);
         BasisInputXRSimulate LeftTracker =  FindSimulate().CreatePhysicalTrackedDevice("Unknown" + UnityEngine.Random.Range(-9999999999999, 999999999999), "Unknown", BasisBoneTrackedRole.CenterEye, false);
-        LeftTracker.FollowMovement.position = LeftHand.BoneTransform.position;
+        LeftTracker.FollowMovement.position = LeftHand.OutgoingWorldData.position;
         LeftTracker.FollowMovement.rotation = Quaternion.identity;
         BasisDeviceManagement.ShowTrackers();
     }

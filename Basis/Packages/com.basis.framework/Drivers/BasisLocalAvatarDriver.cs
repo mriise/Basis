@@ -47,7 +47,7 @@ namespace Basis.Scripts.Drivers
             ApplyBoneIKTarget(LeftHandTwoBoneIK, Control.OutgoingWorldData.position, Control.OutgoingWorldData.rotation);
 
             LocalDriver.FindBone(out Control, BasisBoneTrackedRole.RightHand);
-            ApplyBoneIKTarget(RightHandTwoBoneIK, Control.OutgoingWorldData.position, Control.BoneTransform.rotation);
+            ApplyBoneIKTarget(RightHandTwoBoneIK, Control.OutgoingWorldData.position, Control.OutgoingWorldData.rotation);
 
             // TBA
 
@@ -208,10 +208,12 @@ namespace Basis.Scripts.Drivers
         public void CalibrateOffsets()
         {
             BasisLocalBoneDriver Driver = BasisLocalPlayer.Instance.LocalBoneDriver;
+            /* HERE LD
             for (int Index = 0; Index < Driver.ControlsLength; Index++)
             {
                 Driver.Controls[Index].BoneTransform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
             }
+            */
             if (Driver.FindBone(out BasisBoneControl Head, BasisBoneTrackedRole.Head) && Driver.FindBone(out BasisBoneControl Hips, BasisBoneTrackedRole.Hips))
             {
                 // Default T-pose local positions

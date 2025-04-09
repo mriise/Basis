@@ -124,9 +124,8 @@ namespace Basis.Scripts.UI.UI_Panels
                     // Check if the user is in desktop mode
                     if (!BasisDeviceManagement.IsUserInDesktop())
                     {
-                        // Get hand bone model's position and rotation
-                        hand.BoneTransform.GetPositionAndRotation(out position, out rotation);
-
+                        position = hand.OutgoingWorldData.position;
+                        rotation = hand.OutgoingWorldData.rotation;
                         // Set new position and rotation
                         transform.SetPositionAndRotation(position + (menuPosOffset * LocalPlayer.CurrentHeight.EyeRatioPlayerToDefaultScale), rotation * Quaternion.Euler(menuRotOffset));
                     }

@@ -256,8 +256,8 @@ namespace Basis.Scripts.Drivers
 
             private void OnFootFinishedMoving()
             {
-                rotation = Quaternion.Euler(foot.BoneTransform.localEulerAngles.x, driver.Hips.BoneTransform.localEulerAngles.y, foot.BoneTransform.localEulerAngles.z);
-                position = Vector3.Lerp(position, bottomPointLocal, newFootPositionLerpSpeed * Time.deltaTime);
+             //   rotation = Quaternion.Euler(foot.BoneTransform.localEulerAngles.x, driver.Hips.BoneTransform.localEulerAngles.y, foot.BoneTransform.localEulerAngles.z);
+            //    position = Vector3.Lerp(position, bottomPointLocal, newFootPositionLerpSpeed * Time.deltaTime);
             }
 
             public void DrawGizmos()

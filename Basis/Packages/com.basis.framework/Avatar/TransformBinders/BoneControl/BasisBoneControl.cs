@@ -1,5 +1,6 @@
 using Basis.Scripts.Avatar;
 using Basis.Scripts.Common;
+using Basis.Scripts.Drivers;
 using System;
 using Unity.Burst;
 using Unity.Mathematics;
@@ -179,8 +180,8 @@ namespace Basis.Scripts.TransformBinders.BoneControl
         [SerializeField]
         [HideInInspector]
         public bool HasBone = false;
-        [SerializeField]
-        public Transform BoneTransform;
+        //  [SerializeField]
+        //  public Transform BoneTransform;
         [HideInInspector]
         public bool HasEvents = false;
         // Events for property changes
@@ -261,24 +262,25 @@ namespace Basis.Scripts.TransformBinders.BoneControl
         {
             if (HasBone)
             {
-                BoneTransform.GetLocalPositionAndRotation(out Vector3 position, out Quaternion Rotation);
-                LastRunData.position = position;
-                LastRunData.rotation = Rotation;
+                LastRunData.position = OutGoingData.position;
+                LastRunData.rotation = OutGoingData.rotation;
             }
         }
-        public void ApplyMovement()
+        public void ApplyMovement(BaseBoneDriver BaseBoneDriver)
         {
             if (NotProcessing)
             {
                 return;
             }
+
             LastRunData.position = OutGoingData.position;
             LastRunData.rotation = OutGoingData.rotation;
-            BoneTransform.SetLocalPositionAndRotation(OutGoingData.position, OutGoingData.rotation);
-            BoneTransform.GetPositionAndRotation(out Vector3 position, out Quaternion Rotation);
 
-            OutgoingWorldData.position = position;
-            OutgoingWorldData.rotation = Rotation;
+            BaseBoneDriver.TrackedBone.transform.SetLocalPositionAndRotation(OutGoingData.position, OutGoingData.rotation);
+            BaseBoneDriver.TrackedBone.transform.GetPositionAndRotation(out Vector3 position, out Quaternion Rotation);
+
+             OutgoingWorldData.position = position;
+             OutgoingWorldData.rotation = Rotation;
         }
     }
 }

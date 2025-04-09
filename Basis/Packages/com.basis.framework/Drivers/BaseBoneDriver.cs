@@ -22,6 +22,7 @@ namespace Basis.Scripts.Drivers
         public event SimulationHandler OnSimulate;
         public event SimulationHandler OnPostSimulate;
         public OrderedDelegate ReadyToRead = new OrderedDelegate();
+        public Transform TrackedBone;
         /// <summary>
         /// call this after updating the bone data
         /// </summary>
@@ -53,7 +54,7 @@ namespace Basis.Scripts.Drivers
         {
             for (int Index = 0; Index < ControlsLength; Index++)
             {
-                Controls[Index].ApplyMovement();
+                Controls[Index].ApplyMovement(this);
             }
             ReadyToRead?.Invoke();
             if (BasisGizmoManager.UseGizmos)
@@ -115,29 +116,31 @@ namespace Basis.Scripts.Drivers
         }
         public void CreateInitialArrays(Transform Parent, bool IsLocal)
         {
+            TrackedBone = new GameObject("[Converter]").transform;
+            TrackedBone.transform.parent = Parent;
             trackedRoles = new BasisBoneTrackedRole[] { };
             Controls = new BasisBoneControl[] { };
             int Length;
             if (IsLocal)
             {
-                 Length = Enum.GetValues(typeof(BasisBoneTrackedRole)).Length;
+                Length = Enum.GetValues(typeof(BasisBoneTrackedRole)).Length;
             }
             else
             {
-                 Length = 6;
+                Length = 6;
             }
             Color[] Colors = GenerateRainbowColors(Length);
             List<BasisBoneControl> newControls = new List<BasisBoneControl>();
             List<BasisBoneTrackedRole> Roles = new List<BasisBoneTrackedRole>();
             for (int Index = 0; Index < Length; Index++)
             {
-                SetupRole(Index, Parent, Colors[Index],out BasisBoneControl Control,out BasisBoneTrackedRole Role);
+                SetupRole(Index, Parent, Colors[Index], out BasisBoneControl Control, out BasisBoneTrackedRole Role);
                 newControls.Add(Control);
                 Roles.Add(Role);
             }
-            if(IsLocal == false)
+            if (IsLocal == false)
             {
-                SetupRole(22, Parent,Color.blue, out BasisBoneControl Control, out BasisBoneTrackedRole Role);
+                SetupRole(22, Parent, Color.blue, out BasisBoneControl Control, out BasisBoneTrackedRole Role);
                 newControls.Add(Control);
                 Roles.Add(Role);
             }
@@ -149,9 +152,9 @@ namespace Basis.Scripts.Drivers
         {
             role = (BasisBoneTrackedRole)Index;
             BasisBoneControl = new BasisBoneControl();
-            GameObject TrackedBone = new GameObject(role.ToString());
-            TrackedBone.transform.parent = Parent;
-            BasisBoneControl.BoneTransform = TrackedBone.transform;
+          //  GameObject TrackedBone = new GameObject(role.ToString());
+        //    TrackedBone.transform.parent = Parent;
+          //  BasisBoneControl.BoneTransform = TrackedBone.transform;
             BasisBoneControl.HasBone = true;
             BasisBoneControl.GeneralLocation = BasisAvatarIKStageCalibration.FindGeneralLocation(role);
             BasisBoneControl.Initialize();

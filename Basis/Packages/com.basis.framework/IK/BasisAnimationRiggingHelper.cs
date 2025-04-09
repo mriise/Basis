@@ -20,7 +20,7 @@ public static class BasisAnimationRiggingHelper
         DampedTransform DT = BasisHelpers.GetOrAddComponent<DampedTransform>(DTData);
 
         DT.data.constrainedObject = Source;
-        DT.data.sourceObject = Target.BoneTransform;
+      //  DT.data.sourceObject = Target.BoneTransform;
         DT.data.dampRotation = rotationWeight;
         DT.data.dampPosition = positionWeight;
         DT.data.maintainAim = false;
@@ -33,7 +33,7 @@ public static class BasisAnimationRiggingHelper
         MultiAimConstraint DT = BasisHelpers.GetOrAddComponent<MultiAimConstraint>(DTData);
         DT.data.constrainedObject = Source;
         WeightedTransformArray Array = new WeightedTransformArray(0);
-        WeightedTransform Weighted = new WeightedTransform(Target, rotationWeight);
+        WeightedTransform Weighted = new WeightedTransform(null, rotationWeight);
         Array.Add(Weighted);
         DT.data.sourceObjects = Array;
         DT.data.maintainOffset = false;
@@ -52,7 +52,7 @@ public static class BasisAnimationRiggingHelper
         MultiAimConstraint DT = BasisHelpers.GetOrAddComponent<MultiAimConstraint>(DTData);
         DT.data.constrainedObject = Source;
         WeightedTransformArray Array = new WeightedTransformArray(0);
-        WeightedTransform Weighted = new WeightedTransform(Target.BoneTransform, rotationWeight);
+        WeightedTransform Weighted = new WeightedTransform(null, rotationWeight);
         Array.Add(Weighted);
         DT.data.sourceObjects = Array;
         DT.data.maintainOffset = false;
@@ -71,7 +71,7 @@ public static class BasisAnimationRiggingHelper
         MultiPositionConstraint DT = BasisHelpers.GetOrAddComponent<MultiPositionConstraint>(DTData);
         DT.data.constrainedObject = Source;
         WeightedTransformArray Array = new WeightedTransformArray(0);
-        WeightedTransform Weighted = new WeightedTransform(Target.BoneTransform, positionWeight);
+        WeightedTransform Weighted = new WeightedTransform(null, positionWeight);
         Array.Add(Weighted);
         DT.data.sourceObjects = Array;
         DT.data.maintainOffset = false;
@@ -86,7 +86,7 @@ public static class BasisAnimationRiggingHelper
         GameObject DTData = CreateAndSetParent(Parent.transform, $"Bone Role {Role.ToString()}");
         OverrideTransform DT = BasisHelpers.GetOrAddComponent<OverrideTransform>(DTData);
         DT.data.constrainedObject = Source;
-        DT.data.sourceObject = Target.BoneTransform;
+        DT.data.sourceObject = null;
         DT.data.rotationWeight = rotationWeight;
         DT.data.positionWeight = positionWeight;
         DT.data.space = Space;
@@ -103,8 +103,8 @@ public static class BasisAnimationRiggingHelper
         Frame[1] = new Keyframe(1, 1);
         DT.data.curve = new AnimationCurve(Frame);
 
-        DT.data.tip = TipTarget.BoneTransform;
-        DT.data.root = RootTarget.BoneTransform;
+        DT.data.tip = null;
+        DT.data.root = null;
         DT.data.tipTarget = tip;
         DT.data.rootTarget = root;
         //GeneratedRequiredTransforms(root, References.Hips);
@@ -117,15 +117,16 @@ public static class BasisAnimationRiggingHelper
         GameObject BoneRole = CreateAndSetParent(Parent.transform, $"Bone Role {TargetRole.ToString()}");
         TwoBoneIKConstraint = BasisHelpers.GetOrAddComponent<BasisTwoBoneIKConstraint>(BoneRole);
         EnableTwoBoneIk(TwoBoneIKConstraint, maintainTargetPositionOffset, maintainTargetRotationOffset);
-        BoneControl.BoneTransform.GetPositionAndRotation(out TwoBoneIKConstraint.data.TargetPosition, out Quaternion Rotation);
-
+        Quaternion Rotation = BoneControl.OutgoingWorldData.rotation;
+        TwoBoneIKConstraint.data.TargetPosition = BoneControl.OutgoingWorldData.position;
         TwoBoneIKConstraint.data.TargetRotation = Rotation.eulerAngles;
         if (UseBoneRole)
         {
             if (driver.FindBone(out BasisBoneControl BendBoneControl, BendRole))
             {
-                BendBoneControl.BoneTransform.GetPositionAndRotation(out TwoBoneIKConstraint.data.HintPosition, out Quaternion HintRotation);
+                Quaternion HintRotation = BendBoneControl.OutgoingWorldData.rotation;
                 TwoBoneIKConstraint.data.HintRotation = HintRotation.eulerAngles;
+                TwoBoneIKConstraint.data.HintPosition = BoneControl.OutgoingWorldData.position;
             }
         }
         TwoBoneIKConstraint.data.root = root;

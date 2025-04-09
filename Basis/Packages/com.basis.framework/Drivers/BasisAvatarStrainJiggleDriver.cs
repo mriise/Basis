@@ -32,7 +32,8 @@ namespace Basis.Scripts.Drivers
                     else
                     {
                         BasisRemotePlayer Remote = (BasisRemotePlayer)player;
-                        JiggleRigRendererLOD.TargetPoint = Remote.MouthControl.BoneTransform;
+                        BasisDebug.LogError("JiggleRigRendererLOD was not implemented");
+                      //here LD  JiggleRigRendererLOD.TargetPoint = Remote.MouthControl.BoneTransform;
                     }
                     JiggleRigRendererLOD.SetRenderers(player.BasisAvatar.Renders);
                     Jiggler = player.BasisAvatar.Animator.gameObject.AddComponent<JiggleRigBuilder>();
