@@ -37,7 +37,7 @@ namespace Basis.Scripts.Drivers
                 OnSimulate -= CalculateHeadBoneData;
                 HasEvent = false;
             }
-            DeInitalzeGizmos();
+            DeInitializeGizmos();
         }
         public void CalculateHeadBoneData()
         {

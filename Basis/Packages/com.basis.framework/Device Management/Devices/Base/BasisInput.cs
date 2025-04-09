@@ -173,8 +173,8 @@ namespace Basis.Scripts.Device_Management.Devices
             }
             if (hasRoleAssigned)
             {
-                AvatarRotationOffset = BasisDeviceMatchSettings.AvatarRotationOffset;
-                AvatarPositionOffset = BasisDeviceMatchSettings.AvatarPositionOffset;
+             //   AvatarRotationOffset = BasisDeviceMatchSettings.AvatarRotationOffset;
+            //    AvatarPositionOffset = BasisDeviceMatchSettings.AvatarPositionOffset;
             }
             else
             {

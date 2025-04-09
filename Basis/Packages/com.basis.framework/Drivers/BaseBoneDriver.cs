@@ -145,7 +145,7 @@ namespace Basis.Scripts.Drivers
             }
             AddRange(newControls.ToArray(), Roles.ToArray());
             HasControls = true;
-            InitalzeGizmos();
+            InitializeGizmos();
         }
         public void SetupRole(int Index,Transform Parent, Color Color,out BasisBoneControl BasisBoneControl, out BasisBoneTrackedRole role)
         {
@@ -157,15 +157,15 @@ namespace Basis.Scripts.Drivers
             BasisBoneControl.Initialize();
             FillOutBasicInformation(BasisBoneControl, role.ToString(), Color);
         }
-        public void InitalzeGizmos()
+        public void InitializeGizmos()
         {
-           BasisGizmoManager.OnUseGizmosChanged += UpdatGizmoUsage;
+           BasisGizmoManager.OnUseGizmosChanged += UpdateGizmoUsage;
         }
-        public void DeInitalzeGizmos()
+        public void DeInitializeGizmos()
         {
-           BasisGizmoManager.OnUseGizmosChanged -= UpdatGizmoUsage;
+           BasisGizmoManager.OnUseGizmosChanged -= UpdateGizmoUsage;
         }
-        public void UpdatGizmoUsage(bool State)
+        public void UpdateGizmoUsage(bool State)
         {
             BasisDebug.Log("Running Bone Driver Gizmos", BasisDebug.LogTag.Gizmo);
             // BasisDebug.Log("updating State!");
@@ -228,7 +228,7 @@ namespace Basis.Scripts.Drivers
             addToBone.LerpAmount = positional;
             addToBone.HasTarget = target != null;
         }
-        public static Vector3 ConvertToAvatarSpaceInital(Animator animator, Vector3 WorldSpace)// out Vector3 FloorPosition
+        public static Vector3 ConvertToAvatarSpaceInitial(Animator animator, Vector3 WorldSpace)// out Vector3 FloorPosition
         {
             if (BasisHelpers.TryGetFloor(animator, out float3 Bottom))
             {

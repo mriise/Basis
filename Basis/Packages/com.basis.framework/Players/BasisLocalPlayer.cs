@@ -226,7 +226,7 @@ namespace Basis.Scripts.BasisSdk.Players
                 GameObject.Destroy(VisemeDriver);
             }
             MicrophoneRecorder.OnPausedAction -= OnPausedEvent;
-            LocalBoneDriver.DeInitalzeGizmos();
+            LocalBoneDriver.DeInitializeGizmos();
             BasisUILoadingBar.DeInitalize();
         }
         public void DriveAudioToViseme()

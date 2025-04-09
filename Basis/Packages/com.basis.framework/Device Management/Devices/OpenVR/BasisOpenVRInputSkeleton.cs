@@ -1,6 +1,7 @@
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Device_Management.Devices.OpenVR.Structs;
 using UnityEngine;
+using UnityEngine.UIElements;
 using Valve.VR;
 using static BasisBaseMuscleDriver;
 
@@ -19,7 +20,7 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
         public void Initalize(BasisOpenVRInputController basisOpenVRInputController)
         {
             BasisOpenVRInputController = basisOpenVRInputController;
-            string Action = "Skeleton" + BasisOpenVRInputController.inputSource.ToString();
+            string Action = $"Skeleton{BasisOpenVRInputController.inputSource.ToString()}";
             skeletonAction = SteamVR_Input.GetAction<SteamVR_Action_Skeleton>(Action);
             if (skeletonAction != null)
             {
@@ -29,21 +30,47 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
             {
                 BasisDebug.LogError("Missing Skeleton Action for " + Action);
             }
-
+            if(BasisOpenVRInputController.inputSource == SteamVR_Input_Sources.LeftHand)
+            {
+                 additionalRotation = Quaternion.Euler(new Vector3(180, -90, 0));
+            }
+            else
+            {
+                if (BasisOpenVRInputController.inputSource == SteamVR_Input_Sources.RightHand)
+                {
+                     additionalRotation = Quaternion.Euler(new Vector3(180, 90, 0));
+                }
+            }
         }
+        public Quaternion additionalRotation;
         private void SteamVR_Input_OnSkeletonsUpdated(bool skipSendingEvents)
         {
             onTrackingChanged();
         }
+        public Vector3 additionalPositionOffset = new Vector3(0, -0.06f, -0.02f);
         private void onTrackingChanged()
         {
             if (BasisOpenVRInputController.inputSource == SteamVR_Input_Sources.LeftHand)
             {
                 UpdateFingerPercentages(ref BasisLocalPlayer.Instance.AvatarDriver.BasisMuscleDriver.LeftFinger);
+
+                // Apply additional position offset
+                BasisOpenVRInputController.AvatarPositionOffset = skeletonAction.bonePositions[1] + additionalPositionOffset;
+
+                // Apply additional rotation offset by converting to Quaternion and adding
+                Quaternion baseRotation = skeletonAction.boneRotations[1];
+                BasisOpenVRInputController.AvatarRotationOffset = (baseRotation * additionalRotation).eulerAngles;
             }
             else if (BasisOpenVRInputController.inputSource == SteamVR_Input_Sources.RightHand)
             {
                 UpdateFingerPercentages(ref BasisLocalPlayer.Instance.AvatarDriver.BasisMuscleDriver.RightFinger);
+
+                // Apply additional position offset
+                BasisOpenVRInputController.AvatarPositionOffset = skeletonAction.bonePositions[1] + additionalPositionOffset;
+
+                // Apply additional rotation offset by converting to Quaternion and adding
+                Quaternion baseRotation = skeletonAction.boneRotations[1];
+                BasisOpenVRInputController.AvatarRotationOffset = (baseRotation * additionalRotation).eulerAngles;
             }
         }
 

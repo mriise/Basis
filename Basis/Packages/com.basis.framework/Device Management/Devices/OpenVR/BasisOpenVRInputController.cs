@@ -15,23 +15,23 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
         public SteamVR_Input_Sources inputSource;
         public SteamVR_Action_Pose poseAction = SteamVR_Input.GetAction<SteamVR_Action_Pose>("Pose");
         public BasisOpenVRInputSkeleton SkeletonHandInput = null;
-        public bool HasOnUpate = false;
+        public bool HasOnUpdate = false;
         public void Initialize(OpenVRDevice device, string UniqueID, string UnUniqueID, string subSystems, bool AssignTrackedRole, BasisBoneTrackedRole basisBoneTrackedRole, SteamVR_Input_Sources SteamVR_Input_Sources)
         {
-            if (HasOnUpate && poseAction != null)
+            if (HasOnUpdate && poseAction != null)
             {
                 poseAction[inputSource].onUpdate -= SteamVR_Behaviour_Pose_OnUpdate;
-                HasOnUpate = false;
+                HasOnUpdate = false;
             }
             inputSource = SteamVR_Input_Sources;
             Device = device;
            InitalizeTracking(UniqueID, UnUniqueID, subSystems, AssignTrackedRole, basisBoneTrackedRole);
             if (poseAction != null)
             {
-                if (HasOnUpate == false)
+                if (HasOnUpdate == false)
                 {
                     poseAction[inputSource].onUpdate += SteamVR_Behaviour_Pose_OnUpdate;
-                    HasOnUpate = true;
+                    HasOnUpdate = true;
                 }
             }
             if (inputSource == SteamVR_Input_Sources.LeftHand || inputSource == SteamVR_Input_Sources.RightHand)
@@ -46,7 +46,7 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
             if (poseAction != null)
             {
                 poseAction[inputSource].onUpdate -= SteamVR_Behaviour_Pose_OnUpdate;
-                HasOnUpate = false;
+                HasOnUpdate = false;
             }
             if (SkeletonHandInput != null)
             {
@@ -75,7 +75,7 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
         private void SteamVR_Behaviour_Pose_OnUpdate(SteamVR_Action_Pose fromAction, SteamVR_Input_Sources fromSource)
         {
             UpdateHistoryBuffer();
-            if (HasOnUpate)
+            if (HasOnUpdate)
             {
                 LocalRawPosition = poseAction[inputSource].localPosition;
                 LocalRawRotation = poseAction[inputSource].localRotation;
