@@ -47,7 +47,7 @@ namespace Basis.Scripts.BasisCharacterController
         {
             if (HasEvents)
             {
-               driver.ReadyToRead.RemoveAction(98,Simulate);
+                //   driver.ReadyToRead.RemoveAction(98,Simulate);
                 HasEvents = false;
             }
         }
@@ -61,11 +61,11 @@ namespace Basis.Scripts.BasisCharacterController
             characterController.skinWidth = 0.01f;
             if (HasEvents == false)
             {
-                driver.ReadyToRead.AddAction(98, Simulate);
+                // driver.ReadyToRead.AddAction(98, Simulate);
                 HasEvents = true;
             }
         }
-        void OnControllerColliderHit(ControllerColliderHit hit)
+        public void OnControllerColliderHit(ControllerColliderHit hit)
         {
             // Check if the hit object has a Rigidbody and if it is not kinematic
             Rigidbody body = hit.collider.attachedRigidbody;
@@ -116,7 +116,6 @@ namespace Basis.Scripts.BasisCharacterController
             }
 
 
-            transform.GetPositionAndRotation(out Vector3 CurrentPosition, out Quaternion CurrentRotation);
             // Get the current rotation and position of the player
             Vector3 pivot = Eye.OutgoingWorldData.position;
             Vector3 upAxis = Vector3.up;
@@ -179,8 +178,8 @@ namespace Basis.Scripts.BasisCharacterController
             // Calculate horizontal movement direction
             Vector3 horizontalMoveDirection = new Vector3(MovementVector.x, 0, MovementVector.y).normalized;
 
-            SpeedMultiplyer = math.abs(SpeedMultiplyer);
-            CurrentSpeed = math.lerp(SlowestPlayerSpeed,FastestRunSpeed,SpeedMultiplyer);
+            SpeedMultiplier = math.abs(SpeedMultiplier);
+            CurrentSpeed = math.lerp(SlowestPlayerSpeed, FastestRunSpeed, SpeedMultiplier);
             CurrentSpeed = math.clamp(CurrentSpeed, 0, FastestRunSpeed);
 
             Vector3 totalMoveDirection = flattenedRotation * horizontalMoveDirection * CurrentSpeed * driver.DeltaTime;
@@ -204,9 +203,13 @@ namespace Basis.Scripts.BasisCharacterController
             totalMoveDirection.y = currentVerticalSpeed * driver.DeltaTime;
 
             // Move character
-            characterController.Move(totalMoveDirection);
+            Flags = characterController.Move(totalMoveDirection);
+            transform.GetPositionAndRotation(out CurrentPosition, out CurrentRotation);
         }
-        public float SpeedMultiplyer = 0.5f;
+        public Vector3 CurrentPosition;
+        public Quaternion CurrentRotation;
+        public CollisionFlags Flags;
+        public float SpeedMultiplier = 0.5f;
 
         public void CalculateCharacterSize()
         {

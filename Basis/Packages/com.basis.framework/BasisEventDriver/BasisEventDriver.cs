@@ -57,6 +57,7 @@ public class BasisEventDriver : MonoBehaviour
         {
             BasisLocalPlayer.Instance.LocalBoneDriver.Simulate();
             BasisLocalPlayer.Instance.SimulateAvatar();
+            BasisLocalPlayer.Instance.Move.Simulate();
         }
         BasisNetworkTransmitter.AfterAvatarChanges?.Invoke();
     }

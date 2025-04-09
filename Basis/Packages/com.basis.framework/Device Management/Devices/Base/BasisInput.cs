@@ -309,7 +309,7 @@ namespace Basis.Scripts.Device_Management.Devices
                         : InputState.Primary2DAxis.y;
                     //0 to 1 largestValue
 
-                    BasisLocalPlayer.Instance.Move.SpeedMultiplyer = largestValue;
+                    BasisLocalPlayer.Instance.Move.SpeedMultiplier = largestValue;
                     BasisLocalPlayer.Instance.Move.MovementVector = InputState.Primary2DAxis;
                     //only open ui after we have stopped pressing down on the secondary button
                     if (InputState.SecondaryButtonGetState == false && LastState.SecondaryButtonGetState)

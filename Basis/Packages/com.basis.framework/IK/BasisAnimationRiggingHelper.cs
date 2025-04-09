@@ -118,15 +118,15 @@ public static class BasisAnimationRiggingHelper
         TwoBoneIKConstraint = BasisHelpers.GetOrAddComponent<BasisTwoBoneIKConstraint>(BoneRole);
         EnableTwoBoneIk(TwoBoneIKConstraint, maintainTargetPositionOffset, maintainTargetRotationOffset);
         Quaternion Rotation = BoneControl.OutgoingWorldData.rotation;
-        TwoBoneIKConstraint.data.TargetPosition = BoneControl.OutgoingWorldData.position;
-        TwoBoneIKConstraint.data.TargetRotation = Rotation.eulerAngles;
+        TwoBoneIKConstraint.data.TargetPosition = Vector3.zero;
+        TwoBoneIKConstraint.data.TargetRotation = Quaternion.identity.eulerAngles;
         if (UseBoneRole)
         {
             if (driver.FindBone(out BasisBoneControl BendBoneControl, BendRole))
             {
                 Quaternion HintRotation = BendBoneControl.OutgoingWorldData.rotation;
-                TwoBoneIKConstraint.data.HintRotation = HintRotation.eulerAngles;
-                TwoBoneIKConstraint.data.HintPosition = BoneControl.OutgoingWorldData.position;
+                TwoBoneIKConstraint.data.HintRotation = Vector3.zero;
+                TwoBoneIKConstraint.data.HintPosition = Quaternion.identity.eulerAngles;
             }
         }
         TwoBoneIKConstraint.data.root = root;
