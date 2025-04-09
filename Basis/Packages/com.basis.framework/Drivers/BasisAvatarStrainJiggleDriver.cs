@@ -25,6 +25,7 @@ namespace Basis.Scripts.Drivers
                     int Count = player.BasisAvatar.JiggleStrains.Length;
                     JiggleRigRendererLOD = BasisHelpers.GetOrAddComponent<JiggleRigRendererLOD>(player.BasisAvatar.Animator.gameObject);
                     JiggleRigRendererLOD.CameraPosition = BasisLocalCameraDriver.Position;
+                    JiggleRigRendererLOD.Simulate();
                     JiggleRigRendererLOD.TargetPoint = player.Mouth.OutgoingWorldData.position;
                     JiggleRigRendererLOD.SetRenderers(player.BasisAvatar.Renders);
                     Jiggler = player.BasisAvatar.Animator.gameObject.AddComponent<JiggleRigBuilder>();
@@ -51,8 +52,12 @@ namespace Basis.Scripts.Drivers
         }
         public void Simulate()
         {
-            JiggleRigRendererLOD.CameraPosition = BasisLocalCameraDriver.Position;
             JiggleRigRendererLOD.TargetPoint = player.Mouth.OutgoingWorldData.position;
+            JiggleRigRendererLOD.Simulate();
+        }
+        public void LocalSimulate()
+        {
+            JiggleRigRendererLOD.CameraPosition = BasisLocalCameraDriver.Position;
         }
         public void PrepareTeleport()
         {
