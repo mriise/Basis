@@ -51,7 +51,7 @@ public class PlayerInteract : MonoBehaviour
     public LayerMask InteractableLayerMask;
     private void Start()
     {
-        BasisLocalPlayer.Instance.AppliedBones.AddAction(k_UpdatePriority, PollSystem);
+        BasisLocalPlayer.Instance.AfterFinalMove.AddAction(k_UpdatePriority, PollSystem);
         var Devices = BasisDeviceManagement.Instance.AllInputDevices;
         Devices.OnListAdded += OnInputChanged;
         Devices.OnListItemRemoved += OnInputRemoved;
@@ -65,7 +65,7 @@ public class PlayerInteract : MonoBehaviour
         {
             asyncOperationLineMaterial.Release();
         }
-        BasisLocalPlayer.Instance.AppliedBones.RemoveAction(k_UpdatePriority, PollSystem);
+        BasisLocalPlayer.Instance.AfterFinalMove.RemoveAction(k_UpdatePriority, PollSystem);
         var Device = BasisDeviceManagement.Instance.AllInputDevices;
         Device.OnListAdded -= OnInputChanged;
         Device.OnListItemRemoved -= OnInputRemoved;

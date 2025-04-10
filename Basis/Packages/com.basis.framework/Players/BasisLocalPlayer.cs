@@ -12,9 +12,10 @@ using Basis.Scripts.UI.UI_Panels;
 using Basis.Scripts.TransformBinders.BoneControl;
 using Unity.Mathematics;
 using static Basis.Scripts.Drivers.BaseBoneDriver;
+using Basis.Scripts.Animator_Driver;
 namespace Basis.Scripts.BasisSdk.Players
 {
-    public partial class BasisLocalPlayer : BasisPlayer
+    public class BasisLocalPlayer : BasisPlayer
     {
         public static BasisLocalPlayer Instance;
         public static bool PlayerReady = false;
@@ -28,7 +29,7 @@ namespace Basis.Scripts.BasisSdk.Players
         public static float DefaultAvatarEyeHeight = 1.64f;
         public LocalHeightInformation CurrentHeight;
         public LocalHeightInformation LastHeight;
-
+        public BasisLocalAnimatorDriver AnimatorDriver;
         /// <summary>
         /// the bool when true is the final size
         /// the bool when false is not the final size
@@ -52,7 +53,8 @@ namespace Basis.Scripts.BasisSdk.Players
         public BasisBoneControl Head;
         public BasisBoneControl Hips;
 
-        public OrderedDelegate AppliedBones = new OrderedDelegate();
+        public OrderedDelegate AfterIkSimulation = new OrderedDelegate();
+        public OrderedDelegate AfterFinalMove = new OrderedDelegate();
         public async Task LocalInitialize()
         {
             if (BasisHelpers.CheckInstance(Instance))
@@ -152,9 +154,9 @@ namespace Basis.Scripts.BasisSdk.Players
             Move.enabled = false;
             transform.SetPositionAndRotation(position, rotation);
             Move.enabled = true;
-            if (AvatarDriver != null && AvatarDriver.AnimatorDriver != null)
+            if (AnimatorDriver != null)
             {
-                AvatarDriver.AnimatorDriver.HandleTeleport();
+                AnimatorDriver.HandleTeleport();
             }
             BasisAvatarStrainJiggleDriver.FinishTeleport();
             OnSpawnedEvent?.Invoke();

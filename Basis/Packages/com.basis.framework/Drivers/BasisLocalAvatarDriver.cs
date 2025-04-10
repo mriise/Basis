@@ -21,7 +21,6 @@ namespace Basis.Scripts.Drivers
         public static Vector3 HeadScale = Vector3.one;
         public static Vector3 HeadScaledDown = Vector3.zero;//new Vector3(0.0001f, 0.0001f, 0.0001f);
         public BasisLocalBoneDriver LocalDriver;
-        public BasisLocalAnimatorDriver AnimatorDriver;
         public BasisLocalPlayer LocalPlayer;
 
         public BasisTwoBoneIKConstraint HeadTwoBoneIK;
@@ -177,8 +176,8 @@ namespace Basis.Scripts.Drivers
 
             CalibrationComplete?.Invoke();
 
-            AnimatorDriver = BasisHelpers.GetOrAddComponent<BasisLocalAnimatorDriver>(AvatarAnimatorParent);
-            AnimatorDriver.Initialize(Player.BasisAvatar.Animator);
+            Player.AnimatorDriver = BasisHelpers.GetOrAddComponent<BasisLocalAnimatorDriver>(AvatarAnimatorParent);
+            Player.AnimatorDriver.Initialize(Player.BasisAvatar.Animator);
 
             ResetAvatarAnimator();
             BasisAvatarIKStageCalibration.HasFBIKTrackers = false;
@@ -662,6 +661,11 @@ namespace Basis.Scripts.Drivers
             RigLayer = new RigLayer(Rig, Enabled);
             Builder.layers.Add(RigLayer);
             return RigGameobject;
+        }
+        public void SimulateAnimatorAndIk()
+        {
+            Builder.SyncLayers();
+            PlayableGraph.Evaluate(Time.deltaTime);
         }
     }
 }

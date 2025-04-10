@@ -172,14 +172,7 @@ namespace Basis.Scripts.Animator_Driver
                 localPlayer.Move.ReadyToRead += Simulate;
                 localPlayer.Move.JustJumped += JustJumped;
                 localPlayer.Move.JustLanded += JustLanded;
-               localPlayer.AppliedBones.AddAction(100, RunIKRig);
             }
-        }
-        public void RunIKRig()
-        {
-            float DeltaTime = Time.deltaTime;
-            localPlayer.AvatarDriver.Builder.SyncLayers();
-            localPlayer.AvatarDriver.PlayableGraph.Evaluate(DeltaTime);
         }
         public void HandleTeleport()
         {
@@ -195,7 +188,6 @@ namespace Basis.Scripts.Animator_Driver
                 localPlayer.Move.ReadyToRead -= Simulate;
                 localPlayer.Move.JustJumped -= JustJumped;
                 localPlayer.Move.JustLanded -= JustLanded;
-                localPlayer.AppliedBones.RemoveAction(100, RunIKRig);
             }
             if (HasEvents)
             {
