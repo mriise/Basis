@@ -1,12 +1,14 @@
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Device_Management;
-using Basis.Scripts.Device_Management.Devices.Desktop;
 using Basis.Scripts.Eye_Follow;
 using Basis.Scripts.Networking;
 using Basis.Scripts.Networking.Transmitters;
-using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using static Basis.Scripts.BasisSdk.Players.BasisLocalPlayer;
+using static Basis.Scripts.BasisSdk.Players.BasisPlayer;
+using static Basis.Scripts.Drivers.BaseBoneDriver;
+using static Basis.Scripts.Drivers.BasisLocalBoneDriver;
 
 public class BasisEventDriver : MonoBehaviour
 {
@@ -55,9 +57,17 @@ public class BasisEventDriver : MonoBehaviour
     {
         if (BasisLocalPlayer.PlayerReady)
         {
-            BasisLocalPlayer.Instance.LocalBoneDriver.Simulate();
-            BasisLocalPlayer.Instance.SimulateAvatar();
-            BasisLocalPlayer.Instance.Move.Simulate();
+            BasisLocalPlayer LocalPlayer = BasisLocalPlayer.Instance;
+            LocalPlayer.LocalBoneDriver.SimulateBonePositions();
+            LocalPlayer.MoveAvatar();
+            LocalPlayer.AvatarDriver.SimulateIKDesinations();
+
+            LocalPlayer.AppliedBones?.Invoke();
+            LocalPlayer.Move.SimulateMovement();
+            if (LocalPlayer.HasJiggles)
+            {
+                LocalPlayer.BasisAvatarStrainJiggleDriver.Simulate(0);
+            }
         }
         BasisNetworkTransmitter.AfterAvatarChanges?.Invoke();
     }

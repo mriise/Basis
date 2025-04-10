@@ -38,7 +38,7 @@ namespace Basis.Scripts.UI.UI_Panels
                     hasGeneratedAction = true;
                 }
             }
-            LocalPlayer.LocalBoneDriver.ReadyToRead.AddAction(105, UpdateUI);
+            LocalPlayer.AppliedBones.AddAction(105, UpdateUI);
         }
         private void OnDisable()
         {
@@ -51,7 +51,7 @@ namespace Basis.Scripts.UI.UI_Panels
             BasisLocalPlayer.Instance.OnLocalAvatarChanged -= UpdateDelayedSetUI;
             BasisLocalPlayer.Instance.OnPlayersHeightChanged -= UpdateDelayedSetUI;
 
-            LocalPlayer.LocalBoneDriver.ReadyToRead.RemoveAction(101, UpdateUI);
+            LocalPlayer.AppliedBones.RemoveAction(101, UpdateUI);
         }
         #endregion
         #region Player Change Callbacks

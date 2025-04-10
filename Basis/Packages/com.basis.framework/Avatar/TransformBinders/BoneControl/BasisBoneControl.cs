@@ -5,8 +5,6 @@ using System;
 using Unity.Burst;
 using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.UIElements;
 namespace Basis.Scripts.TransformBinders.BoneControl
 {
     [System.Serializable]
@@ -44,10 +42,7 @@ namespace Basis.Scripts.TransformBinders.BoneControl
 
         public int TposeGizmoReference = -1;
         public bool TposeHasGizmo = false;
-        public Action VirtualRun;
-        public Action VirtualInverseOffsetRun;
         public bool HasVirtualOverride;
-        public bool HasInverseOffsetOverride;
         public float trackersmooth = 25;
 
         public bool IsHintRoleIgnoreRotation = false;
@@ -64,26 +59,18 @@ namespace Basis.Scripts.TransformBinders.BoneControl
                     ///could also be a step at the end for every targeted type
                     if (InverseOffsetFromBone.Use)
                     {
-
-                        if (HasInverseOffsetOverride)
+                        if (IsHintRoleIgnoreRotation == false)
                         {
-                            VirtualInverseOffsetRun?.Invoke();
+                            // Update the position of the secondary transform to maintain the initial offset
+                            OutGoingData.position = Vector3.Lerp(OutGoingData.position, IncomingData.position + math.mul(IncomingData.rotation, InverseOffsetFromBone.position), trackersmooth);
+                            // Update the rotation of the secondary transform to maintain the initial offset
+                            OutGoingData.rotation = Quaternion.Slerp(OutGoingData.rotation, math.mul(IncomingData.rotation, InverseOffsetFromBone.rotation), trackersmooth);
                         }
                         else
                         {
-                            if (IsHintRoleIgnoreRotation == false)
-                            {
-                                // Update the position of the secondary transform to maintain the initial offset
-                                OutGoingData.position = Vector3.Lerp(OutGoingData.position, IncomingData.position + math.mul(IncomingData.rotation, InverseOffsetFromBone.position), trackersmooth);
-                                // Update the rotation of the secondary transform to maintain the initial offset
-                                OutGoingData.rotation = Quaternion.Slerp(OutGoingData.rotation, math.mul(IncomingData.rotation, InverseOffsetFromBone.rotation), trackersmooth);
-                            }
-                            else
-                            {
-                                OutGoingData.rotation = Quaternion.identity;
-                                // Update the position of the secondary transform to maintain the initial offset
-                                OutGoingData.position = Vector3.Lerp(OutGoingData.position, IncomingData.position + math.mul(IncomingData.rotation, InverseOffsetFromBone.position), trackersmooth);
-                            }
+                            OutGoingData.rotation = Quaternion.identity;
+                            // Update the position of the secondary transform to maintain the initial offset
+                            OutGoingData.position = Vector3.Lerp(OutGoingData.position, IncomingData.position + math.mul(IncomingData.rotation, InverseOffsetFromBone.position), trackersmooth);
                         }
                     }
                     else
@@ -95,11 +82,7 @@ namespace Basis.Scripts.TransformBinders.BoneControl
                 }
                 else
                 {
-                    if (HasVirtualOverride)
-                    {
-                        VirtualRun?.Invoke();
-                    }
-                    else
+                    if (!HasVirtualOverride)
                     {
                         //this is essentially the default behaviour, most of it is normally Virtually Overriden
                         //relying on a one size fits all shoe is wrong and as of such we barely use this anymore.

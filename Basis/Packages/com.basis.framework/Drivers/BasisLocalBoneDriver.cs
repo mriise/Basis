@@ -16,7 +16,7 @@ namespace Basis.Scripts.Drivers
         {
         }
         public float DeltaTime;
-        public void Simulate()
+        public void SimulateBonePositions()
         {
             DeltaTime = Time.deltaTime;
             if (float.IsNaN(DeltaTime))
@@ -24,7 +24,7 @@ namespace Basis.Scripts.Drivers
                 return;
             }
 
-            SimulateAndApply(DeltaTime);
+            SimulateAndApply(BasisLocalPlayer.Instance,DeltaTime);
             
         }
         public void OnDestroy()

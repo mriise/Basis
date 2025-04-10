@@ -33,6 +33,8 @@ namespace Basis.Scripts.BasisSdk.Players
         public Action<bool> AudioReceived;
         public BasisBoneControl Mouth;
         public bool HasJiggles = false;
+        public delegate void SimulationHandler();
+        public SimulationHandler OnPreSimulateBones;
         public void InitalizeIKCalibration(BasisAvatarDriver BasisAvatarDriver)
         {
             if (BasisAvatarDriver != null)

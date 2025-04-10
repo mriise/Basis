@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using Basis.Scripts.UI.UI_Panels;
 using Basis.Scripts.TransformBinders.BoneControl;
 using Unity.Mathematics;
+using static Basis.Scripts.Drivers.BaseBoneDriver;
 namespace Basis.Scripts.BasisSdk.Players
 {
     public partial class BasisLocalPlayer : BasisPlayer
@@ -50,6 +51,8 @@ namespace Basis.Scripts.BasisSdk.Players
         public const string DefaultAvatar = "LoadingAvatar";
         public BasisBoneControl Head;
         public BasisBoneControl Hips;
+
+        public OrderedDelegate AppliedBones = new OrderedDelegate();
         public async Task LocalInitialize()
         {
             if (BasisHelpers.CheckInstance(Instance))
@@ -236,7 +239,7 @@ namespace Basis.Scripts.BasisSdk.Players
         public float overshoot;
         public float3 correction;
         public float3 output;
-        public void SimulateAvatar()
+        public void MoveAvatar()
         {
             if (BasisAvatar == null)
             {
@@ -245,7 +248,7 @@ namespace Basis.Scripts.BasisSdk.Players
 
 
             // Current world positions
-            Vector3 headPosition = Head.OutgoingWorldData.position;
+            Vector3 headPosition = Head.OutgoingWorldData.position;//OutgoingWorldData is out of date here potentially?
             Vector3 hipsPosition = Hips.OutgoingWorldData.position;
             currentDistance = Vector3.Distance(headPosition, hipsPosition);
 
@@ -280,12 +283,6 @@ namespace Basis.Scripts.BasisSdk.Players
             Vector3 childWorldPosition = parentWorldPosition + parentWorldRotation * output;
             Quaternion childWorldRotation = parentWorldRotation * quaternion.identity;
             BasisAvatar.transform.SetPositionAndRotation(childWorldPosition, childWorldRotation);
-
-            AvatarDriver.Simulate();
-            if (HasJiggles)
-            {
-                BasisAvatarStrainJiggleDriver.Simulate(0);
-            }
         }
     }
 }

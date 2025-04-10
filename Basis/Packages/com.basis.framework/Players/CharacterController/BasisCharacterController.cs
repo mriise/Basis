@@ -3,7 +3,7 @@ using Basis.Scripts.Drivers;
 using Basis.Scripts.TransformBinders.BoneControl;
 using Unity.Mathematics;
 using UnityEngine;
-using static Basis.Scripts.Drivers.BaseBoneDriver;
+using static Basis.Scripts.BasisSdk.Players.BasisPlayer;
 namespace Basis.Scripts.BasisCharacterController
 {
     public class BasisCharacterController : MonoBehaviour
@@ -43,6 +43,10 @@ namespace Basis.Scripts.BasisCharacterController
         private float SnapTurnAngle => SMModuleControllerSettings.SnapTurnAngle;
         private bool isSnapTurning;
 
+        public Vector3 CurrentPosition;
+        public Quaternion CurrentRotation;
+        public CollisionFlags Flags;
+        public float SpeedMultiplier = 0.5f;
         public void OnDestroy()
         {
             if (HasEvents)
@@ -81,7 +85,7 @@ namespace Basis.Scripts.BasisCharacterController
             // Apply the force to the object
             body.AddForce(pushDir * pushPower, ForceMode.Impulse);
         }
-        public void Simulate()
+        public void SimulateMovement()
         {
             LastbottomPoint = bottomPointLocalspace;
             CalculateCharacterSize();
@@ -206,11 +210,6 @@ namespace Basis.Scripts.BasisCharacterController
             Flags = characterController.Move(totalMoveDirection);
             transform.GetPositionAndRotation(out CurrentPosition, out CurrentRotation);
         }
-        public Vector3 CurrentPosition;
-        public Quaternion CurrentRotation;
-        public CollisionFlags Flags;
-        public float SpeedMultiplier = 0.5f;
-
         public void CalculateCharacterSize()
         {
             eyeHeight = HasEye ? Eye.OutGoingData.position.y : 1.73f;

@@ -172,7 +172,7 @@ namespace Basis.Scripts.Animator_Driver
                 localPlayer.Move.ReadyToRead += Simulate;
                 localPlayer.Move.JustJumped += JustJumped;
                 localPlayer.Move.JustLanded += JustLanded;
-               localPlayer.LocalBoneDriver.ReadyToRead.AddAction(100, RunIKRig);
+               localPlayer.AppliedBones.AddAction(100, RunIKRig);
             }
         }
         public void RunIKRig()
@@ -195,7 +195,7 @@ namespace Basis.Scripts.Animator_Driver
                 localPlayer.Move.ReadyToRead -= Simulate;
                 localPlayer.Move.JustJumped -= JustJumped;
                 localPlayer.Move.JustLanded -= JustLanded;
-                localPlayer.LocalBoneDriver.ReadyToRead.RemoveAction(100, RunIKRig);
+                localPlayer.AppliedBones.RemoveAction(100, RunIKRig);
             }
             if (HasEvents)
             {

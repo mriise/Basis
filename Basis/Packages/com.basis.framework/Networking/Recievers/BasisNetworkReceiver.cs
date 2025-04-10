@@ -161,7 +161,8 @@ namespace Basis.Scripts.Networking.Receivers
                         ApplyPoseData(Player.BasisAvatar.Animator, OuputVectors[1], OuputVectors[0], OutputRotation, enableEuroFilter ? EuroValuesOutput : musclesPreEuro);
                         PoseHandler.SetHumanPose(ref HumanPose);
 
-                        RemotePlayer.RemoteBoneDriver.SimulateAndApply(DeltaTime);
+                        RemotePlayer.RemoteBoneDriver.SimulateAndApply(RemotePlayer, DeltaTime);
+                        RemotePlayer.RemoteBoneDriver.CalculateHeadBoneData();
                         AudioReceiverModule.AudioSourceTransform.SetPositionAndRotation(Player.Mouth.OutgoingWorldData.position, Player.Mouth.OutgoingWorldData.rotation);
                      //   RemotePlayer.BasisAvatar.FaceVisemeMesh.transform.position = RemotePlayer.RemoteBoneDriver.Hips.OutgoingWorldData.position;
                     }

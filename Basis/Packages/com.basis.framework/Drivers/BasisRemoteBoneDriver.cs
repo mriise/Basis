@@ -11,7 +11,6 @@ namespace Basis.Scripts.Drivers
         public Transform HipsAvatar;
         public BasisBoneControl Head;
         public BasisBoneControl Hips;
-        public bool HasEvent = false;
         public void Initialize()
         {
             FindBone(out Head, BasisBoneTrackedRole.Head);
@@ -24,33 +23,24 @@ namespace Basis.Scripts.Drivers
             {
                 Hips.HasTracked = BasisHasTracked.HasTracker;
             }
-            if (HasEvent == false)
-            {
-                OnSimulate += CalculateHeadBoneData;
-                HasEvent = true;
-            }
         }
         public void OnDestroy()
         {
-            if (HasEvent)
-            {
-                OnSimulate -= CalculateHeadBoneData;
-                HasEvent = false;
-            }
             DeInitializeGizmos();
         }
         public void CalculateHeadBoneData()
         {
+            Vector3 RRT = RemotePlayer.RemoteBoneDriver.transform.position;
             if (Head.HasBone && HasHead)
             {
                 HeadAvatar.GetPositionAndRotation(out Vector3 Position, out Quaternion Rotation);
-                Head.IncomingData.position = Position - RemotePlayer.RemoteBoneDriver.transform.position;
+                Head.IncomingData.position = Position - RRT;
                 Head.IncomingData.rotation = Rotation;
             }
             if (Hips.HasBone && HasHips)
             {
                 HipsAvatar.GetPositionAndRotation(out Vector3 Position, out Quaternion Rotation);
-                Hips.IncomingData.position = Position - RemotePlayer.RemoteBoneDriver.transform.position;
+                Hips.IncomingData.position = Position - RRT;
                 Hips.IncomingData.rotation = Rotation;
             }
         }

@@ -37,8 +37,6 @@ public class BasisVirtualSpineDriver
         if (BasisLocalPlayer.Instance.LocalBoneDriver.FindBone(out Head, BasisBoneTrackedRole.Head))
         {
             Head.HasVirtualOverride = true;
-            Head.VirtualRun += OnSimulateHead;
-            BasisLocalPlayer.Instance.LocalBoneDriver.ReadyToRead.AddAction(30, Hint);
         }
 
         if (BasisLocalPlayer.Instance.LocalBoneDriver.FindBone(out Neck, BasisBoneTrackedRole.Neck))
@@ -56,8 +54,6 @@ public class BasisVirtualSpineDriver
         if (BasisLocalPlayer.Instance.LocalBoneDriver.FindBone(out Hips, BasisBoneTrackedRole.Hips))
         {
             Hips.HasVirtualOverride = true;
-          //  Hips.HasInverseOffsetOverride = true;
-         //  Hips.VirtualInverseOffsetRun += OnSimulateHipsWithTracker;
         }
         if (BasisLocalPlayer.Instance.LocalBoneDriver.FindBone(out LeftLowerArm, BasisBoneTrackedRole.LeftLowerArm))
         {
@@ -93,38 +89,12 @@ public class BasisVirtualSpineDriver
         {
             //   RightHand.HasVirtualOverride = true;
         }
-    }
-    public void Hint()
-    {
-        /*
-        if (LeftLowerLeg.HasTracked != BasisHasTracked.HasTracker)
-        {
-        //    LeftLowerLeg.BoneTransform.position = GenerateHintPosition();
-       //     Vector3 hintPosition = GenerateHintPosition(root.position, mid.position, target.position);
-        }
-        if (RightLowerLeg.HasTracked != BasisHasTracked.HasTracker)
-        {
-            RightLowerLeg.BoneTransform.position = RightFoot.BoneTransform.position;
-        }
-        if (LeftLowerArm.HasTracked != BasisHasTracked.HasTracker)
-        {
-            LeftLowerArm.BoneTransform.position = LeftHand.BoneTransform.position;
-        }
-        if (LeftLowerArm.HasTracked != BasisHasTracked.HasTracker)
-        {
-            LeftLowerArm.BoneTransform.position = LeftHand.BoneTransform.position;
-        }
-        if (RightLowerArm.HasTracked != BasisHasTracked.HasTracker)
-        {
-            RightLowerArm.BoneTransform.position = RightHand.BoneTransform.position;
-        }
-        */
+        BasisLocalPlayer.Instance.OnPreSimulateBones += OnSimulateHead;//instead of virtual run just run at the start
     }
     public void DeInitialize()
     {
         if (Neck != null)
         {
-            Neck.VirtualRun -= OnSimulateHead;
             Neck.HasVirtualOverride = false;
         }
         if (Chest != null)
@@ -139,8 +109,7 @@ public class BasisVirtualSpineDriver
         {
             Spine.HasVirtualOverride = false;
         }
-     //   Hips.HasInverseOffsetOverride = false;
-     //   Hips.VirtualInverseOffsetRun -= OnSimulateHipsWithTracker;
+        BasisLocalPlayer.Instance.OnPreSimulateBones -= OnSimulateHead;
     }
     public void OnSimulateHead()
     {

@@ -42,7 +42,7 @@ namespace Basis.Scripts.Avatar
             HasFBIKTrackers = false;
             BasisHeightDriver.SetPlayersEyeHeight(BasisLocalPlayer.Instance);
             BasisDeviceManagement.UnassignFBTrackers();
-            BasisLocalPlayer.Instance.LocalBoneDriver.SimulateAndApplyWithoutLerp();
+            BasisLocalPlayer.Instance.LocalBoneDriver.SimulateAndApplyWithoutLerp(BasisLocalPlayer.Instance);
 
             //now that we have latest * scale we can run calibration
             BasisLocalPlayer.Instance.AvatarDriver.PutAvatarIntoTPose();

@@ -18,17 +18,12 @@ namespace Basis.Scripts.Drivers
         [SerializeField]
         public BasisBoneTrackedRole[] trackedRoles;
         public bool HasControls = false;
-        public delegate void SimulationHandler();
-        public event SimulationHandler OnSimulate;
-        public event SimulationHandler OnPostSimulate;
-        public OrderedDelegate ReadyToRead = new OrderedDelegate();
         /// <summary>
         /// call this after updating the bone data
         /// </summary>
         public void Simulate(float deltaTime)
         {
             // sequence all other devices to run at the same time
-            OnSimulate?.Invoke();
             for (int Index = 0; Index < ControlsLength; Index++)
             {
                 Controls[Index].ComputeMovement(this, deltaTime);
@@ -37,15 +32,12 @@ namespace Basis.Scripts.Drivers
             {
                 DrawGizmos();
             }
-            OnPostSimulate?.Invoke();
-            ReadyToRead?.Invoke();
         }
         public void SimulateWithoutLerp()
         {
             // sequence all other devices to run at the same time
             double ProvidedTime = Time.timeAsDouble;
             float DeltaTime = Time.deltaTime;
-            OnSimulate?.Invoke();
             for (int Index = 0; Index < ControlsLength; Index++)
             {
                 Controls[Index].LastRunData.position = Controls[Index].OutGoingData.position;
@@ -56,8 +48,6 @@ namespace Basis.Scripts.Drivers
             {
                 DrawGizmos();
             }
-            OnPostSimulate?.Invoke();
-            ReadyToRead?.Invoke();
         }
         public void DrawGizmos()
         {
@@ -66,12 +56,14 @@ namespace Basis.Scripts.Drivers
                 DrawGizmos(Controls[Index]);
             }
         }
-        public void SimulateAndApply( float deltaTime)
+        public void SimulateAndApply(BasisPlayer Player, float deltaTime)
         {
+            Player.OnPreSimulateBones?.Invoke();
             Simulate(deltaTime);
         }
-        public void SimulateAndApplyWithoutLerp()
+        public void SimulateAndApplyWithoutLerp(BasisPlayer Player)
         {
+            Player.OnPreSimulateBones?.Invoke();
             SimulateWithoutLerp();
         }
         public void RemoveAllListeners()

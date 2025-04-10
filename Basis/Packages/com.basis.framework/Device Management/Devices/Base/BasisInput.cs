@@ -10,6 +10,7 @@ using System.Linq;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using static Basis.Scripts.BasisSdk.Players.BasisPlayer;
 using static Basis.Scripts.Drivers.BaseBoneDriver;
 namespace Basis.Scripts.Device_Management.Devices
 {
@@ -187,7 +188,7 @@ namespace Basis.Scripts.Device_Management.Devices
             }
             if (HasEvents == false)
             {
-                BasisLocalPlayer.Instance.LocalBoneDriver.OnSimulate += PollData;
+                BasisLocalPlayer.Instance.OnPreSimulateBones += PollData;
                 BasisLocalPlayer.Instance.OnAvatarSwitched += UnAssignFullBodyTrackers;
                 BasisLocalPlayer.Instance.Move.ReadyToRead += ApplyFinalMovement;
                 HasEvents = true;
@@ -254,7 +255,7 @@ namespace Basis.Scripts.Device_Management.Devices
             UnAssignRoleAndTracker();
             if (HasEvents)
             {
-                BasisLocalPlayer.Instance.LocalBoneDriver.OnSimulate -= PollData;
+                BasisLocalPlayer.Instance.OnPreSimulateBones -= PollData;
                 BasisLocalPlayer.Instance.OnAvatarSwitched -= UnAssignFullBodyTrackers;
                 BasisLocalPlayer.Instance.Move.ReadyToRead -= ApplyFinalMovement;
                 HasEvents = false;

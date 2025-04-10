@@ -22,7 +22,7 @@ public partial class BasisMuscleDriver : BasisBaseMuscleDriver
            Muscles = HumanTrait.MuscleName;
         SetMusclesAndRecordPoses();
 
-        BasisLocalPlayer.LocalBoneDriver.ReadyToRead.AddAction(101, UpdateFingers);
+        BasisLocalPlayer.AppliedBones.AddAction(101, UpdateFingers);
     }
     public float increment = 0.2f;
     [SerializeField]
@@ -128,7 +128,7 @@ public partial class BasisMuscleDriver : BasisBaseMuscleDriver
         if (distancesArray.IsCreated) distancesArray.Dispose();
         if (closestIndexArray.IsCreated) closestIndexArray.Dispose();
 
-        BasisLocalPlayer.Instance.LocalBoneDriver.ReadyToRead.RemoveAction(101, UpdateFingers);
+        BasisLocalPlayer.Instance.AppliedBones.RemoveAction(101, UpdateFingers);
     }
     public void SetMusclesAndRecordPoses()
     {

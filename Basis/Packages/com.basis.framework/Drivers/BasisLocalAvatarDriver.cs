@@ -41,7 +41,7 @@ namespace Basis.Scripts.Drivers
         public BasisBoneControl RightLowerLegControl;
         public BasisBoneControl LeftLowerArmControl;
         public BasisBoneControl RightLowerArmControl;
-        public void Simulate()
+        public void SimulateIKDesinations()
         {
             // --- IK Target ---
             ApplyBoneIKTarget(HeadTwoBoneIK, HeadControl.OutgoingWorldData.position, HeadControl.OutgoingWorldData.rotation);
