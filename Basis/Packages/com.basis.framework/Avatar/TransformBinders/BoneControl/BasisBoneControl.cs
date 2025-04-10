@@ -127,6 +127,9 @@ namespace Basis.Scripts.TransformBinders.BoneControl
                 // Apply local transform to parent's world transform
                 OutgoingWorldData.position = parent.TransformPoint(OutGoingData.position);
                 OutgoingWorldData.rotation = parent.rotation * OutGoingData.rotation;
+
+                LastRunData.position = OutGoingData.position;
+                LastRunData.rotation = OutGoingData.rotation;
             }
         }
         [BurstCompile]
