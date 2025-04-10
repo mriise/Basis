@@ -123,12 +123,10 @@ namespace Basis.Scripts.TransformBinders.BoneControl
                         }
                     }
                 }
-
-                BaseBoneDriver.TrackedBone.SetLocalPositionAndRotation(OutGoingData.position, OutGoingData.rotation);
-                BaseBoneDriver.TrackedBone.GetPositionAndRotation(out Vector3 position, out Quaternion Rotation);
-
-                OutgoingWorldData.position = position;
-                OutgoingWorldData.rotation = Rotation;
+                Transform parent = BaseBoneDriver.transform;
+                // Apply local transform to parent's world transform
+                OutgoingWorldData.position = parent.TransformPoint(OutGoingData.position);
+                OutgoingWorldData.rotation = parent.rotation * OutGoingData.rotation;
             }
         }
         [BurstCompile]
@@ -265,18 +263,6 @@ namespace Basis.Scripts.TransformBinders.BoneControl
             LastRunData.position = OutGoingData.position;
             LastRunData.rotation = OutGoingData.rotation;
             HasBone = true; 
-        }
-        public void ApplyMovement(BaseBoneDriver BaseBoneDriver)
-        {
-
-            LastRunData.position = OutGoingData.position;
-            LastRunData.rotation = OutGoingData.rotation;
-
-            BaseBoneDriver.TrackedBone.SetLocalPositionAndRotation(OutGoingData.position, OutGoingData.rotation);
-            BaseBoneDriver.TrackedBone.GetPositionAndRotation(out Vector3 position, out Quaternion Rotation);
-
-            OutgoingWorldData.position = position;
-            OutgoingWorldData.rotation = Rotation;
         }
     }
 }

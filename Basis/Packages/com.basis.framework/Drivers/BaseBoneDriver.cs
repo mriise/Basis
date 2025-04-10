@@ -22,7 +22,6 @@ namespace Basis.Scripts.Drivers
         public event SimulationHandler OnSimulate;
         public event SimulationHandler OnPostSimulate;
         public OrderedDelegate ReadyToRead = new OrderedDelegate();
-        public Transform TrackedBone;
         /// <summary>
         /// call this after updating the bone data
         /// </summary>
@@ -34,15 +33,12 @@ namespace Basis.Scripts.Drivers
             {
                 Controls[Index].ComputeMovement(this, deltaTime);
             }
-            OnPostSimulate?.Invoke();
-            ReadyToRead?.Invoke();
             if (BasisGizmoManager.UseGizmos)
             {
-                for (int Index = 0; Index < ControlsLength; Index++)
-                {
-                    DrawGizmos(Controls[Index]);
-                }
+                DrawGizmos();
             }
+            OnPostSimulate?.Invoke();
+            ReadyToRead?.Invoke();
         }
         public void SimulateWithoutLerp()
         {
@@ -56,14 +52,18 @@ namespace Basis.Scripts.Drivers
                 Controls[Index].LastRunData.rotation = Controls[Index].OutGoingData.rotation;
                 Controls[Index].ComputeMovement(this,DeltaTime);
             }
-            OnPostSimulate?.Invoke();
-            ReadyToRead?.Invoke();
             if (BasisGizmoManager.UseGizmos)
             {
-                for (int Index = 0; Index < ControlsLength; Index++)
-                {
-                    DrawGizmos(Controls[Index]);
-                }
+                DrawGizmos();
+            }
+            OnPostSimulate?.Invoke();
+            ReadyToRead?.Invoke();
+        }
+        public void DrawGizmos()
+        {
+            for (int Index = 0; Index < ControlsLength; Index++)
+            {
+                DrawGizmos(Controls[Index]);
             }
         }
         public void SimulateAndApply( float deltaTime)
@@ -115,8 +115,6 @@ namespace Basis.Scripts.Drivers
         }
         public void CreateInitialArrays(Transform Parent, bool IsLocal)
         {
-            TrackedBone = new GameObject("[Converter]").transform;
-            TrackedBone.transform.parent = Parent;
             trackedRoles = new BasisBoneTrackedRole[] { };
             Controls = new BasisBoneControl[] { };
             int Length;

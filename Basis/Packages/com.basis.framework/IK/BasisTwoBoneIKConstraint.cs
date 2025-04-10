@@ -29,9 +29,6 @@ namespace UnityEngine.Animations.Rigging
         [SyncSceneToStream, SerializeField, Range(0f, 1f)] float m_TargetRotationWeight;
         [SyncSceneToStream, SerializeField, Range(0f, 1f)] float m_HintWeight;
 
-        [NotKeyable, SerializeField] bool m_MaintainTargetPositionOffset;
-        [NotKeyable, SerializeField] bool m_MaintainTargetRotationOffset;
-
         /// <inheritdoc />
         public Transform root { get => m_Root; set => m_Root = value; }
         /// <inheritdoc />
@@ -48,11 +45,6 @@ namespace UnityEngine.Animations.Rigging
         public float hintWeight { get => m_HintWeight; set => m_HintWeight = Mathf.Clamp01(value); }
 
         /// <inheritdoc />
-        public bool maintainTargetPositionOffset { get => m_MaintainTargetPositionOffset; set => m_MaintainTargetPositionOffset = value; }
-        /// <inheritdoc />
-        public bool maintainTargetRotationOffset { get => m_MaintainTargetRotationOffset; set => m_MaintainTargetRotationOffset = value; }
-
-        /// <inheritdoc />
         string BasisITwoBoneIKConstraintData.targetPositionWeightFloatProperty => ConstraintsUtils.ConstructConstraintDataPropertyName(nameof(m_TargetPositionWeight));
         /// <inheritdoc />
         string BasisITwoBoneIKConstraintData.targetRotationWeightFloatProperty => ConstraintsUtils.ConstructConstraintDataPropertyName(nameof(m_TargetRotationWeight));
@@ -67,6 +59,27 @@ namespace UnityEngine.Animations.Rigging
 
         string BasisITwoBoneIKConstraintData.HintrotationVector3Property => ConstraintsUtils.ConstructConstraintDataPropertyName(nameof(HintRotation));
 
+        [SyncSceneToStream, SerializeField]
+        public Vector3 M_CalibratedOffset;
+        [SyncSceneToStream, SerializeField]
+        public Vector3 M_CalibratedRotation;
+
+        public Vector3 CalibratedOffset
+        {
+            get
+            {
+                return M_CalibratedOffset;
+            }
+        }
+
+        public Vector3 CalibratedRotation
+        {
+            get
+            {
+                return M_CalibratedRotation;
+            }
+        }
+
         /// <inheritdoc />
         bool IAnimationJobData.IsValid() => (m_Tip != null && m_Mid != null && m_Root != null && m_Tip.IsChildOf(m_Mid) && m_Mid.IsChildOf(m_Root));
 
@@ -79,8 +92,7 @@ namespace UnityEngine.Animations.Rigging
             m_TargetPositionWeight = 1f;
             m_TargetRotationWeight = 1f;
             m_HintWeight = 1f;
-            m_MaintainTargetPositionOffset = false;
-            m_MaintainTargetRotationOffset = false;
+
         }
     }
 
@@ -180,10 +192,9 @@ namespace UnityEngine.Animations.Rigging
         public Vector3 targetRotation { get; }
         public Vector3 hintPosition { get; }
         public Vector3 HintRotation { get; }
-        /// <summary>This is used to maintain the offset of the tip position to the target position.</summary>
-        bool maintainTargetPositionOffset { get; }
-        /// <summary>This is used to maintain the offset of the tip rotation to the target rotation.</summary>
-        bool maintainTargetRotationOffset { get; }
+
+        public Vector3 CalibratedOffset { get; }
+        public Vector3 CalibratedRotation { get; }
 
         /// <summary>The path to the target position weight property in the constraint component.</summary>
         string targetPositionWeightFloatProperty { get; }
@@ -231,14 +242,8 @@ namespace UnityEngine.Animations.Rigging
 
                 targetOffset = AffineTransform.identity,
             };
-            if (data.maintainTargetPositionOffset)
-            {
-                job.targetOffset.translation = data.tip.position - data.targetPosition;
-            }
-            if (data.maintainTargetRotationOffset)
-            {
-                job.targetOffset.rotation = Quaternion.Inverse(Quaternion.Euler(data.targetRotation)) * data.tip.rotation;
-            }
+            job.targetOffset.translation = data.CalibratedOffset;
+            job.targetOffset.rotation = Quaternion.Euler(data.CalibratedRotation);
             job.targetPositionWeight = FloatProperty.Bind(animator, component, data.targetPositionWeightFloatProperty);
             job.targetRotationWeight = FloatProperty.Bind(animator, component, data.targetRotationWeightFloatProperty);
             job.hintWeight = FloatProperty.Bind(animator, component, data.hintWeightFloatProperty);

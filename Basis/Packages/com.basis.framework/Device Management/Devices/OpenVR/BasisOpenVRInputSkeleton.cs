@@ -32,13 +32,14 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
             }
             if(BasisOpenVRInputController.inputSource == SteamVR_Input_Sources.LeftHand)
             {
-                 additionalRotation = Quaternion.Euler(new Vector3(180, -90, 0));
+                 additionalRotation = Quaternion.Euler(new Vector3(35, 180, 45));
             }
             else
             {
                 if (BasisOpenVRInputController.inputSource == SteamVR_Input_Sources.RightHand)
                 {
-                     additionalRotation = Quaternion.Euler(new Vector3(180, 90, 0));
+                    //45
+                     additionalRotation = Quaternion.Euler(new Vector3(35, 180, 315));
                 }
             }
         }
@@ -47,7 +48,7 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
         {
             onTrackingChanged();
         }
-        public Vector3 additionalPositionOffset = new Vector3(0, -0.06f, -0.02f);
+        public Vector3 additionalPositionOffset = new Vector3(0.01f, -0.07f, -0.03f);
         private void onTrackingChanged()
         {
             if (BasisOpenVRInputController.inputSource == SteamVR_Input_Sources.LeftHand)

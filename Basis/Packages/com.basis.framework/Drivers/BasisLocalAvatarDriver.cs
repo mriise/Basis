@@ -215,19 +215,20 @@ namespace Basis.Scripts.Drivers
         public void CalibrateOffsets()
         {
             BasisLocalBoneDriver Driver = BasisLocalPlayer.Instance.LocalBoneDriver;
-            Driver.TrackedBone.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
-            Driver.TrackedBone.GetPositionAndRotation(out Vector3 Position, out Quaternion Rotation);
+            Vector3 Position = Vector3.zero;
+            Quaternion Rotation = Quaternion.identity;
+
             for (int Index = 0; Index < Driver.ControlsLength; Index++)
             {
-                Driver.Controls[Index].OutgoingWorldData.position = Position;
-                Driver.Controls[Index].OutgoingWorldData.rotation = Rotation;
+              //  Driver.Controls[Index].OutgoingWorldData.position = Position;
+               // Driver.Controls[Index].OutgoingWorldData.rotation = Rotation;
             }
             if (Driver.FindBone(out BasisBoneControl Head, BasisBoneTrackedRole.Head) && Driver.FindBone(out BasisBoneControl Hips, BasisBoneTrackedRole.Hips))
             {
                 // Default T-pose local positions
-                Vector3 tposeHeadPosition = Head.TposeLocal.position;
-                Vector3 tposeHipsPosition = Hips.TposeLocal.position;
-                MaxExtendedDistance = Vector3.Distance(tposeHeadPosition, tposeHipsPosition);
+                Vector3 TPoseHeadPosition = Head.TposeLocal.position;
+                Vector3 TPoseHipsPosition = Hips.TposeLocal.position;
+                MaxExtendedDistance = Vector3.Distance(TPoseHeadPosition, TPoseHipsPosition);
             }
         }
         public void BuildBuilder()
@@ -485,7 +486,7 @@ namespace Basis.Scripts.Drivers
                 controls.Add(LeftLowerArm);
             }
             WriteUpEvents(controls, LeftHandLayer);
-            BasisAnimationRiggingHelper.CreateTwoBone(this, driver, Hands, References.leftUpperArm, References.leftLowerArm, References.leftHand, BasisBoneTrackedRole.LeftHand, BasisBoneTrackedRole.LeftLowerArm, true, out LeftHandTwoBoneIK, false, true);
+            BasisAnimationRiggingHelper.CreateTwoBone(this, driver, Hands, References.leftUpperArm, References.leftLowerArm, References.leftHand, BasisBoneTrackedRole.LeftHand, BasisBoneTrackedRole.LeftLowerArm, true, out LeftHandTwoBoneIK, false, false);
         }
         public void RightHand(BasisLocalBoneDriver driver)
         {
@@ -500,7 +501,7 @@ namespace Basis.Scripts.Drivers
                 controls.Add(RightLowerArm);
             }
             WriteUpEvents(controls, RightHandLayer);
-            BasisAnimationRiggingHelper.CreateTwoBone(this, driver, Hands, References.RightUpperArm, References.RightLowerArm, References.rightHand, BasisBoneTrackedRole.RightHand, BasisBoneTrackedRole.RightLowerArm, true, out RightHandTwoBoneIK, false, true);
+            BasisAnimationRiggingHelper.CreateTwoBone(this, driver, Hands, References.RightUpperArm, References.RightLowerArm, References.rightHand, BasisBoneTrackedRole.RightHand, BasisBoneTrackedRole.RightLowerArm, true, out RightHandTwoBoneIK, false, false);
         }
         public void LeftFoot(BasisLocalBoneDriver driver)
         {
