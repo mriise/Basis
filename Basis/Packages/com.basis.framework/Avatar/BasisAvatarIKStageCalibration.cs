@@ -45,7 +45,7 @@ namespace Basis.Scripts.Avatar
             BasisLocalPlayer.Instance.LocalBoneDriver.SimulateAndApplyWithoutLerp(BasisLocalPlayer.Instance);
 
             //now that we have latest * scale we can run calibration
-            BasisLocalPlayer.Instance.AvatarDriver.PutAvatarIntoTPose();
+            BasisLocalPlayer.Instance.LocalAvatarDriver.PutAvatarIntoTPose();
             List<BasisBoneTrackedRole> rolesToDiscover = GetAllRoles();
             List<BasisBoneTrackedRole> trackInputRoles = new List<BasisBoneTrackedRole>();
             int count = rolesToDiscover.Count;
@@ -125,8 +125,8 @@ namespace Basis.Scripts.Avatar
                 }
             }
 
-            BasisLocalPlayer.Instance.AvatarDriver.ResetAvatarAnimator();
-            BasisLocalPlayer.Instance.AvatarDriver.CalibrateRoles();//not needed but still doing just incase
+            BasisLocalPlayer.Instance.LocalAvatarDriver.ResetAvatarAnimator();
+            BasisLocalPlayer.Instance.LocalAvatarDriver.CalibrateRoles();//not needed but still doing just incase
             BasisLocalPlayer.Instance.AnimatorDriver.AssignHipsFBTracker();
         }
         public static bool HasFBIKTrackers = false;
@@ -176,7 +176,7 @@ namespace Basis.Scripts.Avatar
         }
         public static Dictionary<BasisBoneTrackedRole, Transform> GetAllRolesAsTransform()
         {
-            Common.BasisTransformMapping Mapping = BasisLocalPlayer.Instance.AvatarDriver.References;
+            Common.BasisTransformMapping Mapping = BasisLocalPlayer.Instance.LocalAvatarDriver.References;
             Dictionary<BasisBoneTrackedRole, Transform> transforms = new Dictionary<BasisBoneTrackedRole, Transform>
     {
         { BasisBoneTrackedRole.Hips,Mapping.Hips },

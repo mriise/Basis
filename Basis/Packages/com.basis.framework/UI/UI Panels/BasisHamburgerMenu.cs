@@ -49,7 +49,7 @@ namespace Basis.Scripts.UI.UI_Panels
             string BasisBootedMode = BasisDeviceManagement.Instance.CurrentMode;
             if (OverrideForceCalibration || BasisBootedMode == "OpenVRLoader" || BasisBootedMode == "OpenXRLoader")
             {
-                BasisLocalPlayer.Instance.AvatarDriver.PutAvatarIntoTPose();
+                BasisLocalPlayer.Instance.LocalAvatarDriver.PutAvatarIntoTPose();
 
                 foreach (BasisInput BasisInput in BasisDeviceManagement.Instance.AllInputDevices)
                 {

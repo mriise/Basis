@@ -53,33 +53,7 @@ public class BasisEventDriver : MonoBehaviour
     {
         if (BasisLocalPlayer.PlayerReady)
         {
-            BasisLocalPlayer LocalPlayer = BasisLocalPlayer.Instance;
-            //moves all bones to where they belong
-            LocalPlayer.LocalBoneDriver.SimulateBonePositions();
-            //moves Avatar Transform to where it belongs
-            LocalPlayer.MoveAvatar();
-
-            //Simulate Final Destination of IK
-            LocalPlayer.AvatarDriver.SimulateIKDesinations();
-
-            //process Animator and IK processes.
-            LocalPlayer.AvatarDriver.SimulateAnimatorAndIk();
-
-            //camera, physical controllers and other get moved here. MUST BE CHILDREN OF BASISLOCALPLAYER.
-            LocalPlayer.AfterIkSimulation?.Invoke();
-
-            //we move the player at the very end after everything has been processed.
-            LocalPlayer.Move.SimulateMovement();
-
-            //now that everything has been processed jiggles can move.
-            if (LocalPlayer.HasJiggles)
-            {
-                LocalPlayer.BasisAvatarStrainJiggleDriver.Simulate(0);
-            }
-
-            //now other things can move like UI
-            LocalPlayer.AfterFinalMove?.Invoke();
-
+            BasisLocalPlayer.Instance.Simulate();
             //send out avatar
             BasisNetworkTransmitter.AfterAvatarChanges?.Invoke();
         }

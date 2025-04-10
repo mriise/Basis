@@ -37,7 +37,7 @@ namespace Basis.Scripts.TransformBinders
             }
             if (HasEvent == false)
             {
-                BasisLocalPlayer.AfterIkSimulation.AddAction(99, Simulation);
+                BasisLocalPlayer.AfterFinalMove.AddAction(99, Simulation);
                 HasEvent = true;
             }
         }
@@ -47,7 +47,7 @@ namespace Basis.Scripts.TransformBinders
             {
                 if (HasEvent)
                 {
-                    BasisLocalPlayer.AfterIkSimulation.RemoveAction(99, Simulation);
+                    BasisLocalPlayer.AfterFinalMove.RemoveAction(99, Simulation);
                     HasEvent = false;
                 }
             }

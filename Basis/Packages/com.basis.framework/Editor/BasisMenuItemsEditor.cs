@@ -79,11 +79,11 @@ public static class BasisMenuItemsEditor
     [MenuItem("Basis/Trackers/Create Puck Tracker")]
     public static  void CreatePuckTracker()
     {
-        BasisLocalPlayer.Instance.AvatarDriver.PutAvatarIntoTPose();
+        BasisLocalPlayer.Instance.LocalAvatarDriver.PutAvatarIntoTPose();
 
         FindSimulate().CreatePhysicalTrackedDevice("{htc}vr_tracker_vive_3_0" + UnityEngine.Random.Range(-9999999999999, 999999999999), "{htc}vr_tracker_vive_3_0");
         BasisDeviceManagement.ShowTrackers();
-        BasisLocalPlayer.Instance.AvatarDriver.ResetAvatarAnimator();
+        BasisLocalPlayer.Instance.LocalAvatarDriver.ResetAvatarAnimator();
     }
     [MenuItem("Basis/Trackers/Create Vive Right Controller")]
     public static  void CreateViveRightTracker()
@@ -121,15 +121,15 @@ public static class BasisMenuItemsEditor
     [MenuItem("Basis/Trackers/Create 3Point Tracking")]
     public static  void CreatePuck3Tracker()
     {
-        BasisLocalPlayer.Instance.AvatarDriver.PutAvatarIntoTPose();
+        BasisLocalPlayer.Instance.LocalAvatarDriver.PutAvatarIntoTPose();
         BasisSimulateXR XR = FindSimulate();
         BasisInputXRSimulate BasisHips =  XR.CreatePhysicalTrackedDevice("{htc}vr_tracker_vive_3_0 BasisHips | " + UnityEngine.Random.Range(-9999999999999, 999999999999), "{htc}vr_tracker_vive_3_0");
         BasisInputXRSimulate BasisLeftFoot =  XR.CreatePhysicalTrackedDevice("{htc}vr_tracker_vive_3_0 BasisLeftFoot | " + UnityEngine.Random.Range(-9999999999999, 999999999999), "{htc}vr_tracker_vive_3_0");
         BasisInputXRSimulate BasisRightFoot =  XR.CreatePhysicalTrackedDevice("{htc}vr_tracker_vive_3_0 BasisRightFoot | " + UnityEngine.Random.Range(-9999999999999, 999999999999), "{htc}vr_tracker_vive_3_0");
 
-        var hips = BasisLocalPlayer.Instance.AvatarDriver.References.Hips;
-        var leftFoot = BasisLocalPlayer.Instance.AvatarDriver.References.leftFoot;
-        var rightFoot = BasisLocalPlayer.Instance.AvatarDriver.References.rightFoot;
+        var hips = BasisLocalPlayer.Instance.LocalAvatarDriver.References.Hips;
+        var leftFoot = BasisLocalPlayer.Instance.LocalAvatarDriver.References.leftFoot;
+        var rightFoot = BasisLocalPlayer.Instance.LocalAvatarDriver.References.rightFoot;
 
         Vector3 HipsPosition = ModifyVector(hips.position);
         Vector3 leftFootPosition = ModifyVector(leftFoot.position);
@@ -142,7 +142,7 @@ public static class BasisMenuItemsEditor
         BasisHips.FollowMovement.rotation = UnityEngine.Random.rotation;
         BasisLeftFoot.FollowMovement.rotation = UnityEngine.Random.rotation;
         BasisRightFoot.FollowMovement.rotation = UnityEngine.Random.rotation;
-        BasisLocalPlayer.Instance.AvatarDriver.ResetAvatarAnimator();
+        BasisLocalPlayer.Instance.LocalAvatarDriver.ResetAvatarAnimator();
         // Show the trackers
         BasisDeviceManagement.ShowTrackers();
     }
@@ -153,7 +153,7 @@ public static class BasisMenuItemsEditor
         // Create an array of the tracker names for simplicity
         string trackerName = "{htc}vr_tracker_vive_3_0";
 
-        var avatarDriver = BasisLocalPlayer.Instance.AvatarDriver.References;
+        var avatarDriver = BasisLocalPlayer.Instance.LocalAvatarDriver.References;
         // avatarDriver.neck, avatarDriver.head,
         // Array of all relevant body parts
         Transform[] bodyParts = new Transform[]
@@ -188,7 +188,7 @@ public static class BasisMenuItemsEditor
         // Create an array of the tracker names for simplicity
         string trackerName = "{htc}vr_tracker_vive_3_0";
 
-        var avatarDriver = BasisLocalPlayer.Instance.AvatarDriver.References;
+        var avatarDriver = BasisLocalPlayer.Instance.LocalAvatarDriver.References;
         // avatarDriver.neck, avatarDriver.head,
         // Array of all relevant body parts
         Transform[] bodyParts = new Transform[]
@@ -219,12 +219,12 @@ public static class BasisMenuItemsEditor
     [MenuItem("Basis/Avatar/TPose Animator")]
     public static void PutAvatarIntoTpose()
     {
-        BasisLocalPlayer.Instance.AvatarDriver.PutAvatarIntoTPose();
+        BasisLocalPlayer.Instance.LocalAvatarDriver.PutAvatarIntoTPose();
     }
     [MenuItem("Basis/Avatar/Normal Animator")]
     public static void ResetAvatarAnimator()
     {
-        BasisLocalPlayer.Instance.AvatarDriver.ResetAvatarAnimator();
+        BasisLocalPlayer.Instance.LocalAvatarDriver.ResetAvatarAnimator();
     }
     public static float randomRange = 0.1f;
     static Vector3 ModifyVector(Vector3 original)

@@ -40,7 +40,7 @@ namespace Basis.Scripts.Animator_Driver
         public float angularFrequency = 0.4f; // Adjust for the speed of dampening
         void Simulate()
         {
-            if (localPlayer.AvatarDriver.CurrentlyTposing || BasisAvatarIKStageCalibration.HasFBIKTrackers)
+            if (localPlayer.LocalAvatarDriver.CurrentlyTposing || BasisAvatarIKStageCalibration.HasFBIKTrackers)
             {
                 if (basisAnimatorVariableApply.IsStopped == false)
                 {
@@ -92,7 +92,7 @@ namespace Basis.Scripts.Animator_Driver
                 }
             }
 
-            basisAnimatorVariableApply.BasisAnimatorVariables.IsFalling = localPlayer.Move.IsFalling;
+            basisAnimatorVariableApply.BasisAnimatorVariables.IsFalling = localPlayer.LocalMoveDriver.IsFalling;
             basisAnimatorVariableApply.BasisAnimatorVariables.IsCrouching = BasisLocalInputActions.Crouching;
 
             // Calculate the angular velocity of the hips
@@ -145,7 +145,7 @@ namespace Basis.Scripts.Animator_Driver
             animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
 
             basisAnimatorVariableApply.LoadCachedAnimatorHashes(animator);
-            Controller = BasisLocalPlayer.Instance.Move;
+            Controller = BasisLocalPlayer.Instance.LocalMoveDriver;
             BasisLocalPlayer.Instance.LocalBoneDriver.FindBone(out Hips, BasisBoneTrackedRole.Hips);
             BasisLocalPlayer.Instance.LocalBoneDriver.FindBone(out Head, BasisBoneTrackedRole.Head);
             if (HasEvents == false)
@@ -169,9 +169,9 @@ namespace Basis.Scripts.Animator_Driver
             if (localPlayer == null)
             {
                 localPlayer = BasisLocalPlayer.Instance;
-                localPlayer.Move.ReadyToRead += Simulate;
-                localPlayer.Move.JustJumped += JustJumped;
-                localPlayer.Move.JustLanded += JustLanded;
+                localPlayer.LocalMoveDriver.ReadyToRead += Simulate;
+                localPlayer.LocalMoveDriver.JustJumped += JustJumped;
+                localPlayer.LocalMoveDriver.JustLanded += JustLanded;
             }
         }
         public void HandleTeleport()
@@ -185,9 +185,9 @@ namespace Basis.Scripts.Animator_Driver
         {
             if (localPlayer != null)
             {
-                localPlayer.Move.ReadyToRead -= Simulate;
-                localPlayer.Move.JustJumped -= JustJumped;
-                localPlayer.Move.JustLanded -= JustLanded;
+                localPlayer.LocalMoveDriver.ReadyToRead -= Simulate;
+                localPlayer.LocalMoveDriver.JustJumped -= JustJumped;
+                localPlayer.LocalMoveDriver.JustLanded -= JustLanded;
             }
             if (HasEvents)
             {

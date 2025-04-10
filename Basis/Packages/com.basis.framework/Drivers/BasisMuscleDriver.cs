@@ -14,15 +14,13 @@ public partial class BasisMuscleDriver : BasisBaseMuscleDriver
     public void Initialize(BasisLocalPlayer BasisLocalPlayer, Animator animator)
     {
         Animator = animator;
-        BasisLocalAvatarDriver = BasisLocalPlayer.AvatarDriver;
+        BasisLocalAvatarDriver = BasisLocalPlayer.LocalAvatarDriver;
         // Initialize the HumanPoseHandler with the animator's avatar and transform
         poseHandler = new HumanPoseHandler(Animator.avatar, Animator.transform);
         // Initialize the HumanPose
         pose = new HumanPose();
            Muscles = HumanTrait.MuscleName;
         SetMusclesAndRecordPoses();
-
-        BasisLocalPlayer.AfterIkSimulation.AddAction(101, UpdateFingers);
     }
     public float increment = 0.2f;
     [SerializeField]
@@ -127,8 +125,6 @@ public partial class BasisMuscleDriver : BasisBaseMuscleDriver
         if (coordKeysArray.IsCreated) coordKeysArray.Dispose();
         if (distancesArray.IsCreated) distancesArray.Dispose();
         if (closestIndexArray.IsCreated) closestIndexArray.Dispose();
-
-        BasisLocalPlayer.Instance.AfterIkSimulation.RemoveAction(101, UpdateFingers);
     }
     public void SetMusclesAndRecordPoses()
     {

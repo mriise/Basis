@@ -666,6 +666,8 @@ namespace Basis.Scripts.Drivers
         {
             Builder.SyncLayers();
             PlayableGraph.Evaluate(Time.deltaTime);
+
+            BasisMuscleDriver.UpdateFingers();
         }
     }
 }

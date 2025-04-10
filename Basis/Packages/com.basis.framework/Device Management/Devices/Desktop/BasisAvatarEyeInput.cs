@@ -30,7 +30,7 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
         public void Initalize(string ID = "Desktop Eye", string subSystems = "BasisDesktopManagement")
         {
             BasisDebug.Log("Initalizing Avatar Eye", BasisDebug.LogTag.Input);
-            if (BasisLocalPlayer.Instance.AvatarDriver != null)
+            if (BasisLocalPlayer.Instance.LocalAvatarDriver != null)
             {
                 BasisDebug.Log("Using Configured Height " + BasisLocalPlayer.Instance.CurrentHeight.PlayerEyeHeight, BasisDebug.LogTag.Input);
                 LocalRawPosition = new Vector3(InjectedX, BasisLocalPlayer.Instance.CurrentHeight.PlayerEyeHeight, InjectedZ);
@@ -102,7 +102,7 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
         public void PlayerInitialized()
         {
             BasisLocalInputActions.CharacterEyeInput = this;
-            AvatarDriver = BasisLocalPlayer.Instance.AvatarDriver;
+            AvatarDriver = BasisLocalPlayer.Instance.LocalAvatarDriver;
             Camera = BasisLocalCameraDriver.Instance.Camera;
             BasisDeviceManagement Device = BasisDeviceManagement.Instance;
             int count = Device.BasisLockToInputs.Count;

@@ -173,7 +173,7 @@ namespace Basis.Scripts.Avatar
                         {
                             Player.BasisAvatar.IsOwnedLocally = true;
                             CreateLocal(localPlayer);
-                            localPlayer.InitalizeIKCalibration(localPlayer.AvatarDriver);
+                            localPlayer.InitalizeIKCalibration(localPlayer.LocalAvatarDriver);
                             for (int Index = 0; Index < Avatar.Renders.Length; Index++)
                             {
                                 Avatar.Renders[Index].gameObject.layer = 6;
@@ -248,7 +248,7 @@ namespace Basis.Scripts.Avatar
                     BasisLocalPlayer BasisLocalPlayer = (BasisLocalPlayer)Player;
                     Player.BasisAvatar.IsOwnedLocally = true;
                     CreateLocal(BasisLocalPlayer);
-                    Player.InitalizeIKCalibration(BasisLocalPlayer.AvatarDriver);
+                    Player.InitalizeIKCalibration(BasisLocalPlayer.LocalAvatarDriver);
                     for (int Index = 0; Index < RenderCount; Index++)
                     {
                         Avatar.Renders[Index].gameObject.layer = 6;
@@ -306,7 +306,7 @@ namespace Basis.Scripts.Avatar
                 return;
             }
 
-            Player.AvatarDriver.InitialLocalCalibration(Player);
+            Player.LocalAvatarDriver.InitialLocalCalibration(Player);
         }
     }
 }

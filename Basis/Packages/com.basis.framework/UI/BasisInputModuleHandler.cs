@@ -122,9 +122,9 @@ namespace Basis.Scripts.UI
                         // Subscribe to the device change event
                         //  Keyboard.current.onTextInput += OnTextInput;
                         HasHoverONInput = true;
-                        if (BasisLocalPlayer.Instance != null && BasisLocalPlayer.Instance.Move != null)
+                        if (BasisLocalPlayer.Instance != null && BasisLocalPlayer.Instance.LocalMoveDriver != null)
                         {
-                            BasisLocalPlayer.Instance.Move.BlockMovement = true;
+                            BasisLocalPlayer.Instance.LocalMoveDriver.BlockMovement = true;
                         }
                         BasisLocalInputActions.IgnoreCrouchToggle = true;
                         if (BasisDeviceManagement.Instance.CurrentMode == "OpenVRLoader" || BasisDeviceManagement.Instance.CurrentMode == "OpenXRLoader" || ForceKeyboard)
@@ -142,9 +142,9 @@ namespace Basis.Scripts.UI
                             // Subscribe to the device change event
                             //  Keyboard.current.onTextInput += OnTextInput;
                             HasHoverONInput = true;
-                            if (BasisLocalPlayer.Instance != null && BasisLocalPlayer.Instance.Move != null)
+                            if (BasisLocalPlayer.Instance != null && BasisLocalPlayer.Instance.LocalMoveDriver != null)
                             {
-                                BasisLocalPlayer.Instance.Move.BlockMovement = true;
+                                BasisLocalPlayer.Instance.LocalMoveDriver.BlockMovement = true;
                             }
                             BasisLocalInputActions.IgnoreCrouchToggle = true;
                             if (BasisDeviceManagement.Instance.CurrentMode == "OpenVRLoader" || BasisDeviceManagement.Instance.CurrentMode == "OpenXRLoader" || ForceKeyboard)
@@ -164,9 +164,9 @@ namespace Basis.Scripts.UI
                     HasHoverONInput = false;
                     CurrentSelectedTMP_InputField = null;
                     CurrentSelectedInputField = null;
-                    if (BasisLocalPlayer.Instance != null && BasisLocalPlayer.Instance.Move != null)
+                    if (BasisLocalPlayer.Instance != null && BasisLocalPlayer.Instance.LocalMoveDriver != null)
                     {
-                        BasisLocalPlayer.Instance.Move.BlockMovement = false;
+                        BasisLocalPlayer.Instance.LocalMoveDriver.BlockMovement = false;
                     }
                     BasisLocalInputActions.IgnoreCrouchToggle = false;
                     var data = GetBaseEventData();

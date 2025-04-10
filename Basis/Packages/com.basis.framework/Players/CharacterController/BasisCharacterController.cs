@@ -58,7 +58,7 @@ namespace Basis.Scripts.BasisCharacterController
         public void Initialize()
         {
             driver = BasisLocalPlayer.Instance.LocalBoneDriver;
-            BasisLocalPlayer.Instance.Move = this;
+            BasisLocalPlayer.Instance.LocalMoveDriver = this;
             HasEye = driver.FindBone(out Eye, BasisBoneTrackedRole.CenterEye);
             HasHead = driver.FindBone(out Head, BasisBoneTrackedRole.Head);
             characterController.minMoveDistance = 0;

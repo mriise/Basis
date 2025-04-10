@@ -66,6 +66,16 @@ namespace Basis.Scripts.Drivers
             Player.OnPreSimulateBones?.Invoke();
             SimulateWithoutLerp();
         }
+        public void SimulateWorldCoords()
+        {
+            Transform parent = transform;
+            for (int Index = 0; Index < ControlsLength; Index++)
+            {
+                // Apply local transform to parent's world transform
+                Controls[Index].OutgoingWorldData.position = parent.TransformPoint(Controls[Index].OutGoingData.position);
+                Controls[Index].OutgoingWorldData.rotation = parent.rotation * Controls[Index].OutGoingData.rotation;
+            }
+        }
         public void RemoveAllListeners()
         {
             for (int Index = 0; Index < ControlsLength; Index++)
@@ -265,7 +275,7 @@ namespace Basis.Scripts.Drivers
                         }
                     }
                 }
-                if (BasisLocalPlayer.Instance.AvatarDriver.CurrentlyTposing)
+                if (BasisLocalPlayer.Instance.LocalAvatarDriver.CurrentlyTposing)
                 {
                     if (BasisLocalPlayer.Instance.LocalBoneDriver.FindTrackedRole(Control, out BasisBoneTrackedRole role))
                     {

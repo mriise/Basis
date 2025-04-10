@@ -21,7 +21,7 @@ namespace Basis.Scripts.BasisSdk.Players
         public static bool PlayerReady = false;
         public static Action OnLocalPlayerCreatedAndReady;
         public static Action OnLocalPlayerCreated;
-        public BasisCharacterController.BasisCharacterController Move;
+        public BasisCharacterController.BasisCharacterController LocalMoveDriver;
         public event Action OnLocalAvatarChanged;
         public event Action OnSpawnedEvent;
 
@@ -38,8 +38,7 @@ namespace Basis.Scripts.BasisSdk.Players
         public Action OnPlayersHeightChanged;
 
         public BasisLocalBoneDriver LocalBoneDriver;
-        public BasisLocalAvatarDriver AvatarDriver;
-        //   public BasisFootPlacementDriver FootPlacementDriver;
+        public BasisLocalAvatarDriver LocalAvatarDriver;
         public BasisAudioAndVisemeDriver VisemeDriver;
         public BasisLocalCameraDriver CameraDriver;
 
@@ -52,9 +51,15 @@ namespace Basis.Scripts.BasisSdk.Players
         public const string DefaultAvatar = "LoadingAvatar";
         public BasisBoneControl Head;
         public BasisBoneControl Hips;
-
-        public OrderedDelegate AfterIkSimulation = new OrderedDelegate();
         public OrderedDelegate AfterFinalMove = new OrderedDelegate();
+
+        public bool HasCalibrationEvents = false;
+        public bool ToggleAvatarSim = false;
+        public float currentDistance;
+        public float3 direction;
+        public float overshoot;
+        public float3 correction;
+        public float3 output;
         public async Task LocalInitialize()
         {
             if (BasisHelpers.CheckInstance(Instance))
@@ -73,7 +78,7 @@ namespace Basis.Scripts.BasisSdk.Players
             CameraDriver.gameObject.SetActive(true);
             //  FootPlacementDriver = BasisHelpers.GetOrAddComponent<BasisFootPlacementDriver>(this.gameObject);
             //  FootPlacementDriver.Initialize();
-            Move.Initialize();
+            LocalMoveDriver.Initialize();
             if (HasEvents == false)
             {
                 OnLocalAvatarChanged += OnCalibration;
@@ -151,9 +156,9 @@ namespace Basis.Scripts.BasisSdk.Players
         {
             BasisAvatarStrainJiggleDriver.PrepareTeleport();
             BasisDebug.Log("Teleporting");
-            Move.enabled = false;
+            LocalMoveDriver.enabled = false;
             transform.SetPositionAndRotation(position, rotation);
-            Move.enabled = true;
+            LocalMoveDriver.enabled = true;
             if (AnimatorDriver != null)
             {
                 AnimatorDriver.HandleTeleport();
@@ -189,7 +194,6 @@ namespace Basis.Scripts.BasisSdk.Players
                 HasCalibrationEvents = true;
             }
         }
-        public bool HasCalibrationEvents = false;
         public void OnDestroy()
         {
             if (HasEvents)
@@ -235,12 +239,35 @@ namespace Basis.Scripts.BasisSdk.Players
                 }
             }
         }
-        public bool ToggleAvatarSim = false;
-        public float currentDistance;
-        public float3 direction;
-        public float overshoot;
-        public float3 correction;
-        public float3 output;
+        public void Simulate()
+        {
+            //moves all bones to where they belong
+            LocalBoneDriver.SimulateBonePositions();
+
+            //moves Avatar Transform to where it belongs
+            MoveAvatar();
+            //Simulate Final Destination of IK
+            LocalAvatarDriver.SimulateIKDesinations();
+
+            //process Animator and IK processes. also handles fingers
+            LocalAvatarDriver.SimulateAnimatorAndIk();
+
+            //we move the player at the very end after everything has been processed.
+            LocalMoveDriver.SimulateMovement();
+
+            //now that everything has been processed jiggles can move.
+            if (HasJiggles)
+            {
+                //we use distance = 0 as the local avatar jiggles should always be processed.
+                BasisAvatarStrainJiggleDriver.Simulate(0);
+            }
+            //now that everything has been processed lets update WorldPosition in BoneDriver.
+            //this is so AfterFinalMove can use world position coords. (stops Laggy pickups)
+            LocalBoneDriver.PostSimulateBonePositions();
+
+            //now other things can move like UI and NON-CHILDREN OF BASISLOCALPLAYER.
+            AfterFinalMove?.Invoke();
+        }
         public void MoveAvatar()
         {
             if (BasisAvatar == null)
@@ -255,7 +282,7 @@ namespace Basis.Scripts.BasisSdk.Players
             currentDistance = Vector3.Distance(headPosition, hipsPosition);
 
 
-            if (currentDistance <= AvatarDriver.MaxExtendedDistance)
+            if (currentDistance <= LocalAvatarDriver.MaxExtendedDistance)
             {
                 // Within range: follow hips freely
                 output = -Hips.TposeLocal.position;
@@ -265,7 +292,7 @@ namespace Basis.Scripts.BasisSdk.Players
                 // Direction from hips to head
                 direction = (hipsPosition - headPosition).normalized;
                 // Head too far: pull hips toward head to reduce the stretch
-                overshoot = currentDistance - AvatarDriver.MaxExtendedDistance;
+                overshoot = currentDistance - LocalAvatarDriver.MaxExtendedDistance;
 
                 // Move hips slightly toward head to restore default distance
                 correction = direction * overshoot;

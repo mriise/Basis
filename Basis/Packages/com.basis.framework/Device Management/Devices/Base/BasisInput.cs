@@ -190,7 +190,7 @@ namespace Basis.Scripts.Device_Management.Devices
             {
                 BasisLocalPlayer.Instance.OnPreSimulateBones += PollData;
                 BasisLocalPlayer.Instance.OnAvatarSwitched += UnAssignFullBodyTrackers;
-                BasisLocalPlayer.Instance.Move.ReadyToRead += ApplyFinalMovement;
+                BasisLocalPlayer.Instance.LocalMoveDriver.ReadyToRead += ApplyFinalMovement;
                 HasEvents = true;
             }
             else
@@ -257,7 +257,7 @@ namespace Basis.Scripts.Device_Management.Devices
             {
                 BasisLocalPlayer.Instance.OnPreSimulateBones -= PollData;
                 BasisLocalPlayer.Instance.OnAvatarSwitched -= UnAssignFullBodyTrackers;
-                BasisLocalPlayer.Instance.Move.ReadyToRead -= ApplyFinalMovement;
+                BasisLocalPlayer.Instance.LocalMoveDriver.ReadyToRead -= ApplyFinalMovement;
                 HasEvents = false;
             }
             else
@@ -276,7 +276,7 @@ namespace Basis.Scripts.Device_Management.Devices
                     hasRoleAssigned = false;
                     if (TryGetRole(out BasisBoneTrackedRole Role))
                     {
-                        BasisLocalPlayer.Instance.AvatarDriver.ApplyHint(Role, 0);
+                        BasisLocalPlayer.Instance.LocalAvatarDriver.ApplyHint(Role, 0);
                     }
                 }
                 else
@@ -284,7 +284,7 @@ namespace Basis.Scripts.Device_Management.Devices
                     hasRoleAssigned = true;
                     if (TryGetRole(out BasisBoneTrackedRole Role))
                     {
-                        BasisLocalPlayer.Instance.AvatarDriver.ApplyHint(Role, 1);
+                        BasisLocalPlayer.Instance.LocalAvatarDriver.ApplyHint(Role, 1);
                     }
                 }
                 BasisDebug.Log("Set Tracker State for tracker " + UniqueDeviceIdentifier + " with bone " + Control.Name + " as " + Control.HasTracked.ToString() + " | " + Control.HasRigLayer.ToString(), BasisDebug.LogTag.Input);
@@ -310,8 +310,8 @@ namespace Basis.Scripts.Device_Management.Devices
                         : InputState.Primary2DAxis.y;
                     //0 to 1 largestValue
 
-                    BasisLocalPlayer.Instance.Move.SpeedMultiplier = largestValue;
-                    BasisLocalPlayer.Instance.Move.MovementVector = InputState.Primary2DAxis;
+                    BasisLocalPlayer.Instance.LocalMoveDriver.SpeedMultiplier = largestValue;
+                    BasisLocalPlayer.Instance.LocalMoveDriver.MovementVector = InputState.Primary2DAxis;
                     //only open ui after we have stopped pressing down on the secondary button
                     if (InputState.SecondaryButtonGetState == false && LastState.SecondaryButtonGetState)
                     {
@@ -333,10 +333,10 @@ namespace Basis.Scripts.Device_Management.Devices
                     }
                     break;
                 case BasisBoneTrackedRole.RightHand:
-                    BasisLocalPlayer.Instance.Move.Rotation = InputState.Primary2DAxis;
+                    BasisLocalPlayer.Instance.LocalMoveDriver.Rotation = InputState.Primary2DAxis;
                     if (InputState.PrimaryButtonGetState)
                     {
-                        BasisLocalPlayer.Instance.Move.HandleJump();
+                        BasisLocalPlayer.Instance.LocalMoveDriver.HandleJump();
                     }
                     break;
                 case BasisBoneTrackedRole.CenterEye:

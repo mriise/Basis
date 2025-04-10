@@ -27,6 +27,10 @@ namespace Basis.Scripts.Drivers
             SimulateAndApply(BasisLocalPlayer.Instance,DeltaTime);
             
         }
+        public void PostSimulateBonePositions()
+        {
+            SimulateWorldCoords();
+        }
         public void OnDestroy()
         {
             BasisDeviceManagement.Instance.OnBootModeChanged -= OnBootModeChanged;

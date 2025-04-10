@@ -170,12 +170,12 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
         // Input action methods
         private  void OnMoveActionStarted(InputAction.CallbackContext ctx)
         {
-            basisLocalPlayer.Move.MovementVector = ctx.ReadValue<Vector2>();
+            basisLocalPlayer.LocalMoveDriver.MovementVector = ctx.ReadValue<Vector2>();
         }
 
         private static void OnMoveActionCancelled(InputAction.CallbackContext ctx)
         {
-            BasisLocalInputActions.Instance.basisLocalPlayer.Move.MovementVector = Vector2.zero;
+            BasisLocalInputActions.Instance.basisLocalPlayer.LocalMoveDriver.MovementVector = Vector2.zero;
         }
 
         private static void OnLookActionStarted(InputAction.CallbackContext ctx)
@@ -198,7 +198,7 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
 
         private static void OnJumpActionPerformed(InputAction.CallbackContext ctx)
         {
-            BasisLocalInputActions.Instance.basisLocalPlayer.Move.HandleJump();
+            BasisLocalInputActions.Instance.basisLocalPlayer.LocalMoveDriver.HandleJump();
         }
 
         private static void OnJumpActionCancelled(InputAction.CallbackContext ctx)
@@ -228,18 +228,18 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
                     BasisLocalInputActions.CharacterEyeInput.HandleMouseRotation(LookDirection);
                 }
 
-                BasisLocalInputActions.Instance.basisLocalPlayer.Move.SpeedMultiplier = Crouching ? 0 : 0.5f;
+                BasisLocalInputActions.Instance.basisLocalPlayer.LocalMoveDriver.SpeedMultiplier = Crouching ? 0 : 0.5f;
             }
         }
 
         private static void OnRunStarted(InputAction.CallbackContext ctx)
         {
-            BasisLocalInputActions.Instance.basisLocalPlayer.Move.SpeedMultiplier = Crouching ? 0 : 1;
+            BasisLocalInputActions.Instance.basisLocalPlayer.LocalMoveDriver.SpeedMultiplier = Crouching ? 0 : 1;
         }
 
         private static void OnRunCancelled(InputAction.CallbackContext ctx)
         {
-            BasisLocalInputActions.Instance.basisLocalPlayer.Move.SpeedMultiplier = Crouching ? 0 : 0.5f;
+            BasisLocalInputActions.Instance.basisLocalPlayer.LocalMoveDriver.SpeedMultiplier = Crouching ? 0 : 0.5f;
         }
 
         private static void OnEscapePerformed(InputAction.CallbackContext ctx)

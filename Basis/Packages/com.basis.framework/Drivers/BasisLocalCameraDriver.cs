@@ -277,9 +277,9 @@ namespace Basis.Scripts.Drivers
         }
         public void OnDisable()
         {
-            if (LocalPlayer.AvatarDriver && LocalPlayer.AvatarDriver.References != null && LocalPlayer.AvatarDriver.References.head != null)
+            if (LocalPlayer.LocalAvatarDriver && LocalPlayer.LocalAvatarDriver.References != null && LocalPlayer.LocalAvatarDriver.References.head != null)
             {
-                LocalPlayer.AvatarDriver.References.head.localScale = BasisLocalAvatarDriver.HeadScale;
+                LocalPlayer.LocalAvatarDriver.References.head.localScale = BasisLocalAvatarDriver.HeadScale;
             }
             if (HasEvents)
             {
@@ -293,7 +293,7 @@ namespace Basis.Scripts.Drivers
 
         public void BeginCameraRendering(ScriptableRenderContext context, Camera Camera)
         {
-            if (LocalPlayer.HasAvatarDriver && LocalPlayer.AvatarDriver.References.Hashead)
+            if (LocalPlayer.HasAvatarDriver && LocalPlayer.LocalAvatarDriver.References.Hashead)
             {
                 if (Camera.GetInstanceID() == CameraInstanceID)
                 {
@@ -322,7 +322,7 @@ namespace Basis.Scripts.Drivers
         {
             if (IsNormalHead == false)
             {
-                LocalPlayer.AvatarDriver.References.head.localScale = BasisLocalAvatarDriver.HeadScale;
+                LocalPlayer.LocalAvatarDriver.References.head.localScale = BasisLocalAvatarDriver.HeadScale;
                 IsNormalHead = true;
             }
         }
@@ -330,7 +330,7 @@ namespace Basis.Scripts.Drivers
         {
             if (IsNormalHead)
             {
-                LocalPlayer.AvatarDriver.References.head.localScale = BasisLocalAvatarDriver.HeadScaledDown;
+                LocalPlayer.LocalAvatarDriver.References.head.localScale = BasisLocalAvatarDriver.HeadScaledDown;
                 IsNormalHead = false;
             }
         }

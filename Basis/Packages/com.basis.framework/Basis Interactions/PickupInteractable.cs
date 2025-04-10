@@ -259,8 +259,7 @@ public class PickupInteractable : InteractableObject
             {
                 // override with current camera position in desktop mode
                 // TODO: this is weird??!? fixes jitter but only on forward rendered shaders
-                inPos = BasisLocalCameraDriver.Instance.Camera.transform.position;
-                inRot = BasisLocalCameraDriver.Instance.Camera.transform.rotation;
+                BasisLocalCameraDriver.GetPositionAndRotation(out inPos, out inRot);
 
                 PollDesktopManipulation(Inputs.desktopCenterEye.Source);
             }
@@ -268,6 +267,8 @@ public class PickupInteractable : InteractableObject
             InputConstraint.UpdateSourcePositionAndRotation(0, inPos, inRot);
             if (InputConstraint.Evaluate(out Vector3 pos, out Quaternion rot))
             {
+                //pretty sure rigidbody is the real issue with the jitter here.
+                //as rigidbody occurs on physics timestamp? -LD
                 RigidRef.Move(pos, rot);
                 // TODO: fix jitter while still using rigidbody movement
                 // transform.SetPositionAndRotation(pos, rot);

@@ -341,12 +341,12 @@ namespace Basis.Scripts.Networking
         public static void LocalInitalize(BasisNetworkPlayer BasisNetworkPlayer, BasisLocalPlayer BasisLocalPlayer)
         {
             BasisNetworkPlayer.Player = BasisLocalPlayer;
-            if (BasisLocalPlayer.AvatarDriver != null)
+            if (BasisLocalPlayer.LocalAvatarDriver != null)
             {
-                if (BasisLocalPlayer.AvatarDriver.HasEvents == false)
+                if (BasisLocalPlayer.LocalAvatarDriver.HasEvents == false)
                 {
-                    BasisLocalPlayer.AvatarDriver.CalibrationComplete += BasisNetworkPlayer.OnAvatarCalibrationLocal;
-                    BasisLocalPlayer.AvatarDriver.HasEvents = true;
+                    BasisLocalPlayer.LocalAvatarDriver.CalibrationComplete += BasisNetworkPlayer.OnAvatarCalibrationLocal;
+                    BasisLocalPlayer.LocalAvatarDriver.HasEvents = true;
                 }
                 BasisLocalPlayer.LocalBoneDriver.FindBone(out BasisNetworkPlayer.MouthBone, BasisBoneTrackedRole.Mouth);
             }

@@ -33,9 +33,6 @@ public abstract partial class InteractableObject: MonoBehaviour
     public float InteractRange = 1.0f;
     [Space(10)]
     public bool Equippable = false;
-    [Tooltip("Provide an offset for interactable to use, e.g holding position")]
-    public Vector3 StrictPosition;
-    public Quaternion StrictRotation;
 
     [NonSerialized]
     public bool RequiresUpdateLoop = false;
