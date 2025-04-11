@@ -1,6 +1,5 @@
 using Basis.Scripts.Avatar;
 using Basis.Scripts.Common;
-using Basis.Scripts.Drivers;
 using System;
 using Unity.Burst;
 using Unity.Mathematics;
@@ -47,7 +46,7 @@ namespace Basis.Scripts.TransformBinders.BoneControl
 
         public bool IsHintRoleIgnoreRotation = false;
         [BurstCompile]
-        public void ComputeMovement(BaseBoneDriver BaseBoneDriver, float DeltaTime)
+        public void ComputeMovement(Matrix4x4 parentMatrix, Quaternion Rotation, float DeltaTime)
         {
             if (HasBone)
             {
@@ -106,10 +105,10 @@ namespace Basis.Scripts.TransformBinders.BoneControl
                         }
                     }
                 }
-                Transform parent = BaseBoneDriver.transform;
-                // Apply local transform to parent's world transform
-                OutgoingWorldData.position = parent.TransformPoint(OutGoingData.position);
-                OutgoingWorldData.rotation = parent.rotation * OutGoingData.rotation;
+                OutgoingWorldData.position = parentMatrix.MultiplyPoint3x4(OutGoingData.position);
+
+                // Transform rotation via quaternion multiplication
+                OutgoingWorldData.rotation = Rotation * OutGoingData.rotation;
 
                 LastRunData.position = OutGoingData.position;
                 LastRunData.rotation = OutGoingData.rotation;
@@ -163,11 +162,16 @@ namespace Basis.Scripts.TransformBinders.BoneControl
         [SerializeField]
         [HideInInspector]
         private Color gizmoColor = Color.blue;
-        [SerializeField]
-        //  [SerializeField]
-        //  public Transform BoneTransform;
         [HideInInspector]
         public bool HasEvents = false;
+        [HideInInspector]
+        [SerializeField]
+        private float positionWeight = 1;
+        [HideInInspector]
+        [SerializeField]
+        private float rotationWeight = 1;
+        [HideInInspector]
+        public BasisGeneralLocation GeneralLocation;
         // Events for property changes
         public System.Action<BasisHasTracked> OnHasTrackerDriverChanged;
         // Backing fields for the properties
@@ -207,12 +211,6 @@ namespace Basis.Scripts.TransformBinders.BoneControl
                 }
             }
         }
-        [HideInInspector]
-        [SerializeField]
-        private float positionWeight = 1;
-        [HideInInspector]
-        [SerializeField]
-        private float rotationWeight = 1;
         public float PositionWeight
         {
             get => positionWeight;
@@ -237,18 +235,15 @@ namespace Basis.Scripts.TransformBinders.BoneControl
                 }
             }
         }
-        [HideInInspector]
-        public BasisGeneralLocation GeneralLocation;
         public Color Color { get => gizmoColor; set => gizmoColor = value; }
         public bool HasBone { get; internal set; }
-
         public void Initialize()
         {
             OutgoingWorldData.position = Vector3.zero;
             OutgoingWorldData.rotation = Quaternion.identity;
             LastRunData.position = OutGoingData.position;
             LastRunData.rotation = OutGoingData.rotation;
-            HasBone = true; 
+            HasBone = true;
         }
     }
 }

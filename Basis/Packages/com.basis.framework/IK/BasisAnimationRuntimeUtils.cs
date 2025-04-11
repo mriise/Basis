@@ -15,8 +15,6 @@ public static class BasisAnimationRuntimeUtils
     /// <param name="tip">The transform handle for the tip transform.</param>
     /// <param name="target">The transform handle for the target transform.</param>
     /// <param name="hint">The transform handle for the hint transform.</param>
-    /// <param name="posWeight">The weight for which target position has an effect on IK calculations. This is a value in between 0 and 1.</param>
-    /// <param name="rotWeight">The weight for which target rotation has an effect on IK calculations. This is a value in between 0 and 1.</param>
     /// <param name="hintWeight">The weight for which hint transform has an effect on IK calculations. This is a value in between 0 and 1.</param>
     /// <param name="targetOffset">The offset applied to the target transform.</param>
     public static void SolveTwoBoneIK(
@@ -26,8 +24,6 @@ public static class BasisAnimationRuntimeUtils
         ReadWriteTransformHandle tip,
         AffineTransform target,
         AffineTransform hint,
-        float posWeight,
-        float rotWeight,
         float hintWeight,
         AffineTransform targetOffset
         )
@@ -39,8 +35,8 @@ public static class BasisAnimationRuntimeUtils
         Vector3 targetPos = target.translation;
         Quaternion targetRot = target.rotation;
 
-        Vector3 tPosition = Vector3.Lerp(cPosition, targetPos + targetOffset.translation, posWeight);
-        Quaternion tRotation = Quaternion.Lerp(tip.GetRotation(stream), targetRot * targetOffset.rotation, rotWeight);
+        Vector3 tPosition = targetPos + targetOffset.translation;
+        Quaternion tRotation = targetRot * targetOffset.rotation;
         bool hasHint = hintWeight > 0f;
 
         Vector3 ab = bPosition - aPosition;

@@ -8,7 +8,6 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Jobs;
-using static BasisMuscleDriver;
 [DefaultExecutionOrder(15001)]
 [BurstCompile]
 public abstract class BasisBaseMuscleDriver : MonoBehaviour
@@ -17,6 +16,7 @@ public abstract class BasisBaseMuscleDriver : MonoBehaviour
     public HumanPoseHandler poseHandler;
     public BasisLocalAvatarDriver BasisLocalAvatarDriver;
     public HumanPose pose;
+
     public float[] LeftThumb;
     public float[] LeftIndex;
     public float[] LeftMiddle;
@@ -28,6 +28,7 @@ public abstract class BasisBaseMuscleDriver : MonoBehaviour
     public float[] RightMiddle;
     public float[] RightRing;
     public float[] RightLittle;
+
     [SerializeField]
     public FingerPose LeftFinger;
     [SerializeField]
@@ -58,7 +59,7 @@ public abstract class BasisBaseMuscleDriver : MonoBehaviour
     public Vector2 LastRightRingPercentage = new Vector2(-1.1f, -1.1f);
     public Vector2 LastRightLittlePercentage = new Vector2(-1.1f, -1.1f);
     public Dictionary<Vector2, PoseDataAdditional> CoordToPose = new Dictionary<Vector2, PoseDataAdditional>();
-    public Vector2[] coordKeys; // Cached array of keys for optimization
+    public Vector2[] CoordKeys; // Cached array of keys for optimization
 
     public PoseDataAdditional LeftThumbAdditional;
     public PoseDataAdditional LeftIndexAdditional;
@@ -71,12 +72,10 @@ public abstract class BasisBaseMuscleDriver : MonoBehaviour
     public PoseDataAdditional RightMiddleAdditional;
     public PoseDataAdditional RightRingAdditional;
     public PoseDataAdditional RightLittleAdditional;
-    public NativeArray<Vector2> coordKeysArray;
-    public NativeArray<float> distancesArray;
+    public NativeArray<Vector2> CoordKeysArray;
+    public NativeArray<float> DistancesArray;
     public NativeArray<int> closestIndexArray;
     public float LerpSpeed = 17f;
-    // Dictionary to store the mapping
-    public Dictionary<Vector2, PoseData> pointMap = new Dictionary<Vector2, PoseData>();
     public static float MapValue(float value, float minSource, float maxSource, float minTarget, float maxTarget)
     {
         return minTarget + (maxTarget - minTarget) * ((value - minSource) / (maxSource - minSource));
@@ -116,7 +115,6 @@ public abstract class BasisBaseMuscleDriver : MonoBehaviour
     {
         return fingerTransforms.SelectMany(f => f).ToArray();
     }
-
     private bool[] AggregateHasProximal(params bool[][] hasProximalArrays)
     {
         return hasProximalArrays.SelectMany(h => h).ToArray();
@@ -124,23 +122,20 @@ public abstract class BasisBaseMuscleDriver : MonoBehaviour
 
     private void ExtractFingerPoses(ref MuscleLocalPose[] poses, NativeArray<MuscleLocalPose> allFingerPoses, ref int offset, int length)
     {
-        if (poses == null)
-        {
-            poses = new MuscleLocalPose[length];
-        }
+        poses ??= new MuscleLocalPose[length];
         NativeArray<MuscleLocalPose>.Copy(allFingerPoses, offset, poses, 0, length);
         offset += length;
     }
     public void DisposeAllJobsData()
     {
         // Dispose NativeArrays if allocated
-        if (coordKeysArray.IsCreated)
+        if (CoordKeysArray.IsCreated)
         {
-            coordKeysArray.Dispose();
+            CoordKeysArray.Dispose();
         }
-        if (distancesArray.IsCreated)
+        if (DistancesArray.IsCreated)
         {
-            distancesArray.Dispose();
+            DistancesArray.Dispose();
         }
         if (closestIndexArray.IsCreated)
         {
@@ -189,85 +184,75 @@ public abstract class BasisBaseMuscleDriver : MonoBehaviour
     public void UpdateAllFingers(Basis.Scripts.Common.BasisTransformMapping Map, ref PoseData Current)
     {
         float Rotation = LerpSpeed * Time.deltaTime;
-
         // Update Thumb
         if (LeftFinger.ThumbPercentage != LastLeftThumbPercentage)
         {
             GetClosestValue(LeftFinger.ThumbPercentage, out LeftThumbAdditional);
             LastLeftThumbPercentage = LeftFinger.ThumbPercentage;
         }
-        UpdateFingerPoses(Map.LeftThumb, LeftThumbAdditional.PoseData.LeftThumb, ref Current.LeftThumb, Map.HasLeftThumb, Rotation);
-
         // Update Index
         if (LeftFinger.IndexPercentage != LastLeftIndexPercentage)
         {
             GetClosestValue(LeftFinger.IndexPercentage, out LeftIndexAdditional);
             LastLeftIndexPercentage = LeftFinger.IndexPercentage;
         }
-        UpdateFingerPoses(Map.LeftIndex, LeftIndexAdditional.PoseData.LeftIndex, ref Current.LeftIndex, Map.HasLeftIndex, Rotation);
-
         // Update Middle
         if (LeftFinger.MiddlePercentage != LastLeftMiddlePercentage)
         {
             GetClosestValue(LeftFinger.MiddlePercentage, out LeftMiddleAdditional);
             LastLeftMiddlePercentage = LeftFinger.MiddlePercentage;
         }
-        UpdateFingerPoses(Map.LeftMiddle, LeftMiddleAdditional.PoseData.LeftMiddle, ref Current.LeftMiddle, Map.HasLeftMiddle, Rotation);
-
         // Update Ring
         if (LeftFinger.RingPercentage != LastLeftRingPercentage)
         {
             GetClosestValue(LeftFinger.RingPercentage, out LeftRingAdditional);
             LastLeftRingPercentage = LeftFinger.RingPercentage;
         }
-        UpdateFingerPoses(Map.LeftRing, LeftRingAdditional.PoseData.LeftRing, ref Current.LeftRing, Map.HasLeftRing, Rotation);
-
         // Update Little
         if (LeftFinger.LittlePercentage != LastLeftLittlePercentage)
         {
             GetClosestValue(LeftFinger.LittlePercentage, out LeftLittleAdditional);
             LastLeftLittlePercentage = LeftFinger.LittlePercentage;
         }
-        UpdateFingerPoses(Map.LeftLittle, LeftLittleAdditional.PoseData.LeftLittle, ref Current.LeftLittle, Map.HasLeftLittle, Rotation);
-
         // Update Right Thumb
         if (RightFinger.ThumbPercentage != LastRightThumbPercentage)
         {
             GetClosestValue(RightFinger.ThumbPercentage, out RightThumbAdditional);
             LastRightThumbPercentage = RightFinger.ThumbPercentage;
         }
-        UpdateFingerPoses(Map.RightThumb, RightThumbAdditional.PoseData.RightThumb, ref Current.RightThumb, Map.HasRightThumb, Rotation);
-
         // Update Right Index
         if (RightFinger.IndexPercentage != LastRightIndexPercentage)
         {
             GetClosestValue(RightFinger.IndexPercentage, out RightIndexAdditional);
             LastRightIndexPercentage = RightFinger.IndexPercentage;
         }
-        UpdateFingerPoses(Map.RightIndex, RightIndexAdditional.PoseData.RightIndex, ref Current.RightIndex, Map.HasRightIndex, Rotation);
-
         // Update Right Middle
         if (RightFinger.MiddlePercentage != LastRightMiddlePercentage)
         {
             GetClosestValue(RightFinger.MiddlePercentage, out RightMiddleAdditional);
             LastRightMiddlePercentage = RightFinger.MiddlePercentage;
         }
-        UpdateFingerPoses(Map.RightMiddle, RightMiddleAdditional.PoseData.RightMiddle, ref Current.RightMiddle, Map.HasRightMiddle, Rotation);
-
         // Update Right Ring
         if (RightFinger.RingPercentage != LastRightRingPercentage)
         {
             GetClosestValue(RightFinger.RingPercentage, out RightRingAdditional);
             LastRightRingPercentage = RightFinger.RingPercentage;
         }
-        UpdateFingerPoses(Map.RightRing, RightRingAdditional.PoseData.RightRing, ref Current.RightRing, Map.HasRightRing, Rotation);
-
         // Update Right Little
         if (RightFinger.LittlePercentage != LastRightLittlePercentage)
         {
             GetClosestValue(RightFinger.LittlePercentage, out RightLittleAdditional);
             LastRightLittlePercentage = RightFinger.LittlePercentage;
         }
+        UpdateFingerPoses(Map.LeftThumb, LeftThumbAdditional.PoseData.LeftThumb, ref Current.LeftThumb, Map.HasLeftThumb, Rotation);
+        UpdateFingerPoses(Map.LeftIndex, LeftIndexAdditional.PoseData.LeftIndex, ref Current.LeftIndex, Map.HasLeftIndex, Rotation);
+        UpdateFingerPoses(Map.LeftMiddle, LeftMiddleAdditional.PoseData.LeftMiddle, ref Current.LeftMiddle, Map.HasLeftMiddle, Rotation);
+        UpdateFingerPoses(Map.LeftRing, LeftRingAdditional.PoseData.LeftRing, ref Current.LeftRing, Map.HasLeftRing, Rotation);
+        UpdateFingerPoses(Map.LeftLittle, LeftLittleAdditional.PoseData.LeftLittle, ref Current.LeftLittle, Map.HasLeftLittle, Rotation);
+        UpdateFingerPoses(Map.RightThumb, RightThumbAdditional.PoseData.RightThumb, ref Current.RightThumb, Map.HasRightThumb, Rotation);
+        UpdateFingerPoses(Map.RightIndex, RightIndexAdditional.PoseData.RightIndex, ref Current.RightIndex, Map.HasRightIndex, Rotation);
+        UpdateFingerPoses(Map.RightMiddle, RightMiddleAdditional.PoseData.RightMiddle, ref Current.RightMiddle, Map.HasRightMiddle, Rotation);
+        UpdateFingerPoses(Map.RightRing, RightRingAdditional.PoseData.RightRing, ref Current.RightRing, Map.HasRightRing, Rotation);
         UpdateFingerPoses(Map.RightLittle, RightLittleAdditional.PoseData.RightLittle, ref Current.RightLittle, Map.HasRightLittle, Rotation);
     }
     public void UpdateFingerPoses(Transform[] proximal, MuscleLocalPose[] poses, ref MuscleLocalPose[] currentPoses, bool[] hasProximal, float rotation)
@@ -311,20 +296,20 @@ public abstract class BasisBaseMuscleDriver : MonoBehaviour
     public bool GetClosestValue(Vector2 percentage, out PoseDataAdditional first)
     {
         // Create and schedule the distance computation job
-        var distanceJob = new FindClosestPointJob
+        FindClosestPointJob distanceJob = new FindClosestPointJob
         {
             target = percentage,
-            coordKeys = coordKeysArray,
-            distances = distancesArray
+            coordKeys = CoordKeysArray,
+            distances = DistancesArray
         };
 
-        JobHandle distanceJobHandle = distanceJob.Schedule(coordKeysArray.Length, 64);
+        JobHandle distanceJobHandle = distanceJob.Schedule(CoordKeysArray.Length, 64);
         distanceJobHandle.Complete();
 
         // Create and schedule the parallel reduction job
-        var reductionJob = new FindMinDistanceJob
+        FindMinDistanceJob reductionJob = new FindMinDistanceJob
         {
-            distances = distancesArray,
+            distances = DistancesArray,
             closestIndex = closestIndexArray
         };
 
@@ -333,7 +318,7 @@ public abstract class BasisBaseMuscleDriver : MonoBehaviour
 
         // Find the closest point
         int closestIndex = closestIndexArray[0];
-        Vector2 closestPoint = coordKeysArray[closestIndex];
+        Vector2 closestPoint = CoordKeysArray[closestIndex];
 
         // Return result
         return CoordToPose.TryGetValue(closestPoint, out first);
@@ -343,7 +328,9 @@ public abstract class BasisBaseMuscleDriver : MonoBehaviour
     private struct FindClosestPointJob : IJobParallelFor
     {
         public Vector2 target;
+        [ReadOnly]
         public NativeArray<Vector2> coordKeys;
+        [WriteOnly]
         public NativeArray<float> distances;
 
         public void Execute(int index)
@@ -355,7 +342,8 @@ public abstract class BasisBaseMuscleDriver : MonoBehaviour
     [BurstCompile]
     private struct FindMinDistanceJob : IJob
     {
-        [ReadOnly] public NativeArray<float> distances;
+        [ReadOnly]
+        public NativeArray<float> distances;
         public NativeArray<int> closestIndex;
 
         public void Execute()
@@ -363,12 +351,12 @@ public abstract class BasisBaseMuscleDriver : MonoBehaviour
             float minDistance = float.MaxValue;
             int minIndex = -1;
 
-            for (int i = 0; i < distances.Length; i++)
+            for (int Index = 0; Index < distances.Length; Index++)
             {
-                if (distances[i] < minDistance)
+                if (distances[Index] < minDistance)
                 {
-                    minDistance = distances[i];
-                    minIndex = i;
+                    minDistance = distances[Index];
+                    minIndex = Index;
                 }
             }
 
@@ -378,8 +366,10 @@ public abstract class BasisBaseMuscleDriver : MonoBehaviour
     [BurstCompile]
     public struct RecordAllFingersJob : IJobParallelForTransform
     {
-        [ReadOnly] public NativeArray<bool> HasProximal;
-        [WriteOnly] public NativeArray<MuscleLocalPose> FingerPoses;
+        [ReadOnly]
+        public NativeArray<bool> HasProximal;
+        [WriteOnly]
+        public NativeArray<MuscleLocalPose> FingerPoses;
 
         public void Execute(int index, TransformAccess transform)
         {
@@ -405,10 +395,10 @@ public abstract class BasisBaseMuscleDriver : MonoBehaviour
         TransformAccessArray transformAccessArray = new TransformAccessArray(length);
 
         // Fill NativeArrays and TransformAccessArray
-        for (int i = 0; i < length; i++)
+        for (int Index = 0; Index < length; Index++)
         {
-            hasProximalArray[i] = allHasProximal[i];
-            transformAccessArray.Add(allTransforms[i]);
+            hasProximalArray[Index] = allHasProximal[Index];
+            transformAccessArray.Add(allTransforms[Index]);
         }
 
         // Create and schedule the job

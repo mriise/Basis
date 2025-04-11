@@ -36,11 +36,6 @@ namespace UnityEngine.Animations.Rigging
         /// <inheritdoc />
         public Transform tip { get => m_Tip; set => m_Tip = value; }
         /// <inheritdoc />
-
-        /// <summary>The weight for which target position has an effect on IK calculations. This is a value in between 0 and 1.</summary>
-        public float targetPositionWeight { get => m_TargetPositionWeight; set => m_TargetPositionWeight = Mathf.Clamp01(value); }
-        /// <summary>The weight for which target rotation has an effect on IK calculations. This is a value in between 0 and 1.</summary>
-        public float targetRotationWeight { get => m_TargetRotationWeight; set => m_TargetRotationWeight = Mathf.Clamp01(value); }
         /// <summary>The weight for which hint transform has an effect on IK calculations. This is a value in between 0 and 1.</summary>
         public float hintWeight { get => m_HintWeight; set => m_HintWeight = Mathf.Clamp01(value); }
 
@@ -108,8 +103,6 @@ namespace UnityEngine.Animations.Rigging
         {
             base.OnValidate();
             m_Data.hintWeight = Mathf.Clamp01(m_Data.hintWeight);
-            m_Data.targetPositionWeight = Mathf.Clamp01(m_Data.targetPositionWeight);
-            m_Data.targetRotationWeight = Mathf.Clamp01(m_Data.targetRotationWeight);
         }
     }
     /// <summary>
@@ -137,11 +130,6 @@ namespace UnityEngine.Animations.Rigging
 
         /// <summary>The offset applied to the target transform if maintainTargetPositionOffset or maintainTargetRotationOffset is enabled.</summary>
         public AffineTransform targetOffset;
-
-        /// <summary>The weight for which target position has an effect on IK calculations. This is a value in between 0 and 1.</summary>
-        public FloatProperty targetPositionWeight;
-        /// <summary>The weight for which target rotation has an effect on IK calculations. This is a value in between 0 and 1.</summary>
-        public FloatProperty targetRotationWeight;
         /// <summary>The weight for which hint transform has an effect on IK calculations. This is a value in between 0 and 1.</summary>
         public FloatProperty hintWeight;
 
@@ -166,7 +154,7 @@ namespace UnityEngine.Animations.Rigging
               // BasisDebug.Log("Value is " + targetPosition);
                 AffineTransform target = new AffineTransform(targetPosition.Get(stream), Quaternion.Euler(targetRotation.Get(stream)));
                 AffineTransform hint = new AffineTransform(hintPosition.Get(stream), Quaternion.Euler(hintRotation.Get(stream)));
-                BasisAnimationRuntimeUtils.SolveTwoBoneIK(stream, root, mid, tip, target, hint,targetPositionWeight.Get(stream) * w,targetRotationWeight.Get(stream) * w,hintWeight.Get(stream) * w, targetOffset);
+                BasisAnimationRuntimeUtils.SolveTwoBoneIK(stream, root, mid, tip, target, hint,hintWeight.Get(stream) * w, targetOffset);
             }
             else
             {
@@ -244,8 +232,6 @@ namespace UnityEngine.Animations.Rigging
             };
             job.targetOffset.translation = data.CalibratedOffset;
             job.targetOffset.rotation = Quaternion.Euler(data.CalibratedRotation);
-            job.targetPositionWeight = FloatProperty.Bind(animator, component, data.targetPositionWeightFloatProperty);
-            job.targetRotationWeight = FloatProperty.Bind(animator, component, data.targetRotationWeightFloatProperty);
             job.hintWeight = FloatProperty.Bind(animator, component, data.hintWeightFloatProperty);
 
             return job;

@@ -113,52 +113,61 @@ public class BasisVirtualSpineDriver
     }
     public void OnSimulateHead()
     {
-        float time = BasisLocalPlayer.Instance.LocalBoneDriver.DeltaTime;
+        float deltaTime = BasisLocalPlayer.Instance.LocalBoneDriver.DeltaTime;
 
+        // Directly propagate rotations
         Head.OutGoingData.rotation = CenterEye.OutGoingData.rotation;
         Neck.OutGoingData.rotation = Head.OutGoingData.rotation;
 
-        // Now, apply the spine curve progressively:
-        // The chest should not follow the head directly, it should follow the neck but with reduced influence.
-        Quaternion targetChestRotation = Quaternion.Slerp(Chest.OutGoingData.rotation,Neck.OutGoingData.rotation,time * ChestRotationSpeed);
-        Vector3 EulerChestRotation = targetChestRotation.eulerAngles;
-        float clampedChestPitch = Mathf.Clamp(EulerChestRotation.x, -MaxChestAngle, MaxChestAngle);
-        Chest.OutGoingData.rotation = Quaternion.Euler(clampedChestPitch, EulerChestRotation.y, 0);
+        // Process rotations with reduced influence (progressive damping)
+        ApplyClampedRotation(Chest, Neck, deltaTime * ChestRotationSpeed, -MaxChestAngle, MaxChestAngle);
+        ApplyClampedRotation(Spine, Chest, deltaTime * SpineRotationSpeed, -MaxSpineAngle, MaxSpineAngle);
+        ApplyClampedRotation(Hips, Spine, deltaTime * HipsRotationSpeed, -MaxHipsAngle, MaxHipsAngle);
 
-        // The hips should stay upright, using chest rotation as a reference
-        Quaternion targetSpineRotation = Quaternion.Slerp(Spine.OutGoingData.rotation, Chest.OutGoingData.rotation, time * SpineRotationSpeed);// Lesser influence for hips to remain more upright
-        Vector3 targetSpineRotationEuler = targetSpineRotation.eulerAngles;
-        float clampedSpinePitch = Mathf.Clamp(targetSpineRotationEuler.x, -MaxSpineAngle, MaxSpineAngle);
-        Spine.OutGoingData.rotation = Quaternion.Euler(clampedSpinePitch, targetSpineRotationEuler.y, 0);
-
-        // The hips should stay upright, using chest rotation as a reference
-        Quaternion targetHipsRotation = Quaternion.Slerp(Hips.OutGoingData.rotation, Spine.OutGoingData.rotation, time * HipsRotationSpeed);// Lesser influence for hips to remain more upright
-        Vector3 targetHipsRotationEuler = targetHipsRotation.eulerAngles;
-        float clampedHipsPitch = Mathf.Clamp(targetHipsRotationEuler.x, -MaxHipsAngle, MaxHipsAngle);
-        Hips.OutGoingData.rotation = Quaternion.Euler(clampedHipsPitch, targetHipsRotationEuler.y, 0);
-
-        // Handle position control for each segment if targets are set (as before)
+        // Apply positional constraints (if any)
         ApplyPositionControl(Head);
         ApplyPositionControl(Neck);
         ApplyPositionControl(Chest);
         ApplyPositionControl(Spine);
         ApplyPositionControl(Hips);
     }
+
+    private void ApplyClampedRotation(BasisBoneControl targetBone, BasisBoneControl sourceBone, float lerpFactor, float minPitch, float maxPitch)
+    {
+        Quaternion slerped = Quaternion.Slerp(targetBone.OutGoingData.rotation, sourceBone.OutGoingData.rotation, lerpFactor);
+        Vector3 euler = slerped.eulerAngles;
+
+        // Ensure the pitch is properly clamped even if wrapping around 360°
+        float pitch = NormalizeAngle(euler.x);
+        float clampedPitch = Mathf.Clamp(pitch, minPitch, maxPitch);
+
+        targetBone.OutGoingData.rotation = Quaternion.Euler(clampedPitch, euler.y, 0);
+    }
+
+    private float NormalizeAngle(float angle)
+    {
+        angle %= 360f;
+        if (angle > 180f) angle -= 360f;
+        return angle;
+    }
+
     private void ApplyPositionControl(BasisBoneControl boneControl)
     {
-        if (boneControl.HasTarget)
+        if (!boneControl.HasTarget)
         {
-            quaternion targetRotation = boneControl.Target.OutGoingData.rotation;
-
-            // Extract only Yaw (Horizontal rotation), ignoring Pitch (Up/Down)
-            float3 forward = math.mul(targetRotation, new float3(0, 0, 1));
-            forward.y = 0; // Flatten to avoid up/down swaying
-            forward = math.normalize(forward);
-
-            quaternion correctedRotation = quaternion.LookRotationSafe(forward, new float3(0, 1, 0));
-
-            float3 customDirection = math.mul(correctedRotation, boneControl.Offset);
-            boneControl.OutGoingData.position = boneControl.Target.OutGoingData.position + customDirection;
+            return;
         }
+
+        quaternion targetRotation = boneControl.Target.OutGoingData.rotation;
+
+        // Extract yaw-only forward vector
+        float3 forward = math.mul(targetRotation, new float3(0, 0, 1));
+        forward.y = 0;
+        forward = math.normalize(forward);
+
+        quaternion yawRotation = quaternion.LookRotationSafe(forward, new float3(0, 1, 0));
+        float3 offset = math.mul(yawRotation, boneControl.Offset);
+
+        boneControl.OutGoingData.position = boneControl.Target.OutGoingData.position + offset;
     }
 }
