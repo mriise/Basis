@@ -255,6 +255,9 @@ namespace Basis.Scripts.BasisSdk.Players
             //we move the player at the very end after everything has been processed.
             LocalMoveDriver.SimulateMovement();
 
+            //Apply Animator Weights
+            AnimatorDriver.SimulateAnimator();
+
             //now that everything has been processed jiggles can move.
             if (HasJiggles)
             {
@@ -274,7 +277,6 @@ namespace Basis.Scripts.BasisSdk.Players
             {
                 return Quaternion.identity;
             }
-
 
             // Current world positions
             Vector3 headPosition = Head.OutgoingWorldData.position;//OutgoingWorldData is out of date here potentially?

@@ -1,7 +1,6 @@
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Device_Management.Devices.OpenVR.Structs;
 using UnityEngine;
-using UnityEngine.UIElements;
 using Valve.VR;
 using static BasisBaseMuscleDriver;
 

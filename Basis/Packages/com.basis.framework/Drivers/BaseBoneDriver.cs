@@ -24,9 +24,11 @@ namespace Basis.Scripts.Drivers
         public void Simulate(float deltaTime)
         {
             // sequence all other devices to run at the same time
+            Matrix4x4 parentMatrix = this.transform.localToWorldMatrix;
+            Quaternion Rotation = this.transform.rotation;
             for (int Index = 0; Index < ControlsLength; Index++)
             {
-                Controls[Index].ComputeMovement(this, deltaTime);
+                Controls[Index].ComputeMovement(parentMatrix, Rotation, deltaTime);
             }
             if (BasisGizmoManager.UseGizmos)
             {
@@ -36,13 +38,14 @@ namespace Basis.Scripts.Drivers
         public void SimulateWithoutLerp()
         {
             // sequence all other devices to run at the same time
-            double ProvidedTime = Time.timeAsDouble;
             float DeltaTime = Time.deltaTime;
+            Matrix4x4 parentMatrix = this.transform.localToWorldMatrix;
+           Quaternion Rotation = this.transform.rotation;
             for (int Index = 0; Index < ControlsLength; Index++)
             {
                 Controls[Index].LastRunData.position = Controls[Index].OutGoingData.position;
                 Controls[Index].LastRunData.rotation = Controls[Index].OutGoingData.rotation;
-                Controls[Index].ComputeMovement(this,DeltaTime);
+                Controls[Index].ComputeMovement(parentMatrix, Rotation, DeltaTime);
             }
             if (BasisGizmoManager.UseGizmos)
             {
@@ -68,12 +71,15 @@ namespace Basis.Scripts.Drivers
         }
         public void SimulateWorldCoords()
         {
-            Transform parent = transform;
+            Matrix4x4 parentMatrix = this.transform.localToWorldMatrix;
+            Quaternion Rotation = this.transform.rotation;
             for (int Index = 0; Index < ControlsLength; Index++)
             {
                 // Apply local transform to parent's world transform
-                Controls[Index].OutgoingWorldData.position = parent.TransformPoint(Controls[Index].OutGoingData.position);
-                Controls[Index].OutgoingWorldData.rotation = parent.rotation * Controls[Index].OutGoingData.rotation;
+                Controls[Index].OutgoingWorldData.position = parentMatrix.MultiplyPoint3x4(Controls[Index].OutGoingData.position);
+
+                // Transform rotation via quaternion multiplication
+                Controls[Index].OutgoingWorldData.rotation = Rotation * Controls[Index].OutGoingData.rotation;
             }
         }
         public void RemoveAllListeners()
@@ -150,10 +156,7 @@ namespace Basis.Scripts.Drivers
         public void SetupRole(int Index,Transform Parent, Color Color,out BasisBoneControl BasisBoneControl, out BasisBoneTrackedRole role)
         {
             role = (BasisBoneTrackedRole)Index;
-            BasisBoneControl = new BasisBoneControl
-            {
-                GeneralLocation = BasisAvatarIKStageCalibration.FindGeneralLocation(role)
-            };
+            BasisBoneControl = new BasisBoneControl();
             BasisBoneControl.Initialize();
             FillOutBasicInformation(BasisBoneControl, role.ToString(), Color);
         }
@@ -201,7 +204,7 @@ namespace Basis.Scripts.Drivers
         }
         public void FillOutBasicInformation(BasisBoneControl Control, string Name, Color Color)
         {
-            Control.Name = Name;
+            Control.name = Name;
             Control.Color = Color;
         }
         public Color[] GenerateRainbowColors(int RequestColorCount)

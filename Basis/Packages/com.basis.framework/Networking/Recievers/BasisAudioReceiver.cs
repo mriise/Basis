@@ -34,14 +34,6 @@ namespace Basis.Scripts.Networking.Receivers
         {
             InOrderRead.Add(silentData, RemoteOpusSettings.FrameSize);
         }
-        public void ChangeRemotePlayersVolumeSettings(float Volume = 1.0f,float dopplerLevel = 0,float spatialBlend = 1.0f, bool spatialize = true,bool spatializePostEffects = true)
-        {
-            audioSource.spatialize = spatialize;
-            audioSource.spatializePostEffects = spatializePostEffects; //revist later!
-            audioSource.spatialBlend = spatialBlend;
-            audioSource.dopplerLevel = dopplerLevel;
-            audioSource.volume = Volume;
-        }
         public void Simulate()
         {
 
@@ -121,6 +113,19 @@ namespace Basis.Scripts.Networking.Receivers
             IsPlaying = true;
             audioSource.Play();
         }
+
+        private float playbackVolume = 1.0f;
+        public void ChangeRemotePlayersVolumeSettings(float Volume = 1.0f, float dopplerLevel = 0, float spatialBlend = 1.0f, bool spatialize = true, bool spatializePostEffects = true)
+        {
+            audioSource.spatialize = spatialize;
+            audioSource.spatializePostEffects = spatializePostEffects;
+            audioSource.spatialBlend = spatialBlend;
+            audioSource.dopplerLevel = dopplerLevel;
+
+            playbackVolume = Mathf.Clamp(Volume, 0f, 1.5f);
+            audioSource.volume = Mathf.Min(playbackVolume, 1.0f); // audioSource.volume must stay within [0, 1]
+        }
+        public float[] resampledSegment;
         public void OnAudioFilterRead(float[] data, int channels, int length)
         {
             int frames = length / channels; // Number of audio frames
@@ -149,7 +154,6 @@ namespace Basis.Scripts.Networking.Receivers
             ProcessSegment(segment,data,frames,channels);
             InOrderRead.BufferedReturn.Enqueue(segment);
         }
-        public float[] resampledSegment;
         private void ProcessAudioWithResampling(float[] data, int frames, int channels, int outputSampleRate)
         {
             float resampleRatio = (float)RemoteOpusSettings.NetworkSampleRate / outputSampleRate;
@@ -182,16 +186,34 @@ namespace Basis.Scripts.Networking.Receivers
         }
         private void ProcessSegment(float[] segment, float[] data, int frames, int channels)
         {
-            for (int frameIndex = 0; frameIndex < frames; frameIndex++)
+            if (playbackVolume <= 1.0f)
             {
-                float sample = segment[frameIndex];
-                int baseIndex = frameIndex * channels;
-
-                for (int channelIndex = 0; channelIndex < channels; channelIndex++)
+                for (int frameIndex = 0; frameIndex < frames; frameIndex++)
                 {
-                    int index = baseIndex + channelIndex;
-                    float value = data[index] * sample;
-                    data[index] = Math.Clamp(value, -1f, 1f);
+                    float sample = segment[frameIndex];
+                    int baseIndex = frameIndex * channels;
+
+                    for (int channelIndex = 0; channelIndex < channels; channelIndex++)
+                    {
+                        int index = baseIndex + channelIndex;
+                        float value = data[index] * sample;
+                        data[index] = Math.Clamp(value, -1f, 1f);
+                    }
+                }
+            }
+            else
+            {
+                for (int frameIndex = 0; frameIndex < frames; frameIndex++)
+                {
+                    float sample = segment[frameIndex] * playbackVolume;
+                    int baseIndex = frameIndex * channels;
+
+                    for (int channelIndex = 0; channelIndex < channels; channelIndex++)
+                    {
+                        int index = baseIndex + channelIndex;
+                        float value = data[index] * sample;
+                        data[index] = Math.Clamp(value, -1f, 1f);
+                    }
                 }
             }
         }

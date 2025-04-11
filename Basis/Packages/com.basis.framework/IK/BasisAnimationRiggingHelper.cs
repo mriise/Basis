@@ -8,8 +8,6 @@ public static class BasisAnimationRiggingHelper
 {
     public static void EnableTwoBoneIk(BasisTwoBoneIKConstraint Constraint, Vector3 TargetPositionOffset, Vector3 TargetRotationOffset)
     {
-        Constraint.data.targetPositionWeight = 1;
-        Constraint.data.targetRotationWeight = 1;
         Constraint.data.M_CalibratedOffset = TargetPositionOffset;
         Constraint.data.M_CalibratedRotation = TargetRotationOffset;
     }

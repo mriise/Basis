@@ -23,14 +23,6 @@ public partial class BasisMuscleDriver : BasisBaseMuscleDriver
         SetMusclesAndRecordPoses();
     }
     public float increment = 0.2f;
-    [SerializeField]
-    [System.Serializable]
-    public struct PoseDataAdditional
-    {
-        [SerializeField]
-        public PoseData PoseData;
-        public Vector2 Coord;
-    }
     public void LoadAllPoints()
     {
         CoordToPose.Clear();
@@ -77,9 +69,11 @@ public partial class BasisMuscleDriver : BasisBaseMuscleDriver
         PoseData topRightPose = new PoseData();
         SetAndRecordPose(TopRight.x, ref topRightPose, TopRight.y);
         // Add the poseData to the list
-        poseDataAdditional = new PoseDataAdditional();
-        poseDataAdditional.PoseData = topRightPose;
-        poseDataAdditional.Coord = TopRight;
+        poseDataAdditional = new PoseDataAdditional
+        {
+            PoseData = topRightPose,
+            Coord = TopRight
+        };
         points.Add(poseDataAdditional);
 
         PoseData bottomLeftPose = new PoseData();
@@ -101,29 +95,30 @@ public partial class BasisMuscleDriver : BasisBaseMuscleDriver
             Coord = BottomRight
         };
         points.Add(poseDataAdditional);
-        foreach (var point in points)
+        for (int Index = 0; Index < points.Count; Index++)
         {
+            PoseDataAdditional point = points[Index];
             CoordToPose.TryAdd(point.Coord, point);
         }
         // Cache dictionary keys for faster access
-        coordKeys = new Vector2[CoordToPose.Count];
-        CoordToPose.Keys.CopyTo(coordKeys, 0);
+        CoordKeys = new Vector2[CoordToPose.Count];
+        CoordToPose.Keys.CopyTo(CoordKeys, 0);
 
         // Initialize and set up arrays
-        coordKeysArray = new NativeArray<Vector2>(coordKeys, Allocator.Persistent);
-        distancesArray = new NativeArray<float>(coordKeys.Length, Allocator.Persistent);
+        CoordKeysArray = new NativeArray<Vector2>(CoordKeys, Allocator.Persistent);
+        DistancesArray = new NativeArray<float>(CoordKeys.Length, Allocator.Persistent);
         closestIndexArray = new NativeArray<int>(1, Allocator.Persistent);
 
         // Copy data into coordKeysArray
-        for (int Index = 0; Index < coordKeys.Length; Index++)
+        for (int Index = 0; Index < CoordKeys.Length; Index++)
         {
-            coordKeysArray[Index] = coordKeys[Index];
+            CoordKeysArray[Index] = CoordKeys[Index];
         }
     }
     public void OnDestroy()
     {
-        if (coordKeysArray.IsCreated) coordKeysArray.Dispose();
-        if (distancesArray.IsCreated) distancesArray.Dispose();
+        if (CoordKeysArray.IsCreated) CoordKeysArray.Dispose();
+        if (DistancesArray.IsCreated) DistancesArray.Dispose();
         if (closestIndexArray.IsCreated) closestIndexArray.Dispose();
     }
     public void SetMusclesAndRecordPoses()

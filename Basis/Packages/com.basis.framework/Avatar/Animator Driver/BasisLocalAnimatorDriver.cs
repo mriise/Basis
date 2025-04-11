@@ -13,7 +13,7 @@ namespace Basis.Scripts.Animator_Driver
         [SerializeField]
         private BasisAnimatorVariableApply basisAnimatorVariableApply = new BasisAnimatorVariableApply();
         [SerializeField]
-        private Animator animator;
+        private Animator Animator;
         public float LargerThenVelocityCheck = 0.01f;
         public float LargerThenVelocityCheckRotation = 0.03f;
         private BasisLocalPlayer localPlayer;
@@ -38,7 +38,7 @@ namespace Basis.Scripts.Animator_Driver
         // Critically damped spring smoothing
         public float dampingRatio = 30; // Adjust for desired dampening effect
         public float angularFrequency = 0.4f; // Adjust for the speed of dampening
-        void Simulate()
+        public void SimulateAnimator()
         {
             if (localPlayer.LocalAvatarDriver.CurrentlyTposing || BasisAvatarIKStageCalibration.HasFBIKTrackers)
             {
@@ -136,15 +136,15 @@ namespace Basis.Scripts.Animator_Driver
             basisAnimatorVariableApply.UpdateIsLandingState();
         }
 
-        public void Initialize(Animator anim)
+        public void Initialize(Animator animator)
         {
             FindReferences();
-            this.animator = anim;
-            animator.logWarnings = false;
-            animator.updateMode = AnimatorUpdateMode.Normal;
-            animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+            this.Animator = animator;
+            Animator.logWarnings = false;
+            Animator.updateMode = AnimatorUpdateMode.Normal;
+            Animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
 
-            basisAnimatorVariableApply.LoadCachedAnimatorHashes(animator);
+            basisAnimatorVariableApply.LoadCachedAnimatorHashes(Animator);
             Controller = BasisLocalPlayer.Instance.LocalMoveDriver;
             BasisLocalPlayer.Instance.LocalBoneDriver.FindBone(out Hips, BasisBoneTrackedRole.Hips);
             BasisLocalPlayer.Instance.LocalBoneDriver.FindBone(out Head, BasisBoneTrackedRole.Head);
@@ -169,7 +169,6 @@ namespace Basis.Scripts.Animator_Driver
             if (localPlayer == null)
             {
                 localPlayer = BasisLocalPlayer.Instance;
-                localPlayer.LocalMoveDriver.ReadyToRead += Simulate;
                 localPlayer.LocalMoveDriver.JustJumped += JustJumped;
                 localPlayer.LocalMoveDriver.JustLanded += JustLanded;
             }
@@ -185,7 +184,6 @@ namespace Basis.Scripts.Animator_Driver
         {
             if (localPlayer != null)
             {
-                localPlayer.LocalMoveDriver.ReadyToRead -= Simulate;
                 localPlayer.LocalMoveDriver.JustJumped -= JustJumped;
                 localPlayer.LocalMoveDriver.JustLanded -= JustLanded;
             }

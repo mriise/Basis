@@ -28,7 +28,6 @@ namespace Basis.Scripts.BasisCharacterController
         public SimulationHandler JustJumped;
         public SimulationHandler JustLanded;
         public bool LastWasGrounded = true;
-        public event SimulationHandler ReadyToRead;
         public bool BlockMovement = false;
         public bool IsFalling;
         public bool HasJumpAction = false;
@@ -139,7 +138,6 @@ namespace Basis.Scripts.BasisCharacterController
 
             float HeightOffset = (characterController.height / 2) - characterController.radius;
             bottomPointLocalspace = FinalRotation + (characterController.center - new Vector3(0, HeightOffset, 0));
-            ReadyToRead?.Invoke();
         }
 
         public void HandleJump()

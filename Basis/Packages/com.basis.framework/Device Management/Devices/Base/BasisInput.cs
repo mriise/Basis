@@ -1,6 +1,5 @@
 using Basis.Scripts.Addressable_Driver;
 using Basis.Scripts.Addressable_Driver.Factory;
-using Basis.Scripts.Avatar;
 using Basis.Scripts.BasisSdk.Helpers;
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.TransformBinders.BoneControl;
@@ -9,9 +8,7 @@ using Basis.Scripts.UI.UI_Panels;
 using System.Linq;
 using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
 using static Basis.Scripts.BasisSdk.Players.BasisPlayer;
-using static Basis.Scripts.Drivers.BaseBoneDriver;
 namespace Basis.Scripts.Device_Management.Devices
 {
     public abstract class BasisInput : MonoBehaviour
@@ -88,19 +85,12 @@ namespace Basis.Scripts.Device_Management.Devices
             {
                 if (BasisBoneTrackedRoleCommonCheck.CheckItsFBTracker(trackedRole))//we dont want to offset these ones
                 {
-                    InitalRotation = Quaternion.Inverse(transform.rotation);
-                    InitalBoneRotation = Control.OutgoingWorldData.rotation;
+                    InitialRotation = Quaternion.Inverse(transform.rotation);
+                    InitialBoneRotation = Control.OutgoingWorldData.rotation;
                     Control.InverseOffsetFromBone.position = Quaternion.Inverse(transform.rotation) * ((Vector3)Control.OutgoingWorldData.position - transform.position);
-                    Control.InverseOffsetFromBone.rotation = InitalRotation * InitalBoneRotation;
+                    Control.InverseOffsetFromBone.rotation = InitialRotation * InitialBoneRotation;
                     Control.InverseOffsetFromBone.Use = true;
-                    if (BasisBoneTrackedRoleCommonCheck.CheckIfHintRole(trackedRole))//we dont want to offset these ones
-                    {
-                        Control.IsHintRoleIgnoreRotation = true;
-                    }
-                    else
-                    {
-                        Control.IsHintRoleIgnoreRotation = false;
-                    }
+                    Control.IsHintRoleIgnoreRotation = BasisBoneTrackedRoleCommonCheck.CheckIfHintRole(trackedRole);
                 }
                 SetRealTrackers(BasisHasTracked.HasTracker, BasisHasRigLayer.HasRigLayer);
             }
@@ -109,8 +99,8 @@ namespace Basis.Scripts.Device_Management.Devices
                 BasisDebug.LogError("Attempted to find " + Role + " but it did not exist");
             }
         }
-        public Quaternion InitalRotation;
-        public Quaternion InitalBoneRotation;
+        public Quaternion InitialRotation;
+        public Quaternion InitialBoneRotation;
         public void UnAssignRoleAndTracker()
         {
             if (Control != null)
@@ -190,7 +180,7 @@ namespace Basis.Scripts.Device_Management.Devices
             {
                 BasisLocalPlayer.Instance.OnPreSimulateBones += PollData;
                 BasisLocalPlayer.Instance.OnAvatarSwitched += UnAssignFullBodyTrackers;
-                BasisLocalPlayer.Instance.LocalMoveDriver.ReadyToRead += ApplyFinalMovement;
+                BasisLocalPlayer.Instance.AfterFinalMove.AddAction(98,ApplyFinalMovement);
                 HasEvents = true;
             }
             else
@@ -231,7 +221,7 @@ namespace Basis.Scripts.Device_Management.Devices
             {
                 if (HasControl)
                 {
-                    BasisDebug.Log("UnAssigning Tracker " + Control.Name, BasisDebug.LogTag.Input);
+                    BasisDebug.Log("UnAssigning Tracker " + Control.name, BasisDebug.LogTag.Input);
                     Control.InverseOffsetFromBone.position = Vector3.zero;
                     Control.InverseOffsetFromBone.rotation = Quaternion.identity;
                     Control.InverseOffsetFromBone.Use = false;
@@ -257,7 +247,7 @@ namespace Basis.Scripts.Device_Management.Devices
             {
                 BasisLocalPlayer.Instance.OnPreSimulateBones -= PollData;
                 BasisLocalPlayer.Instance.OnAvatarSwitched -= UnAssignFullBodyTrackers;
-                BasisLocalPlayer.Instance.LocalMoveDriver.ReadyToRead -= ApplyFinalMovement;
+                BasisLocalPlayer.Instance.AfterFinalMove.RemoveAction(98, ApplyFinalMovement);
                 HasEvents = false;
             }
             else
@@ -287,7 +277,7 @@ namespace Basis.Scripts.Device_Management.Devices
                         BasisLocalPlayer.Instance.LocalAvatarDriver.ApplyHint(Role, true);
                     }
                 }
-                BasisDebug.Log("Set Tracker State for tracker " + UniqueDeviceIdentifier + " with bone " + Control.Name + " as " + Control.HasTracked.ToString() + " | " + Control.HasRigLayer.ToString(), BasisDebug.LogTag.Input);
+                BasisDebug.Log("Set Tracker State for tracker " + UniqueDeviceIdentifier + " with bone " + Control.name + " as " + Control.HasTracked.ToString() + " | " + Control.HasRigLayer.ToString(), BasisDebug.LogTag.Input);
             }
             else
             {
