@@ -482,7 +482,7 @@ MonoBehaviour:
   - {fileID: 4748790382540284039}
   sampleSize: 256
   MicrophoneSectionsLength: 0
-  UINormalizerValue: 5
+  UINormalizerValue: 2
   spectrumData: []
   rms: 0
   peak: 0
@@ -2240,7 +2240,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
-  m_PresetInfoIsWorld: 1
+  m_PresetInfoIsWorld: 0
 --- !u!114 &6077037468796798871
 MonoBehaviour:
   m_ObjectHideFlags: 0
