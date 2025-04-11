@@ -15,22 +15,9 @@ public static class BasisAnimationRuntimeUtils
     /// <param name="tip">The transform handle for the tip transform.</param>
     /// <param name="target">The transform handle for the target transform.</param>
     /// <param name="hint">The transform handle for the hint transform.</param>
-    /// <param name="posWeight">The weight for which target position has an effect on IK calculations. This is a value in between 0 and 1.</param>
-    /// <param name="rotWeight">The weight for which target rotation has an effect on IK calculations. This is a value in between 0 and 1.</param>
-    /// <param name="hintWeight">The weight for which hint transform has an effect on IK calculations. This is a value in between 0 and 1.</param>
+    /// <param name="HasHint">The weight for which hint transform has an effect on IK calculations. This is a value in between 0 and 1.</param>
     /// <param name="targetOffset">The offset applied to the target transform.</param>
-    public static void SolveTwoBoneIK(
-        AnimationStream stream,
-        ReadWriteTransformHandle root,
-        ReadWriteTransformHandle mid,
-        ReadWriteTransformHandle tip,
-        AffineTransform target,
-        AffineTransform hint,
-        float posWeight,
-        float rotWeight,
-        float hintWeight,
-        AffineTransform targetOffset
-        )
+    public static void SolveTwoBoneIK(AnimationStream stream, ReadWriteTransformHandle root,   ReadWriteTransformHandle mid,ReadWriteTransformHandle tip,AffineTransform target,AffineTransform hint,bool HasHint,AffineTransform targetOffset, Vector3 BendNormal )
     {
         Vector3 aPosition = root.GetPosition(stream);
         Vector3 bPosition = mid.GetPosition(stream);
@@ -39,9 +26,8 @@ public static class BasisAnimationRuntimeUtils
         Vector3 targetPos = target.translation;
         Quaternion targetRot = target.rotation;
 
-        Vector3 tPosition = Vector3.Lerp(cPosition, targetPos + targetOffset.translation, posWeight);
-        Quaternion tRotation = Quaternion.Lerp(tip.GetRotation(stream), targetRot * targetOffset.rotation, rotWeight);
-        bool hasHint = hintWeight > 0f;
+        Vector3 tPosition = targetPos + targetOffset.translation;
+        Quaternion tRotation = targetRot * targetOffset.rotation;
 
         Vector3 ab = bPosition - aPosition;
         Vector3 bc = cPosition - bPosition;
@@ -60,22 +46,37 @@ public static class BasisAnimationRuntimeUtils
         // stream to minimize configuration changes, however if this is collinear
         // try computing a bend normal given the desired target position.
         // If this also fails, try resolving axis using hint if provided.
-        Vector3 axis = Vector3.Cross(ab, bc);
+        /*
         if (axis.sqrMagnitude < k_SqrEpsilon)
         {
-            axis = hasHint ? Vector3.Cross(hint.translation - aPosition, bc) : Vector3.zero;
 
-            if (axis.sqrMagnitude < k_SqrEpsilon)
-                axis = Vector3.Cross(at, bc);
-
-            if (axis.sqrMagnitude < k_SqrEpsilon)
-                axis = Vector3.up;
         }
+        */
+        Vector3 axis;
+        if (HasHint)
+        {
+            axis = Vector3.Cross(hint.translation - aPosition, bc);
+
+            if (axis.sqrMagnitude < k_SqrEpsilon)
+            {
+                axis = Vector3.Cross(at, bc);
+            }
+
+            if (axis.sqrMagnitude < k_SqrEpsilon)
+            {
+                axis = BendNormal;
+            }
+        }
+        else
+        {
+            axis = BendNormal;
+        }
+
         axis = Vector3.Normalize(axis);
 
-        float a = 0.5f * (oldAbcAngle - newAbcAngle);
-        float sin = Mathf.Sin(a);
-        float cos = Mathf.Cos(a);
+        float halfAngle = 0.5f * (oldAbcAngle - newAbcAngle);
+        float sin = Mathf.Sin(halfAngle);
+        float cos = Mathf.Cos(halfAngle);
         Quaternion deltaR = new Quaternion(axis.x * sin, axis.y * sin, axis.z * sin, cos);
         mid.SetRotation(stream, deltaR * mid.GetRotation(stream));
 
@@ -83,7 +84,7 @@ public static class BasisAnimationRuntimeUtils
         ac = cPosition - aPosition;
         root.SetRotation(stream, QuaternionExt.FromToRotation(ac, at) * root.GetRotation(stream));
 
-        if (hasHint)
+        if (HasHint)
         {
             float acSqrMag = ac.sqrMagnitude;
             if (acSqrMag > 0f)
@@ -102,9 +103,6 @@ public static class BasisAnimationRuntimeUtils
                 if (abProj.sqrMagnitude > (maxReach * maxReach * 0.001f) && ahProj.sqrMagnitude > 0f)
                 {
                     Quaternion hintR = QuaternionExt.FromToRotation(abProj, ahProj);
-                    hintR.x *= hintWeight;
-                    hintR.y *= hintWeight;
-                    hintR.z *= hintWeight;
                     hintR = QuaternionExt.NormalizeSafe(hintR);
                     root.SetRotation(stream, hintR * root.GetRotation(stream));
                 }

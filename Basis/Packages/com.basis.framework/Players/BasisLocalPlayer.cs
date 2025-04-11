@@ -245,9 +245,9 @@ namespace Basis.Scripts.BasisSdk.Players
             LocalBoneDriver.SimulateBonePositions();
 
             //moves Avatar Transform to where it belongs
-            MoveAvatar();
+          Quaternion Rotation =  MoveAvatar();
             //Simulate Final Destination of IK
-            LocalAvatarDriver.SimulateIKDesinations();
+            LocalAvatarDriver.SimulateIKDestinations(Rotation);
 
             //process Animator and IK processes. also handles fingers
             LocalAvatarDriver.SimulateAnimatorAndIk();
@@ -268,11 +268,11 @@ namespace Basis.Scripts.BasisSdk.Players
             //now other things can move like UI and NON-CHILDREN OF BASISLOCALPLAYER.
             AfterFinalMove?.Invoke();
         }
-        public void MoveAvatar()
+        public Quaternion MoveAvatar()
         {
             if (BasisAvatar == null)
             {
-                return;
+                return Quaternion.identity;
             }
 
 
@@ -312,6 +312,7 @@ namespace Basis.Scripts.BasisSdk.Players
             Vector3 childWorldPosition = parentWorldPosition + parentWorldRotation * output;
             Quaternion childWorldRotation = parentWorldRotation * quaternion.identity;
             BasisAvatar.transform.SetPositionAndRotation(childWorldPosition, childWorldRotation);
+            return childWorldRotation;
         }
     }
 }

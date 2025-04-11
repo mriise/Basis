@@ -20,15 +20,12 @@ namespace UnityEngine.Animations.Rigging
 
         Vector3 BasisITwoBoneIKConstraintData.targetPosition { get => TargetPosition; }
 
-         Vector3 BasisITwoBoneIKConstraintData.targetRotation { get => TargetRotation; }
+        Vector3 BasisITwoBoneIKConstraintData.targetRotation { get => TargetRotation; }
 
-         Vector3 BasisITwoBoneIKConstraintData.hintPosition { get => HintPosition; }
-         Vector3 BasisITwoBoneIKConstraintData.HintRotation { get => HintRotation; }
-
-        [SyncSceneToStream, SerializeField, Range(0f, 1f)] float m_TargetPositionWeight;
-        [SyncSceneToStream, SerializeField, Range(0f, 1f)] float m_TargetRotationWeight;
-        [SyncSceneToStream, SerializeField, Range(0f, 1f)] float m_HintWeight;
-
+        Vector3 BasisITwoBoneIKConstraintData.hintPosition { get => HintPosition; }
+        Vector3 BasisITwoBoneIKConstraintData.HintRotation { get => HintRotation; }
+        [SyncSceneToStream, SerializeField]
+        bool m_HintWeight;
         /// <inheritdoc />
         public Transform root { get => m_Root; set => m_Root = value; }
         /// <inheritdoc />
@@ -36,18 +33,8 @@ namespace UnityEngine.Animations.Rigging
         /// <inheritdoc />
         public Transform tip { get => m_Tip; set => m_Tip = value; }
         /// <inheritdoc />
-
-        /// <summary>The weight for which target position has an effect on IK calculations. This is a value in between 0 and 1.</summary>
-        public float targetPositionWeight { get => m_TargetPositionWeight; set => m_TargetPositionWeight = Mathf.Clamp01(value); }
-        /// <summary>The weight for which target rotation has an effect on IK calculations. This is a value in between 0 and 1.</summary>
-        public float targetRotationWeight { get => m_TargetRotationWeight; set => m_TargetRotationWeight = Mathf.Clamp01(value); }
         /// <summary>The weight for which hint transform has an effect on IK calculations. This is a value in between 0 and 1.</summary>
-        public float hintWeight { get => m_HintWeight; set => m_HintWeight = Mathf.Clamp01(value); }
-
-        /// <inheritdoc />
-        string BasisITwoBoneIKConstraintData.targetPositionWeightFloatProperty => ConstraintsUtils.ConstructConstraintDataPropertyName(nameof(m_TargetPositionWeight));
-        /// <inheritdoc />
-        string BasisITwoBoneIKConstraintData.targetRotationWeightFloatProperty => ConstraintsUtils.ConstructConstraintDataPropertyName(nameof(m_TargetRotationWeight));
+        public bool hintWeight { get => m_HintWeight; set => m_HintWeight = value; }
         /// <inheritdoc />
         string BasisITwoBoneIKConstraintData.hintWeightFloatProperty => ConstraintsUtils.ConstructConstraintDataPropertyName(nameof(m_HintWeight));
 
@@ -58,6 +45,8 @@ namespace UnityEngine.Animations.Rigging
         string BasisITwoBoneIKConstraintData.HintpositionVector3Property => ConstraintsUtils.ConstructConstraintDataPropertyName(nameof(HintPosition));
 
         string BasisITwoBoneIKConstraintData.HintrotationVector3Property => ConstraintsUtils.ConstructConstraintDataPropertyName(nameof(HintRotation));
+
+        string BasisITwoBoneIKConstraintData.HintDirectionProperty => ConstraintsUtils.ConstructConstraintDataPropertyName(nameof(m_HintDirection));
 
         [SyncSceneToStream, SerializeField]
         public Vector3 M_CalibratedOffset;
@@ -79,6 +68,15 @@ namespace UnityEngine.Animations.Rigging
                 return M_CalibratedRotation;
             }
         }
+        [SyncSceneToStream, SerializeField]
+        public Vector3 m_HintDirection;
+        Vector3 BasisITwoBoneIKConstraintData.HintDirection
+        {
+            get
+            {
+                return m_HintDirection;
+            }
+        }
 
         /// <inheritdoc />
         bool IAnimationJobData.IsValid() => (m_Tip != null && m_Mid != null && m_Root != null && m_Tip.IsChildOf(m_Mid) && m_Mid.IsChildOf(m_Root));
@@ -89,9 +87,7 @@ namespace UnityEngine.Animations.Rigging
             m_Root = null;
             m_Mid = null;
             m_Tip = null;
-            m_TargetPositionWeight = 1f;
-            m_TargetRotationWeight = 1f;
-            m_HintWeight = 1f;
+            m_HintWeight = true;
 
         }
     }
@@ -101,21 +97,19 @@ namespace UnityEngine.Animations.Rigging
     /// </summary>
     [DisallowMultipleComponent, AddComponentMenu("Animation Rigging/Two Bone IK Constraint")]
     [HelpURL("https://docs.unity3d.com/Packages/com.unity.animation.rigging@1.3/manual/constraints/TwoBoneIKConstraint.html")]
-    public class BasisTwoBoneIKConstraint : RigConstraint<BasisTwoBoneIKConstraintJob,BasisTwoBoneIKConstraintData,BasisTwoBoneIKConstraintJobBinder<BasisTwoBoneIKConstraintData>>
+    public class BasisTwoBoneIKConstraint : RigConstraint<BasisTwoBoneIKConstraintJob, BasisTwoBoneIKConstraintData, BasisTwoBoneIKConstraintJobBinder<BasisTwoBoneIKConstraintData>>
     {
         /// <inheritdoc />
         protected override void OnValidate()
         {
             base.OnValidate();
-            m_Data.hintWeight = Mathf.Clamp01(m_Data.hintWeight);
-            m_Data.targetPositionWeight = Mathf.Clamp01(m_Data.targetPositionWeight);
-            m_Data.targetRotationWeight = Mathf.Clamp01(m_Data.targetRotationWeight);
+            m_Data.hintWeight = m_Data.hintWeight;
         }
     }
     /// <summary>
     /// The TwoBoneIK constraint job.
     /// </summary>
-    [Unity.Burst.BurstCompile]
+  //  [Unity.Burst.BurstCompile]
     public struct BasisTwoBoneIKConstraintJob : IWeightedAnimationJob
     {
         /// <summary>The transform handle for the root transform.</summary>
@@ -137,17 +131,14 @@ namespace UnityEngine.Animations.Rigging
 
         /// <summary>The offset applied to the target transform if maintainTargetPositionOffset or maintainTargetRotationOffset is enabled.</summary>
         public AffineTransform targetOffset;
-
-        /// <summary>The weight for which target position has an effect on IK calculations. This is a value in between 0 and 1.</summary>
-        public FloatProperty targetPositionWeight;
-        /// <summary>The weight for which target rotation has an effect on IK calculations. This is a value in between 0 and 1.</summary>
-        public FloatProperty targetRotationWeight;
         /// <summary>The weight for which hint transform has an effect on IK calculations. This is a value in between 0 and 1.</summary>
-        public FloatProperty hintWeight;
+        public BoolProperty hintWeight;
 
         /// <summary>The main weight given to the constraint. This is a value in between 0 and 1.</summary>
         public FloatProperty jobWeight { get; set; }
 
+        /// <summary>The transform handle for the hint transform.</summary>
+        public Vector3Property BendNormal;
         /// <summary>
         /// Defines what to do when processing the root motion.
         /// </summary>
@@ -163,10 +154,12 @@ namespace UnityEngine.Animations.Rigging
             float w = jobWeight.Get(stream);
             if (w > 0f)
             {
-              // BasisDebug.Log("Value is " + targetPosition);
+                // BasisDebug.Log("Value is " + targetPosition);
                 AffineTransform target = new AffineTransform(targetPosition.Get(stream), Quaternion.Euler(targetRotation.Get(stream)));
                 AffineTransform hint = new AffineTransform(hintPosition.Get(stream), Quaternion.Euler(hintRotation.Get(stream)));
-                BasisAnimationRuntimeUtils.SolveTwoBoneIK(stream, root, mid, tip, target, hint,targetPositionWeight.Get(stream) * w,targetRotationWeight.Get(stream) * w,hintWeight.Get(stream) * w, targetOffset);
+                Vector3 BendNormalOutput = BendNormal.Get(stream);
+                //   BasisDebug.Log("Output Normal is " + BendNormalOutput);
+                BasisAnimationRuntimeUtils.SolveTwoBoneIK(stream, root, mid, tip, target, hint, hintWeight.Get(stream), targetOffset, BendNormalOutput);
             }
             else
             {
@@ -195,11 +188,6 @@ namespace UnityEngine.Animations.Rigging
 
         public Vector3 CalibratedOffset { get; }
         public Vector3 CalibratedRotation { get; }
-
-        /// <summary>The path to the target position weight property in the constraint component.</summary>
-        string targetPositionWeightFloatProperty { get; }
-        /// <summary>The path to the target rotation weight property in the constraint component.</summary>
-        string targetRotationWeightFloatProperty { get; }
         /// <summary>The path to the hint weight property in the constraint component.</summary>
         string hintWeightFloatProperty { get; }
 
@@ -212,13 +200,17 @@ namespace UnityEngine.Animations.Rigging
         string HintpositionVector3Property { get; }
         /// <summary>The path to the override rotation property in the constraint component.</summary>
         string HintrotationVector3Property { get; }
+        string HintDirectionProperty { get; }
+
+        public Vector3 HintDirection { get; }
+
     }
 
     /// <summary>
     /// The TwoBoneIK constraint job binder.
     /// </summary>
     /// <typeparam name="T">The constraint data type</typeparam>
-    public class BasisTwoBoneIKConstraintJobBinder<T> : AnimationJobBinder<BasisTwoBoneIKConstraintJob, T>where T : struct, IAnimationJobData, BasisITwoBoneIKConstraintData
+    public class BasisTwoBoneIKConstraintJobBinder<T> : AnimationJobBinder<BasisTwoBoneIKConstraintJob, T> where T : struct, IAnimationJobData, BasisITwoBoneIKConstraintData
     {
         /// <summary>
         /// Creates the animation job.
@@ -244,9 +236,8 @@ namespace UnityEngine.Animations.Rigging
             };
             job.targetOffset.translation = data.CalibratedOffset;
             job.targetOffset.rotation = Quaternion.Euler(data.CalibratedRotation);
-            job.targetPositionWeight = FloatProperty.Bind(animator, component, data.targetPositionWeightFloatProperty);
-            job.targetRotationWeight = FloatProperty.Bind(animator, component, data.targetRotationWeightFloatProperty);
-            job.hintWeight = FloatProperty.Bind(animator, component, data.hintWeightFloatProperty);
+            job.hintWeight = BoolProperty.Bind(animator, component, data.hintWeightFloatProperty);
+            job.BendNormal = Vector3Property.Bind(animator, component, data.HintDirectionProperty);
 
             return job;
         }

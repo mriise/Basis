@@ -276,7 +276,7 @@ namespace Basis.Scripts.Device_Management.Devices
                     hasRoleAssigned = false;
                     if (TryGetRole(out BasisBoneTrackedRole Role))
                     {
-                        BasisLocalPlayer.Instance.LocalAvatarDriver.ApplyHint(Role, 0);
+                        BasisLocalPlayer.Instance.LocalAvatarDriver.ApplyHint(Role, false);
                     }
                 }
                 else
@@ -284,7 +284,7 @@ namespace Basis.Scripts.Device_Management.Devices
                     hasRoleAssigned = true;
                     if (TryGetRole(out BasisBoneTrackedRole Role))
                     {
-                        BasisLocalPlayer.Instance.LocalAvatarDriver.ApplyHint(Role, 1);
+                        BasisLocalPlayer.Instance.LocalAvatarDriver.ApplyHint(Role, true);
                     }
                 }
                 BasisDebug.Log("Set Tracker State for tracker " + UniqueDeviceIdentifier + " with bone " + Control.Name + " as " + Control.HasTracked.ToString() + " | " + Control.HasRigLayer.ToString(), BasisDebug.LogTag.Input);
