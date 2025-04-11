@@ -26,8 +26,8 @@ namespace Basis.Scripts.Drivers
         public BasisTwoBoneIKConstraint HeadTwoBoneIK;
         public BasisTwoBoneIKConstraint LeftFootTwoBoneIK;
         public BasisTwoBoneIKConstraint RightFootTwoBoneIK;
-        public BasisTwoBoneIKConstraint LeftHandTwoBoneIK;
-        public BasisTwoBoneIKConstraint RightHandTwoBoneIK;
+        public BasisTwoBoneIKConstraintHand LeftHandTwoBoneIK;
+        public BasisTwoBoneIKConstraintHand RightHandTwoBoneIK;
         public BasisTwoBoneIKConstraint UpperChestTwoBoneIK;
 
         public BasisBoneControl HeadControl;
@@ -56,14 +56,19 @@ namespace Basis.Scripts.Drivers
             ApplyBoneIKHint(LeftFootTwoBoneIK, LeftLowerLegControl.OutgoingWorldData.position, LeftLowerLegControl.OutgoingWorldData.rotation, Direction);
             ApplyBoneIKHint(RightFootTwoBoneIK, RightLowerLegControl.OutgoingWorldData.position, RightLowerLegControl.OutgoingWorldData.rotation, Direction);
 
-            ApplyBoneIKHint(LeftHandTwoBoneIK, LeftLowerArmControl.OutgoingWorldData.position, LeftLowerArmControl.OutgoingWorldData.rotation, DirectionLeftHands);
-            ApplyBoneIKHint(RightHandTwoBoneIK, RightLowerArmControl.OutgoingWorldData.position, RightLowerArmControl.OutgoingWorldData.rotation, DirectionRightHands);
+            ApplyBoneIKHint(LeftHandTwoBoneIK, LeftLowerArmControl.OutgoingWorldData.position, LeftLowerArmControl.OutgoingWorldData.rotation);
+            ApplyBoneIKHint(RightHandTwoBoneIK, RightLowerArmControl.OutgoingWorldData.position, RightLowerArmControl.OutgoingWorldData.rotation);
         }
         public void ApplyBoneIKHint(BasisTwoBoneIKConstraint Constraint, Vector3 Position, Quaternion Rotation, Vector3 Direction)
         {
             Constraint.data.HintPosition = Position;
             Constraint.data.HintRotation = Rotation.eulerAngles;
             Constraint.data.m_HintDirection = Direction;
+        }
+        public void ApplyBoneIKHint(BasisTwoBoneIKConstraintHand Constraint, Vector3 Position, Quaternion Rotation)
+        {
+            Constraint.data.HintPosition = Position;
+            Constraint.data.HintRotation = Rotation.eulerAngles;
         }
         public void BoneLookup()
         {
@@ -81,6 +86,11 @@ namespace Basis.Scripts.Drivers
             LocalDriver.FindBone(out RightLowerArmControl, BasisBoneTrackedRole.RightLowerArm);
         }
         public void ApplyBoneIKTarget(BasisTwoBoneIKConstraint Constraint, Vector3 Position, Quaternion Rotation)
+        {
+            Constraint.data.TargetPosition = Position;
+            Constraint.data.TargetRotation = Rotation.eulerAngles;
+        }
+        public void ApplyBoneIKTarget(BasisTwoBoneIKConstraintHand Constraint, Vector3 Position, Quaternion Rotation)
         {
             Constraint.data.TargetPosition = Position;
             Constraint.data.TargetRotation = Rotation.eulerAngles;
@@ -493,7 +503,7 @@ namespace Basis.Scripts.Drivers
                 controls.Add(LeftLowerArm);
             }
             WriteUpEvents(controls, LeftHandLayer);
-            BasisAnimationRiggingHelper.CreateTwoBone(this, driver, Hands, References.leftUpperArm, References.leftLowerArm, References.leftHand, BasisBoneTrackedRole.LeftHand, BasisBoneTrackedRole.LeftLowerArm, true, out LeftHandTwoBoneIK, false, false);
+            BasisAnimationRiggingHelper.CreateTwoBoneHand(this, driver, Hands, References.leftUpperArm, References.leftLowerArm, References.leftHand, BasisBoneTrackedRole.LeftHand, BasisBoneTrackedRole.LeftLowerArm, true, out LeftHandTwoBoneIK, false, false);
         }
         public void RightHand(BasisLocalBoneDriver driver)
         {
@@ -508,7 +518,7 @@ namespace Basis.Scripts.Drivers
                 controls.Add(RightLowerArm);
             }
             WriteUpEvents(controls, RightHandLayer);
-            BasisAnimationRiggingHelper.CreateTwoBone(this, driver, Hands, References.RightUpperArm, References.RightLowerArm, References.rightHand, BasisBoneTrackedRole.RightHand, BasisBoneTrackedRole.RightLowerArm, true, out RightHandTwoBoneIK, false, false);
+            BasisAnimationRiggingHelper.CreateTwoBoneHand(this, driver, Hands, References.RightUpperArm, References.RightLowerArm, References.rightHand, BasisBoneTrackedRole.RightHand, BasisBoneTrackedRole.RightLowerArm, true, out RightHandTwoBoneIK, false, false);
         }
         public void LeftFoot(BasisLocalBoneDriver driver)
         {

@@ -4,7 +4,7 @@ namespace UnityEngine.Animations.Rigging
     /// The TwoBoneIK constraint data.
     /// </summary>
     [System.Serializable]
-    public struct BasisTwoBoneIKConstraintData : IAnimationJobData, BasisITwoBoneIKConstraintData
+    public struct BasisTwoBoneIKConstraintHandData : IAnimationJobData, BasisITwoBoneIKConstraintHandData
     {
         [SerializeField] Transform m_Root;
         [SerializeField] Transform m_Mid;
@@ -18,12 +18,12 @@ namespace UnityEngine.Animations.Rigging
         [SyncSceneToStream, SerializeField]
         public Vector3 HintRotation;
 
-        Vector3 BasisITwoBoneIKConstraintData.targetPosition { get => TargetPosition; }
+        Vector3 BasisITwoBoneIKConstraintHandData.targetPosition { get => TargetPosition; }
 
-        Vector3 BasisITwoBoneIKConstraintData.targetRotation { get => TargetRotation; }
+        Vector3 BasisITwoBoneIKConstraintHandData.targetRotation { get => TargetRotation; }
 
-        Vector3 BasisITwoBoneIKConstraintData.hintPosition { get => HintPosition; }
-        Vector3 BasisITwoBoneIKConstraintData.HintRotation { get => HintRotation; }
+        Vector3 BasisITwoBoneIKConstraintHandData.hintPosition { get => HintPosition; }
+        Vector3 BasisITwoBoneIKConstraintHandData.HintRotation { get => HintRotation; }
         [SyncSceneToStream, SerializeField]
         bool m_HintWeight;
         /// <inheritdoc />
@@ -36,17 +36,15 @@ namespace UnityEngine.Animations.Rigging
         /// <summary>The weight for which hint transform has an effect on IK calculations. This is a value in between 0 and 1.</summary>
         public bool hintWeight { get => m_HintWeight; set => m_HintWeight = value; }
         /// <inheritdoc />
-        string BasisITwoBoneIKConstraintData.hintWeightFloatProperty => ConstraintsUtils.ConstructConstraintDataPropertyName(nameof(m_HintWeight));
+        string BasisITwoBoneIKConstraintHandData.hintWeightFloatProperty => ConstraintsUtils.ConstructConstraintDataPropertyName(nameof(m_HintWeight));
 
-        string BasisITwoBoneIKConstraintData.TargetpositionVector3Property => ConstraintsUtils.ConstructConstraintDataPropertyName(nameof(TargetPosition));
+        string BasisITwoBoneIKConstraintHandData.TargetpositionVector3Property => ConstraintsUtils.ConstructConstraintDataPropertyName(nameof(TargetPosition));
 
-        string BasisITwoBoneIKConstraintData.TargetrotationVector3Property => ConstraintsUtils.ConstructConstraintDataPropertyName(nameof(TargetRotation));
+        string BasisITwoBoneIKConstraintHandData.TargetrotationVector3Property => ConstraintsUtils.ConstructConstraintDataPropertyName(nameof(TargetRotation));
 
-        string BasisITwoBoneIKConstraintData.HintpositionVector3Property => ConstraintsUtils.ConstructConstraintDataPropertyName(nameof(HintPosition));
+        string BasisITwoBoneIKConstraintHandData.HintpositionVector3Property => ConstraintsUtils.ConstructConstraintDataPropertyName(nameof(HintPosition));
 
-        string BasisITwoBoneIKConstraintData.HintrotationVector3Property => ConstraintsUtils.ConstructConstraintDataPropertyName(nameof(HintRotation));
-
-        string BasisITwoBoneIKConstraintData.HintDirectionProperty => ConstraintsUtils.ConstructConstraintDataPropertyName(nameof(m_HintDirection));
+        string BasisITwoBoneIKConstraintHandData.HintrotationVector3Property => ConstraintsUtils.ConstructConstraintDataPropertyName(nameof(HintRotation));
 
         [SyncSceneToStream, SerializeField]
         public Vector3 M_CalibratedOffset;
@@ -66,15 +64,6 @@ namespace UnityEngine.Animations.Rigging
             get
             {
                 return M_CalibratedRotation;
-            }
-        }
-        [SyncSceneToStream, SerializeField]
-        public Vector3 m_HintDirection;
-        Vector3 BasisITwoBoneIKConstraintData.HintDirection
-        {
-            get
-            {
-                return m_HintDirection;
             }
         }
 
@@ -97,7 +86,7 @@ namespace UnityEngine.Animations.Rigging
     /// </summary>
     [DisallowMultipleComponent, AddComponentMenu("Animation Rigging/Two Bone IK Constraint")]
     [HelpURL("https://docs.unity3d.com/Packages/com.unity.animation.rigging@1.3/manual/constraints/TwoBoneIKConstraint.html")]
-    public class BasisTwoBoneIKConstraint : RigConstraint<BasisTwoBoneIKConstraintJob, BasisTwoBoneIKConstraintData, BasisTwoBoneIKConstraintJobBinder<BasisTwoBoneIKConstraintData>>
+    public class BasisTwoBoneIKConstraintHand : RigConstraint<BasisTwoBoneIKConstraintHandJob, BasisTwoBoneIKConstraintHandData, BasisTwoBoneIKConstraintJobBinderHand<BasisTwoBoneIKConstraintHandData>>
     {
         /// <inheritdoc />
         protected override void OnValidate()
@@ -110,7 +99,7 @@ namespace UnityEngine.Animations.Rigging
     /// The TwoBoneIK constraint job.
     /// </summary>
   //  [Unity.Burst.BurstCompile]
-    public struct BasisTwoBoneIKConstraintJob : IWeightedAnimationJob
+    public struct BasisTwoBoneIKConstraintHandJob : IWeightedAnimationJob
     {
         /// <summary>The transform handle for the root transform.</summary>
         public ReadWriteTransformHandle root;
@@ -136,9 +125,6 @@ namespace UnityEngine.Animations.Rigging
 
         /// <summary>The main weight given to the constraint. This is a value in between 0 and 1.</summary>
         public FloatProperty jobWeight { get; set; }
-
-        /// <summary>The transform handle for the hint transform.</summary>
-        public Vector3Property BendNormal;
         /// <summary>
         /// Defines what to do when processing the root motion.
         /// </summary>
@@ -157,9 +143,8 @@ namespace UnityEngine.Animations.Rigging
                 // BasisDebug.Log("Value is " + targetPosition);
                 AffineTransform target = new AffineTransform(targetPosition.Get(stream), Quaternion.Euler(targetRotation.Get(stream)));
                 AffineTransform hint = new AffineTransform(hintPosition.Get(stream), Quaternion.Euler(hintRotation.Get(stream)));
-                Vector3 BendNormalOutput = BendNormal.Get(stream);
                 //   BasisDebug.Log("Output Normal is " + BendNormalOutput);
-                BasisAnimationRuntimeUtils.SolveTwoBoneIKLegsAndTorso(stream, root, mid, tip, target, hint, hintWeight.Get(stream), targetOffset, BendNormalOutput);
+                BasisAnimationRuntimeUtils.SolveTwoBoneIKArms(stream, root, mid, tip, target, hint, hintWeight.Get(stream), targetOffset);
             }
             else
             {
@@ -173,7 +158,7 @@ namespace UnityEngine.Animations.Rigging
     /// <summary>
     /// This interface defines the data mapping for the TwoBoneIK constraint.
     /// </summary>
-    public interface BasisITwoBoneIKConstraintData
+    public interface BasisITwoBoneIKConstraintHandData
     {
         /// <summary>The root transform of the two bones hierarchy.</summary>
         Transform root { get; }
@@ -200,9 +185,6 @@ namespace UnityEngine.Animations.Rigging
         string HintpositionVector3Property { get; }
         /// <summary>The path to the override rotation property in the constraint component.</summary>
         string HintrotationVector3Property { get; }
-        string HintDirectionProperty { get; }
-
-        public Vector3 HintDirection { get; }
 
     }
 
@@ -210,7 +192,7 @@ namespace UnityEngine.Animations.Rigging
     /// The TwoBoneIK constraint job binder.
     /// </summary>
     /// <typeparam name="T">The constraint data type</typeparam>
-    public class BasisTwoBoneIKConstraintJobBinder<T> : AnimationJobBinder<BasisTwoBoneIKConstraintJob, T> where T : struct, IAnimationJobData, BasisITwoBoneIKConstraintData
+    public class BasisTwoBoneIKConstraintJobBinderHand<T> : AnimationJobBinder<BasisTwoBoneIKConstraintHandJob, T> where T : struct, IAnimationJobData, BasisITwoBoneIKConstraintHandData
     {
         /// <summary>
         /// Creates the animation job.
@@ -219,9 +201,9 @@ namespace UnityEngine.Animations.Rigging
         /// <param name="data">The constraint data.</param>
         /// <param name="component">The constraint component.</param>
         /// <returns>Returns a new job interface.</returns>
-        public override BasisTwoBoneIKConstraintJob Create(Animator animator, ref T data, Component component)
+        public override BasisTwoBoneIKConstraintHandJob Create(Animator animator, ref T data, Component component)
         {
-            BasisTwoBoneIKConstraintJob job = new BasisTwoBoneIKConstraintJob
+            BasisTwoBoneIKConstraintHandJob job = new BasisTwoBoneIKConstraintHandJob
             {
                 root = ReadWriteTransformHandle.Bind(animator, data.root),
                 mid = ReadWriteTransformHandle.Bind(animator, data.mid),
@@ -237,7 +219,6 @@ namespace UnityEngine.Animations.Rigging
             job.targetOffset.translation = data.CalibratedOffset;
             job.targetOffset.rotation = Quaternion.Euler(data.CalibratedRotation);
             job.hintWeight = BoolProperty.Bind(animator, component, data.hintWeightFloatProperty);
-            job.BendNormal = Vector3Property.Bind(animator, component, data.HintDirectionProperty);
 
             return job;
         }
@@ -246,7 +227,7 @@ namespace UnityEngine.Animations.Rigging
         /// Destroys the animation job.
         /// </summary>
         /// <param name="job">The animation job to destroy.</param>
-        public override void Destroy(BasisTwoBoneIKConstraintJob job)
+        public override void Destroy(BasisTwoBoneIKConstraintHandJob job)
         {
         }
     }
