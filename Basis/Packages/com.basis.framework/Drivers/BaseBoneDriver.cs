@@ -156,10 +156,7 @@ namespace Basis.Scripts.Drivers
         public void SetupRole(int Index,Transform Parent, Color Color,out BasisBoneControl BasisBoneControl, out BasisBoneTrackedRole role)
         {
             role = (BasisBoneTrackedRole)Index;
-            BasisBoneControl = new BasisBoneControl
-            {
-                GeneralLocation = BasisAvatarIKStageCalibration.FindGeneralLocation(role)
-            };
+            BasisBoneControl = new BasisBoneControl();
             BasisBoneControl.Initialize();
             FillOutBasicInformation(BasisBoneControl, role.ToString(), Color);
         }
@@ -207,7 +204,7 @@ namespace Basis.Scripts.Drivers
         }
         public void FillOutBasicInformation(BasisBoneControl Control, string Name, Color Color)
         {
-            Control.Name = Name;
+            Control.name = Name;
             Control.Color = Color;
         }
         public Color[] GenerateRainbowColors(int RequestColorCount)

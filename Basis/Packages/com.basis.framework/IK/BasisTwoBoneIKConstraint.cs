@@ -24,9 +24,6 @@ namespace UnityEngine.Animations.Rigging
 
          Vector3 BasisITwoBoneIKConstraintData.hintPosition { get => HintPosition; }
          Vector3 BasisITwoBoneIKConstraintData.HintRotation { get => HintRotation; }
-
-        [SyncSceneToStream, SerializeField, Range(0f, 1f)] float m_TargetPositionWeight;
-        [SyncSceneToStream, SerializeField, Range(0f, 1f)] float m_TargetRotationWeight;
         [SyncSceneToStream, SerializeField, Range(0f, 1f)] float m_HintWeight;
 
         /// <inheritdoc />
@@ -38,11 +35,6 @@ namespace UnityEngine.Animations.Rigging
         /// <inheritdoc />
         /// <summary>The weight for which hint transform has an effect on IK calculations. This is a value in between 0 and 1.</summary>
         public float hintWeight { get => m_HintWeight; set => m_HintWeight = Mathf.Clamp01(value); }
-
-        /// <inheritdoc />
-        string BasisITwoBoneIKConstraintData.targetPositionWeightFloatProperty => ConstraintsUtils.ConstructConstraintDataPropertyName(nameof(m_TargetPositionWeight));
-        /// <inheritdoc />
-        string BasisITwoBoneIKConstraintData.targetRotationWeightFloatProperty => ConstraintsUtils.ConstructConstraintDataPropertyName(nameof(m_TargetRotationWeight));
         /// <inheritdoc />
         string BasisITwoBoneIKConstraintData.hintWeightFloatProperty => ConstraintsUtils.ConstructConstraintDataPropertyName(nameof(m_HintWeight));
 
@@ -84,8 +76,6 @@ namespace UnityEngine.Animations.Rigging
             m_Root = null;
             m_Mid = null;
             m_Tip = null;
-            m_TargetPositionWeight = 1f;
-            m_TargetRotationWeight = 1f;
             m_HintWeight = 1f;
 
         }
@@ -183,11 +173,6 @@ namespace UnityEngine.Animations.Rigging
 
         public Vector3 CalibratedOffset { get; }
         public Vector3 CalibratedRotation { get; }
-
-        /// <summary>The path to the target position weight property in the constraint component.</summary>
-        string targetPositionWeightFloatProperty { get; }
-        /// <summary>The path to the target rotation weight property in the constraint component.</summary>
-        string targetRotationWeightFloatProperty { get; }
         /// <summary>The path to the hint weight property in the constraint component.</summary>
         string hintWeightFloatProperty { get; }
 

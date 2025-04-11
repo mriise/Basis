@@ -10,6 +10,8 @@ namespace Basis.Scripts.TransformBinders.BoneControl
     [BurstCompile]
     public class BasisBoneControl
     {
+        [SerializeField]
+        public string name;
         [NonSerialized]
         public BasisBoneControl Target;
 
@@ -158,8 +160,6 @@ namespace Basis.Scripts.TransformBinders.BoneControl
             return math.clamp(lerpAmount * DeltaTime, 0f, 1f);
         }
         [SerializeField]
-        public string Name;
-        [SerializeField]
         [HideInInspector]
         private Color gizmoColor = Color.blue;
         [HideInInspector]
@@ -170,8 +170,6 @@ namespace Basis.Scripts.TransformBinders.BoneControl
         [HideInInspector]
         [SerializeField]
         private float rotationWeight = 1;
-        [HideInInspector]
-        public BasisGeneralLocation GeneralLocation;
         // Events for property changes
         public System.Action<BasisHasTracked> OnHasTrackerDriverChanged;
         // Backing fields for the properties
