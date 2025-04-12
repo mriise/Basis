@@ -27,14 +27,12 @@ public static class BasisHeightDriver
         CapturePlayerHeight();
         // Retrieve the active avatar's eye height
         LocalPlayer.CurrentHeight.AvatarEyeHeight = LocalPlayer.LocalAvatarDriver?.ActiveAvatarEyeHeight() ?? BasisLocalPlayer.FallbackSize;
-        BasisDebug.Log($"Avatar height: {LocalPlayer.CurrentHeight.SelectedAvatarHeight}, Player height: {LocalPlayer.CurrentHeight.SelectedPlayerHeight}", BasisDebug.LogTag.Avatar);
+        BasisDebug.Log($"Avatar height: {LocalPlayer.CurrentHeight.SelectedAvatarHeight}, Player eye height: {LocalPlayer.CurrentHeight.SelectedPlayerHeight}", BasisDebug.LogTag.Avatar);
 
-        if (LocalPlayer.LocalAvatarDriver.References.HasleftHand && LocalPlayer.LocalAvatarDriver.References.HasrightHand)
+        if (BasisLocalPlayer.Instance.LocalBoneDriver.FindBone(out BasisBoneControl LeftHand, BasisBoneTrackedRole.LeftHand) && BasisLocalPlayer.Instance.LocalBoneDriver.FindBone(out BasisBoneControl RightHand, BasisBoneTrackedRole.RightHand))
         {
-            Vector3 LeftHand = LocalPlayer.LocalAvatarDriver.References.leftHand.position;
-            Vector3 RightHand = LocalPlayer.LocalAvatarDriver.References.rightHand.position;
-
-            LocalPlayer.CurrentHeight.AvatarArmSpan = Vector3.Distance(LeftHand, RightHand);
+            BasisLocalPlayer.Instance.CurrentHeight.AvatarArmSpan = Vector3.Distance(LeftHand.TposeLocal.position, RightHand.TposeLocal.position);
+            BasisDebug.Log("Current Avatar Arm Span is " + BasisLocalPlayer.Instance.CurrentHeight.AvatarArmSpan);
         }
 
         // Handle potential issues with height data
