@@ -273,7 +273,7 @@ namespace Basis.Scripts.Drivers
         }
         public void OnHeightChanged()
         {
-            transform.localScale = Vector3.one * LocalPlayer.CurrentHeight.EyeRatioAvatarToAvatarDefaultScale;
+            transform.localScale = Vector3.one * LocalPlayer.CurrentHeight.SelectedAvatarToAvatarDefaultScale;
         }
         public void OnDisable()
         {

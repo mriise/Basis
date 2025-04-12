@@ -25,8 +25,13 @@ namespace Basis.Scripts.BasisSdk.Players
         public event Action OnLocalAvatarChanged;
         public event Action OnSpawnedEvent;
 
-        public static float DefaultPlayerEyeHeight = 1.64f;
-        public static float DefaultAvatarEyeHeight = 1.64f;
+        public const float FallbackSize = 1.7f;
+
+        public static float DefaultPlayerEyeHeight = FallbackSize;
+        public static float DefaultAvatarEyeHeight = FallbackSize;
+
+        public static float DefaultPlayerArmSpan = FallbackSize;
+        public static float DefaultAvatarArmSpan = FallbackSize;
         public LocalHeightInformation CurrentHeight;
         public LocalHeightInformation LastHeight;
         public BasisLocalAnimatorDriver AnimatorDriver;

@@ -210,7 +210,7 @@ namespace Basis.Scripts.BasisCharacterController
         }
         public void CalculateCharacterSize()
         {
-            eyeHeight = HasEye ? Eye.OutGoingData.position.y : 1.73f;
+            eyeHeight = HasEye ? Eye.OutGoingData.position.y : BasisLocalPlayer.FallbackSize;
             float adjustedHeight = eyeHeight;
             adjustedHeight = Mathf.Max(adjustedHeight, MinimumColliderSize);
             SetCharacterHeight(adjustedHeight);

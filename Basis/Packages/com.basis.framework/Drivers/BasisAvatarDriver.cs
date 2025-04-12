@@ -21,7 +21,7 @@ namespace Basis.Scripts.Drivers
             }
             else
             {
-                return 1.64f;
+                return BasisLocalPlayer.FallbackSize;
             }
         }
         private static string TPose = "Assets/Animator/Animated TPose.controller";
@@ -124,7 +124,7 @@ namespace Basis.Scripts.Drivers
             Renderer[] renderers = animatorParent.GetComponentsInChildren<Renderer>();
             if (renderers.Length == 0)
             {
-                return new Bounds(Vector3.zero, new Vector3(0.3f, 1.7f, 0.3f));
+                return new Bounds(Vector3.zero, new Vector3(0.3f, BasisLocalPlayer.FallbackSize, 0.3f));
             }
             Bounds bounds = renderers[0].bounds;
             for (int Index = 1; Index < renderers.Length; Index++)

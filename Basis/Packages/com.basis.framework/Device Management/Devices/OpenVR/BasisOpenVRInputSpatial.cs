@@ -43,7 +43,7 @@ namespace Basis.Scripts.Device_Management.Devices.Unity_Spatial_Tracking
                 {
                     if (Control.HasTracked != BasisHasTracked.HasNoTracker)
                     {
-                        Control.IncomingData.position = FinalPosition - math.mul(FinalRotation, AvatarPositionOffset * BasisLocalPlayer.Instance.CurrentHeight.EyeRatioAvatarToAvatarDefaultScale);
+                        Control.IncomingData.position = FinalPosition - math.mul(FinalRotation, AvatarPositionOffset * BasisLocalPlayer.Instance.CurrentHeight.SelectedAvatarToAvatarDefaultScale);
                         Control.IncomingData.rotation = math.mul(FinalRotation, Quaternion.Euler(AvatarRotationOffset));
                     }
                 }
@@ -55,7 +55,7 @@ namespace Basis.Scripts.Device_Management.Devices.Unity_Spatial_Tracking
                     }
                 }
             }
-            FinalPosition = LocalRawPosition * BasisLocalPlayer.Instance.CurrentHeight.EyeRatioAvatarToAvatarDefaultScale;
+            FinalPosition = LocalRawPosition * BasisLocalPlayer.Instance.CurrentHeight.SelectedAvatarToAvatarDefaultScale;
             FinalRotation = LocalRawRotation;
             UpdatePlayerControl();
         }

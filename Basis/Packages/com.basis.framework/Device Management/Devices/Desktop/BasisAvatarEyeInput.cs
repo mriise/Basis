@@ -19,8 +19,6 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
         public float rotationX;
         public float minimumY = -89f;
         public float maximumY = 50f;
-        [HideInInspector]
-        public float FallBackHeight = 1.73f;
         public bool BlockCrouching;
         public float InjectedX = 0;
         public float InjectedZ = 0;
@@ -29,17 +27,17 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
         private List<string> headPauseRequests = new();
         public void Initalize(string ID = "Desktop Eye", string subSystems = "BasisDesktopManagement")
         {
-            BasisDebug.Log("Initalizing Avatar Eye", BasisDebug.LogTag.Input);
+            BasisDebug.Log("Initializing Avatar Eye", BasisDebug.LogTag.Input);
             if (BasisLocalPlayer.Instance.LocalAvatarDriver != null)
             {
-                BasisDebug.Log("Using Configured Height " + BasisLocalPlayer.Instance.CurrentHeight.PlayerEyeHeight, BasisDebug.LogTag.Input);
-                LocalRawPosition = new Vector3(InjectedX, BasisLocalPlayer.Instance.CurrentHeight.PlayerEyeHeight, InjectedZ);
+                BasisDebug.Log("Using Configured Height " + BasisLocalPlayer.Instance.CurrentHeight.SelectedPlayerHeight, BasisDebug.LogTag.Input);
+                LocalRawPosition = new Vector3(InjectedX, BasisLocalPlayer.Instance.CurrentHeight.SelectedPlayerHeight, InjectedZ);
                 LocalRawRotation = Quaternion.identity;
             }
             else
             {
-                BasisDebug.Log("Using Fallback Height " + FallBackHeight, BasisDebug.LogTag.Input);
-                LocalRawPosition = new Vector3(InjectedX, FallBackHeight, InjectedZ);
+                BasisDebug.Log("Using Fallback Height " + BasisLocalPlayer.FallbackSize, BasisDebug.LogTag.Input);
+                LocalRawPosition = new Vector3(InjectedX, BasisLocalPlayer.FallbackSize, InjectedZ);
                 LocalRawRotation = Quaternion.identity;
             }
             FinalPosition = LocalRawPosition;
@@ -142,7 +140,7 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
                 // Clamp rotationY to stay within the specified range
                 rotationY = Mathf.Clamp(rotationY, minimumY, maximumY);
                 LocalRawRotation = Quaternion.Euler(rotationY, rotationX, InjectedZRot);
-                Vector3 adjustedHeadPosition = new Vector3(InjectedX, BasisLocalPlayer.Instance.CurrentHeight.PlayerEyeHeight, InjectedZ);
+                Vector3 adjustedHeadPosition = new Vector3(InjectedX, BasisLocalPlayer.Instance.CurrentHeight.SelectedPlayerHeight, InjectedZ);
                 if (BasisLocalInputActions.Crouching)
                 {
                     adjustedHeadPosition.y -= Control.TposeLocal.position.y * crouchPercentage;
