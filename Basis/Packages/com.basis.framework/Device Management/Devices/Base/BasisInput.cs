@@ -162,17 +162,10 @@ namespace Basis.Scripts.Device_Management.Devices
                 BasisDebug.Log("Overriding Tracker " + BasisDeviceMatchSettings.DeviceID, BasisDebug.LogTag.Input);
                 AssignRoleAndTracker(BasisDeviceMatchSettings.TrackedRole);
             }
-            if (hasRoleAssigned)
-            {
-             //   AvatarRotationOffset = BasisDeviceMatchSettings.AvatarRotationOffset;
-            //    AvatarPositionOffset = BasisDeviceMatchSettings.AvatarPositionOffset;
-            }
-            else
-            {
-                AvatarPositionOffset =  Vector3.zero;
-                AvatarRotationOffset = Vector3.zero;
-            }
-            if(HasRaycastSupport())
+            //reset the offsets, its up to the higher level to set this now.
+            AvatarPositionOffset = Vector3.zero;
+            AvatarRotationOffset = Vector3.zero;
+            if (HasRaycastSupport())
             {
                 CreateRayCaster(this);
             }
@@ -180,7 +173,7 @@ namespace Basis.Scripts.Device_Management.Devices
             {
                 BasisLocalPlayer.Instance.OnPreSimulateBones += PollData;
                 BasisLocalPlayer.Instance.OnAvatarSwitched += UnAssignFullBodyTrackers;
-                BasisLocalPlayer.Instance.AfterFinalMove.AddAction(98,ApplyFinalMovement);
+                BasisLocalPlayer.Instance.AfterFinalMove.AddAction(98, ApplyFinalMovement);
                 HasEvents = true;
             }
             else

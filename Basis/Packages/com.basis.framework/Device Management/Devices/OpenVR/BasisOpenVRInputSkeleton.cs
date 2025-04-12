@@ -31,14 +31,14 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
             }
             if(BasisOpenVRInputController.inputSource == SteamVR_Input_Sources.LeftHand)
             {
-                 additionalRotation = Quaternion.Euler(new Vector3(35, 180, 45));
+                 additionalRotation = Quaternion.Euler(new Vector3(15, 180, 45));
             }
             else
             {
                 if (BasisOpenVRInputController.inputSource == SteamVR_Input_Sources.RightHand)
                 {
                     //45
-                     additionalRotation = Quaternion.Euler(new Vector3(35, 180, 315));
+                     additionalRotation = Quaternion.Euler(new Vector3(15, 180, 315));
                 }
             }
         }
@@ -47,7 +47,8 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
         {
             onTrackingChanged();
         }
-        public Vector3 additionalPositionOffset = new Vector3(0.01f, -0.07f, -0.03f);
+        public Vector3 additionalPositionOffsetLeft = new Vector3(0, -0.09f, -0.03f);
+        public Vector3 additionalPositionOffsetRight = new Vector3(0, -0.09f, -0.03f);
         private void onTrackingChanged()
         {
             if (BasisOpenVRInputController.inputSource == SteamVR_Input_Sources.LeftHand)
@@ -55,7 +56,7 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
                 UpdateFingerPercentages(ref BasisLocalPlayer.Instance.LocalAvatarDriver.BasisMuscleDriver.LeftFinger);
 
                 // Apply additional position offset
-                BasisOpenVRInputController.AvatarPositionOffset = skeletonAction.bonePositions[1] + additionalPositionOffset;
+                BasisOpenVRInputController.AvatarPositionOffset = skeletonAction.bonePositions[1] + additionalPositionOffsetLeft;
 
                 // Apply additional rotation offset by converting to Quaternion and adding
                 Quaternion baseRotation = skeletonAction.boneRotations[1];
@@ -66,7 +67,7 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
                 UpdateFingerPercentages(ref BasisLocalPlayer.Instance.LocalAvatarDriver.BasisMuscleDriver.RightFinger);
 
                 // Apply additional position offset
-                BasisOpenVRInputController.AvatarPositionOffset = skeletonAction.bonePositions[1] + additionalPositionOffset;
+                BasisOpenVRInputController.AvatarPositionOffset = skeletonAction.bonePositions[1] + additionalPositionOffsetRight;
 
                 // Apply additional rotation offset by converting to Quaternion and adding
                 Quaternion baseRotation = skeletonAction.boneRotations[1];

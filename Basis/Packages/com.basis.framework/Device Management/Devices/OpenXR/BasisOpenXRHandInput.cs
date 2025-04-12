@@ -25,12 +25,26 @@ public class BasisOpenXRHandInput : BasisInput
     public InputActionProperty Primary2DAxis;
     public InputActionProperty Secondary2DAxis;
 
+
     public void Initialize(string UniqueID, string UnUniqueID, string subSystems, bool AssignTrackedRole, BasisBoneTrackedRole basisBoneTrackedRole)
     {
         InitalizeTracking(UniqueID, UnUniqueID, subSystems, AssignTrackedRole, basisBoneTrackedRole);
         string devicePath = basisBoneTrackedRole == BasisBoneTrackedRole.LeftHand ? "<XRController>{LeftHand}" : "<XRController>{RightHand}";
         string DevicePalmPath = basisBoneTrackedRole == BasisBoneTrackedRole.LeftHand ? "<PalmPose>{LeftHand}" : "<PalmPose>{RightHand}";
         SetupInputActions(devicePath);
+
+        switch (basisBoneTrackedRole)
+        {
+            case BasisBoneTrackedRole.LeftHand:
+                AvatarPositionOffset = new float3(0f, 0.05f, 0.05f);
+                AvatarRotationOffset = new float3(-90f, 45f, 0f);
+                break;
+            case BasisBoneTrackedRole.RightHand:
+                AvatarPositionOffset = new float3(0f, 0.05f, 0.05f);
+                AvatarRotationOffset = new float3(-75f, -45f, 0f);
+                break;
+        }
+
         PalmPosition = new InputActionProperty(new InputAction($"{DevicePalmPath}/devicePosition", InputActionType.Value, $"{DevicePalmPath}/devicePosition", expectedControlType: "Vector3"));
         PalmRotation = new InputActionProperty(new InputAction($"{DevicePalmPath}/deviceRotation", InputActionType.Value, $"{DevicePalmPath}/deviceRotation", expectedControlType: "Quaternion"));
 
