@@ -213,7 +213,7 @@ namespace Basis.Scripts.Drivers
             StoredRolesTransforms = BasisAvatarIKStageCalibration.GetAllRolesAsTransform();
             Player.BasisAvatar.transform.parent = Player.transform;
             Player.BasisAvatar.transform.SetLocalPositionAndRotation(-Hips.TposeLocal.position, Quaternion.identity);
-            AvatarUPDownDirectionCalibration = Player.BasisAvatar.transform.right;
+            AvatarUPDownDirectionCalibration = Vector3.right; //Player.BasisAvatar.transform.right;
             CalibrateOffsets();
             BuildBuilder();
             if (BasisLocalCameraDriver.Instance != null)

@@ -40,7 +40,7 @@ namespace Basis.Scripts.Avatar
         public static void FullBodyCalibration()
         {
             HasFBIKTrackers = false;
-            BasisHeightDriver.SetPlayersEyeHeight(BasisLocalPlayer.Instance, LocalHeightInformation.SelectedHeightMode.ArmSpan);
+            BasisHeightDriver.SetPlayersEyeHeight(BasisLocalPlayer.Instance, LocalHeightInformation.SelectedHeightMode.EyeHeight);
             BasisDeviceManagement.UnassignFBTrackers();
             BasisLocalPlayer.Instance.LocalBoneDriver.SimulateAndApplyWithoutLerp(BasisLocalPlayer.Instance);
 

@@ -98,7 +98,7 @@ namespace UnityEngine.Animations.Rigging
     /// <summary>
     /// The TwoBoneIK constraint job.
     /// </summary>
-  //  [Unity.Burst.BurstCompile]
+    [Unity.Burst.BurstCompile]
     public struct BasisTwoBoneIKConstraintHandJob : IWeightedAnimationJob
     {
         /// <summary>The transform handle for the root transform.</summary>
