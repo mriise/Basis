@@ -246,11 +246,16 @@ namespace Basis.Scripts.BasisSdk.Players
         }
         public void Simulate()
         {
-            //moves all bones to where they belong
-            LocalBoneDriver.SimulateBonePositions();
+            float DeltaTime = Time.deltaTime;
+            if (float.IsNaN(DeltaTime))
+            {
+                return;
+            }
 
+            //moves all bones to where they belong
+            LocalBoneDriver.SimulateBonePositions(DeltaTime);
             //moves Avatar Transform to where it belongs
-          Quaternion Rotation =  MoveAvatar();
+            Quaternion Rotation = MoveAvatar();
             //Simulate Final Destination of IK
             LocalAvatarDriver.SimulateIKDestinations(Rotation);
 
@@ -258,10 +263,10 @@ namespace Basis.Scripts.BasisSdk.Players
             LocalAvatarDriver.SimulateAnimatorAndIk();
 
             //we move the player at the very end after everything has been processed.
-            LocalMoveDriver.SimulateMovement();
+            LocalMoveDriver.SimulateMovement(DeltaTime);
 
             //Apply Animator Weights
-            AnimatorDriver.SimulateAnimator();
+            AnimatorDriver.SimulateAnimator(DeltaTime);
 
             //now that everything has been processed jiggles can move.
             if (HasJiggles)

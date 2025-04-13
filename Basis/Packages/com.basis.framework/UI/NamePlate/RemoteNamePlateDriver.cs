@@ -69,14 +69,14 @@ namespace Basis.Scripts.UI.NamePlate
         {
             if (namePlateToRemove == null) return;
 
-            for (int i = 0; i < count; i++)
+            for (int RemotePlayerIndex = 0; RemotePlayerIndex < count; RemotePlayerIndex++)
             {
-                if (basisRemotePlayers[i] == namePlateToRemove)
+                if (basisRemotePlayers[RemotePlayerIndex] == namePlateToRemove)
                 {
                     // Shift elements down to remove the nameplate
-                    for (int j = i; j < count - 1; j++)
+                    for (int Index = RemotePlayerIndex; Index < count - 1; Index++)
                     {
-                        basisRemotePlayers[j] = basisRemotePlayers[j + 1];
+                        basisRemotePlayers[Index] = basisRemotePlayers[Index + 1];
                     }
 
                     basisRemotePlayers[--count] = null; // Clear the last element
@@ -107,16 +107,16 @@ namespace Basis.Scripts.UI.NamePlate
         private void ResizeArray(int newSize)
         {
             BasisNamePlate[] newArray = new BasisNamePlate[newSize];
-            for (int i = 0; i < count; i++)
+            for (int Index = 0; Index < count; Index++)
             {
-                newArray[i] = basisRemotePlayers[i];
+                newArray[Index] = basisRemotePlayers[Index];
             }
 
             basisRemotePlayers = newArray;
         }
         public float x;
         public float z;
-        public void LateUpdate()
+        public void Simulate()
         {
             Vector3 Position = BasisLocalCameraDriver.Position;
             for (int Index = 0; Index < count; Index++)
@@ -130,6 +130,13 @@ namespace Basis.Scripts.UI.NamePlate
                     cachedRotation = Quaternion.Euler(x, Mathf.Atan2(dirToCamera.x, dirToCamera.z) * Mathf.Rad2Deg, z);
                     NamePlate.transform.SetPositionAndRotation(cachedDirection, cachedRotation);
                 }
+            }
+        }
+        public static void SimulateNamePlates()
+        {
+            if(Instance != null)
+            {
+                Instance.Simulate();
             }
         }
     }

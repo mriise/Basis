@@ -2,7 +2,7 @@ using Basis.Network.Core;
 using Basis.Scripts.BasisSdk;
 using Basis.Scripts.BasisSdk.Helpers;
 using Basis.Scripts.BasisSdk.Players;
-using Basis.Scripts.Device_Management.Devices.Desktop;
+using Basis.Scripts.Device_Management;
 using Basis.Scripts.Networking.NetworkedAvatar;
 using Basis.Scripts.Networking.Receivers;
 using Basis.Scripts.Networking.Transmitters;
@@ -127,6 +127,10 @@ namespace Basis.Scripts.Networking
                 SetupSceneEvents(BasisScene.Instance);
             }
             BasisScene.Ready += SetupSceneEvents;
+            if (BasisDeviceManagement.Instance != null)
+            {
+                this.transform.parent = BasisDeviceManagement.Instance.transform;
+            }
             this.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
             OnEnableInstanceCreate?.Invoke();
             NetworkRunning = true;

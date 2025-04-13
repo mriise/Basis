@@ -172,7 +172,7 @@ namespace Basis.Scripts.Drivers
             Builder.enabled = false;
             Calibration(Player.BasisAvatar);
             BasisLocalPlayer.Instance.LocalBoneDriver.RemoveAllListeners();
-            BasisLocalEyeFollowDriver = BasisHelpers.GetOrAddComponent<BasisLocalEyeFollowBase>(AvatarAnimatorParent);
+            BasisLocalEyeFollowDriver = BasisHelpers.GetOrAddComponent<BasisLocalEyeFollowBase>(Player.gameObject);
             BasisLocalEyeFollowDriver.Initalize(this, Player);
             SetMatrixOverride();
             updateWhenOffscreen(true);
@@ -187,13 +187,13 @@ namespace Basis.Scripts.Drivers
             SetBodySettings(LocalDriver);
             CalculateTransformPositions(Player.BasisAvatar.Animator, LocalDriver);
             ComputeOffsets(LocalDriver);
-            BasisMuscleDriver = BasisHelpers.GetOrAddComponent<BasisMuscleDriver>(AvatarAnimatorParent);
+            BasisMuscleDriver = BasisHelpers.GetOrAddComponent<BasisMuscleDriver>(Player.gameObject);
             BasisMuscleDriver.DisposeAllJobsData();
             BasisMuscleDriver.Initialize(Player, Player.BasisAvatar.Animator);
 
             CalibrationComplete?.Invoke();
 
-            Player.AnimatorDriver = BasisHelpers.GetOrAddComponent<BasisLocalAnimatorDriver>(AvatarAnimatorParent);
+            Player.AnimatorDriver = BasisHelpers.GetOrAddComponent<BasisLocalAnimatorDriver>(Player.gameObject);
             Player.AnimatorDriver.Initialize(Player.BasisAvatar.Animator);
 
             ResetAvatarAnimator();

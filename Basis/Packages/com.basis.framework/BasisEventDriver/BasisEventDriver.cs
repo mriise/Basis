@@ -3,6 +3,7 @@ using Basis.Scripts.Device_Management;
 using Basis.Scripts.Eye_Follow;
 using Basis.Scripts.Networking;
 using Basis.Scripts.Networking.Transmitters;
+using Basis.Scripts.UI.NamePlate;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -10,9 +11,11 @@ public class BasisEventDriver : MonoBehaviour
 {
     public float updateInterval = 0.1f; // 100 milliseconds
     public float timeSinceLastUpdate = 0f;
+    public Vector3 GlobalGravity;
     public void OnEnable()
     {
         Application.onBeforeRender += OnBeforeRender;
+        GlobalGravity = Physics.gravity;
     }
     public void OnDisable()
     {
@@ -47,6 +50,7 @@ public class BasisEventDriver : MonoBehaviour
             BasisLocalEyeFollowBase.Instance.Simulate();
         }
         MicrophoneRecorder.MicrophoneUpdate();
+        RemoteNamePlateDriver.SimulateNamePlates();
         BasisNetworkManagement.SimulateNetworkApply();
     }
     private void OnBeforeRender()

@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 4862434334352470906}
   - component: {fileID: 6889481598035836291}
   - component: {fileID: 8243907643478635420}
-  - component: {fileID: 5938374156961068045}
   m_Layer: 0
   m_Name: NetworkManagement
   m_TagString: Untagged
@@ -54,6 +53,7 @@ MonoBehaviour:
     Ready: 0
     Offset: 0
     MouthBone:
+      name: 
       LerpAmountNormal: 0
       LerpAmountFastMovement: 0
       AngleBeforeSpeedup: 0
@@ -138,21 +138,14 @@ MonoBehaviour:
       TposeGizmoReference: -1
       TposeHasGizmo: 0
       HasVirtualOverride: 0
-      HasInverseOffsetOverride: 0
       trackersmooth: 25
       IsHintRoleIgnoreRotation: 0
-      Cullable: 0
-      Name: 
       gizmoColor: {r: 0, g: 0, b: 1, a: 1}
-      HasBone: 0
-      BoneTransform: {fileID: 0}
       HasEvents: 0
-      hasTrackerDriver: 1
-      NotProcessing: 0
-      hasRigLayer: 1
       positionWeight: 1
       rotationWeight: 1
-      GeneralLocation: 0
+      hasTrackerDriver: 1
+      hasRigLayer: 1
     Player: {fileID: 0}
     hasID: 0
     HasEvents: 0
@@ -274,6 +267,7 @@ MonoBehaviour:
     HearingIndex: 
     AvatarIndex: 
     HearingIndexToId: 
+    CalculatedDistances: []
   IsRunning: 1
 --- !u!114 &8243907643478635420
 MonoBehaviour:
@@ -292,16 +286,3 @@ MonoBehaviour:
   OutOfRangeColor: {r: 0.105882354, g: 0.23137255, b: 0.29411766, a: 0.7490196}
   x: 0
   z: 0
---- !u!114 &5938374156961068045
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6628459906978635983}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2f56fc2c74db6c14a8788f282a92ea73, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  BatchSize: 16

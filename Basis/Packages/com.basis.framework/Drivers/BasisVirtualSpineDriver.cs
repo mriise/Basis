@@ -113,7 +113,7 @@ public class BasisVirtualSpineDriver
     }
     public void OnSimulateHead()
     {
-        float deltaTime = BasisLocalPlayer.Instance.LocalBoneDriver.DeltaTime;
+        float deltaTime = Time.deltaTime;
 
         // Directly propagate rotations
         Head.OutGoingData.rotation = CenterEye.OutGoingData.rotation;

@@ -1,12 +1,12 @@
-using System.Collections.Generic;
-using System.Linq;
-using System;
-using UnityEngine;
-using Basis.Scripts.TransformBinders.BoneControl;
 using Basis.Scripts.Avatar;
 using Basis.Scripts.BasisSdk.Helpers;
 using Basis.Scripts.BasisSdk.Players;
+using Basis.Scripts.TransformBinders.BoneControl;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Unity.Mathematics;
+using UnityEngine;
 namespace Basis.Scripts.Drivers
 {
     public abstract class BaseBoneDriver : MonoBehaviour
@@ -69,7 +69,7 @@ namespace Basis.Scripts.Drivers
             Player.OnPreSimulateBones?.Invoke();
             SimulateWithoutLerp();
         }
-        public void SimulateWorldCoords()
+        public void SimulateWorldDestinations()
         {
             Matrix4x4 parentMatrix = this.transform.localToWorldMatrix;
             Quaternion Rotation = this.transform.rotation;

@@ -50,7 +50,6 @@ namespace Basis.Scripts.BasisCharacterController
         {
             if (HasEvents)
             {
-                //   driver.ReadyToRead.RemoveAction(98,Simulate);
                 HasEvents = false;
             }
         }
@@ -64,7 +63,6 @@ namespace Basis.Scripts.BasisCharacterController
             characterController.skinWidth = 0.01f;
             if (HasEvents == false)
             {
-                // driver.ReadyToRead.AddAction(98, Simulate);
                 HasEvents = true;
             }
         }
@@ -84,11 +82,11 @@ namespace Basis.Scripts.BasisCharacterController
             // Apply the force to the object
             body.AddForce(pushDir * pushPower, ForceMode.Impulse);
         }
-        public void SimulateMovement()
+        public void SimulateMovement(float DeltaTime)
         {
             LastbottomPoint = bottomPointLocalspace;
             CalculateCharacterSize();
-            HandleMovement();
+            HandleMovement(DeltaTime);
             GroundCheck();
 
             // Calculate the rotation amount for this frame
@@ -115,7 +113,7 @@ namespace Basis.Scripts.BasisCharacterController
             }
             else
             {
-                rotationAmount = Rotation.x * RotationSpeed * driver.DeltaTime;
+                rotationAmount = Rotation.x * RotationSpeed * DeltaTime;
             }
 
 
@@ -161,7 +159,7 @@ namespace Basis.Scripts.BasisCharacterController
             LastWasGrounded = groundedPlayer;
         }
         public float CurrentSpeed;
-        public void HandleMovement()
+        public void HandleMovement(float DeltaTime)
         {
             if (BlockMovement)
             {
@@ -184,7 +182,7 @@ namespace Basis.Scripts.BasisCharacterController
             CurrentSpeed = math.lerp(SlowestPlayerSpeed, FastestRunSpeed, SpeedMultiplier);
             CurrentSpeed = math.clamp(CurrentSpeed, 0, FastestRunSpeed);
 
-            Vector3 totalMoveDirection = flattenedRotation * horizontalMoveDirection * CurrentSpeed * driver.DeltaTime;
+            Vector3 totalMoveDirection = flattenedRotation * horizontalMoveDirection * CurrentSpeed * DeltaTime;
 
             // Handle jumping and falling
             if (groundedPlayer && HasJumpAction)
@@ -194,7 +192,7 @@ namespace Basis.Scripts.BasisCharacterController
             }
             else
             {
-                currentVerticalSpeed += gravityValue * driver.DeltaTime;
+                currentVerticalSpeed += gravityValue * DeltaTime;
             }
 
             // Ensure we don't exceed maximum gravity value speed
@@ -202,7 +200,7 @@ namespace Basis.Scripts.BasisCharacterController
 
 
             HasJumpAction = false;
-            totalMoveDirection.y = currentVerticalSpeed * driver.DeltaTime;
+            totalMoveDirection.y = currentVerticalSpeed * DeltaTime;
 
             // Move character
             Flags = characterController.Move(totalMoveDirection);

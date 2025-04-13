@@ -91,7 +91,7 @@ namespace Basis.Scripts.Drivers
 
             if (BasisFacialBlinkDriver.MeetsRequirements(Avatar))
             {
-                BasisFacialBlinkDriver FacialBlinkDriver = BasisHelpers.GetOrAddComponent<BasisFacialBlinkDriver>(Avatar.gameObject);
+                BasisFacialBlinkDriver FacialBlinkDriver = BasisHelpers.GetOrAddComponent<BasisFacialBlinkDriver>(Player.gameObject);
                 FacialBlinkDriver.Initialize(Player,Avatar);
             }
         }

@@ -52,7 +52,7 @@ namespace Basis.Scripts.BasisSdk.Players
                 BasisAvatarStrainJiggleDriver = BasisHelpers.GetOrAddComponent<BasisAvatarStrainJiggleDriver>(this.gameObject);
                 if (BasisAvatarStrainJiggleDriver != null)
                 {
-                    HasJiggles = BasisAvatarStrainJiggleDriver.OnCalibration();
+                    HasJiggles = BasisAvatarStrainJiggleDriver.Initalize();
                 }
             }
             catch (Exception e)

@@ -38,7 +38,7 @@ namespace Basis.Scripts.Animator_Driver
         // Critically damped spring smoothing
         public float dampingRatio = 30; // Adjust for desired dampening effect
         public float angularFrequency = 0.4f; // Adjust for the speed of dampening
-        public void SimulateAnimator()
+        public void SimulateAnimator(float DeltaTime)
         {
             if (localPlayer.LocalAvatarDriver.CurrentlyTposing || BasisAvatarIKStageCalibration.HasFBIKTrackers)
             {
@@ -48,8 +48,6 @@ namespace Basis.Scripts.Animator_Driver
                 }
                 return;
             }
-
-            float DeltaTime = localPlayer.LocalBoneDriver.DeltaTime;
             // Calculate the velocity of the character controller
             currentVelocity = Quaternion.Inverse(Hips.OutgoingWorldData.rotation)
                               * (Controller.bottomPointLocalspace - Controller.LastbottomPoint) / DeltaTime;
