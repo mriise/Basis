@@ -20,7 +20,7 @@ namespace Basis.Scripts.Drivers
                 return;
             }
             Calibration(RemotePlayer.BasisAvatar);
-            BasisRemoteEyeFollowBase = BasisHelpers.GetOrAddComponent<BasisRemoteEyeFollowBase>(Player.BasisAvatar.gameObject);
+            BasisRemoteEyeFollowBase = BasisHelpers.GetOrAddComponent<BasisRemoteEyeFollowBase>(Player.gameObject);
             BasisRemoteEyeFollowBase.Initalize(this, remotePlayer);
             SetAllMatrixRecalculation(false);
             updateWhenOffscreen(false);
