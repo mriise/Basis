@@ -11,11 +11,9 @@ public class BasisEventDriver : MonoBehaviour
 {
     public float updateInterval = 0.1f; // 100 milliseconds
     public float timeSinceLastUpdate = 0f;
-    public Vector3 GlobalGravity;
     public void OnEnable()
     {
         Application.onBeforeRender += OnBeforeRender;
-        GlobalGravity = Physics.gravity;
     }
     public void OnDisable()
     {
