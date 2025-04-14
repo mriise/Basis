@@ -91,6 +91,7 @@ MonoBehaviour:
   AvatarLoadMode: 0
   BasisAvatarStrainJiggleDriver: {fileID: 0}
   Mouth:
+    name: 
     LerpAmountNormal: 0
     LerpAmountFastMovement: 0
     AngleBeforeSpeedup: 0
@@ -175,20 +176,14 @@ MonoBehaviour:
     TposeGizmoReference: -1
     TposeHasGizmo: 0
     HasVirtualOverride: 0
-    HasInverseOffsetOverride: 0
     trackersmooth: 25
     IsHintRoleIgnoreRotation: 0
-    Cullable: 0
-    Name: 
     gizmoColor: {r: 0, g: 0, b: 1, a: 1}
-    HasBone: 0
     HasEvents: 0
-    hasTrackerDriver: 1
-    NotProcessing: 0
-    hasRigLayer: 1
     positionWeight: 1
     rotationWeight: 1
-    GeneralLocation: 0
+    hasTrackerDriver: 1
+    hasRigLayer: 1
   HasJiggles: 0
   RemoteBoneDriver: {fileID: 8753016558906673911}
   RemoteAvatarDriver: {fileID: 4496089132972522230}
@@ -196,6 +191,7 @@ MonoBehaviour:
     Ready: 0
     Offset: 0
     MouthBone:
+      name: 
       LerpAmountNormal: 0
       LerpAmountFastMovement: 0
       AngleBeforeSpeedup: 0
@@ -280,34 +276,29 @@ MonoBehaviour:
       TposeGizmoReference: -1
       TposeHasGizmo: 0
       HasVirtualOverride: 0
-      HasInverseOffsetOverride: 0
       trackersmooth: 25
       IsHintRoleIgnoreRotation: 0
-      Cullable: 0
-      Name: 
       gizmoColor: {r: 0, g: 0, b: 1, a: 1}
-      HasBone: 0
       HasEvents: 0
-      hasTrackerDriver: 1
-      NotProcessing: 0
-      hasRigLayer: 1
       positionWeight: 1
       rotationWeight: 1
-      GeneralLocation: 0
+      hasTrackerDriver: 1
+      hasRigLayer: 1
     Player: {fileID: 0}
     hasID: 0
     CopyData: 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
     AudioReceiverModule:
       BasisRemoteVisemeAudioDriver: {fileID: 0}
-      audioSource: {fileID: 0}
+      audioSource: {fileID: 3357262618114472881}
       visemeDriver: {fileID: 0}
+      SteamAudioSource: {fileID: 6717546729411187846}
       IsPlaying: 0
       pcmBuffer: []
       pcmLength: 0
       IsReady: 0
       silentData: []
       lastReadIndex: 0
-      AudioSourceTransform: {fileID: 0}
+      AudioSourceTransform: {fileID: 3207512861414392396}
       resampledSegment: []
     delayTime: 0.10000000149011612
     RemotePlayer: {fileID: 0}
@@ -411,7 +402,7 @@ MonoBehaviour:
     interpolationTime: 0
     TimeBeforeCompletion: 0
     TimeInThePast: 0
-    HasAvatarInitalized: 0
+    HasAvatarInitialized: 0
     MinCutoff: 0.001
     Beta: 5
     DerivativeCutoff: 1
@@ -473,11 +464,11 @@ MonoBehaviour:
   Controls: []
   trackedRoles: 
   HasControls: 0
-  TrackedBone: {fileID: 0}
   RemotePlayer: {fileID: 3578141255088103770}
   HeadAvatar: {fileID: 0}
   HipsAvatar: {fileID: 0}
   Head:
+    name: 
     LerpAmountNormal: 0
     LerpAmountFastMovement: 0
     AngleBeforeSpeedup: 0
@@ -562,21 +553,16 @@ MonoBehaviour:
     TposeGizmoReference: -1
     TposeHasGizmo: 0
     HasVirtualOverride: 0
-    HasInverseOffsetOverride: 0
     trackersmooth: 25
     IsHintRoleIgnoreRotation: 0
-    Cullable: 0
-    Name: 
     gizmoColor: {r: 0, g: 0, b: 1, a: 1}
-    HasBone: 0
     HasEvents: 0
-    hasTrackerDriver: 1
-    NotProcessing: 0
-    hasRigLayer: 1
     positionWeight: 1
     rotationWeight: 1
-    GeneralLocation: 0
+    hasTrackerDriver: 1
+    hasRigLayer: 1
   Hips:
+    name: 
     LerpAmountNormal: 0
     LerpAmountFastMovement: 0
     AngleBeforeSpeedup: 0
@@ -661,21 +647,14 @@ MonoBehaviour:
     TposeGizmoReference: -1
     TposeHasGizmo: 0
     HasVirtualOverride: 0
-    HasInverseOffsetOverride: 0
     trackersmooth: 25
     IsHintRoleIgnoreRotation: 0
-    Cullable: 0
-    Name: 
     gizmoColor: {r: 0, g: 0, b: 1, a: 1}
-    HasBone: 0
     HasEvents: 0
-    hasTrackerDriver: 1
-    NotProcessing: 0
-    hasRigLayer: 1
     positionWeight: 1
     rotationWeight: 1
-    GeneralLocation: 0
-  HasEvent: 0
+    hasTrackerDriver: 1
+    hasRigLayer: 1
   HasHead: 0
   HasHips: 0
 --- !u!1 &5669630751523980901
