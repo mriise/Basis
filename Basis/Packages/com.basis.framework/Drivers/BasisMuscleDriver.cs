@@ -69,6 +69,11 @@ public class BasisMuscleDriver
     public float LerpSpeed = 17f;
     public bool[] allHasProximal;
     public Transform[] allTransforms;
+    // Define the corners
+    private static Vector2 TopLeft = new Vector2(-1f, 1f);
+    private static Vector2 TopRight = new Vector2(1f, 1f);
+    private static Vector2 BottomLeft = new Vector2(-1f, -1f);
+    private static Vector2 BottomRight = new Vector2(1f, -1f);
     public void DisposeAllJobsData()
     {
         // Dispose NativeArrays if allocated
@@ -104,11 +109,6 @@ public class BasisMuscleDriver
     public void LoadAllPoints()
     {
         CoordToPose.Clear();
-        // Define the corners
-        Vector2 TopLeft = new Vector2(-1f, 1f);
-        Vector2 TopRight = new Vector2(1f, 1f);
-        Vector2 BottomLeft = new Vector2(-1f, -1f);
-        Vector2 BottomRight = new Vector2(1f, -1f);
 
         // List to hold all PoseData points
         List<PoseDataAdditional> points = new List<PoseDataAdditional>();
@@ -147,9 +147,11 @@ public class BasisMuscleDriver
         PoseData topRightPose = new PoseData();
         SetAndRecordPose(TopRight.x, ref topRightPose, TopRight.y);
         // Add the poseData to the list
-        poseDataAdditional = new PoseDataAdditional();
-        poseDataAdditional.PoseData = topRightPose;
-        poseDataAdditional.Coord = TopRight;
+        poseDataAdditional = new PoseDataAdditional
+        {
+            PoseData = topRightPose,
+            Coord = TopRight
+        };
         points.Add(poseDataAdditional);
 
         PoseData bottomLeftPose = new PoseData();
@@ -171,9 +173,9 @@ public class BasisMuscleDriver
             Coord = BottomRight
         };
         points.Add(poseDataAdditional);
-        foreach (var point in points)
+        for (int Index = 0; Index < points.Count; Index++)
         {
-            CoordToPose.TryAdd(point.Coord, point);
+            CoordToPose.TryAdd(points[Index].Coord, points[Index]);
         }
         // Cache dictionary keys for faster access
         CoordKeys = new Vector2[CoordToPose.Count];
