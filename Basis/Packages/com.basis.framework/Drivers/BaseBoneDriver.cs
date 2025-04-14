@@ -9,7 +9,8 @@ using Unity.Mathematics;
 using UnityEngine;
 namespace Basis.Scripts.Drivers
 {
-    public abstract class BaseBoneDriver : MonoBehaviour
+    [System.Serializable]
+    public abstract class BaseBoneDriver
     {
         //figures out how to get the mouth bone and eye position
         public int ControlsLength;
@@ -21,11 +22,11 @@ namespace Basis.Scripts.Drivers
         /// <summary>
         /// call this after updating the bone data
         /// </summary>
-        public void Simulate(float deltaTime)
+        public void Simulate(float deltaTime,Transform transform)
         {
             // sequence all other devices to run at the same time
-            Matrix4x4 parentMatrix = this.transform.localToWorldMatrix;
-            Quaternion Rotation = this.transform.rotation;
+            Matrix4x4 parentMatrix = transform.localToWorldMatrix;
+            Quaternion Rotation = transform.rotation;
             for (int Index = 0; Index < ControlsLength; Index++)
             {
                 Controls[Index].ComputeMovement(parentMatrix, Rotation, deltaTime);
@@ -35,12 +36,12 @@ namespace Basis.Scripts.Drivers
                 DrawGizmos();
             }
         }
-        public void SimulateWithoutLerp()
+        public void SimulateWithoutLerp(Transform transform)
         {
             // sequence all other devices to run at the same time
             float DeltaTime = Time.deltaTime;
-            Matrix4x4 parentMatrix = this.transform.localToWorldMatrix;
-           Quaternion Rotation = this.transform.rotation;
+            Matrix4x4 parentMatrix = transform.localToWorldMatrix;
+           Quaternion Rotation = transform.rotation;
             for (int Index = 0; Index < ControlsLength; Index++)
             {
                 Controls[Index].LastRunData.position = Controls[Index].OutGoingData.position;
@@ -62,17 +63,17 @@ namespace Basis.Scripts.Drivers
         public void SimulateAndApply(BasisPlayer Player, float deltaTime)
         {
             Player.OnPreSimulateBones?.Invoke();
-            Simulate(deltaTime);
+            Simulate(deltaTime, Player.transform);
         }
         public void SimulateAndApplyWithoutLerp(BasisPlayer Player)
         {
             Player.OnPreSimulateBones?.Invoke();
-            SimulateWithoutLerp();
+            SimulateWithoutLerp(Player.transform);
         }
-        public void SimulateWorldDestinations()
+        public void SimulateWorldDestinations(Transform transform)
         {
-            Matrix4x4 parentMatrix = this.transform.localToWorldMatrix;
-            Quaternion Rotation = this.transform.rotation;
+            Matrix4x4 parentMatrix = transform.localToWorldMatrix;
+            Quaternion Rotation = transform.rotation;
             for (int Index = 0; Index < ControlsLength; Index++)
             {
                 // Apply local transform to parent's world transform

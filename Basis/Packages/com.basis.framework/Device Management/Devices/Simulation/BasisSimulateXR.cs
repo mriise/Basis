@@ -11,10 +11,10 @@ namespace Basis.Scripts.Device_Management.Devices.Simulation
         public BasisInputXRSimulate CreatePhysicalTrackedDevice(string UniqueID, string UnUniqueID, BasisBoneTrackedRole Role = BasisBoneTrackedRole.LeftHand, bool hasrole = false, string subSystems = "BasisSimulateXR")
         {
             GameObject gameObject = new GameObject(UniqueID);
-            gameObject.transform.parent = BasisLocalPlayer.Instance.LocalBoneDriver.transform;
+            gameObject.transform.parent = BasisLocalPlayer.Instance.transform;
 
             GameObject Moveable = new GameObject(UniqueID + " move transform");
-            Moveable.transform.parent = BasisLocalPlayer.Instance.LocalBoneDriver.transform;
+            Moveable.transform.parent = BasisLocalPlayer.Instance.transform;
 
             BasisInputXRSimulate BasisInput = gameObject.AddComponent<BasisInputXRSimulate>();
             BasisInput.FollowMovement = Moveable.transform;

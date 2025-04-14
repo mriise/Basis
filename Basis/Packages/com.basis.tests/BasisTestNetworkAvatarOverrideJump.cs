@@ -54,7 +54,7 @@ public class BasisTestNetworkAvatarOverrideJump : MonoBehaviour
         Debug.Log("got message " + MessageIndex);
         if (MessageIndex == MessageIndexTest)
         {
-            BasisLocalPlayer.Instance.LocalMoveDriver.HandleJump();
+            BasisLocalPlayer.Instance.LocalCharacterDriver.HandleJump();
         }
     }
 }

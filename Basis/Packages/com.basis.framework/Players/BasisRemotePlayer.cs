@@ -1,7 +1,6 @@
 using Basis.Scripts.Avatar;
 using Basis.Scripts.Drivers;
 using Basis.Scripts.Networking.Receivers;
-using Basis.Scripts.TransformBinders.BoneControl;
 using Basis.Scripts.UI.NamePlate;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -9,30 +8,38 @@ using static SerializableBasis;
 
 namespace Basis.Scripts.BasisSdk.Players
 {
+    [System.Serializable]
     public class BasisRemotePlayer : BasisPlayer
     {
-        public BasisRemoteBoneDriver RemoteBoneDriver;
-        public BasisRemoteAvatarDriver RemoteAvatarDriver;
+        [SerializeField]
+        public BasisRemoteBoneDriver RemoteBoneDriver = new BasisRemoteBoneDriver();
+        [SerializeField]
+        public BasisRemoteAvatarDriver RemoteAvatarDriver = new BasisRemoteAvatarDriver();
+        [SerializeField]
         public BasisNetworkReceiver NetworkReceiver;
         public bool HasEvents = false;
         public bool LockAvatarFromChanging;
         public bool OutOfRangeFromLocal = false;
         public ClientAvatarChangeMessage CACM;
         public Transform NetworkedVoice;
+        [HideInInspector]
+        public BasisLoadableBundle AlwaysRequestedAvatar;
+        public byte AlwaysRequestedMode;
+        [SerializeField]
+        public BasisRemoteEyeFollow EyeFollow = new BasisRemoteEyeFollow();
         public async Task RemoteInitialize(ClientAvatarChangeMessage cACM, PlayerMetaDataMessage PlayerMetaDataMessage)
         {
             CACM = cACM;
             DisplayName = PlayerMetaDataMessage.playerDisplayName;
             UUID = PlayerMetaDataMessage.playerUUID;
             IsLocal = false;
-            RemoteBoneDriver.CreateInitialArrays(RemoteBoneDriver.transform, false);
-            RemoteBoneDriver.Initialize();
+            RemoteBoneDriver.CreateInitialArrays(this.transform, false);
+            RemoteBoneDriver.InitializeRemote();
             if (HasEvents == false)
             {
                 RemoteAvatarDriver.CalibrationComplete += RemoteCalibration;
                 HasEvents = true;
             }
-            RemoteBoneDriver.FindBone(out Mouth, BasisBoneTrackedRole.Mouth);
             await BasisRemoteNamePlate.LoadRemoteNamePlate(this);
         }
         public async Task LoadAvatarFromInitial(ClientAvatarChangeMessage CACM)
@@ -64,10 +71,16 @@ namespace Basis.Scripts.BasisSdk.Players
                     HasEvents = false;
                 }
             }
+            if (FacialBlinkDriver != null)
+            {
+                FacialBlinkDriver.OnDestroy();
+            }
+            if(EyeFollow != null)
+            {
+                EyeFollow.OnDestroy();
+            }
 
         }
-        public BasisLoadableBundle AlwaysRequestedAvatar;
-        public byte AlwaysRequestedMode;
         public async void CreateAvatar(byte Mode, BasisLoadableBundle BasisLoadableBundle)
         {
             AlwaysRequestedMode = Mode;

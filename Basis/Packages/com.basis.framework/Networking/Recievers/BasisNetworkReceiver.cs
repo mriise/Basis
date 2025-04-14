@@ -1,4 +1,5 @@
 using Basis.Scripts.BasisSdk.Players;
+using Basis.Scripts.Common;
 using Basis.Scripts.Networking.NetworkedAvatar;
 using Basis.Scripts.Profiler;
 using System;
@@ -163,8 +164,8 @@ namespace Basis.Scripts.Networking.Receivers
 
                         RemotePlayer.RemoteBoneDriver.SimulateAndApply(RemotePlayer, DeltaTime);
                         RemotePlayer.RemoteBoneDriver.CalculateHeadBoneData();
-                        AudioReceiverModule.AudioSourceTransform.SetPositionAndRotation(Player.Mouth.OutgoingWorldData.position, Player.Mouth.OutgoingWorldData.rotation);
-                     //   RemotePlayer.BasisAvatar.FaceVisemeMesh.transform.position = RemotePlayer.RemoteBoneDriver.Hips.OutgoingWorldData.position;
+                        BasisCalibratedCoords Coords = RemotePlayer.RemoteBoneDriver.Mouth.OutgoingWorldData;
+                        AudioReceiverModule.AudioSourceTransform.SetPositionAndRotation(Coords.position, Coords.rotation);
                     }
                     if (interpolationTime >= 1 && PayloadQueue.TryDequeue(out AvatarBuffer result))
                     {

@@ -11,7 +11,8 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 namespace Basis.Scripts.Drivers
 {
-    public abstract class BasisAvatarDriver : MonoBehaviour
+    [System.Serializable]
+    public abstract class BasisAvatarDriver
     {
         public float ActiveAvatarEyeHeight()
         {
@@ -91,8 +92,7 @@ namespace Basis.Scripts.Drivers
 
             if (BasisFacialBlinkDriver.MeetsRequirements(Avatar))
             {
-                BasisFacialBlinkDriver FacialBlinkDriver = BasisHelpers.GetOrAddComponent<BasisFacialBlinkDriver>(Player.gameObject);
-                FacialBlinkDriver.Initialize(Player,Avatar);
+                Player.FacialBlinkDriver.Initialize(Player,Avatar);
             }
         }
         public void PutAvatarIntoTPose()
@@ -171,7 +171,7 @@ namespace Basis.Scripts.Drivers
             }
             return false;
         }
-        public void CalculateTransformPositions(Animator anim, BaseBoneDriver driver)
+        public void CalculateTransformPositions(BasisPlayer BasisPlayer, BaseBoneDriver driver)
         {
             BasisDebug.Log("CalculateTransformPositions", BasisDebug.LogTag.Avatar);
             UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<BasisFallBackBoneData> BasisFallBackBoneDataAsync = Addressables.LoadAssetAsync<BasisFallBackBoneData>(BoneData);
@@ -182,14 +182,14 @@ namespace Basis.Scripts.Drivers
                 if (driver.trackedRoles[Index] == BasisBoneTrackedRole.CenterEye)
                 {
                     GetWorldSpaceRotAndPos(() => Player.BasisAvatar.AvatarEyePosition, out quaternion Rotation, out float3 TposeWorld);
-                    SetInitialData(anim, Control, driver.trackedRoles[Index], TposeWorld);
+                    SetInitialData(BasisPlayer.BasisAvatar.Animator, Control, driver.trackedRoles[Index], TposeWorld);
                 }
                 else
                 {
                     if (driver.trackedRoles[Index] == BasisBoneTrackedRole.Mouth)
                     {
                         GetWorldSpaceRotAndPos(() => Player.BasisAvatar.AvatarMouthPosition, out quaternion Rotation, out float3 TposeWorld);
-                        SetInitialData(anim, Control, driver.trackedRoles[Index], TposeWorld);
+                        SetInitialData(BasisPlayer.BasisAvatar.Animator, Control, driver.trackedRoles[Index], TposeWorld);
                     }
                     else
                     {
@@ -197,8 +197,8 @@ namespace Basis.Scripts.Drivers
                         {
                             if (TryConvertToHumanoidRole(driver.trackedRoles[Index], out HumanBodyBones HumanBones))
                             {
-                                GetBoneRotAndPos(driver, anim, HumanBones, FallBackBone.PositionPercentage, out quaternion Rotation, out float3 TposeWorld, out bool UsedFallback);
-                                SetInitialData(anim, Control, driver.trackedRoles[Index], TposeWorld);
+                                GetBoneRotAndPos(BasisPlayer.transform, BasisPlayer.BasisAvatar.Animator, HumanBones, FallBackBone.PositionPercentage, out quaternion Rotation, out float3 TposeWorld, out bool UsedFallback);
+                                SetInitialData(BasisPlayer.BasisAvatar.Animator, Control, driver.trackedRoles[Index], TposeWorld);
                             }
                             else
                             {
@@ -214,14 +214,14 @@ namespace Basis.Scripts.Drivers
             }
             Addressables.Release(BasisFallBackBoneDataAsync);
         }
-        public void GetBoneRotAndPos(BaseBoneDriver driver, Animator anim, HumanBodyBones bone, Vector3 heightPercentage, out quaternion Rotation, out float3 Position, out bool UsedFallback)
+        public void GetBoneRotAndPos(Transform driver, Animator anim, HumanBodyBones bone, Vector3 heightPercentage, out quaternion Rotation, out float3 Position, out bool UsedFallback)
         {
             if (anim.avatar != null && anim.avatar.isHuman)
             {
                 Transform boneTransform = anim.GetBoneTransform(bone);
                 if (boneTransform == null)
                 {
-                    Rotation = driver.transform.rotation;
+                    Rotation = driver.rotation;
                     if (BasisHelpers.TryGetFloor(anim, out Position))
                     {
 
@@ -241,7 +241,7 @@ namespace Basis.Scripts.Drivers
             }
             else
             {
-                Rotation = driver.transform.rotation;
+                Rotation = driver.rotation;
                 if (BasisHelpers.TryGetFloor(anim, out Position))
                 {
 

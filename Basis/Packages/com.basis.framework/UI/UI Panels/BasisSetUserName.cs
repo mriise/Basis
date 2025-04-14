@@ -60,7 +60,7 @@ namespace Basis.Scripts.UI.UI_Panels
             HostMode.isOn = BasisNetworkManagement.Instance.IsHostMode;
             if (BasisDeviceManagement.Instance != null)
             {
-                this.transform.parent = BasisDeviceManagement.Instance.transform;
+                this.transform.SetParent(BasisDeviceManagement.Instance.transform);
             }
         }
         public async void HasUserName()

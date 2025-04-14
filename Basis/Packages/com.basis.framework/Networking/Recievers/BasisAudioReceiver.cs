@@ -17,7 +17,7 @@ namespace Basis.Scripts.Networking.Receivers
         [SerializeField]
         public AudioSource audioSource;
         [SerializeField]
-        public BasisAudioAndVisemeDriver visemeDriver;
+        public BasisAudioAndVisemeDriver visemeDriver = new BasisAudioAndVisemeDriver();
         public BasisVoiceRingBuffer InOrderRead;
         public SteamAudioSource SteamAudioSource;
         public bool IsPlaying = false;
@@ -88,18 +88,10 @@ namespace Basis.Scripts.Networking.Receivers
                 audioSource.Stop();
                 GameObject.Destroy(audioSource);
             }
-            if (visemeDriver != null)
-            {
-                GameObject.Destroy(visemeDriver);
-            }
         }
         public void OnCalibration(BasisNetworkPlayer networkedPlayer)
         {
             // Ensure viseme driver is initialized for audio processing
-            if (visemeDriver == null)
-            {
-                visemeDriver = BasisHelpers.GetOrAddComponent<BasisAudioAndVisemeDriver>(audioSource.gameObject);
-            }
             visemeDriver.TryInitialize(networkedPlayer.Player);
             if (BasisRemoteVisemeAudioDriver == null)
             {

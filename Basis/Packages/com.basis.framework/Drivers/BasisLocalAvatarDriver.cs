@@ -1,4 +1,3 @@
-using Basis.Scripts.Animator_Driver;
 using Basis.Scripts.Avatar;
 using Basis.Scripts.BasisSdk.Helpers;
 using Basis.Scripts.BasisSdk.Players;
@@ -12,52 +11,38 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.Animations.Rigging;
 using UnityEngine.Playables;
-using UnityEngine.UIElements;
 
 namespace Basis.Scripts.Drivers
 {
+    [System.Serializable]
     public class BasisLocalAvatarDriver : BasisAvatarDriver
     {
         public static Vector3 HeadScale = Vector3.one;
-        public static Vector3 HeadScaledDown = Vector3.zero;//new Vector3(0.0001f, 0.0001f, 0.0001f);
-        public BasisLocalBoneDriver LocalDriver;
-        public BasisLocalPlayer LocalPlayer;
-
+        public static Vector3 HeadScaledDown = Vector3.zero;
         public BasisTwoBoneIKConstraint HeadTwoBoneIK;
         public BasisTwoBoneIKConstraint LeftFootTwoBoneIK;
         public BasisTwoBoneIKConstraint RightFootTwoBoneIK;
         public BasisTwoBoneIKConstraintHand LeftHandTwoBoneIK;
         public BasisTwoBoneIKConstraintHand RightHandTwoBoneIK;
         public BasisTwoBoneIKConstraint UpperChestTwoBoneIK;
-
-        public BasisBoneControl HeadControl;
-        public BasisBoneControl LeftFootControl;
-        public BasisBoneControl RightFootControl;
-        public BasisBoneControl LeftHandControl;
-        public BasisBoneControl RightHandControl;
-        public BasisBoneControl ChestControl;
-        public BasisBoneControl LeftLowerLegControl;
-        public BasisBoneControl RightLowerLegControl;
-        public BasisBoneControl LeftLowerArmControl;
-        public BasisBoneControl RightLowerArmControl;
         public void SimulateIKDestinations(Quaternion Rotation)
         {
             // --- IK Target ---
-            ApplyBoneIKTarget(HeadTwoBoneIK, HeadControl.OutgoingWorldData.position, HeadControl.OutgoingWorldData.rotation);
-            ApplyBoneIKTarget(LeftFootTwoBoneIK, LeftFootControl.OutgoingWorldData.position, LeftFootControl.OutgoingWorldData.rotation);
-            ApplyBoneIKTarget(RightFootTwoBoneIK, RightFootControl.OutgoingWorldData.position, RightFootControl.OutgoingWorldData.rotation);
-            ApplyBoneIKTarget(LeftHandTwoBoneIK, LeftHandControl.OutgoingWorldData.position, LeftHandControl.OutgoingWorldData.rotation);
-            ApplyBoneIKTarget(RightHandTwoBoneIK, RightHandControl.OutgoingWorldData.position, RightHandControl.OutgoingWorldData.rotation);
+            ApplyBoneIKTarget(HeadTwoBoneIK, BasisLocalBoneDriver.HeadControl.OutgoingWorldData.position, BasisLocalBoneDriver.HeadControl.OutgoingWorldData.rotation);
+            ApplyBoneIKTarget(LeftFootTwoBoneIK, BasisLocalBoneDriver.LeftFootControl.OutgoingWorldData.position, BasisLocalBoneDriver.LeftFootControl.OutgoingWorldData.rotation);
+            ApplyBoneIKTarget(RightFootTwoBoneIK, BasisLocalBoneDriver.RightFootControl.OutgoingWorldData.position, BasisLocalBoneDriver.RightFootControl.OutgoingWorldData.rotation);
+            ApplyBoneIKTarget(LeftHandTwoBoneIK, BasisLocalBoneDriver.LeftHandControl.OutgoingWorldData.position, BasisLocalBoneDriver.LeftHandControl.OutgoingWorldData.rotation);
+            ApplyBoneIKTarget(RightHandTwoBoneIK, BasisLocalBoneDriver.RightHandControl.OutgoingWorldData.position, BasisLocalBoneDriver.RightHandControl.OutgoingWorldData.rotation);
 
             Vector3 Direction = Rotation * AvatarUPDownDirectionCalibration;
             // --- IK Hint ---
-            ApplyBoneIKHint(HeadTwoBoneIK, ChestControl.OutgoingWorldData.position, ChestControl.OutgoingWorldData.rotation, Direction);
+            ApplyBoneIKHint(HeadTwoBoneIK, BasisLocalBoneDriver.ChestControl.OutgoingWorldData.position, BasisLocalBoneDriver.ChestControl.OutgoingWorldData.rotation, Direction);
 
-            ApplyBoneIKHint(LeftFootTwoBoneIK, LeftLowerLegControl.OutgoingWorldData.position, LeftLowerLegControl.OutgoingWorldData.rotation, Direction);
-            ApplyBoneIKHint(RightFootTwoBoneIK, RightLowerLegControl.OutgoingWorldData.position, RightLowerLegControl.OutgoingWorldData.rotation, Direction);
+            ApplyBoneIKHint(LeftFootTwoBoneIK, BasisLocalBoneDriver.LeftLowerLegControl.OutgoingWorldData.position, BasisLocalBoneDriver.LeftLowerLegControl.OutgoingWorldData.rotation, Direction);
+            ApplyBoneIKHint(RightFootTwoBoneIK, BasisLocalBoneDriver.RightLowerLegControl.OutgoingWorldData.position, BasisLocalBoneDriver.RightLowerLegControl.OutgoingWorldData.rotation, Direction);
 
-            ApplyBoneIKHint(LeftHandTwoBoneIK, LeftLowerArmControl.OutgoingWorldData.position, LeftLowerArmControl.OutgoingWorldData.rotation);
-            ApplyBoneIKHint(RightHandTwoBoneIK, RightLowerArmControl.OutgoingWorldData.position, RightLowerArmControl.OutgoingWorldData.rotation);
+            ApplyBoneIKHint(LeftHandTwoBoneIK, BasisLocalBoneDriver.LeftLowerArmControl.OutgoingWorldData.position, BasisLocalBoneDriver.LeftLowerArmControl.OutgoingWorldData.rotation);
+            ApplyBoneIKHint(RightHandTwoBoneIK, BasisLocalBoneDriver.RightLowerArmControl.OutgoingWorldData.position, BasisLocalBoneDriver.RightLowerArmControl.OutgoingWorldData.rotation);
         }
         public void ApplyBoneIKHint(BasisTwoBoneIKConstraint Constraint, Vector3 Position, Quaternion Rotation, Vector3 Direction)
         {
@@ -69,21 +54,6 @@ namespace Basis.Scripts.Drivers
         {
             Constraint.data.HintPosition = Position;
             Constraint.data.HintRotation = Rotation.eulerAngles;
-        }
-        public void BoneLookup()
-        {
-            // --- Bone Lookup ---
-            LocalDriver.FindBone(out HeadControl, BasisBoneTrackedRole.Head);
-            LocalDriver.FindBone(out LeftFootControl, BasisBoneTrackedRole.LeftFoot);
-            LocalDriver.FindBone(out RightFootControl, BasisBoneTrackedRole.RightFoot);
-            LocalDriver.FindBone(out LeftHandControl, BasisBoneTrackedRole.LeftHand);
-            LocalDriver.FindBone(out RightHandControl, BasisBoneTrackedRole.RightHand);
-
-            LocalDriver.FindBone(out ChestControl, BasisBoneTrackedRole.Chest);
-            LocalDriver.FindBone(out LeftLowerLegControl, BasisBoneTrackedRole.LeftLowerLeg);
-            LocalDriver.FindBone(out RightLowerLegControl, BasisBoneTrackedRole.RightLowerLeg);
-            LocalDriver.FindBone(out LeftLowerArmControl, BasisBoneTrackedRole.LeftLowerArm);
-            LocalDriver.FindBone(out RightLowerArmControl, BasisBoneTrackedRole.RightLowerArm);
         }
         public void ApplyBoneIKTarget(BasisTwoBoneIKConstraint Constraint, Vector3 Position, Quaternion Rotation)
         {
@@ -127,14 +97,10 @@ namespace Basis.Scripts.Drivers
         public List<RigTransform> AdditionalTransforms = new List<RigTransform>();
         public bool HasTPoseEvent = false;
         public string Locomotion = "Locomotion";
-        public BasisMuscleDriver BasisMuscleDriver;
-        public BasisLocalEyeFollowBase BasisLocalEyeFollowDriver;
         public PlayableGraph PlayableGraph;
         public float MaxExtendedDistance;
         public Vector3 AvatarUPDownDirectionCalibration;//for ik that goes up down (head,legs)
-        public Vector3 AvatarRightDirectionCalibration;//for ik that goes left right (Left hand,Right Hand)
-        public Vector3 AvatarLeftDirectionCalibration;//for ik that goes left right (Left hand,Right Hand)
-        public void InitialLocalCalibration(BasisLocalPlayer Player)
+        public void InitialLocalCalibration(BasisLocalPlayer player)
         {
             BasisDebug.Log("InitialLocalCalibration");
             if (HasTPoseEvent == false)
@@ -142,8 +108,7 @@ namespace Basis.Scripts.Drivers
                 TposeStateChange += OnTPose;
                 HasTPoseEvent = true;
             }
-            LocalPlayer = Player;
-            this.LocalDriver = LocalPlayer.LocalBoneDriver;
+            Player = player;
             if (IsAble())
             {
                 // BasisDebug.Log("LocalCalibration Underway");
@@ -156,24 +121,22 @@ namespace Basis.Scripts.Drivers
             CleanupBeforeContinue();
             AdditionalTransforms.Clear();
             Rigs.Clear();
-            BoneLookup();
-            GameObject AvatarAnimatorParent = Player.BasisAvatar.Animator.gameObject;
-            Player.BasisAvatar.Animator.updateMode = AnimatorUpdateMode.Normal;
-            Player.BasisAvatar.Animator.logWarnings = false;
-            if (Player.BasisAvatar.Animator.runtimeAnimatorController == null)
+            GameObject AvatarAnimatorParent = player.BasisAvatar.Animator.gameObject;
+            player.BasisAvatar.Animator.updateMode = AnimatorUpdateMode.Normal;
+            player.BasisAvatar.Animator.logWarnings = false;
+            if (player.BasisAvatar.Animator.runtimeAnimatorController == null)
             {
                 UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<RuntimeAnimatorController> op = Addressables.LoadAssetAsync<RuntimeAnimatorController>(Locomotion);
                 RuntimeAnimatorController RAC = op.WaitForCompletion();
-                Player.BasisAvatar.Animator.runtimeAnimatorController = RAC;
+                player.BasisAvatar.Animator.runtimeAnimatorController = RAC;
             }
-            Player.BasisAvatar.Animator.applyRootMotion = false;
+            player.BasisAvatar.Animator.applyRootMotion = false;
             PutAvatarIntoTPose();
             Builder = BasisHelpers.GetOrAddComponent<RigBuilder>(AvatarAnimatorParent);
             Builder.enabled = false;
-            Calibration(Player.BasisAvatar);
+            Calibration(player.BasisAvatar);
             BasisLocalPlayer.Instance.LocalBoneDriver.RemoveAllListeners();
-            BasisLocalEyeFollowDriver = BasisHelpers.GetOrAddComponent<BasisLocalEyeFollowBase>(Player.gameObject);
-            BasisLocalEyeFollowDriver.Initalize(this, Player);
+            BasisLocalPlayer.Instance.LocalEyeFollow.Initalize(this, player);
             SetMatrixOverride();
             updateWhenOffscreen(true);
             if (References.Hashead)
@@ -184,17 +147,14 @@ namespace Basis.Scripts.Drivers
             {
                 HeadScale = Vector3.one;
             }
-            SetBodySettings(LocalDriver);
-            CalculateTransformPositions(Player.BasisAvatar.Animator, LocalDriver);
-            ComputeOffsets(LocalDriver);
-            BasisMuscleDriver = BasisHelpers.GetOrAddComponent<BasisMuscleDriver>(Player.gameObject);
-            BasisMuscleDriver.DisposeAllJobsData();
-            BasisMuscleDriver.Initialize(Player, Player.BasisAvatar.Animator);
+            SetBodySettings(player.LocalBoneDriver);
+            CalculateTransformPositions(player, player.LocalBoneDriver);
+            ComputeOffsets(player.LocalBoneDriver);
+            player.LocalMuscleDriver.DisposeAllJobsData();
+            player.LocalMuscleDriver.Initialize(player.BasisAvatar.Animator);
 
             CalibrationComplete?.Invoke();
-
-            Player.AnimatorDriver = BasisHelpers.GetOrAddComponent<BasisLocalAnimatorDriver>(Player.gameObject);
-            Player.AnimatorDriver.Initialize(Player.BasisAvatar.Animator);
+            player.LocalAnimatorDriver.Initialize(player.BasisAvatar.Animator);
 
             ResetAvatarAnimator();
             BasisAvatarIKStageCalibration.HasFBIKTrackers = false;
@@ -211,43 +171,17 @@ namespace Basis.Scripts.Drivers
                 Spine.HasRigLayer = BasisHasRigLayer.HasRigLayer;
             }
             StoredRolesTransforms = BasisAvatarIKStageCalibration.GetAllRolesAsTransform();
-            Player.BasisAvatar.transform.parent = Player.transform;
-            Player.BasisAvatar.transform.SetLocalPositionAndRotation(-Hips.TposeLocal.position, Quaternion.identity);
+            player.BasisAvatar.transform.parent = player.transform;
+            player.BasisAvatar.transform.SetLocalPositionAndRotation(-Hips.TposeLocal.position, Quaternion.identity);
             AvatarUPDownDirectionCalibration = Vector3.right; //Player.BasisAvatar.transform.right;
-            CalibrateOffsets();
+            MaxExtendedDistance = Vector3.Distance(BasisLocalBoneDriver.Head.TposeLocal.position, BasisLocalBoneDriver.Hips.TposeLocal.position);
             BuildBuilder();
             if (BasisLocalCameraDriver.Instance != null)
             {
                 BasisLocalCameraDriver.Instance.IsNormalHead = true;
             }
         }
-        public void OnDestroy()
-        {
-            if (BasisMuscleDriver != null)
-            {
-                BasisMuscleDriver.DisposeAllJobsData();
-            }
-        }
         public Dictionary<BasisBoneTrackedRole, Transform> StoredRolesTransforms;
-        public void CalibrateOffsets()
-        {
-            BasisLocalBoneDriver Driver = BasisLocalPlayer.Instance.LocalBoneDriver;
-            Vector3 Position = Vector3.zero;
-            Quaternion Rotation = Quaternion.identity;
-
-            for (int Index = 0; Index < Driver.ControlsLength; Index++)
-            {
-              //  Driver.Controls[Index].OutgoingWorldData.position = Position;
-               // Driver.Controls[Index].OutgoingWorldData.rotation = Rotation;
-            }
-            if (Driver.FindBone(out BasisBoneControl Head, BasisBoneTrackedRole.Head) && Driver.FindBone(out BasisBoneControl Hips, BasisBoneTrackedRole.Hips))
-            {
-                // Default T-pose local positions
-                Vector3 TPoseHeadPosition = Head.TposeLocal.position;
-                Vector3 TPoseHipsPosition = Hips.TposeLocal.position;
-                MaxExtendedDistance = Vector3.Distance(TPoseHeadPosition, TPoseHipsPosition);
-            }
-        }
         public void BuildBuilder()
         {
             PlayableGraph = Player.BasisAvatar.Animator.playableGraph;
@@ -281,53 +215,49 @@ namespace Basis.Scripts.Drivers
         {
             if (RigSpineRig != null)
             {
-                Destroy(RigSpineRig.gameObject);
+                GameObject.Destroy(RigSpineRig.gameObject);
             }
             if (RigHeadRig != null)
             {
-                Destroy(RigHeadRig.gameObject);
+                GameObject.Destroy(RigHeadRig.gameObject);
             }
             if (LeftHandRig != null)
             {
-                Destroy(LeftHandRig.gameObject);
+                GameObject.Destroy(LeftHandRig.gameObject);
             }
             if (RightHandRig != null)
             {
-                Destroy(RightHandRig.gameObject);
+                GameObject.Destroy(RightHandRig.gameObject);
             }
             if (LeftFootRig != null)
             {
-                Destroy(LeftFootRig.gameObject);
+                GameObject.Destroy(LeftFootRig.gameObject);
             }
             if (RightFootRig != null)
             {
-                Destroy(RightFootRig.gameObject);
+                GameObject.Destroy(RightFootRig.gameObject);
             }
             if (ChestSpineRig != null)
             {
-                Destroy(ChestSpineRig.gameObject);
+                GameObject.Destroy(ChestSpineRig.gameObject);
             }
             if (LeftShoulderRig != null)
             {
-                Destroy(LeftShoulderRig.gameObject);
+                GameObject.Destroy(LeftShoulderRig.gameObject);
             }
             if (RightShoulderRig != null)
             {
-                Destroy(RightShoulderRig.gameObject);
+                GameObject.Destroy(RightShoulderRig.gameObject);
             }
 
             if (LeftToeRig != null)
             {
-                Destroy(LeftToeRig.gameObject);
+                GameObject.Destroy(LeftToeRig.gameObject);
             }
             if (RightToeRig != null)
             {
-                Destroy(RightToeRig.gameObject);
+                GameObject.Destroy(RightToeRig.gameObject);
             }
-            // if (Builder != null)
-            // {
-            // Destroy(Builder);
-            // }
         }
         public void ComputeOffsets(BaseBoneDriver BaseBoneDriver)
         {
@@ -372,11 +302,7 @@ namespace Basis.Scripts.Drivers
         }
         public bool IsAble()
         {
-            if (IsNull(LocalPlayer))
-            {
-                return false;
-            }
-            if (IsNull(LocalDriver))
+            if (IsNull(Player))
             {
                 return false;
             }
@@ -414,7 +340,7 @@ namespace Basis.Scripts.Drivers
         private void SetupTwistBoneSpine(BasisLocalBoneDriver driver)
         {
             GameObject HeadRig = CreateOrGetRig("Rig Chest", true, out RigSpineRig, out RigSpineLayer);
-           BasisAnimationRiggingHelper.TwistChain(driver, HeadRig, References.Hips,References.neck, BasisBoneTrackedRole.Hips, BasisBoneTrackedRole.Neck,1,1);
+            BasisAnimationRiggingHelper.TwistChain(driver, HeadRig, References.Hips, References.neck, BasisBoneTrackedRole.Hips, BasisBoneTrackedRole.Neck, 1, 1);
             List<BasisBoneControl> controls = new List<BasisBoneControl>();
             if (driver.FindBone(out BasisBoneControl Neck, BasisBoneTrackedRole.Neck))
             {
@@ -434,7 +360,7 @@ namespace Basis.Scripts.Drivers
             GameObject HeadRig = CreateOrGetRig("Chest, Neck, Head", true, out RigHeadRig, out RigHeadLayer);
             if (References.HasUpperchest)
             {
-                BasisAnimationRiggingHelper.CreateTwoBone(this,driver, HeadRig, References.Upperchest, References.neck, References.head, BasisBoneTrackedRole.Head, BasisBoneTrackedRole.Chest, true, out HeadTwoBoneIK,false, false);
+                BasisAnimationRiggingHelper.CreateTwoBone(this, driver, HeadRig, References.Upperchest, References.neck, References.head, BasisBoneTrackedRole.Head, BasisBoneTrackedRole.Chest, true, out HeadTwoBoneIK, false, false);
             }
             else
             {
@@ -632,7 +558,7 @@ namespace Basis.Scripts.Drivers
                         break;
                 }
             }
-            catch (Exception e) 
+            catch (Exception e)
             {
                 BasisDebug.Log($"{e.Message} {e.StackTrace}");
             }
@@ -684,8 +610,6 @@ namespace Basis.Scripts.Drivers
         {
             Builder.SyncLayers();
             PlayableGraph.Evaluate(Time.deltaTime);
-
-            BasisMuscleDriver.UpdateFingers();
         }
     }
 }

@@ -6,7 +6,8 @@ using UnityEngine;
 using static Basis.Scripts.BasisSdk.Players.BasisPlayer;
 namespace Basis.Scripts.BasisCharacterController
 {
-    public class BasisCharacterController : MonoBehaviour
+    [System.Serializable]
+    public class LocalCharacterDriver
     {
         public CharacterController characterController;
         public Vector3 bottomPointLocalspace;
@@ -18,11 +19,6 @@ namespace Basis.Scripts.BasisCharacterController
         [SerializeField] public float RaycastDistance = 0.2f;
         [SerializeField] public float MinimumColliderSize = 0.01f;
         [SerializeField] public Vector2 MovementVector;
-        [SerializeField] public BasisLocalBoneDriver driver;
-        [SerializeField] public BasisBoneControl Eye;
-        [SerializeField] public BasisBoneControl Head;
-        public bool HasEye;
-        public bool HasHead;
         private Quaternion currentRotation;
         private float eyeHeight;
         public SimulationHandler JustJumped;
@@ -53,12 +49,9 @@ namespace Basis.Scripts.BasisCharacterController
                 HasEvents = false;
             }
         }
-        public void Initialize()
+        public void Initialize(BasisLocalPlayer LocalPlayer)
         {
-            driver = BasisLocalPlayer.Instance.LocalBoneDriver;
-            BasisLocalPlayer.Instance.LocalMoveDriver = this;
-            HasEye = driver.FindBone(out Eye, BasisBoneTrackedRole.CenterEye);
-            HasHead = driver.FindBone(out Head, BasisBoneTrackedRole.Head);
+            LocalPlayer.LocalCharacterDriver = this;
             characterController.minMoveDistance = 0;
             characterController.skinWidth = 0.01f;
             if (HasEvents == false)
@@ -82,11 +75,15 @@ namespace Basis.Scripts.BasisCharacterController
             // Apply the force to the object
             body.AddForce(pushDir * pushPower, ForceMode.Impulse);
         }
-        public void SimulateMovement(float DeltaTime)
+        public void SimulateMovement(float DeltaTime,Transform PlayersTransform)
         {
+            if(!IsEnabled)
+            {
+                return;
+            }
             LastbottomPoint = bottomPointLocalspace;
             CalculateCharacterSize();
-            HandleMovement(DeltaTime);
+            HandleMovement(DeltaTime, PlayersTransform);
             GroundCheck();
 
             // Calculate the rotation amount for this frame
@@ -118,7 +115,7 @@ namespace Basis.Scripts.BasisCharacterController
 
 
             // Get the current rotation and position of the player
-            Vector3 pivot = Eye.OutgoingWorldData.position;
+            Vector3 pivot = BasisLocalBoneDriver.Eye.OutgoingWorldData.position;
             Vector3 upAxis = Vector3.up;
 
             // Calculate direction from the pivot to the current position
@@ -132,7 +129,7 @@ namespace Basis.Scripts.BasisCharacterController
 
             Vector3 FinalRotation = pivot + rotatedDirection;
 
-            transform.SetPositionAndRotation(FinalRotation, rotation * CurrentRotation);
+            PlayersTransform.SetPositionAndRotation(FinalRotation, rotation * CurrentRotation);
 
             float HeightOffset = (characterController.height / 2) - characterController.radius;
             bottomPointLocalspace = FinalRotation + (characterController.center - new Vector3(0, HeightOffset, 0));
@@ -159,7 +156,9 @@ namespace Basis.Scripts.BasisCharacterController
             LastWasGrounded = groundedPlayer;
         }
         public float CurrentSpeed;
-        public void HandleMovement(float DeltaTime)
+        public bool IsEnabled = true;
+
+        public void HandleMovement(float DeltaTime,Transform PlayersTransform)
         {
             if (BlockMovement)
             {
@@ -168,7 +167,7 @@ namespace Basis.Scripts.BasisCharacterController
             }
 
             // Cache current rotation and zero out x and z components
-            currentRotation = Head.OutgoingWorldData.rotation;
+            currentRotation = BasisLocalBoneDriver.Head.OutgoingWorldData.rotation;
             Vector3 rotationEulerAngles = currentRotation.eulerAngles;
             rotationEulerAngles.x = 0;
             rotationEulerAngles.z = 0;
@@ -204,11 +203,11 @@ namespace Basis.Scripts.BasisCharacterController
 
             // Move character
             Flags = characterController.Move(totalMoveDirection);
-            transform.GetPositionAndRotation(out CurrentPosition, out CurrentRotation);
+            PlayersTransform.GetPositionAndRotation(out CurrentPosition, out CurrentRotation);
         }
         public void CalculateCharacterSize()
         {
-            eyeHeight = HasEye ? Eye.OutGoingData.position.y : BasisLocalPlayer.FallbackSize;
+            eyeHeight = BasisLocalBoneDriver.HasEye ? BasisLocalBoneDriver.Eye.OutGoingData.position.y : BasisLocalPlayer.FallbackSize;
             float adjustedHeight = eyeHeight;
             adjustedHeight = Mathf.Max(adjustedHeight, MinimumColliderSize);
             SetCharacterHeight(adjustedHeight);
@@ -218,7 +217,7 @@ namespace Basis.Scripts.BasisCharacterController
             characterController.height = height;
             float SkinModifiedHeight = height / 2;
 
-            characterController.center = HasEye ? new Vector3(Eye.OutGoingData.position.x, SkinModifiedHeight, Eye.OutGoingData.position.z) : new Vector3(0, SkinModifiedHeight, 0);
+            characterController.center = BasisLocalBoneDriver.HasEye ? new Vector3(BasisLocalBoneDriver.Eye.OutGoingData.position.x, SkinModifiedHeight, BasisLocalBoneDriver.Eye.OutGoingData.position.z) : new Vector3(0, SkinModifiedHeight, 0);
         }
     }
 }

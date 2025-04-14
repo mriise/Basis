@@ -53,7 +53,7 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
         {
             if (BasisOpenVRInputController.inputSource == SteamVR_Input_Sources.LeftHand)
             {
-                UpdateFingerPercentages(ref BasisLocalPlayer.Instance.LocalAvatarDriver.BasisMuscleDriver.LeftFinger);
+                UpdateFingerPercentages(ref BasisLocalPlayer.Instance.LocalMuscleDriver.LeftFinger);
 
                 // Apply additional position offset
                 BasisOpenVRInputController.AvatarPositionOffset = skeletonAction.bonePositions[1] + additionalPositionOffsetLeft;
@@ -64,7 +64,7 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
             }
             else if (BasisOpenVRInputController.inputSource == SteamVR_Input_Sources.RightHand)
             {
-                UpdateFingerPercentages(ref BasisLocalPlayer.Instance.LocalAvatarDriver.BasisMuscleDriver.RightFinger);
+                UpdateFingerPercentages(ref BasisLocalPlayer.Instance.LocalMuscleDriver.RightFinger);
 
                 // Apply additional position offset
                 BasisOpenVRInputController.AvatarPositionOffset = skeletonAction.bonePositions[1] + additionalPositionOffsetRight;

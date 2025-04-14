@@ -15,7 +15,7 @@ namespace Basis.Scripts.Device_Management.Devices.UnityInputSystem
             {
                 transform =
                 {
-                    parent = BasisLocalPlayer.Instance.LocalBoneDriver.transform
+                    parent = BasisLocalPlayer.Instance.transform
                 }
             };
             BasisOpenXRHandInput basisXRInput = gameObject.AddComponent<BasisOpenXRHandInput>();
@@ -30,7 +30,7 @@ namespace Basis.Scripts.Device_Management.Devices.UnityInputSystem
             {
                 transform =
                 {
-                    parent = BasisLocalPlayer.Instance.LocalBoneDriver.transform
+                    parent = BasisLocalPlayer.Instance.transform
                 }
             };
             BasisOpenXRHeadInput basisXRInput = gameObject.AddComponent<BasisOpenXRHeadInput>();

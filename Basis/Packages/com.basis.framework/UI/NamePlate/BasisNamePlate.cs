@@ -44,7 +44,7 @@ namespace Basis.Scripts.UI.NamePlate
             cachedEndOfFrame = new WaitForEndOfFrame();
             BasisRemotePlayer = basisRemotePlayer;
             HipTarget = hipTarget;
-            MouthTarget = BasisRemotePlayer.Mouth;
+            MouthTarget = BasisRemotePlayer.RemoteBoneDriver.Mouth;
             Text.text = BasisRemotePlayer.DisplayName;
             BasisRemotePlayer.ProgressReportAvatarLoad.OnProgressReport += ProgressReport;
             BasisRemotePlayer.AudioReceived += OnAudioReceived;

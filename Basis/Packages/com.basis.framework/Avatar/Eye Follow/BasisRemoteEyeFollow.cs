@@ -1,11 +1,11 @@
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Drivers;
 using UnityEngine;
-
-public class BasisRemoteEyeFollowBase : MonoBehaviour
+[System.Serializable]
+public class BasisRemoteEyeFollow 
 {
     public bool Override = false;
-    // Adjustable parameters
+    // Adjustable parameterss
     public const float MinLookAroundInterval = 1f; // Minimum time between look-arounds
     public const float MaxLookAroundInterval = 6f; // Maximum time between look-arounds
     public const float MaxHorizontalLook = 0.75f; // Maximum horizontal movement in degrees
@@ -18,10 +18,6 @@ public class BasisRemoteEyeFollowBase : MonoBehaviour
 
     public BasisRemotePlayer LinkedPlayer;
     public BasisAvatarDriver BasisAvatarDriver;
-    private void Start()
-    {
-        ScheduleNextLookAround();
-    }
 
     public void OnDestroy()
     {
@@ -41,25 +37,27 @@ public class BasisRemoteEyeFollowBase : MonoBehaviour
             LinkedPlayer.FaceRenderer.Check += UpdateFaceVisibility;
             UpdateFaceVisibility(LinkedPlayer.FaceIsVisible);
         }
+        ScheduleNextLookAround();
+        IsEnabled = true;
     }
-
+    public bool IsEnabled;
     private void UpdateFaceVisibility(bool state)
     {
-        enabled = state;
+        IsEnabled = state;
     }
-
-    public void LateUpdate()
-    {
-        Simulate();
-    }
-
     /// <summary>
     /// Simulates natural eye movement by synchronizing both eyes.
     /// </summary>
     public void Simulate()
     {
-        if (Override)
+        if (IsEnabled == false)
+        {
             return;
+        }
+        if (Override)
+        {
+            return;
+        }
 
         if (Time.timeAsDouble >= nextLookAroundTime)
         {

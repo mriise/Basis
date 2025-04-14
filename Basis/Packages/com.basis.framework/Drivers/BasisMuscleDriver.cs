@@ -4,22 +4,21 @@ using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
 [DefaultExecutionOrder(15001)]
-public partial class BasisMuscleDriver : BasisBaseMuscleDriver
+[System.Serializable]
+public class BasisMuscleDriver : BasisBaseMuscleDriver
 {
     [SerializeField]
     public PoseData RestingOnePoseData;
     [SerializeField]
     public PoseData CurrentOnPoseData;
      public string[] Muscles;
-    public void Initialize(BasisLocalPlayer BasisLocalPlayer, Animator animator)
+    public void Initialize(Animator animator)
     {
-        Animator = animator;
-        BasisLocalAvatarDriver = BasisLocalPlayer.LocalAvatarDriver;
         // Initialize the HumanPoseHandler with the animator's avatar and transform
-        poseHandler = new HumanPoseHandler(Animator.avatar, Animator.transform);
+        poseHandler = new HumanPoseHandler(animator.avatar, animator.transform);
         // Initialize the HumanPose
         pose = new HumanPose();
-           Muscles = HumanTrait.MuscleName;
+        Muscles = HumanTrait.MuscleName;
         SetMusclesAndRecordPoses();
     }
     public float increment = 0.2f;
@@ -34,7 +33,7 @@ public partial class BasisMuscleDriver : BasisBaseMuscleDriver
 
         // List to hold all PoseData points
         List<PoseDataAdditional> points = new List<PoseDataAdditional>();
-
+        NativeArray<MuscleLocalPose> allFingerPoses = LoadMappingData();
         // Loop through the square grid using the increment
         for (float x = BottomLeft.x; x <= BottomRight.x; x += increment)
         {
@@ -43,7 +42,7 @@ public partial class BasisMuscleDriver : BasisBaseMuscleDriver
                 PoseData poseData = new PoseData();
 
                 // Set and record pose based on x and y coordinates
-                SetAndRecordPose(x, ref poseData, y);
+                SetAndRecordPose(x, ref poseData, y,ref allFingerPoses);
 
                 // Add the poseData to the list
                 PoseDataAdditional poseadd = new PoseDataAdditional
@@ -57,7 +56,7 @@ public partial class BasisMuscleDriver : BasisBaseMuscleDriver
 
         // Optionally, handle the situation where increment doesn't land exactly on the corner points
         PoseData topLeftPose = new PoseData();
-        SetAndRecordPose(TopLeft.x, ref topLeftPose, TopLeft.y);
+        SetAndRecordPose(TopLeft.x, ref topLeftPose, TopLeft.y, ref allFingerPoses);
         // Add the poseData to the list
         PoseDataAdditional poseDataAdditional = new PoseDataAdditional
         {
@@ -67,7 +66,7 @@ public partial class BasisMuscleDriver : BasisBaseMuscleDriver
         points.Add(poseDataAdditional);
 
         PoseData topRightPose = new PoseData();
-        SetAndRecordPose(TopRight.x, ref topRightPose, TopRight.y);
+        SetAndRecordPose(TopRight.x, ref topRightPose, TopRight.y, ref allFingerPoses);
         // Add the poseData to the list
         poseDataAdditional = new PoseDataAdditional
         {
@@ -77,7 +76,7 @@ public partial class BasisMuscleDriver : BasisBaseMuscleDriver
         points.Add(poseDataAdditional);
 
         PoseData bottomLeftPose = new PoseData();
-        SetAndRecordPose(BottomLeft.x, ref bottomLeftPose, BottomLeft.y);
+        SetAndRecordPose(BottomLeft.x, ref bottomLeftPose, BottomLeft.y, ref allFingerPoses);
         // Add the poseData to the list
         poseDataAdditional = new PoseDataAdditional
         {
@@ -87,7 +86,7 @@ public partial class BasisMuscleDriver : BasisBaseMuscleDriver
         points.Add(poseDataAdditional);
 
         PoseData bottomRightPose = new PoseData();
-        SetAndRecordPose(BottomRight.x, ref bottomRightPose, BottomRight.y);
+        SetAndRecordPose(BottomRight.x, ref bottomRightPose, BottomRight.y, ref allFingerPoses);
         // Add the poseData to the list
         poseDataAdditional = new PoseDataAdditional
         {
@@ -95,6 +94,9 @@ public partial class BasisMuscleDriver : BasisBaseMuscleDriver
             Coord = BottomRight
         };
         points.Add(poseDataAdditional);
+
+        allFingerPoses.Dispose();
+
         for (int Index = 0; Index < points.Count; Index++)
         {
             PoseDataAdditional point = points[Index];
@@ -115,21 +117,15 @@ public partial class BasisMuscleDriver : BasisBaseMuscleDriver
             CoordKeysArray[Index] = CoordKeys[Index];
         }
     }
-    public void OnDestroy()
-    {
-        if (CoordKeysArray.IsCreated) CoordKeysArray.Dispose();
-        if (DistancesArray.IsCreated) DistancesArray.Dispose();
-        if (closestIndexArray.IsCreated) closestIndexArray.Dispose();
-    }
     public void SetMusclesAndRecordPoses()
     {
         // Get the current human pose
         poseHandler.GetHumanPose(ref pose);
         LoadMuscleData();
-
-        RecordCurrentPose(ref RestingOnePoseData);
-        RecordCurrentPose(ref CurrentOnPoseData);
-
+        NativeArray<MuscleLocalPose> allFingerPoses = LoadMappingData();
+        RecordCurrentPose(ref RestingOnePoseData,ref allFingerPoses);
+        RecordCurrentPose(ref CurrentOnPoseData, ref allFingerPoses);
+        allFingerPoses.Dispose();
         LoadAllPoints();
     }
     public void LoadMuscleData()
@@ -157,8 +153,8 @@ public partial class BasisMuscleDriver : BasisBaseMuscleDriver
         RightLittle = new float[4];
         System.Array.Copy(pose.muscles, 91, RightLittle, 0, 4);
     }
-    public void UpdateFingers()
+    public void UpdateFingers(BasisLocalAvatarDriver Driver)
     {
-        UpdateAllFingers(BasisLocalAvatarDriver.References, ref CurrentOnPoseData);
+        UpdateAllFingers(Driver.References, ref CurrentOnPoseData);
     }
 }

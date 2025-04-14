@@ -1,30 +1,26 @@
+using Basis.Scripts.Animator_Driver;
+using Basis.Scripts.Avatar;
+using Basis.Scripts.BasisCharacterController;
+using Basis.Scripts.BasisSdk.Helpers;
+using Basis.Scripts.Common;
+using Basis.Scripts.Device_Management;
+using Basis.Scripts.Drivers;
+using Basis.Scripts.Eye_Follow;
+using Basis.Scripts.TransformBinders.BoneControl;
+using Basis.Scripts.UI.UI_Panels;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using System;
-using Basis.Scripts.Drivers;
-using Basis.Scripts.BasisSdk.Helpers;
-using Basis.Scripts.Device_Management;
-using Basis.Scripts.Avatar;
-using Basis.Scripts.Common;
-using System.Collections.Generic;
-using Basis.Scripts.UI.UI_Panels;
-using Basis.Scripts.TransformBinders.BoneControl;
-using Unity.Mathematics;
 using static Basis.Scripts.Drivers.BaseBoneDriver;
-using Basis.Scripts.Animator_Driver;
 namespace Basis.Scripts.BasisSdk.Players
 {
     public class BasisLocalPlayer : BasisPlayer
     {
         public static BasisLocalPlayer Instance;
         public static bool PlayerReady = false;
-        public static Action OnLocalPlayerCreatedAndReady;
-        public static Action OnLocalPlayerCreated;
-        public BasisCharacterController.BasisCharacterController LocalMoveDriver;
-        public event Action OnLocalAvatarChanged;
-        public event Action OnSpawnedEvent;
-
         public const float FallbackSize = 1.7f;
 
         public static float DefaultPlayerEyeHeight = FallbackSize;
@@ -32,31 +28,12 @@ namespace Basis.Scripts.BasisSdk.Players
 
         public static float DefaultPlayerArmSpan = FallbackSize;
         public static float DefaultAvatarArmSpan = FallbackSize;
-        public LocalHeightInformation CurrentHeight;
-        public LocalHeightInformation LastHeight;
-        public BasisLocalAnimatorDriver AnimatorDriver;
-        /// <summary>
-        /// the bool when true is the final size
-        /// the bool when false is not the final size
-        /// use the bool to 
-        /// </summary>
-        public Action OnPlayersHeightChanged;
-
-        public BasisLocalBoneDriver LocalBoneDriver;
-        public BasisLocalAvatarDriver LocalAvatarDriver;
-        public BasisAudioAndVisemeDriver VisemeDriver;
-        public BasisLocalCameraDriver CameraDriver;
-
         [SerializeField]
         public LayerMask GroundMask;
         public static string LoadFileNameAndExtension = "LastUsedAvatar.BAS";
         public bool HasEvents = false;
-        public MicrophoneRecorder MicrophoneRecorder;
         public bool SpawnPlayerOnSceneLoad = true;
         public const string DefaultAvatar = "LoadingAvatar";
-        public BasisBoneControl Head;
-        public BasisBoneControl Hips;
-        public OrderedDelegate AfterFinalMove = new OrderedDelegate();
 
         public bool HasCalibrationEvents = false;
         public bool ToggleAvatarSim = false;
@@ -65,6 +42,44 @@ namespace Basis.Scripts.BasisSdk.Players
         public float overshoot;
         public float3 correction;
         public float3 output;
+
+        public static Action OnLocalPlayerCreatedAndReady;
+        public static Action OnLocalPlayerCreated;
+        public event Action OnLocalAvatarChanged;
+        public event Action OnSpawnedEvent;
+        public Action OnPlayersHeightChanged;
+        public OrderedDelegate AfterFinalMove = new OrderedDelegate();
+
+        public LocalHeightInformation CurrentHeight;
+        public LocalHeightInformation LastHeight;
+        public MicrophoneRecorder MicrophoneRecorder;
+        public BasisLocalCameraDriver CameraDriver;
+        //bones that we use to map between avatar and trackers
+        [Header("Bone Driver")]
+        [SerializeField]
+        public BasisLocalBoneDriver LocalBoneDriver = new BasisLocalBoneDriver();
+        //calibration of the avatar happens here
+        [Header("Calibration And Avatar Driver")]
+        [SerializeField]
+        public BasisLocalAvatarDriver LocalAvatarDriver = new BasisLocalAvatarDriver();
+        //how the player is able to move and have physics applied to them
+        [Header("Character Driver")]
+        [SerializeField]
+        public LocalCharacterDriver LocalCharacterDriver = new LocalCharacterDriver();
+        //Animations
+        [Header("Animator Driver")]
+        [SerializeField]
+        public BasisLocalAnimatorDriver LocalAnimatorDriver = new BasisLocalAnimatorDriver();
+        //finger poses
+        [Header("Muscle Driver")]
+        [SerializeField]
+        public BasisMuscleDriver LocalMuscleDriver = new BasisMuscleDriver();
+        [Header("Eye Follow")]
+        [SerializeField]
+        public BasisLocalEyeFollowBase LocalEyeFollow = new BasisLocalEyeFollowBase();
+        [Header("Mouth Visemes")]
+        [SerializeField]
+        public BasisAudioAndVisemeDriver LocalVisemeDriver = new BasisAudioAndVisemeDriver();
         public async Task LocalInitialize()
         {
             if (BasisHelpers.CheckInstance(Instance))
@@ -74,16 +89,12 @@ namespace Basis.Scripts.BasisSdk.Players
             MicrophoneRecorder.OnPausedAction += OnPausedEvent;
             OnLocalPlayerCreated?.Invoke();
             IsLocal = true;
-            LocalBoneDriver.CreateInitialArrays(LocalBoneDriver.transform, true);
-            LocalBoneDriver.FindBone(out Head, BasisBoneTrackedRole.Head);
-            LocalBoneDriver.FindBone(out Hips, BasisBoneTrackedRole.Hips);
-            LocalBoneDriver.FindBone(out Mouth, BasisBoneTrackedRole.Mouth);
+            LocalBoneDriver.CreateInitialArrays(this.transform, true);
+            LocalBoneDriver.InitalizeLocal();
 
             BasisDeviceManagement.Instance.InputActions.Initialize(this);
             CameraDriver.gameObject.SetActive(true);
-            //  FootPlacementDriver = BasisHelpers.GetOrAddComponent<BasisFootPlacementDriver>(this.gameObject);
-            //  FootPlacementDriver.Initialize();
-            LocalMoveDriver.Initialize();
+            LocalCharacterDriver.Initialize(this);
             if (HasEvents == false)
             {
                 OnLocalAvatarChanged += OnCalibration;
@@ -101,7 +112,7 @@ namespace Basis.Scripts.BasisSdk.Players
             }
             if (MicrophoneRecorder == null)
             {
-                MicrophoneRecorder = BasisHelpers.GetOrAddComponent<MicrophoneRecorder>(this.gameObject);
+                MicrophoneRecorder = BasisHelpers.GetOrAddComponent<MicrophoneRecorder>(BasisDeviceManagement.Instance.gameObject);
             }
             MicrophoneRecorder.TryInitialize();
             PlayerReady = true;
@@ -161,12 +172,12 @@ namespace Basis.Scripts.BasisSdk.Players
         {
             BasisAvatarStrainJiggleDriver.PrepareTeleport();
             BasisDebug.Log("Teleporting");
-            LocalMoveDriver.enabled = false;
+            LocalCharacterDriver.IsEnabled = false;
             transform.SetPositionAndRotation(position, rotation);
-            LocalMoveDriver.enabled = true;
-            if (AnimatorDriver != null)
+            LocalCharacterDriver.IsEnabled = true;
+            if (LocalAnimatorDriver != null)
             {
-                AnimatorDriver.HandleTeleport();
+                LocalAnimatorDriver.HandleTeleport();
             }
             BasisAvatarStrainJiggleDriver.FinishTeleport();
             OnSpawnedEvent?.Invoke();
@@ -187,11 +198,7 @@ namespace Basis.Scripts.BasisSdk.Players
         }
         public void OnCalibration()
         {
-            if (VisemeDriver == null)
-            {
-                VisemeDriver = BasisHelpers.GetOrAddComponent<BasisAudioAndVisemeDriver>(this.gameObject);
-            }
-            VisemeDriver.TryInitialize(this);
+            LocalVisemeDriver.TryInitialize(this);
             if (HasCalibrationEvents == false)
             {
                 MicrophoneRecorderBase.OnHasAudio += DriveAudioToViseme;
@@ -213,38 +220,51 @@ namespace Basis.Scripts.BasisSdk.Players
                 MicrophoneRecorderBase.OnHasSilence -= DriveAudioToViseme;
                 HasCalibrationEvents = false;
             }
-            if (VisemeDriver != null)
+            if (LocalMuscleDriver != null)
             {
-                GameObject.Destroy(VisemeDriver);
+                LocalMuscleDriver.DisposeAllJobsData();
+            }
+            if(LocalEyeFollow != null)
+            {
+                LocalEyeFollow.OnDestroy(this);
+            }
+            if(FacialBlinkDriver != null)
+            {
+                FacialBlinkDriver.OnDestroy();
             }
             MicrophoneRecorder.OnPausedAction -= OnPausedEvent;
+            LocalAnimatorDriver.OnDestroy(this);
             LocalBoneDriver.DeInitializeGizmos();
             BasisUILoadingBar.DeInitalize();
         }
         public void DriveAudioToViseme()
         {
-            VisemeDriver.ProcessAudioSamples(MicrophoneRecorder.processBufferArray, 1, MicrophoneRecorder.processBufferArray.Length);
+            LocalVisemeDriver.ProcessAudioSamples(MicrophoneRecorder.processBufferArray, 1, MicrophoneRecorder.processBufferArray.Length);
         }
         private void OnPausedEvent(bool IsPaused)
         {
             if (IsPaused)
             {
-                if (VisemeDriver.uLipSyncBlendShape != null)
+                if (LocalVisemeDriver.uLipSyncBlendShape != null)
                 {
-                    VisemeDriver.uLipSyncBlendShape.maxVolume = 0;
-                    VisemeDriver.uLipSyncBlendShape.minVolume = 0;
+                    LocalVisemeDriver.uLipSyncBlendShape.maxVolume = 0;
+                    LocalVisemeDriver.uLipSyncBlendShape.minVolume = 0;
                 }
             }
             else
             {
-                if (VisemeDriver.uLipSyncBlendShape != null)
+                if (LocalVisemeDriver.uLipSyncBlendShape != null)
                 {
-                    VisemeDriver.uLipSyncBlendShape.maxVolume = -1.5f;
-                    VisemeDriver.uLipSyncBlendShape.minVolume = -2.5f;
+                    LocalVisemeDriver.uLipSyncBlendShape.maxVolume = -1.5f;
+                    LocalVisemeDriver.uLipSyncBlendShape.minVolume = -2.5f;
                 }
             }
         }
-        public void Simulate()
+        public void SimulateOnLateUpdate()
+        {
+            FacialBlinkDriver.Simulate();
+        }
+        public void SimulateOnRender()
         {
             float DeltaTime = Time.deltaTime;
             if (float.IsNaN(DeltaTime))
@@ -259,14 +279,16 @@ namespace Basis.Scripts.BasisSdk.Players
             //Simulate Final Destination of IK
             LocalAvatarDriver.SimulateIKDestinations(Rotation);
 
-            //process Animator and IK processes. also handles fingers
+            //process Animator and IK processes.
             LocalAvatarDriver.SimulateAnimatorAndIk();
+            //handles fingers
+            LocalMuscleDriver.UpdateFingers(LocalAvatarDriver);
 
             //we move the player at the very end after everything has been processed.
-            LocalMoveDriver.SimulateMovement(DeltaTime);
+            LocalCharacterDriver.SimulateMovement(DeltaTime, this.transform);
 
             //Apply Animator Weights
-            AnimatorDriver.SimulateAnimator(DeltaTime);
+            LocalAnimatorDriver.SimulateAnimator(DeltaTime);
 
             //now that everything has been processed jiggles can move.
             if (HasJiggles)
@@ -289,15 +311,15 @@ namespace Basis.Scripts.BasisSdk.Players
             }
 
             // Current world positions
-            Vector3 headPosition = Head.OutgoingWorldData.position;//OutgoingWorldData is out of date here potentially?
-            Vector3 hipsPosition = Hips.OutgoingWorldData.position;
+            Vector3 headPosition = BasisLocalBoneDriver.Head.OutgoingWorldData.position;//OutgoingWorldData is out of date here potentially?
+            Vector3 hipsPosition = BasisLocalBoneDriver.Hips.OutgoingWorldData.position;
             currentDistance = Vector3.Distance(headPosition, hipsPosition);
 
 
             if (currentDistance <= LocalAvatarDriver.MaxExtendedDistance)
             {
                 // Within range: follow hips freely
-                output = -Hips.TposeLocal.position;
+                output = -BasisLocalBoneDriver.Hips.TposeLocal.position;
             }
             else
             {
@@ -310,21 +332,17 @@ namespace Basis.Scripts.BasisSdk.Players
                 correction = direction * overshoot;
 
                 // Apply correction to T-pose hips
-                float3 correctedHips = Hips.TposeLocal.position + correction;
+                float3 correctedHips = BasisLocalBoneDriver.Hips.TposeLocal.position + correction;
 
                 // Negate to match transform.localPosition logic
                 output = -correctedHips;
             }
-
-            //    BasisAvatar.transform.position = Hips.OutgoingWorldData.position + output;
-
-            Vector3 parentWorldPosition = Hips.OutgoingWorldData.position;
-            Quaternion parentWorldRotation = Hips.OutgoingWorldData.rotation;
+            Vector3 parentWorldPosition = BasisLocalBoneDriver.Hips.OutgoingWorldData.position;
+            Quaternion parentWorldRotation = BasisLocalBoneDriver.Hips.OutgoingWorldData.rotation;
 
             Vector3 childWorldPosition = parentWorldPosition + parentWorldRotation * output;
-            Quaternion childWorldRotation = parentWorldRotation * quaternion.identity;
-            BasisAvatar.transform.SetPositionAndRotation(childWorldPosition, childWorldRotation);
-            return childWorldRotation;
+            BasisAvatar.transform.SetPositionAndRotation(childWorldPosition, parentWorldRotation);
+            return parentWorldRotation;
         }
     }
 }

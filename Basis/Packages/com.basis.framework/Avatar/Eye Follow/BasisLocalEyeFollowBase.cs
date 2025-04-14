@@ -8,7 +8,8 @@ using UnityEngine;
 namespace Basis.Scripts.Eye_Follow
 {
     [DefaultExecutionOrder(15002)]
-    public class BasisLocalEyeFollowBase : MonoBehaviour
+    [System.Serializable]
+    public class BasisLocalEyeFollowBase
     {
         public quaternion leftEyeInitialRotation;
         public quaternion rightEyeInitialRotation;
@@ -21,9 +22,6 @@ namespace Basis.Scripts.Eye_Follow
         public float MaximumLookDistance = 0.25f; // Maximum offset from the target position
         public float minLookSpeed = 0.03f; // Minimum speed of looking
         public float maxLookSpeed = 0.1f; // Maximum speed of looking
-        public bool HasRendererCheckWiredUp = false;
-        public BasisPlayer LinkedPlayer;
-        public BasisAvatarDriver BasisAvatarDriver;
         public Transform leftEyeTransform;
         public Transform rightEyeTransform;
         public Transform HeadTransform;
@@ -48,29 +46,27 @@ namespace Basis.Scripts.Eye_Follow
         public float timer; // Timer to track look-around interval
         public float DistanceBeforeTeleport = 30;
         public static BasisLocalEyeFollowBase Instance;
-        public void OnDestroy()
+        public void OnDestroy(BasisLocalPlayer Player)
         {
             HasHead = false;
             Instance = null;
             if (HasEvents)
             {
-                if (LinkedPlayer.IsLocal)
+                if (Player.IsLocal)
                 {
-                    BasisLocalPlayer.Instance.OnSpawnedEvent -= AfterTeleport;
+                    Player.OnSpawnedEvent -= AfterTeleport;
                 }
                 HasEvents = false;
             }
-            BasisGizmoManager.OnUseGizmosChanged -= UpdatGizmoUsage;
-            if (HasRendererCheckWiredUp && LinkedPlayer != null && LinkedPlayer.FaceRenderer != null)
+            BasisGizmoManager.OnUseGizmosChanged -= UpdateGizmoUsage;
+            if (Player.FaceRenderer != null)
             {
-                LinkedPlayer.FaceRenderer.Check -= UpdateFaceVisibility;
+                Player.FaceRenderer.Check -= UpdateFaceVisibility;
             }
             //its regenerated this script will be nuked and rebuilt BasisLocalPlayer.OnLocalAvatarChanged -= AfterTeleport;
         }
         public void Initalize(BasisAvatarDriver CAD, BasisPlayer Player)
         {
-            BasisAvatarDriver = CAD;
-            LinkedPlayer = Player;
             // Initialize look speed
             lookSpeed = UnityEngine.Random.Range(minLookSpeed, maxLookSpeed);
             if (HasEvents == false)
@@ -81,14 +77,14 @@ namespace Basis.Scripts.Eye_Follow
                 }
                 HasEvents = true;
             }
-            rightEyeTransform = BasisAvatarDriver.References.RightEye;
-            leftEyeTransform = BasisAvatarDriver.References.LeftEye;
-            HeadTransform = BasisAvatarDriver.References.head;
+            rightEyeTransform = BasisLocalPlayer.Instance.LocalAvatarDriver.References.RightEye;
+            leftEyeTransform = BasisLocalPlayer.Instance.LocalAvatarDriver.References.LeftEye;
+            HeadTransform = BasisLocalPlayer.Instance.LocalAvatarDriver.References.head;
 
-            HasLeftEye = BasisAvatarDriver.References.HasLeftEye;
-            HasRightEye = BasisAvatarDriver.References.HasRightEye;
-            HasHead = BasisAvatarDriver.References.Hashead;
-            Vector3 HeadPosition = BasisAvatarDriver.References.head.position;
+            HasLeftEye = BasisLocalPlayer.Instance.LocalAvatarDriver.References.HasLeftEye;
+            HasRightEye = BasisLocalPlayer.Instance.LocalAvatarDriver.References.HasRightEye;
+            HasHead = BasisLocalPlayer.Instance.LocalAvatarDriver.References.Hashead;
+            Vector3 HeadPosition = BasisLocalPlayer.Instance.LocalAvatarDriver.References.head.position;
             if (HasLeftEye)
             {
                 LeftEyeInitallocalSpace.rotation = leftEyeTransform.rotation;
@@ -104,24 +100,25 @@ namespace Basis.Scripts.Eye_Follow
 
                 rightEyeInitialRotation = rightEyeTransform.localRotation;
             }
-            BasisGizmoManager.OnUseGizmosChanged += UpdatGizmoUsage;
-            if (HasRendererCheckWiredUp == false)
+            BasisGizmoManager.OnUseGizmosChanged += UpdateGizmoUsage;
+            if (BasisLocalPlayer.Instance != null && BasisLocalPlayer.Instance.FaceRenderer != null)
             {
-                if (LinkedPlayer != null && LinkedPlayer.FaceRenderer != null)
-                {
-                    BasisDebug.Log("Wired up Renderer Check For Blinking");
-                    LinkedPlayer.FaceRenderer.Check += UpdateFaceVisibility;
-                    UpdateFaceVisibility(LinkedPlayer.FaceIsVisible);
-                    HasRendererCheckWiredUp = true;
-                }
+                BasisDebug.Log("Wired up Renderer Check For Blinking");
+                BasisLocalPlayer.Instance.FaceRenderer.Check += UpdateFaceVisibility;
+                UpdateFaceVisibility(BasisLocalPlayer.Instance.FaceIsVisible);
+            }
+            else
+            {
+                BasisDebug.LogError("Missing Render Checks");
             }
             Instance = this;
+            IsEnabled = true;
         }
         private void UpdateFaceVisibility(bool State)
         {
-            enabled = State;
+            IsEnabled = State;
         }
-        public void UpdatGizmoUsage(bool State)
+        public void UpdateGizmoUsage(bool State)
         {
             BasisDebug.Log("Running Bone EyeFollow Gizmos");
             if (State)
@@ -167,69 +164,74 @@ namespace Basis.Scripts.Eye_Follow
             wasDisabled = true;
             HasHead = false;
         }
-        bool wasDisabled = false;
+        public bool wasDisabled = false;
+        public bool IsEnabled;
+
         public static bool RequiresUpdate()
         {
             return Override == false && HasHead;
         }
         public void Simulate()
         {
-            // Update timer using DeltaTime
-            timer += Time.deltaTime;
+            if (IsEnabled)
+            {
+                // Update timer using DeltaTime
+                timer += Time.deltaTime;
 
-            // Check if it's time to look around
-            if (timer > CurrentlookAroundInterval)
-            {
-                CurrentlookAroundInterval = UnityEngine.Random.Range(MinlookAroundInterval, MaxlookAroundInterval);
-                AppliedOffset = UnityEngine.Random.insideUnitSphere * MaximumLookDistance;
-
-                // Reset timer and randomize look speed
-                timer = 0f;
-                lookSpeed = UnityEngine.Random.Range(minLookSpeed, maxLookSpeed);
-            }
-
-            HeadTransform.GetPositionAndRotation(out Vector3 headPosition, out Quaternion headRotation);
-            float3 float3headPosition = headPosition;
-            quaternion QheadRotation = headRotation;
-            quaternion InversedHeadRotation = math.inverse(headRotation);
-            // Calculate the randomized target position using float3 for optimized math operations
-            float3 targetPosition = float3headPosition + math.mul(QheadRotation, EyeFowards) + AppliedOffset;
-
-            // Check distance for teleporting, otherwise smooth move
-            if (math.distance(targetPosition, CenterTargetWorld) > DistanceBeforeTeleport || wasDisabled)
-            {
-                CenterTargetWorld = targetPosition;
-                wasDisabled = false;
-            }
-            else
-            {
-                CenterTargetWorld = Vector3.MoveTowards(CenterTargetWorld, targetPosition, lookSpeed);
-            }
-            // Set eye rotations using optimized float3 and quaternion operations
-            if (HasLeftEye)
-            {
-                LeftEyeTargetWorld = CenterTargetWorld + LeftEyeInitallocalSpace.position;
-                leftEyeTransform.rotation = LookAtTarget(leftEyeTransform.position, LeftEyeTargetWorld, math.mul(LeftEyeInitallocalSpace.rotation, InversedHeadRotation), HeadTransform.up);
-            }
-            if (HasRightEye)
-            {
-                RightEyeTargetWorld = CenterTargetWorld + RightEyeInitallocalSpace.position;
-                rightEyeTransform.rotation = LookAtTarget(rightEyeTransform.position, RightEyeTargetWorld, math.mul(RightEyeInitallocalSpace.rotation, InversedHeadRotation), HeadTransform.up);
-            }
-            if (BasisGizmoManager.UseGizmos)
-            {
-                if (RightEyeHasGizmo)
+                // Check if it's time to look around
+                if (timer > CurrentlookAroundInterval)
                 {
-                    if (BasisGizmoManager.UpdateSphereGizmo(RightEyeGizmoIndex, RightEyeTargetWorld) == false)
-                    {
-                        RightEyeHasGizmo = false;
-                    }
+                    CurrentlookAroundInterval = UnityEngine.Random.Range(MinlookAroundInterval, MaxlookAroundInterval);
+                    AppliedOffset = UnityEngine.Random.insideUnitSphere * MaximumLookDistance;
+
+                    // Reset timer and randomize look speed
+                    timer = 0f;
+                    lookSpeed = UnityEngine.Random.Range(minLookSpeed, maxLookSpeed);
                 }
-                if (LeftEyeHasGizmo)
+
+                HeadTransform.GetPositionAndRotation(out Vector3 headPosition, out Quaternion headRotation);
+                float3 float3headPosition = headPosition;
+                quaternion QheadRotation = headRotation;
+                quaternion InversedHeadRotation = math.inverse(headRotation);
+                // Calculate the randomized target position using float3 for optimized math operations
+                float3 targetPosition = float3headPosition + math.mul(QheadRotation, EyeFowards) + AppliedOffset;
+
+                // Check distance for teleporting, otherwise smooth move
+                if (math.distance(targetPosition, CenterTargetWorld) > DistanceBeforeTeleport || wasDisabled)
                 {
-                    if (BasisGizmoManager.UpdateSphereGizmo(LeftEyeGizmoIndex, LeftEyeTargetWorld) == false)
+                    CenterTargetWorld = targetPosition;
+                    wasDisabled = false;
+                }
+                else
+                {
+                    CenterTargetWorld = Vector3.MoveTowards(CenterTargetWorld, targetPosition, lookSpeed);
+                }
+                // Set eye rotations using optimized float3 and quaternion operations
+                if (HasLeftEye)
+                {
+                    LeftEyeTargetWorld = CenterTargetWorld + LeftEyeInitallocalSpace.position;
+                    leftEyeTransform.rotation = LookAtTarget(leftEyeTransform.position, LeftEyeTargetWorld, math.mul(LeftEyeInitallocalSpace.rotation, InversedHeadRotation), HeadTransform.up);
+                }
+                if (HasRightEye)
+                {
+                    RightEyeTargetWorld = CenterTargetWorld + RightEyeInitallocalSpace.position;
+                    rightEyeTransform.rotation = LookAtTarget(rightEyeTransform.position, RightEyeTargetWorld, math.mul(RightEyeInitallocalSpace.rotation, InversedHeadRotation), HeadTransform.up);
+                }
+                if (BasisGizmoManager.UseGizmos)
+                {
+                    if (RightEyeHasGizmo)
                     {
-                        LeftEyeHasGizmo = false;
+                        if (BasisGizmoManager.UpdateSphereGizmo(RightEyeGizmoIndex, RightEyeTargetWorld) == false)
+                        {
+                            RightEyeHasGizmo = false;
+                        }
+                    }
+                    if (LeftEyeHasGizmo)
+                    {
+                        if (BasisGizmoManager.UpdateSphereGizmo(LeftEyeGizmoIndex, LeftEyeTargetWorld) == false)
+                        {
+                            LeftEyeHasGizmo = false;
+                        }
                     }
                 }
             }

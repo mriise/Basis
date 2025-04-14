@@ -8,7 +8,8 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 using Basis.Scripts.BasisSdk.Helpers;
 namespace Basis.Scripts.Drivers
 {
-    public class BasisAudioAndVisemeDriver : MonoBehaviour
+    [System.Serializable]
+    public class BasisAudioAndVisemeDriver
     {
         public int smoothAmount = 70;
         public bool[] HasViseme;
@@ -52,7 +53,7 @@ namespace Basis.Scripts.Drivers
             {
                 FirstTime = true;
             }
-            uLipSync = BasisHelpers.GetOrAddComponent<uLipSync.uLipSync>(this.gameObject);
+            uLipSync = BasisHelpers.GetOrAddComponent<uLipSync.uLipSync>(BasisPlayer.gameObject);
             phonemeBlendShapeTable.Clear();
             if (uLipSync.profile == null)
             {
@@ -68,7 +69,7 @@ namespace Basis.Scripts.Drivers
                 uLipSync.profile = Profile;
             }
 
-            uLipSyncBlendShape = BasisHelpers.GetOrAddComponent<uLipSyncBlendShape>(this.gameObject);
+            uLipSyncBlendShape = BasisHelpers.GetOrAddComponent<uLipSyncBlendShape>(BasisPlayer.gameObject);
             uLipSyncBlendShape.usePhonemeBlend = true;
             uLipSyncBlendShape.skinnedMeshRenderer = Avatar.FaceVisemeMesh;
             BlendShapeCount = Avatar.FaceVisemeMovement.Length;
@@ -167,13 +168,13 @@ namespace Basis.Scripts.Drivers
             {
                 BasisDebug.Log("Wired up Renderer Check For Blinking");
                 Player.FaceRenderer.Check += UpdateFaceVisibility;
-                Player.FaceRenderer.DestroyCalled += TryDeinitalize;
+                Player.FaceRenderer.DestroyCalled += TryShutdown;
             }
             UpdateFaceVisibility(Player.FaceIsVisible);
             WasSuccessful = true;
             return true;
         }
-        public void TryDeinitalize()
+        public void TryShutdown()
         {
             WasSuccessful = false;
             OnDeInitalize();
@@ -191,7 +192,7 @@ namespace Basis.Scripts.Drivers
                 if (Player.FaceRenderer != null && HashInstanceID == Player.FaceRenderer.GetInstanceID())
                 {
                     Player.FaceRenderer.Check -= UpdateFaceVisibility;
-                    Player.FaceRenderer.DestroyCalled -= TryDeinitalize;
+                    Player.FaceRenderer.DestroyCalled -= TryShutdown;
                 }
             }
         }

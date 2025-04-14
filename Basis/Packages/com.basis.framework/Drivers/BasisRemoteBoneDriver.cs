@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace Basis.Scripts.Drivers
 {
+    [System.Serializable]
     public class BasisRemoteBoneDriver : BaseBoneDriver
     {
         public BasisRemotePlayer RemotePlayer;
@@ -11,7 +12,8 @@ namespace Basis.Scripts.Drivers
         public Transform HipsAvatar;
         public BasisBoneControl Head;
         public BasisBoneControl Hips;
-        public void Initialize()
+        public BasisBoneControl Mouth;
+        public void InitializeRemote()
         {
             FindBone(out Head, BasisBoneTrackedRole.Head);
             FindBone(out Hips, BasisBoneTrackedRole.Hips);
@@ -23,6 +25,7 @@ namespace Basis.Scripts.Drivers
             {
                 Hips.HasTracked = BasisHasTracked.HasTracker;
             }
+            FindBone(out Mouth, BasisBoneTrackedRole.Mouth);
         }
         public void OnDestroy()
         {
@@ -30,7 +33,7 @@ namespace Basis.Scripts.Drivers
         }
         public void CalculateHeadBoneData()
         {
-            Vector3 RRT = RemotePlayer.RemoteBoneDriver.transform.position;
+            Vector3 RRT = RemotePlayer.transform.position;
             if (Head.HasBone && HasHead)
             {
                 HeadAvatar.GetPositionAndRotation(out Vector3 Position, out Quaternion Rotation);

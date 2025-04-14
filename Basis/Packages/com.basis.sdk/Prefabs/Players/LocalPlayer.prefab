@@ -484,10 +484,6 @@ GameObject:
   m_Component:
   - component: {fileID: 303201899784742928}
   - component: {fileID: 4587526044252889482}
-  - component: {fileID: 1116109802514353462}
-  - component: {fileID: 5000096567804979388}
-  - component: {fileID: 277109516044041921}
-  - component: {fileID: 8783102315984964394}
   - component: {fileID: 5548795088377030369}
   m_Layer: 3
   m_Name: LocalPlayer
@@ -544,8 +540,11 @@ MonoBehaviour:
   FaceIsVisible: 0
   FaceRenderer: {fileID: 0}
   AvatarLoadMode: 0
-  BasisAvatarStrainJiggleDriver: {fileID: 277109516044041921}
+  BasisAvatarStrainJiggleDriver:
+    Jiggler: {fileID: 0}
+    JiggleRigRendererLOD: {fileID: 0}
   Mouth:
+    name: 
     LerpAmountNormal: 0
     LerpAmountFastMovement: 0
     AngleBeforeSpeedup: 0
@@ -632,33 +631,1274 @@ MonoBehaviour:
     HasVirtualOverride: 0
     trackersmooth: 25
     IsHintRoleIgnoreRotation: 0
-    Name: 
     gizmoColor: {r: 0, g: 0, b: 1, a: 1}
     HasEvents: 0
-    hasTrackerDriver: 1
-    hasRigLayer: 1
     positionWeight: 1
     rotationWeight: 1
-    GeneralLocation: 0
+    hasTrackerDriver: 1
+    hasRigLayer: 1
   HasJiggles: 0
-  LocalMoveDriver: {fileID: 8783102315984964394}
   CurrentHeight:
     AvatarName: 
     PlayerEyeHeight: 1.64
     AvatarEyeHeight: 1.64
-    RatioPlayerToAvatarScale: 1
+    PlayerArmSpan: 1.7
+    AvatarArmSpan: 1.7
     EyeRatioPlayerToDefaultScale: 1
     EyeRatioAvatarToAvatarDefaultScale: 1
+    ArmRatioPlayerToDefaultScale: 1
+    ArmRatioAvatarToAvatarDefaultScale: 1
+    SelectedPlayerHeight: 1.7
+    SelectedAvatarHeight: 1.7
+    SelectedPlayerToDefaultScale: 1
+    SelectedAvatarToAvatarDefaultScale: 1
   LastHeight:
     AvatarName: 
     PlayerEyeHeight: 1.64
     AvatarEyeHeight: 1.64
-    RatioPlayerToAvatarScale: 1
+    PlayerArmSpan: 1.7
+    AvatarArmSpan: 1.7
     EyeRatioPlayerToDefaultScale: 1
     EyeRatioAvatarToAvatarDefaultScale: 1
+    ArmRatioPlayerToDefaultScale: 1
+    ArmRatioAvatarToAvatarDefaultScale: 1
+    SelectedPlayerHeight: 1.7
+    SelectedAvatarHeight: 1.7
+    SelectedPlayerToDefaultScale: 1
+    SelectedAvatarToAvatarDefaultScale: 1
   AnimatorDriver: {fileID: 0}
-  LocalBoneDriver: {fileID: 1116109802514353462}
-  LocalAvatarDriver: {fileID: 5000096567804979388}
+  LocalBoneDriver:
+    ControlsLength: 0
+    Controls: []
+    trackedRoles: 
+    HasControls: 0
+  LocalAvatarDriver:
+    SavedruntimeAnimatorController: {fileID: 0}
+    SkinnedMeshRenderer: []
+    Player: {fileID: 0}
+    CurrentlyTposing: 0
+    HasEvents: 0
+    ActiveMatrixOverrides: 
+    SkinnedMeshRendererLength: 0
+    LocalPlayer: {fileID: 0}
+    HeadTwoBoneIK: {fileID: 0}
+    LeftFootTwoBoneIK: {fileID: 0}
+    RightFootTwoBoneIK: {fileID: 0}
+    LeftHandTwoBoneIK: {fileID: 0}
+    RightHandTwoBoneIK: {fileID: 0}
+    UpperChestTwoBoneIK: {fileID: 0}
+    HeadControl:
+      name: 
+      LerpAmountNormal: 0
+      LerpAmountFastMovement: 0
+      AngleBeforeSpeedup: 0
+      HasRotationalTarget: 0
+      HasLineDraw: 0
+      LineDrawIndex: 0
+      HasTarget: 0
+      Offset:
+        x: 0
+        y: 0
+        z: 0
+      LerpAmount: 0
+      OutGoingData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      LastRunData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      TposeLocal:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      InverseOffsetFromBone:
+        Use: 0
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      IncomingData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      OutgoingWorldData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      GizmoReference: -1
+      HasGizmo: 0
+      TposeGizmoReference: -1
+      TposeHasGizmo: 0
+      HasVirtualOverride: 0
+      trackersmooth: 25
+      IsHintRoleIgnoreRotation: 0
+      gizmoColor: {r: 0, g: 0, b: 1, a: 1}
+      HasEvents: 0
+      positionWeight: 1
+      rotationWeight: 1
+      hasTrackerDriver: 1
+      hasRigLayer: 1
+    LeftFootControl:
+      name: 
+      LerpAmountNormal: 0
+      LerpAmountFastMovement: 0
+      AngleBeforeSpeedup: 0
+      HasRotationalTarget: 0
+      HasLineDraw: 0
+      LineDrawIndex: 0
+      HasTarget: 0
+      Offset:
+        x: 0
+        y: 0
+        z: 0
+      LerpAmount: 0
+      OutGoingData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      LastRunData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      TposeLocal:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      InverseOffsetFromBone:
+        Use: 0
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      IncomingData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      OutgoingWorldData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      GizmoReference: -1
+      HasGizmo: 0
+      TposeGizmoReference: -1
+      TposeHasGizmo: 0
+      HasVirtualOverride: 0
+      trackersmooth: 25
+      IsHintRoleIgnoreRotation: 0
+      gizmoColor: {r: 0, g: 0, b: 1, a: 1}
+      HasEvents: 0
+      positionWeight: 1
+      rotationWeight: 1
+      hasTrackerDriver: 1
+      hasRigLayer: 1
+    RightFootControl:
+      name: 
+      LerpAmountNormal: 0
+      LerpAmountFastMovement: 0
+      AngleBeforeSpeedup: 0
+      HasRotationalTarget: 0
+      HasLineDraw: 0
+      LineDrawIndex: 0
+      HasTarget: 0
+      Offset:
+        x: 0
+        y: 0
+        z: 0
+      LerpAmount: 0
+      OutGoingData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      LastRunData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      TposeLocal:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      InverseOffsetFromBone:
+        Use: 0
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      IncomingData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      OutgoingWorldData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      GizmoReference: -1
+      HasGizmo: 0
+      TposeGizmoReference: -1
+      TposeHasGizmo: 0
+      HasVirtualOverride: 0
+      trackersmooth: 25
+      IsHintRoleIgnoreRotation: 0
+      gizmoColor: {r: 0, g: 0, b: 1, a: 1}
+      HasEvents: 0
+      positionWeight: 1
+      rotationWeight: 1
+      hasTrackerDriver: 1
+      hasRigLayer: 1
+    LeftHandControl:
+      name: 
+      LerpAmountNormal: 0
+      LerpAmountFastMovement: 0
+      AngleBeforeSpeedup: 0
+      HasRotationalTarget: 0
+      HasLineDraw: 0
+      LineDrawIndex: 0
+      HasTarget: 0
+      Offset:
+        x: 0
+        y: 0
+        z: 0
+      LerpAmount: 0
+      OutGoingData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      LastRunData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      TposeLocal:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      InverseOffsetFromBone:
+        Use: 0
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      IncomingData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      OutgoingWorldData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      GizmoReference: -1
+      HasGizmo: 0
+      TposeGizmoReference: -1
+      TposeHasGizmo: 0
+      HasVirtualOverride: 0
+      trackersmooth: 25
+      IsHintRoleIgnoreRotation: 0
+      gizmoColor: {r: 0, g: 0, b: 1, a: 1}
+      HasEvents: 0
+      positionWeight: 1
+      rotationWeight: 1
+      hasTrackerDriver: 1
+      hasRigLayer: 1
+    RightHandControl:
+      name: 
+      LerpAmountNormal: 0
+      LerpAmountFastMovement: 0
+      AngleBeforeSpeedup: 0
+      HasRotationalTarget: 0
+      HasLineDraw: 0
+      LineDrawIndex: 0
+      HasTarget: 0
+      Offset:
+        x: 0
+        y: 0
+        z: 0
+      LerpAmount: 0
+      OutGoingData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      LastRunData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      TposeLocal:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      InverseOffsetFromBone:
+        Use: 0
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      IncomingData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      OutgoingWorldData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      GizmoReference: -1
+      HasGizmo: 0
+      TposeGizmoReference: -1
+      TposeHasGizmo: 0
+      HasVirtualOverride: 0
+      trackersmooth: 25
+      IsHintRoleIgnoreRotation: 0
+      gizmoColor: {r: 0, g: 0, b: 1, a: 1}
+      HasEvents: 0
+      positionWeight: 1
+      rotationWeight: 1
+      hasTrackerDriver: 1
+      hasRigLayer: 1
+    ChestControl:
+      name: 
+      LerpAmountNormal: 0
+      LerpAmountFastMovement: 0
+      AngleBeforeSpeedup: 0
+      HasRotationalTarget: 0
+      HasLineDraw: 0
+      LineDrawIndex: 0
+      HasTarget: 0
+      Offset:
+        x: 0
+        y: 0
+        z: 0
+      LerpAmount: 0
+      OutGoingData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      LastRunData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      TposeLocal:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      InverseOffsetFromBone:
+        Use: 0
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      IncomingData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      OutgoingWorldData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      GizmoReference: -1
+      HasGizmo: 0
+      TposeGizmoReference: -1
+      TposeHasGizmo: 0
+      HasVirtualOverride: 0
+      trackersmooth: 25
+      IsHintRoleIgnoreRotation: 0
+      gizmoColor: {r: 0, g: 0, b: 1, a: 1}
+      HasEvents: 0
+      positionWeight: 1
+      rotationWeight: 1
+      hasTrackerDriver: 1
+      hasRigLayer: 1
+    LeftLowerLegControl:
+      name: 
+      LerpAmountNormal: 0
+      LerpAmountFastMovement: 0
+      AngleBeforeSpeedup: 0
+      HasRotationalTarget: 0
+      HasLineDraw: 0
+      LineDrawIndex: 0
+      HasTarget: 0
+      Offset:
+        x: 0
+        y: 0
+        z: 0
+      LerpAmount: 0
+      OutGoingData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      LastRunData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      TposeLocal:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      InverseOffsetFromBone:
+        Use: 0
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      IncomingData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      OutgoingWorldData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      GizmoReference: -1
+      HasGizmo: 0
+      TposeGizmoReference: -1
+      TposeHasGizmo: 0
+      HasVirtualOverride: 0
+      trackersmooth: 25
+      IsHintRoleIgnoreRotation: 0
+      gizmoColor: {r: 0, g: 0, b: 1, a: 1}
+      HasEvents: 0
+      positionWeight: 1
+      rotationWeight: 1
+      hasTrackerDriver: 1
+      hasRigLayer: 1
+    RightLowerLegControl:
+      name: 
+      LerpAmountNormal: 0
+      LerpAmountFastMovement: 0
+      AngleBeforeSpeedup: 0
+      HasRotationalTarget: 0
+      HasLineDraw: 0
+      LineDrawIndex: 0
+      HasTarget: 0
+      Offset:
+        x: 0
+        y: 0
+        z: 0
+      LerpAmount: 0
+      OutGoingData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      LastRunData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      TposeLocal:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      InverseOffsetFromBone:
+        Use: 0
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      IncomingData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      OutgoingWorldData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      GizmoReference: -1
+      HasGizmo: 0
+      TposeGizmoReference: -1
+      TposeHasGizmo: 0
+      HasVirtualOverride: 0
+      trackersmooth: 25
+      IsHintRoleIgnoreRotation: 0
+      gizmoColor: {r: 0, g: 0, b: 1, a: 1}
+      HasEvents: 0
+      positionWeight: 1
+      rotationWeight: 1
+      hasTrackerDriver: 1
+      hasRigLayer: 1
+    LeftLowerArmControl:
+      name: 
+      LerpAmountNormal: 0
+      LerpAmountFastMovement: 0
+      AngleBeforeSpeedup: 0
+      HasRotationalTarget: 0
+      HasLineDraw: 0
+      LineDrawIndex: 0
+      HasTarget: 0
+      Offset:
+        x: 0
+        y: 0
+        z: 0
+      LerpAmount: 0
+      OutGoingData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      LastRunData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      TposeLocal:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      InverseOffsetFromBone:
+        Use: 0
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      IncomingData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      OutgoingWorldData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      GizmoReference: -1
+      HasGizmo: 0
+      TposeGizmoReference: -1
+      TposeHasGizmo: 0
+      HasVirtualOverride: 0
+      trackersmooth: 25
+      IsHintRoleIgnoreRotation: 0
+      gizmoColor: {r: 0, g: 0, b: 1, a: 1}
+      HasEvents: 0
+      positionWeight: 1
+      rotationWeight: 1
+      hasTrackerDriver: 1
+      hasRigLayer: 1
+    RightLowerArmControl:
+      name: 
+      LerpAmountNormal: 0
+      LerpAmountFastMovement: 0
+      AngleBeforeSpeedup: 0
+      HasRotationalTarget: 0
+      HasLineDraw: 0
+      LineDrawIndex: 0
+      HasTarget: 0
+      Offset:
+        x: 0
+        y: 0
+        z: 0
+      LerpAmount: 0
+      OutGoingData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      LastRunData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      TposeLocal:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      InverseOffsetFromBone:
+        Use: 0
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      IncomingData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      OutgoingWorldData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      GizmoReference: -1
+      HasGizmo: 0
+      TposeGizmoReference: -1
+      TposeHasGizmo: 0
+      HasVirtualOverride: 0
+      trackersmooth: 25
+      IsHintRoleIgnoreRotation: 0
+      gizmoColor: {r: 0, g: 0, b: 1, a: 1}
+      HasEvents: 0
+      positionWeight: 1
+      rotationWeight: 1
+      hasTrackerDriver: 1
+      hasRigLayer: 1
+    LeftToeRig: {fileID: 0}
+    RightToeRig: {fileID: 0}
+    RigSpineRig: {fileID: 0}
+    RigHeadRig: {fileID: 0}
+    LeftHandRig: {fileID: 0}
+    RightHandRig: {fileID: 0}
+    LeftFootRig: {fileID: 0}
+    RightFootRig: {fileID: 0}
+    ChestSpineRig: {fileID: 0}
+    LeftShoulderRig: {fileID: 0}
+    RightShoulderRig: {fileID: 0}
+    LeftHandLayer:
+      m_Rig: {fileID: 0}
+      m_Active: 0
+    RightHandLayer:
+      m_Rig: {fileID: 0}
+      m_Active: 0
+    LeftFootLayer:
+      m_Rig: {fileID: 0}
+      m_Active: 0
+    RightFootLayer:
+      m_Rig: {fileID: 0}
+      m_Active: 0
+    LeftToeLayer:
+      m_Rig: {fileID: 0}
+      m_Active: 0
+    RightToeLayer:
+      m_Rig: {fileID: 0}
+      m_Active: 0
+    RigHeadLayer:
+      m_Rig: {fileID: 0}
+      m_Active: 0
+    RigSpineLayer:
+      m_Rig: {fileID: 0}
+      m_Active: 0
+    ChestSpineLayer:
+      m_Rig: {fileID: 0}
+      m_Active: 0
+    LeftShoulderLayer:
+      m_Rig: {fileID: 0}
+      m_Active: 0
+    RightShoulderLayer:
+      m_Rig: {fileID: 0}
+      m_Active: 0
+    Rigs: []
+    Builder: {fileID: 0}
+    AdditionalTransforms: []
+    HasTPoseEvent: 0
+    Locomotion: Locomotion
+    BasisMuscleDriver: {fileID: 0}
+    BasisLocalEyeFollowDriver: {fileID: 0}
+    MaxExtendedDistance: 0
+    AvatarUPDownDirectionCalibration: {x: 0, y: 0, z: 0}
+    AvatarRightDirectionCalibration: {x: 0, y: 0, z: 0}
+    AvatarLeftDirectionCalibration: {x: 0, y: 0, z: 0}
+  LocalCharacterDriver:
+    characterController: {fileID: 5548795088377030369}
+    bottomPointLocalspace: {x: 0, y: 0, z: 0}
+    LastbottomPoint: {x: 0, y: 0, z: 0}
+    groundedPlayer: 0
+    FastestRunSpeed: 4
+    SlowestPlayerSpeed: 0.5
+    gravityValue: -9.81
+    RaycastDistance: 0.2
+    MinimumColliderSize: 0.01
+    MovementVector: {x: 0, y: 0}
+    Eye:
+      name: 
+      LerpAmountNormal: 0
+      LerpAmountFastMovement: 0
+      AngleBeforeSpeedup: 0
+      HasRotationalTarget: 0
+      HasLineDraw: 0
+      LineDrawIndex: 0
+      HasTarget: 0
+      Offset:
+        x: 0
+        y: 0
+        z: 0
+      LerpAmount: 0
+      OutGoingData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      LastRunData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      TposeLocal:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      InverseOffsetFromBone:
+        Use: 0
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      IncomingData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      OutgoingWorldData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      GizmoReference: -1
+      HasGizmo: 0
+      TposeGizmoReference: -1
+      TposeHasGizmo: 0
+      HasVirtualOverride: 0
+      trackersmooth: 25
+      IsHintRoleIgnoreRotation: 0
+      gizmoColor: {r: 0, g: 0, b: 1, a: 1}
+      HasEvents: 0
+      positionWeight: 1
+      rotationWeight: 1
+      hasTrackerDriver: 1
+      hasRigLayer: 1
+    Head:
+      name: 
+      LerpAmountNormal: 0
+      LerpAmountFastMovement: 0
+      AngleBeforeSpeedup: 0
+      HasRotationalTarget: 0
+      HasLineDraw: 0
+      LineDrawIndex: 0
+      HasTarget: 0
+      Offset:
+        x: 0
+        y: 0
+        z: 0
+      LerpAmount: 0
+      OutGoingData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      LastRunData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      TposeLocal:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      InverseOffsetFromBone:
+        Use: 0
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      IncomingData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      OutgoingWorldData:
+        rotation:
+          value:
+            x: 0
+            y: 0
+            z: 0
+            w: 0
+        position:
+          x: 0
+          y: 0
+          z: 0
+      GizmoReference: -1
+      HasGizmo: 0
+      TposeGizmoReference: -1
+      TposeHasGizmo: 0
+      HasVirtualOverride: 0
+      trackersmooth: 25
+      IsHintRoleIgnoreRotation: 0
+      gizmoColor: {r: 0, g: 0, b: 1, a: 1}
+      HasEvents: 0
+      positionWeight: 1
+      rotationWeight: 1
+      hasTrackerDriver: 1
+      hasRigLayer: 1
+    HasEye: 0
+    HasHead: 0
+    LastWasGrounded: 1
+    BlockMovement: 0
+    IsFalling: 0
+    HasJumpAction: 0
+    jumpHeight: 1
+    currentVerticalSpeed: 0
+    Rotation: {x: 0, y: 0}
+    RotationSpeed: 200
+    HasEvents: 0
+    pushPower: 1
+    CurrentPosition: {x: 0, y: 0, z: 0}
+    CurrentRotation: {x: 0, y: 0, z: 0, w: 0}
+    Flags: 0
+    SpeedMultiplier: 0.5
+    CurrentSpeed: 0
+    IsEnabled: 1
   VisemeDriver: {fileID: 0}
   CameraDriver: {fileID: 22857711927985140}
   GroundMask:
@@ -668,6 +1908,7 @@ MonoBehaviour:
   MicrophoneRecorder: {fileID: 0}
   SpawnPlayerOnSceneLoad: 1
   Head:
+    name: 
     LerpAmountNormal: 0
     LerpAmountFastMovement: 0
     AngleBeforeSpeedup: 0
@@ -754,15 +1995,14 @@ MonoBehaviour:
     HasVirtualOverride: 0
     trackersmooth: 25
     IsHintRoleIgnoreRotation: 0
-    Name: 
     gizmoColor: {r: 0, g: 0, b: 1, a: 1}
     HasEvents: 0
-    hasTrackerDriver: 1
-    hasRigLayer: 1
     positionWeight: 1
     rotationWeight: 1
-    GeneralLocation: 0
+    hasTrackerDriver: 1
+    hasRigLayer: 1
   Hips:
+    name: 
     LerpAmountNormal: 0
     LerpAmountFastMovement: 0
     AngleBeforeSpeedup: 0
@@ -849,14 +2089,12 @@ MonoBehaviour:
     HasVirtualOverride: 0
     trackersmooth: 25
     IsHintRoleIgnoreRotation: 0
-    Name: 
     gizmoColor: {r: 0, g: 0, b: 1, a: 1}
     HasEvents: 0
-    hasTrackerDriver: 1
-    hasRigLayer: 1
     positionWeight: 1
     rotationWeight: 1
-    GeneralLocation: 0
+    hasTrackerDriver: 1
+    hasRigLayer: 1
   HasCalibrationEvents: 0
   ToggleAvatarSim: 0
   currentDistance: 0
@@ -873,1297 +2111,6 @@ MonoBehaviour:
     x: 0
     y: 0
     z: 0
---- !u!114 &1116109802514353462
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8538648612911191307}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 75b8f519e8dedb04bb1f5592499e5e61, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ControlsLength: 0
-  Controls: []
-  trackedRoles: 
-  HasControls: 0
-  DeltaTime: 0
---- !u!114 &5000096567804979388
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8538648612911191307}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5838aa3334f5e5a40b4f9837a0d7cd65, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  SavedruntimeAnimatorController: {fileID: 0}
-  SkinnedMeshRenderer: []
-  Player: {fileID: 4587526044252889482}
-  CurrentlyTposing: 0
-  HasEvents: 0
-  ActiveMatrixOverrides: 
-  SkinnedMeshRendererLength: 0
-  LocalDriver: {fileID: 1116109802514353462}
-  LocalPlayer: {fileID: 4587526044252889482}
-  HeadTwoBoneIK: {fileID: 0}
-  LeftFootTwoBoneIK: {fileID: 0}
-  RightFootTwoBoneIK: {fileID: 0}
-  LeftHandTwoBoneIK: {fileID: 0}
-  RightHandTwoBoneIK: {fileID: 0}
-  UpperChestTwoBoneIK: {fileID: 0}
-  HeadControl:
-    LerpAmountNormal: 0
-    LerpAmountFastMovement: 0
-    AngleBeforeSpeedup: 0
-    HasRotationalTarget: 0
-    HasLineDraw: 0
-    LineDrawIndex: 0
-    HasTarget: 0
-    Offset:
-      x: 0
-      y: 0
-      z: 0
-    LerpAmount: 0
-    OutGoingData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    LastRunData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    TposeLocal:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    InverseOffsetFromBone:
-      Use: 0
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    IncomingData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    OutgoingWorldData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    GizmoReference: -1
-    HasGizmo: 0
-    TposeGizmoReference: -1
-    TposeHasGizmo: 0
-    HasVirtualOverride: 0
-    trackersmooth: 25
-    IsHintRoleIgnoreRotation: 0
-    Name: 
-    gizmoColor: {r: 0, g: 0, b: 1, a: 1}
-    HasEvents: 0
-    hasTrackerDriver: 1
-    hasRigLayer: 1
-    positionWeight: 1
-    rotationWeight: 1
-    GeneralLocation: 0
-  LeftFootControl:
-    LerpAmountNormal: 0
-    LerpAmountFastMovement: 0
-    AngleBeforeSpeedup: 0
-    HasRotationalTarget: 0
-    HasLineDraw: 0
-    LineDrawIndex: 0
-    HasTarget: 0
-    Offset:
-      x: 0
-      y: 0
-      z: 0
-    LerpAmount: 0
-    OutGoingData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    LastRunData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    TposeLocal:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    InverseOffsetFromBone:
-      Use: 0
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    IncomingData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    OutgoingWorldData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    GizmoReference: -1
-    HasGizmo: 0
-    TposeGizmoReference: -1
-    TposeHasGizmo: 0
-    HasVirtualOverride: 0
-    trackersmooth: 25
-    IsHintRoleIgnoreRotation: 0
-    Name: 
-    gizmoColor: {r: 0, g: 0, b: 1, a: 1}
-    HasEvents: 0
-    hasTrackerDriver: 1
-    hasRigLayer: 1
-    positionWeight: 1
-    rotationWeight: 1
-    GeneralLocation: 0
-  RightFootControl:
-    LerpAmountNormal: 0
-    LerpAmountFastMovement: 0
-    AngleBeforeSpeedup: 0
-    HasRotationalTarget: 0
-    HasLineDraw: 0
-    LineDrawIndex: 0
-    HasTarget: 0
-    Offset:
-      x: 0
-      y: 0
-      z: 0
-    LerpAmount: 0
-    OutGoingData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    LastRunData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    TposeLocal:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    InverseOffsetFromBone:
-      Use: 0
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    IncomingData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    OutgoingWorldData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    GizmoReference: -1
-    HasGizmo: 0
-    TposeGizmoReference: -1
-    TposeHasGizmo: 0
-    HasVirtualOverride: 0
-    trackersmooth: 25
-    IsHintRoleIgnoreRotation: 0
-    Name: 
-    gizmoColor: {r: 0, g: 0, b: 1, a: 1}
-    HasEvents: 0
-    hasTrackerDriver: 1
-    hasRigLayer: 1
-    positionWeight: 1
-    rotationWeight: 1
-    GeneralLocation: 0
-  LeftHandControl:
-    LerpAmountNormal: 0
-    LerpAmountFastMovement: 0
-    AngleBeforeSpeedup: 0
-    HasRotationalTarget: 0
-    HasLineDraw: 0
-    LineDrawIndex: 0
-    HasTarget: 0
-    Offset:
-      x: 0
-      y: 0
-      z: 0
-    LerpAmount: 0
-    OutGoingData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    LastRunData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    TposeLocal:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    InverseOffsetFromBone:
-      Use: 0
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    IncomingData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    OutgoingWorldData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    GizmoReference: -1
-    HasGizmo: 0
-    TposeGizmoReference: -1
-    TposeHasGizmo: 0
-    HasVirtualOverride: 0
-    trackersmooth: 25
-    IsHintRoleIgnoreRotation: 0
-    Name: 
-    gizmoColor: {r: 0, g: 0, b: 1, a: 1}
-    HasEvents: 0
-    hasTrackerDriver: 1
-    hasRigLayer: 1
-    positionWeight: 1
-    rotationWeight: 1
-    GeneralLocation: 0
-  RightHandControl:
-    LerpAmountNormal: 0
-    LerpAmountFastMovement: 0
-    AngleBeforeSpeedup: 0
-    HasRotationalTarget: 0
-    HasLineDraw: 0
-    LineDrawIndex: 0
-    HasTarget: 0
-    Offset:
-      x: 0
-      y: 0
-      z: 0
-    LerpAmount: 0
-    OutGoingData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    LastRunData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    TposeLocal:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    InverseOffsetFromBone:
-      Use: 0
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    IncomingData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    OutgoingWorldData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    GizmoReference: -1
-    HasGizmo: 0
-    TposeGizmoReference: -1
-    TposeHasGizmo: 0
-    HasVirtualOverride: 0
-    trackersmooth: 25
-    IsHintRoleIgnoreRotation: 0
-    Name: 
-    gizmoColor: {r: 0, g: 0, b: 1, a: 1}
-    HasEvents: 0
-    hasTrackerDriver: 1
-    hasRigLayer: 1
-    positionWeight: 1
-    rotationWeight: 1
-    GeneralLocation: 0
-  ChestControl:
-    LerpAmountNormal: 0
-    LerpAmountFastMovement: 0
-    AngleBeforeSpeedup: 0
-    HasRotationalTarget: 0
-    HasLineDraw: 0
-    LineDrawIndex: 0
-    HasTarget: 0
-    Offset:
-      x: 0
-      y: 0
-      z: 0
-    LerpAmount: 0
-    OutGoingData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    LastRunData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    TposeLocal:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    InverseOffsetFromBone:
-      Use: 0
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    IncomingData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    OutgoingWorldData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    GizmoReference: -1
-    HasGizmo: 0
-    TposeGizmoReference: -1
-    TposeHasGizmo: 0
-    HasVirtualOverride: 0
-    trackersmooth: 25
-    IsHintRoleIgnoreRotation: 0
-    Name: 
-    gizmoColor: {r: 0, g: 0, b: 1, a: 1}
-    HasEvents: 0
-    hasTrackerDriver: 1
-    hasRigLayer: 1
-    positionWeight: 1
-    rotationWeight: 1
-    GeneralLocation: 0
-  LeftLowerLegControl:
-    LerpAmountNormal: 0
-    LerpAmountFastMovement: 0
-    AngleBeforeSpeedup: 0
-    HasRotationalTarget: 0
-    HasLineDraw: 0
-    LineDrawIndex: 0
-    HasTarget: 0
-    Offset:
-      x: 0
-      y: 0
-      z: 0
-    LerpAmount: 0
-    OutGoingData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    LastRunData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    TposeLocal:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    InverseOffsetFromBone:
-      Use: 0
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    IncomingData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    OutgoingWorldData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    GizmoReference: -1
-    HasGizmo: 0
-    TposeGizmoReference: -1
-    TposeHasGizmo: 0
-    HasVirtualOverride: 0
-    trackersmooth: 25
-    IsHintRoleIgnoreRotation: 0
-    Name: 
-    gizmoColor: {r: 0, g: 0, b: 1, a: 1}
-    HasEvents: 0
-    hasTrackerDriver: 1
-    hasRigLayer: 1
-    positionWeight: 1
-    rotationWeight: 1
-    GeneralLocation: 0
-  RightLowerLegControl:
-    LerpAmountNormal: 0
-    LerpAmountFastMovement: 0
-    AngleBeforeSpeedup: 0
-    HasRotationalTarget: 0
-    HasLineDraw: 0
-    LineDrawIndex: 0
-    HasTarget: 0
-    Offset:
-      x: 0
-      y: 0
-      z: 0
-    LerpAmount: 0
-    OutGoingData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    LastRunData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    TposeLocal:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    InverseOffsetFromBone:
-      Use: 0
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    IncomingData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    OutgoingWorldData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    GizmoReference: -1
-    HasGizmo: 0
-    TposeGizmoReference: -1
-    TposeHasGizmo: 0
-    HasVirtualOverride: 0
-    trackersmooth: 25
-    IsHintRoleIgnoreRotation: 0
-    Name: 
-    gizmoColor: {r: 0, g: 0, b: 1, a: 1}
-    HasEvents: 0
-    hasTrackerDriver: 1
-    hasRigLayer: 1
-    positionWeight: 1
-    rotationWeight: 1
-    GeneralLocation: 0
-  LeftLowerArmControl:
-    LerpAmountNormal: 0
-    LerpAmountFastMovement: 0
-    AngleBeforeSpeedup: 0
-    HasRotationalTarget: 0
-    HasLineDraw: 0
-    LineDrawIndex: 0
-    HasTarget: 0
-    Offset:
-      x: 0
-      y: 0
-      z: 0
-    LerpAmount: 0
-    OutGoingData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    LastRunData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    TposeLocal:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    InverseOffsetFromBone:
-      Use: 0
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    IncomingData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    OutgoingWorldData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    GizmoReference: -1
-    HasGizmo: 0
-    TposeGizmoReference: -1
-    TposeHasGizmo: 0
-    HasVirtualOverride: 0
-    trackersmooth: 25
-    IsHintRoleIgnoreRotation: 0
-    Name: 
-    gizmoColor: {r: 0, g: 0, b: 1, a: 1}
-    HasEvents: 0
-    hasTrackerDriver: 1
-    hasRigLayer: 1
-    positionWeight: 1
-    rotationWeight: 1
-    GeneralLocation: 0
-  RightLowerArmControl:
-    LerpAmountNormal: 0
-    LerpAmountFastMovement: 0
-    AngleBeforeSpeedup: 0
-    HasRotationalTarget: 0
-    HasLineDraw: 0
-    LineDrawIndex: 0
-    HasTarget: 0
-    Offset:
-      x: 0
-      y: 0
-      z: 0
-    LerpAmount: 0
-    OutGoingData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    LastRunData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    TposeLocal:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    InverseOffsetFromBone:
-      Use: 0
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    IncomingData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    OutgoingWorldData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    GizmoReference: -1
-    HasGizmo: 0
-    TposeGizmoReference: -1
-    TposeHasGizmo: 0
-    HasVirtualOverride: 0
-    trackersmooth: 25
-    IsHintRoleIgnoreRotation: 0
-    Name: 
-    gizmoColor: {r: 0, g: 0, b: 1, a: 1}
-    HasEvents: 0
-    hasTrackerDriver: 1
-    hasRigLayer: 1
-    positionWeight: 1
-    rotationWeight: 1
-    GeneralLocation: 0
-  LeftToeRig: {fileID: 0}
-  RightToeRig: {fileID: 0}
-  RigSpineRig: {fileID: 0}
-  RigHeadRig: {fileID: 0}
-  LeftHandRig: {fileID: 0}
-  RightHandRig: {fileID: 0}
-  LeftFootRig: {fileID: 0}
-  RightFootRig: {fileID: 0}
-  ChestSpineRig: {fileID: 0}
-  LeftShoulderRig: {fileID: 0}
-  RightShoulderRig: {fileID: 0}
-  LeftHandLayer:
-    m_Rig: {fileID: 0}
-    m_Active: 0
-  RightHandLayer:
-    m_Rig: {fileID: 0}
-    m_Active: 0
-  LeftFootLayer:
-    m_Rig: {fileID: 0}
-    m_Active: 0
-  RightFootLayer:
-    m_Rig: {fileID: 0}
-    m_Active: 0
-  LeftToeLayer:
-    m_Rig: {fileID: 0}
-    m_Active: 0
-  RightToeLayer:
-    m_Rig: {fileID: 0}
-    m_Active: 0
-  RigHeadLayer:
-    m_Rig: {fileID: 0}
-    m_Active: 0
-  RigSpineLayer:
-    m_Rig: {fileID: 0}
-    m_Active: 0
-  ChestSpineLayer:
-    m_Rig: {fileID: 0}
-    m_Active: 0
-  LeftShoulderLayer:
-    m_Rig: {fileID: 0}
-    m_Active: 0
-  RightShoulderLayer:
-    m_Rig: {fileID: 0}
-    m_Active: 0
-  Rigs: []
-  Builder: {fileID: 0}
-  AdditionalTransforms: []
-  HasTPoseEvent: 0
-  Locomotion: Locomotion
-  BasisMuscleDriver: {fileID: 0}
-  BasisLocalEyeFollowDriver: {fileID: 0}
-  MaxExtendedDistance: 0
---- !u!114 &277109516044041921
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8538648612911191307}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b9a9b07495c43e342898fe1d54254744, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  player: {fileID: 4587526044252889482}
-  Jiggler: {fileID: 0}
-  JiggleRigRendererLOD: {fileID: 0}
---- !u!114 &8783102315984964394
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8538648612911191307}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ddaa2ffc9b322924196203afabde5bb0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  characterController: {fileID: 5548795088377030369}
-  bottomPointLocalspace: {x: 0, y: 0, z: 0}
-  LastbottomPoint: {x: 0, y: 0, z: 0}
-  groundedPlayer: 0
-  FastestRunSpeed: 4
-  SlowestPlayerSpeed: 0.5
-  gravityValue: -9.81
-  RaycastDistance: 0.2
-  MinimumColliderSize: 0.01
-  MovementVector: {x: 0, y: 0}
-  driver: {fileID: 1116109802514353462}
-  Eye:
-    LerpAmountNormal: 0
-    LerpAmountFastMovement: 0
-    AngleBeforeSpeedup: 0
-    HasRotationalTarget: 0
-    HasLineDraw: 0
-    LineDrawIndex: 0
-    HasTarget: 0
-    Offset:
-      x: 0
-      y: 0
-      z: 0
-    LerpAmount: 0
-    OutGoingData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    LastRunData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    TposeLocal:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    InverseOffsetFromBone:
-      Use: 0
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    IncomingData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    OutgoingWorldData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    GizmoReference: -1
-    HasGizmo: 0
-    TposeGizmoReference: -1
-    TposeHasGizmo: 0
-    HasVirtualOverride: 0
-    trackersmooth: 25
-    IsHintRoleIgnoreRotation: 0
-    Name: 
-    gizmoColor: {r: 0, g: 0, b: 1, a: 1}
-    HasEvents: 0
-    hasTrackerDriver: 1
-    hasRigLayer: 1
-    positionWeight: 1
-    rotationWeight: 1
-    GeneralLocation: 0
-  Head:
-    LerpAmountNormal: 0
-    LerpAmountFastMovement: 0
-    AngleBeforeSpeedup: 0
-    HasRotationalTarget: 0
-    HasLineDraw: 0
-    LineDrawIndex: 0
-    HasTarget: 0
-    Offset:
-      x: 0
-      y: 0
-      z: 0
-    LerpAmount: 0
-    OutGoingData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    LastRunData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    TposeLocal:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    InverseOffsetFromBone:
-      Use: 0
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    IncomingData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    OutgoingWorldData:
-      rotation:
-        value:
-          x: 0
-          y: 0
-          z: 0
-          w: 0
-      position:
-        x: 0
-        y: 0
-        z: 0
-    GizmoReference: -1
-    HasGizmo: 0
-    TposeGizmoReference: -1
-    TposeHasGizmo: 0
-    HasVirtualOverride: 0
-    trackersmooth: 25
-    IsHintRoleIgnoreRotation: 0
-    Name: 
-    gizmoColor: {r: 0, g: 0, b: 1, a: 1}
-    HasEvents: 0
-    hasTrackerDriver: 1
-    hasRigLayer: 1
-    positionWeight: 1
-    rotationWeight: 1
-    GeneralLocation: 0
-  HasEye: 0
-  HasHead: 0
-  LastWasGrounded: 1
-  BlockMovement: 0
-  IsFalling: 0
-  HasJumpAction: 0
-  jumpHeight: 1
-  currentVerticalSpeed: 0
-  Rotation: {x: 0, y: 0}
-  RotationSpeed: 140
-  HasEvents: 0
-  pushPower: 1
-  CurrentPosition: {x: 0, y: 0, z: 0}
-  CurrentRotation: {x: 0, y: 0, z: 0, w: 0}
-  Flags: 0
-  SpeedMultiplier: 0.5
-  CurrentSpeed: 0
 --- !u!143 &5548795088377030369
 CharacterController:
   m_ObjectHideFlags: 0

@@ -293,8 +293,8 @@ namespace Basis.Scripts.Device_Management.Devices
                         : InputState.Primary2DAxis.y;
                     //0 to 1 largestValue
 
-                    BasisLocalPlayer.Instance.LocalMoveDriver.SpeedMultiplier = largestValue;
-                    BasisLocalPlayer.Instance.LocalMoveDriver.MovementVector = InputState.Primary2DAxis;
+                    BasisLocalPlayer.Instance.LocalCharacterDriver.SpeedMultiplier = largestValue;
+                    BasisLocalPlayer.Instance.LocalCharacterDriver.MovementVector = InputState.Primary2DAxis;
                     //only open ui after we have stopped pressing down on the secondary button
                     if (InputState.SecondaryButtonGetState == false && LastState.SecondaryButtonGetState)
                     {
@@ -316,10 +316,10 @@ namespace Basis.Scripts.Device_Management.Devices
                     }
                     break;
                 case BasisBoneTrackedRole.RightHand:
-                    BasisLocalPlayer.Instance.LocalMoveDriver.Rotation = InputState.Primary2DAxis;
+                    BasisLocalPlayer.Instance.LocalCharacterDriver.Rotation = InputState.Primary2DAxis;
                     if (InputState.PrimaryButtonGetState)
                     {
-                        BasisLocalPlayer.Instance.LocalMoveDriver.HandleJump();
+                        BasisLocalPlayer.Instance.LocalCharacterDriver.HandleJump();
                     }
                     break;
                 case BasisBoneTrackedRole.CenterEye:

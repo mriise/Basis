@@ -1,7 +1,5 @@
 using Basis.Scripts.Addressable_Driver;
-using Basis.Scripts.BasisSdk.Helpers;
 using Basis.Scripts.Drivers;
-using Basis.Scripts.TransformBinders.BoneControl;
 using System;
 using System.Threading;
 using UnityEngine;
@@ -14,6 +12,7 @@ namespace Basis.Scripts.BasisSdk.Players
         public string UUID;
         public BasisAvatar BasisAvatar;
         public AddressableGenericResource AvatarAddressableGenericResource;
+        [HideInInspector]
         public BasisLoadableBundle AvatarMetaData;
         public bool HasAvatarDriver;
         public event Action OnAvatarSwitched;
@@ -29,12 +28,15 @@ namespace Basis.Scripts.BasisSdk.Players
 
         public BasisProgressReport AvatarProgress = new BasisProgressReport();
         public CancellationToken CancellationToken;
-        public BasisAvatarStrainJiggleDriver BasisAvatarStrainJiggleDriver;
         public Action<bool> AudioReceived;
-        public BasisBoneControl Mouth;
         public bool HasJiggles = false;
         public delegate void SimulationHandler();
         public SimulationHandler OnPreSimulateBones;
+
+        [SerializeField]
+        public BasisAvatarStrainJiggleDriver BasisAvatarStrainJiggleDriver = new BasisAvatarStrainJiggleDriver();
+        [SerializeField]
+        public BasisFacialBlinkDriver FacialBlinkDriver = new BasisFacialBlinkDriver();
         public void InitalizeIKCalibration(BasisAvatarDriver BasisAvatarDriver)
         {
             if (BasisAvatarDriver != null)
@@ -46,14 +48,10 @@ namespace Basis.Scripts.BasisSdk.Players
                 BasisDebug.LogError("Mising CharacterIKCalibration");
                 HasAvatarDriver = false;
             }
+            HasJiggles = false;
             try
             {
-                HasJiggles = false;
-                BasisAvatarStrainJiggleDriver = BasisHelpers.GetOrAddComponent<BasisAvatarStrainJiggleDriver>(this.gameObject);
-                if (BasisAvatarStrainJiggleDriver != null)
-                {
-                    HasJiggles = BasisAvatarStrainJiggleDriver.Initalize();
-                }
+                HasJiggles = BasisAvatarStrainJiggleDriver.Initalize(this);
             }
             catch (Exception e)
             {

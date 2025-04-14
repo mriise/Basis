@@ -7,12 +7,12 @@ using UnityEngine;
 using static JigglePhysics.JiggleRigBuilder;
 namespace Basis.Scripts.Drivers
 {
-    public class BasisAvatarStrainJiggleDriver : MonoBehaviour
+    [System.Serializable]
+    public class BasisAvatarStrainJiggleDriver
     {
-        public BasisPlayer player;
         public JiggleRigBuilder Jiggler;
         public JiggleRigRendererLOD JiggleRigRendererLOD;
-        public bool Initalize()
+        public bool Initalize(BasisPlayer player)
         {
             if (Jiggler != null)
             {

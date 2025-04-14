@@ -4,14 +4,12 @@ using Basis.Scripts.TransformBinders.BoneControl;
 
 namespace Basis.Scripts.Drivers
 {
+    [System.Serializable]
     public class BasisRemoteAvatarDriver : BasisAvatarDriver
     {
-        public BasisRemotePlayer RemotePlayer;
-        public BasisRemoteEyeFollowBase BasisRemoteEyeFollowBase;
         public void RemoteCalibration(BasisRemotePlayer remotePlayer)
         {
-            RemotePlayer = remotePlayer;
-            if (IsAble())
+            if (IsAble(remotePlayer))
             {
                 BasisDebug.Log("RemoteCalibration Underway", BasisDebug.LogTag.Avatar);
             }
@@ -19,25 +17,22 @@ namespace Basis.Scripts.Drivers
             {
                 return;
             }
-            Calibration(RemotePlayer.BasisAvatar);
-            BasisRemoteEyeFollowBase = BasisHelpers.GetOrAddComponent<BasisRemoteEyeFollowBase>(Player.gameObject);
-            BasisRemoteEyeFollowBase.Initalize(this, remotePlayer);
+            Calibration(remotePlayer.BasisAvatar);
+            remotePlayer.EyeFollow.Initalize(this, remotePlayer);
             SetAllMatrixRecalculation(false);
             updateWhenOffscreen(false);
-            RemotePlayer.BasisAvatar.Animator.logWarnings = false;
+            remotePlayer.BasisAvatar.Animator.logWarnings = false;
             for (int Index = 0; Index < SkinnedMeshRenderer.Length; Index++)
             {
                 SkinnedMeshRenderer[Index].forceMatrixRecalculationPerRender = false;
             }
-            CalculateTransformPositions(RemotePlayer.BasisAvatar.Animator, remotePlayer.RemoteBoneDriver);
+            CalculateTransformPositions(remotePlayer, remotePlayer.RemoteBoneDriver);
             ComputeOffsets(remotePlayer.RemoteBoneDriver);
-            RemotePlayer.BasisAvatar.Animator.enabled = false;
+            remotePlayer.BasisAvatar.Animator.enabled = false;
             CalibrationComplete?.Invoke();
         }
         public void ComputeOffsets(BaseBoneDriver BBD)
         {
-            //head
-            //   SetAndCreateLock(BaseBoneDriver, BoneTrackedRole.CenterEye, BoneTrackedRole.Head, RotationalControl.ClampData.None, 5, 12, true, 5f);
             SetAndCreateLock(BBD, BasisBoneTrackedRole.Head, BasisBoneTrackedRole.Neck,  40, 12, true);
 
             SetAndCreateLock(BBD, BasisBoneTrackedRole.Head, BasisBoneTrackedRole.CenterEye,  40, 12, true);
@@ -49,22 +44,22 @@ namespace Basis.Scripts.Drivers
             SetAndCreateLock(BBD, BasisBoneTrackedRole.Chest, BasisBoneTrackedRole.Spine,  40, 12, true);
             SetAndCreateLock(BBD, BasisBoneTrackedRole.Spine, BasisBoneTrackedRole.Hips, 40, 12, true);
         }
-        public bool IsAble()
+        public bool IsAble(BasisRemotePlayer remotePlayer)
         {
-            if (IsNull(RemotePlayer.BasisAvatar))
+            if (IsNull(remotePlayer.BasisAvatar))
             {
                 return false;
             }
-            if (IsNull(RemotePlayer.RemoteBoneDriver))
+            if (remotePlayer.RemoteBoneDriver == null)
             {
                 return false;
             }
-            if (IsNull(RemotePlayer.BasisAvatar.Animator))
+            if (IsNull(remotePlayer.BasisAvatar.Animator))
             {
                 return false;
             }
 
-            if (IsNull(RemotePlayer))
+            if (IsNull(remotePlayer))
             {
                 return false;
             }

@@ -145,6 +145,8 @@ namespace Basis.Scripts.Networking.Transmitters
                     }
                     Rec.RemotePlayer.BasisAvatarStrainJiggleDriver.Simulate(CalculatedDistances[Index]);
                 }
+                Rec.RemotePlayer.FacialBlinkDriver.Simulate();
+                Rec.RemotePlayer.EyeFollow.Simulate();
                 /*
                 if (Rec.RemotePlayer.IsNotFallBack != AvatarIndex[Index])
                 {

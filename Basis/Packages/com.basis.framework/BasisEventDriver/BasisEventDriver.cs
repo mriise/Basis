@@ -47,6 +47,10 @@ public class BasisEventDriver : MonoBehaviour
         {
             BasisLocalEyeFollowBase.Instance.Simulate();
         }
+        if (BasisLocalPlayer.PlayerReady)
+        {
+            BasisLocalPlayer.Instance.SimulateOnLateUpdate();
+        }
         MicrophoneRecorder.MicrophoneUpdate();
         RemoteNamePlateDriver.SimulateNamePlates();
         BasisNetworkManagement.SimulateNetworkApply();
@@ -55,7 +59,7 @@ public class BasisEventDriver : MonoBehaviour
     {
         if (BasisLocalPlayer.PlayerReady)
         {
-            BasisLocalPlayer.Instance.Simulate();
+            BasisLocalPlayer.Instance.SimulateOnRender();
             //send out avatar
             BasisNetworkTransmitter.AfterAvatarChanges?.Invoke();
         }

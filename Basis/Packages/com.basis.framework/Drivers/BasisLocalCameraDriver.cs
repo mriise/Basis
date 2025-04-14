@@ -277,7 +277,7 @@ namespace Basis.Scripts.Drivers
         }
         public void OnDisable()
         {
-            if (LocalPlayer.LocalAvatarDriver && LocalPlayer.LocalAvatarDriver.References != null && LocalPlayer.LocalAvatarDriver.References.head != null)
+            if (LocalPlayer.LocalAvatarDriver != null && LocalPlayer.LocalAvatarDriver.References != null && LocalPlayer.LocalAvatarDriver.References.head != null)
             {
                 LocalPlayer.LocalAvatarDriver.References.head.localScale = BasisLocalAvatarDriver.HeadScale;
             }
