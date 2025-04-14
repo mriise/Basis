@@ -25,7 +25,7 @@ namespace Basis.Scripts.Networking.Receivers
         public Queue<AvatarBuffer> PayloadQueue = new Queue<AvatarBuffer>();
         public BasisRemotePlayer RemotePlayer;
         public bool HasEvents = false;
-        private NativeArray<float3> OuputVectors;      // Merged positions and scales
+        private NativeArray<float3> OutputVectors;      // Merged positions and scales
         private NativeArray<float3> TargetVectors; // Merged target positions and scales
         private NativeArray<float> musclesPreEuro;
         private NativeArray<float> targetMuscles;
@@ -86,9 +86,9 @@ namespace Basis.Scripts.Networking.Receivers
                     try
                     {
                         TargetVectors[0] = Last.Position; // Target position at index 0
-                        OuputVectors[0] = First.Position; // Position at index 0
+                        OutputVectors[0] = First.Position; // Position at index 0
                         Vector3 Scale = GetScale();
-                        OuputVectors[1] = Scale;    // Scale at index 1
+                        OutputVectors[1] = Scale;    // Scale at index 1
                         TargetVectors[1] = Scale;    // Target scale at index 1
                     }
                     catch (Exception ex)
@@ -159,7 +159,7 @@ namespace Basis.Scripts.Networking.Receivers
                         EuroFilterHandle.Complete();
 
 
-                        ApplyPoseData(Player.BasisAvatar.Animator, OuputVectors[1], OuputVectors[0], OutputRotation, enableEuroFilter ? EuroValuesOutput : musclesPreEuro);
+                        ApplyPoseData(Player.BasisAvatar.Animator, OutputVectors[1], OutputVectors[0], OutputRotation, enableEuroFilter ? EuroValuesOutput : musclesPreEuro);
                         PoseHandler.SetHumanPose(ref HumanPose);
 
                         RemotePlayer.RemoteBoneDriver.SimulateAndApply(RemotePlayer, DeltaTime);
@@ -299,7 +299,7 @@ namespace Basis.Scripts.Networking.Receivers
             if (!Ready)
             {
                 HumanPose.muscles = new float[95];
-                OuputVectors = new NativeArray<float3>(2, Allocator.Persistent); // Index 0 = position, Index 1 = scale
+                OutputVectors = new NativeArray<float3>(2, Allocator.Persistent); // Index 0 = position, Index 1 = scale
                 TargetVectors = new NativeArray<float3>(2, Allocator.Persistent); // Index 0 = target position, Index 1 = target scale
                 musclesPreEuro = new NativeArray<float>(LocalAvatarSyncMessage.StoredBones, Allocator.Persistent);
                 targetMuscles = new NativeArray<float>(LocalAvatarSyncMessage.StoredBones, Allocator.Persistent);
@@ -312,7 +312,7 @@ namespace Basis.Scripts.Networking.Receivers
                 AvatarJob = new UpdateAvatarJob();
                 musclesJob.Outputmuscles = musclesPreEuro;
                 musclesJob.targetMuscles = targetMuscles;
-                AvatarJob.OutputVector = OuputVectors;
+                AvatarJob.OutputVector = OutputVectors;
                 AvatarJob.TargetVector = TargetVectors;
 
                 ForceUpdateFilters();
@@ -354,7 +354,7 @@ namespace Basis.Scripts.Networking.Receivers
         public override void DeInitialize()
         {
             // Dispose vector data if initialized
-            if (OuputVectors != null && OuputVectors.IsCreated) OuputVectors.Dispose();
+            if (OutputVectors != null && OutputVectors.IsCreated) OutputVectors.Dispose();
             if (TargetVectors != null && TargetVectors.IsCreated) TargetVectors.Dispose();
             if (musclesPreEuro != null && musclesPreEuro.IsCreated) musclesPreEuro.Dispose();
             if (targetMuscles != null && targetMuscles.IsCreated) targetMuscles.Dispose();

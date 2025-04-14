@@ -3,6 +3,7 @@ using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Drivers;
 using Basis.Scripts.Networking.NetworkedAvatar;
 using OpusSharp.Core;
+using OpusSharp.Core.Extensions;
 using SteamAudio;
 using System;
 using UnityEngine;
@@ -27,7 +28,7 @@ namespace Basis.Scripts.Networking.Receivers
         public float[] silentData;
         public byte lastReadIndex = 0;
         public Transform AudioSourceTransform;
-        private float playbackVolume = 1.0f;
+
         public float[] resampledSegment;
         public void OnDecode(byte[] data, int length)
         {
@@ -112,13 +113,35 @@ namespace Basis.Scripts.Networking.Receivers
         }
         public void ChangeRemotePlayersVolumeSettings(float Volume = 1.0f, float dopplerLevel = 0, float spatialBlend = 1.0f, bool spatialize = true, bool spatializePostEffects = true)
         {
+            // Set spatial and doppler settings
             audioSource.spatialize = spatialize;
             audioSource.spatializePostEffects = spatializePostEffects;
             audioSource.spatialBlend = spatialBlend;
             audioSource.dopplerLevel = dopplerLevel;
 
-            playbackVolume = Mathf.Clamp(Volume, 0f, 1.5f);
-            audioSource.volume = Mathf.Min(playbackVolume, 1.0f); // audioSource.volume must stay within [0, 1]
+            short Gain;
+
+            if (Volume <= 0f)
+            {
+                // Mute audio source and set gain to 0
+                audioSource.volume = 0f;
+                Gain = 256;
+            }
+            else if (Volume <= 1f)
+            {
+                // Set audio volume directly, gain stays at default (1.0 * 1024)
+                audioSource.volume = Volume;
+                Gain = (short)1024; // Normal gain
+            }
+            else
+            {
+                // Max out Unity volume, and use Opus gain for amplification
+                audioSource.volume = 1f;
+                Gain = (short)(Volume * 1024);
+            }
+
+            BasisDebug.Log("Set Gain To " + Gain);
+            OpusDecoderExtensions.SetGain(decoder, Gain);
         }
         public void OnAudioFilterRead(float[] data, int channels, int length)
         {
