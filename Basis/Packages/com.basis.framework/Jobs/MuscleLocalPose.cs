@@ -1,4 +1,4 @@
-﻿using Unity.Mathematics;
+using Unity.Mathematics;
 
 [System.Serializable]
 public struct MuscleLocalPose

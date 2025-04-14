@@ -1,4 +1,4 @@
-﻿public struct PoseAsSquare
+public struct PoseAsSquare
 {
     public MuscleLocalPose[] TopLeft;
     public MuscleLocalPose[] TopRight;

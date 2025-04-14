@@ -12,7 +12,7 @@ using UnityEngine.Jobs;
 [DefaultExecutionOrder(15001)]
 [BurstCompile]
 [System.Serializable]
-public abstract class BasisBaseMuscleDriver
+public class BasisBaseMuscleDriver
 {
     public HumanPoseHandler poseHandler;
     public HumanPose pose;
@@ -33,19 +33,6 @@ public abstract class BasisBaseMuscleDriver
     public FingerPose LeftFinger;
     [SerializeField]
     public FingerPose RightFinger;
-    /// <summary>
-    /// 0.7 = straight fingers
-    /// -1 is fully closed
-    /// </summary>
-    [System.Serializable]
-    public struct FingerPose
-    {
-        public Vector2 ThumbPercentage;
-        public Vector2 IndexPercentage;
-        public Vector2 MiddlePercentage;
-        public Vector2 RingPercentage;
-        public Vector2 LittlePercentage;
-    }
 
     public Vector2 LastLeftThumbPercentage = new Vector2(-1.1f, -1.1f);
     public Vector2 LastLeftIndexPercentage = new Vector2(-1.1f, -1.1f);
@@ -76,12 +63,12 @@ public abstract class BasisBaseMuscleDriver
     public NativeArray<float> DistancesArray;
     public NativeArray<int> closestIndexArray;
     public float LerpSpeed = 17f;
+    public bool[] allHasProximal;
+    public Transform[] allTransforms;
     public static float MapValue(float value, float minSource, float maxSource, float minTarget, float maxTarget)
     {
         return minTarget + (maxTarget - minTarget) * ((value - minSource) / (maxSource - minSource));
     }
-    public bool[] allHasProximal;
-    public Transform[] allTransforms;
     public NativeArray<MuscleLocalPose> LoadMappingData()
     {
         Basis.Scripts.Common.BasisTransformMapping Mapping = BasisLocalPlayer.Instance.LocalAvatarDriver.References;
@@ -124,7 +111,7 @@ public abstract class BasisBaseMuscleDriver
     {
         if (offset + count > total)
         {
-            Debug.LogWarning($"Skipping {fingerName}: not enough data in source array (Offset: {offset}, Count: {count}, Total: {total})");
+            BasisDebug.Log($"Skipping {fingerName}: not enough data in source array (Offset: {offset}, Count: {count}, Total: {total})");
             target = new MuscleLocalPose[count]; // Zeroed fallback
             return;
         }
@@ -134,7 +121,9 @@ public abstract class BasisBaseMuscleDriver
     private void ExtractFingerPoses(ref MuscleLocalPose[] poses, NativeArray<MuscleLocalPose> allPoses, ref int offset, int length)
     {
         if (poses == null || poses.Length != length)
+        {
             poses = new MuscleLocalPose[length];
+        }
 
         NativeArray<MuscleLocalPose>.Copy(allPoses, offset, poses, 0, length);
         offset += length;
@@ -373,66 +362,5 @@ public abstract class BasisBaseMuscleDriver
 
         // Return result
         return CoordToPose.TryGetValue(closestPoint, out first);
-    }
-
-    [BurstCompile]
-    private struct FindClosestPointJob : IJobParallelFor
-    {
-        public Vector2 target;
-        [ReadOnly]
-        public NativeArray<Vector2> coordKeys;
-        [WriteOnly]
-        public NativeArray<float> distances;
-
-        public void Execute(int index)
-        {
-            distances[index] = Vector2.Distance(coordKeys[index], target);
-        }
-    }
-
-    [BurstCompile]
-    private struct FindMinDistanceJob : IJob
-    {
-        [ReadOnly]
-        public NativeArray<float> distances;
-        public NativeArray<int> closestIndex;
-
-        public void Execute()
-        {
-            float minDistance = float.MaxValue;
-            int minIndex = -1;
-
-            for (int Index = 0; Index < distances.Length; Index++)
-            {
-                if (distances[Index] < minDistance)
-                {
-                    minDistance = distances[Index];
-                    minIndex = Index;
-                }
-            }
-
-            closestIndex[0] = minIndex;
-        }
-    }
-    [BurstCompile]
-    public struct RecordAllFingersJob : IJobParallelForTransform
-    {
-        [ReadOnly]
-        public NativeArray<bool> HasProximal;
-        [WriteOnly]
-        public NativeArray<MuscleLocalPose> FingerPoses;
-
-        public void Execute(int index, TransformAccess transform)
-        {
-            if (HasProximal[index])
-            {
-                transform.GetLocalPositionAndRotation(out Vector3 localPosition, out Quaternion rotation);
-                FingerPoses[index] = new MuscleLocalPose
-                {
-                    position = localPosition,
-                    rotation = rotation
-                };
-            }
-        }
     }
 }

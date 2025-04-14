@@ -6,7 +6,6 @@ using Basis.Scripts.Common;
 using Basis.Scripts.Device_Management;
 using Basis.Scripts.Drivers;
 using Basis.Scripts.Eye_Follow;
-using Basis.Scripts.TransformBinders.BoneControl;
 using Basis.Scripts.UI.UI_Panels;
 using System;
 using System.Collections.Generic;
@@ -281,8 +280,6 @@ namespace Basis.Scripts.BasisSdk.Players
 
             //process Animator and IK processes.
             LocalAvatarDriver.SimulateAnimatorAndIk();
-            //handles fingers
-            LocalMuscleDriver.UpdateFingers(LocalAvatarDriver);
 
             //we move the player at the very end after everything has been processed.
             LocalCharacterDriver.SimulateMovement(DeltaTime, this.transform);
@@ -299,6 +296,9 @@ namespace Basis.Scripts.BasisSdk.Players
             //now that everything has been processed lets update WorldPosition in BoneDriver.
             //this is so AfterFinalMove can use world position coords. (stops Laggy pickups)
             LocalBoneDriver.PostSimulateBonePositions();
+
+            //handles fingers
+            LocalMuscleDriver.UpdateFingers(LocalAvatarDriver);
 
             //now other things can move like UI and NON-CHILDREN OF BASISLOCALPLAYER.
             AfterFinalMove?.Invoke();
