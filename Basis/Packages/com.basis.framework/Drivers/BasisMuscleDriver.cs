@@ -8,7 +8,6 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Jobs;
-using static UnityEngine.GraphicsBuffer;
 [DefaultExecutionOrder(15001)]
 [System.Serializable]
 public class BasisMuscleDriver
@@ -88,6 +87,14 @@ public class BasisMuscleDriver
     }
     public void Initialize(Animator animator)
     {
+        Basis.Scripts.Common.BasisTransformMapping Mapping = BasisLocalPlayer.Instance.LocalAvatarDriver.References;
+        // Aggregate data for all fingers
+        allTransforms = AggregateFingerTransforms(
+            Mapping.LeftThumb, Mapping.LeftIndex, Mapping.LeftMiddle, Mapping.LeftRing, Mapping.LeftLittle,
+            Mapping.RightThumb, Mapping.RightIndex, Mapping.RightMiddle, Mapping.RightRing, Mapping.RightLittle);
+        allHasProximal = AggregateHasProximal(
+             Mapping.HasLeftThumb, Mapping.HasLeftIndex, Mapping.HasLeftMiddle, Mapping.HasLeftRing, Mapping.HasLeftLittle,
+             Mapping.HasRightThumb, Mapping.HasRightIndex, Mapping.HasRightMiddle, Mapping.HasRightRing, Mapping.HasRightLittle);
         // Initialize the HumanPoseHandler with the animator's avatar and transform
         poseHandler = new HumanPoseHandler(animator.avatar, animator.transform);
         // Initialize the HumanPose
@@ -225,15 +232,6 @@ public class BasisMuscleDriver
     }
     public void RecordCurrentPose(ref PoseData poseData)
     {
-        Basis.Scripts.Common.BasisTransformMapping Mapping = BasisLocalPlayer.Instance.LocalAvatarDriver.References;
-
-        // Aggregate data for all fingers
-        Transform[] allTransforms = AggregateFingerTransforms(
-            Mapping.LeftThumb, Mapping.LeftIndex, Mapping.LeftMiddle, Mapping.LeftRing, Mapping.LeftLittle,
-            Mapping.RightThumb, Mapping.RightIndex, Mapping.RightMiddle, Mapping.RightRing, Mapping.RightLittle);
-        bool[] allHasProximal = AggregateHasProximal(
-            Mapping.HasLeftThumb, Mapping.HasLeftIndex, Mapping.HasLeftMiddle, Mapping.HasLeftRing, Mapping.HasLeftLittle,
-            Mapping.HasRightThumb, Mapping.HasRightIndex, Mapping.HasRightMiddle, Mapping.HasRightRing, Mapping.HasRightLittle);
 
         // Record all finger poses
         NativeArray<MuscleLocalPose> allFingerPoses = RecordAllFingerPoses(allTransforms, allHasProximal);
@@ -475,10 +473,10 @@ public class BasisMuscleDriver
         TransformAccessArray transformAccessArray = new TransformAccessArray(length);
 
         // Fill NativeArrays and TransformAccessArray
-        for (int i = 0; i < length; i++)
+        for (int Index = 0; Index < length; Index++)
         {
-            hasProximalArray[i] = allHasProximal[i];
-            transformAccessArray.Add(allTransforms[i]);
+            hasProximalArray[Index] = allHasProximal[Index];
+            transformAccessArray.Add(allTransforms[Index]);
         }
 
         // Create and schedule the job
