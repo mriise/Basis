@@ -179,7 +179,7 @@ namespace Basis.Scripts.Drivers
                 BasisBoneTrackedRole Role = trackedRoles[Index];
                 if (State)
                 {
-                    if(Role == BasisBoneTrackedRole.CenterEye)
+                    if(Role == BasisBoneTrackedRole.CenterEye && Application.isEditor == false)
                     {
                         continue;
                     }

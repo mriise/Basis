@@ -11,6 +11,7 @@ namespace Basis.Scripts.BasisSdk.Players
         public string DisplayName;
         public string UUID;
         public BasisAvatar BasisAvatar;
+        public Transform BasisAvatarTransform;
         public AddressableGenericResource AvatarAddressableGenericResource;
         [HideInInspector]
         public BasisLoadableBundle AvatarMetaData;

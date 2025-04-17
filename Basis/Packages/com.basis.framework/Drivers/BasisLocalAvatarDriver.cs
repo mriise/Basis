@@ -171,9 +171,9 @@ namespace Basis.Scripts.Drivers
                 Spine.HasRigLayer = BasisHasRigLayer.HasRigLayer;
             }
             StoredRolesTransforms = BasisAvatarIKStageCalibration.GetAllRolesAsTransform();
-            player.BasisAvatar.transform.parent = player.transform;
-            player.BasisAvatar.transform.SetLocalPositionAndRotation(-Hips.TposeLocal.position, Quaternion.identity);
-            AvatarUPDownDirectionCalibration = Vector3.right; //Player.BasisAvatar.transform.right;
+            player.BasisAvatarTransform.parent = player.transform;
+            player.BasisAvatarTransform.SetLocalPositionAndRotation(-Hips.TposeLocal.position, Quaternion.identity);
+            AvatarUPDownDirectionCalibration = Vector3.right;
             MaxExtendedDistance = Vector3.Distance(BasisLocalBoneDriver.Head.TposeLocal.position, BasisLocalBoneDriver.Hips.TposeLocal.position);
             BuildBuilder();
             if (BasisLocalCameraDriver.Instance != null)

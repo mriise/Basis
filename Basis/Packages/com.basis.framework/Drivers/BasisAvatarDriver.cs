@@ -181,14 +181,14 @@ namespace Basis.Scripts.Drivers
                 BasisBoneControl Control = driver.Controls[Index];
                 if (driver.trackedRoles[Index] == BasisBoneTrackedRole.CenterEye)
                 {
-                    GetWorldSpaceRotAndPos(() => Player.BasisAvatar.AvatarEyePosition, out quaternion Rotation, out float3 TposeWorld);
+                    GetWorldSpaceRotAndPos(() => Player.BasisAvatar.AvatarEyePosition, out float3 TposeWorld);
                     SetInitialData(BasisPlayer.BasisAvatar.Animator, Control, driver.trackedRoles[Index], TposeWorld);
                 }
                 else
                 {
                     if (driver.trackedRoles[Index] == BasisBoneTrackedRole.Mouth)
                     {
-                        GetWorldSpaceRotAndPos(() => Player.BasisAvatar.AvatarMouthPosition, out quaternion Rotation, out float3 TposeWorld);
+                        GetWorldSpaceRotAndPos(() => Player.BasisAvatar.AvatarMouthPosition,  out float3 TposeWorld);
                         SetInitialData(BasisPlayer.BasisAvatar.Animator, Control, driver.trackedRoles[Index], TposeWorld);
                     }
                     else
@@ -261,9 +261,8 @@ namespace Basis.Scripts.Drivers
         {
             return new Vector3(value.x * scale.x, value.y * scale.y, value.z * scale.z);
         }
-        public void GetWorldSpaceRotAndPos(Func<Vector2> positionSelector, out quaternion rotation, out float3 position)
+        public void GetWorldSpaceRotAndPos(Func<Vector2> positionSelector, out float3 position)
         {
-            rotation = Quaternion.identity;
             position = Vector3.zero;
             if (BasisHelpers.TryGetFloor(Player.BasisAvatar.Animator, out float3 bottom))
             {

@@ -41,11 +41,6 @@ namespace Basis.Scripts.Drivers
             FindBone(out LeftLowerArmControl, BasisBoneTrackedRole.LeftLowerArm);
             FindBone(out RightLowerArmControl, BasisBoneTrackedRole.RightLowerArm);
         }
-        public void SimulateBonePositions(float DeltaTime)
-        {
-            SimulateAndApply(BasisLocalPlayer.Instance,DeltaTime);
-            
-        }
         public void PostSimulateBonePositions()
         {
             SimulateWorldDestinations(BasisLocalPlayer.Instance.transform);

@@ -3,6 +3,7 @@ using Basis.Scripts.BasisSdk.Helpers;
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Drivers;
 using Basis.Scripts.TransformBinders.BoneControl;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.InputSystem;
@@ -25,6 +26,7 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
         public bool HasEyeEvents = false;
         [SerializeField]
         private List<string> headPauseRequests = new();
+        public float InjectedZRot = 0;
         public void Initalize(string ID = "Desktop Eye", string subSystems = "BasisDesktopManagement")
         {
             BasisDebug.Log("Initializing Avatar Eye", BasisDebug.LogTag.Input);
@@ -42,7 +44,7 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
             }
             FinalPosition = LocalRawPosition;
             FinalRotation = LocalRawRotation;
-             InitalizeTracking(ID, ID, subSystems, true, BasisBoneTrackedRole.CenterEye);
+            InitalizeTracking(ID, ID, subSystems, true, BasisBoneTrackedRole.CenterEye);
             if (BasisHelpers.CheckInstance(Instance))
             {
                 Instance = this;
@@ -53,12 +55,14 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
             {
                 BasisLocalPlayer.Instance.OnLocalAvatarChanged += PlayerInitialized;
                 BasisLocalPlayer.Instance.OnPlayersHeightChanged += BasisLocalPlayer_OnPlayersHeightChanged;
+               // BasisLocalPlayer.Instance.LocalAvatarDriver.CalibrationComplete += OnCalibration;
                 BasisLocalPlayer_OnPlayersHeightChanged();
                 BasisCursorManagement.OnCursorStateChange += OnCursorStateChange;
                 BasisPointRaycaster.UseWorldPosition = false;
                 BasisVirtualSpine.Initialize();
                 HasEyeEvents = true;
             }
+          //  OnCalibration();
         }
         public void PauseHead(string requestName)
         {
@@ -87,6 +91,7 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
                 BasisLocalPlayer.Instance.OnLocalAvatarChanged -= PlayerInitialized;
                 BasisLocalPlayer.Instance.OnPlayersHeightChanged -= BasisLocalPlayer_OnPlayersHeightChanged;
                 BasisCursorManagement.OnCursorStateChange -= OnCursorStateChange;
+              //  BasisLocalPlayer.Instance.LocalAvatarDriver.CalibrationComplete -= OnCalibration;
                 HasEyeEvents = false;
 
                 BasisVirtualSpine.DeInitialize();
@@ -124,7 +129,6 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
             rotationX += lookVector.x * rotationSpeed;
             rotationY -= lookVector.y * rotationSpeed;
         }
-        public float InjectedZRot = 0;
         public override void DoPollData()
         {
             if (hasRoleAssigned)
@@ -133,26 +137,37 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
                 {
                     BasisLocalInputActions.Instance.InputState.CopyTo(InputState);
                 }
-                // InputState.CopyTo(characterInputActions.InputState);
                 // Apply modulo operation to keep rotation within 0 to 360 range
                 rotationX %= 360f;
                 rotationY %= 360f;
                 // Clamp rotationY to stay within the specified range
                 rotationY = Mathf.Clamp(rotationY, minimumY, maximumY);
-                LocalRawRotation = Quaternion.Euler(rotationY, rotationX, InjectedZRot);
-                Vector3 adjustedHeadPosition = new Vector3(InjectedX, BasisLocalPlayer.Instance.CurrentHeight.SelectedPlayerHeight, InjectedZ);
-                if (BasisLocalInputActions.Crouching)
-                {
-                    adjustedHeadPosition.y -= Control.TposeLocal.position.y * crouchPercentage;
-                }
-                LocalRawPosition = adjustedHeadPosition;
-                Control.IncomingData.position = LocalRawPosition;
-                Control.IncomingData.rotation = LocalRawRotation;
-                FinalPosition = LocalRawPosition;
+
+                Quaternion rotation = Quaternion.Euler(rotationY, rotationX, InjectedZRot);
+                LocalRawRotation = rotation;
+                // Calculate position and apply rotated offset
+                LocalRawPosition = new Vector3(InjectedX, BasisLocalPlayer.Instance.CurrentHeight.SelectedAvatarHeight, InjectedZ);
+
+
+                FinalPosition = BasisLocalPlayer.Instance?.CurrentHeight != null? LocalRawPosition * BasisLocalPlayer.Instance.CurrentHeight.SelectedAvatarToAvatarDefaultScale: LocalRawPosition;
+
                 FinalRotation = LocalRawRotation;
+
+                if (hasRoleAssigned && Control.HasTracked != BasisHasTracked.HasNoTracker)
+                {
+                    // Apply position offset using math.mul for quaternion-vector multiplication
+                    Control.IncomingData.position = FinalPosition - math.mul(FinalRotation, AvatarPositionOffset * BasisLocalPlayer.Instance.CurrentHeight.SelectedAvatarToAvatarDefaultScale);
+
+                    // Apply rotation offset using math.mul for quaternion multiplication
+                    Control.IncomingData.rotation = FinalRotation;
+                }
+                FinalPosition.x = X;
+                FinalPosition.z = Z;
                 UpdatePlayerControl();
             }
         }
+        public float X;
+        public float Z;
         public override void ShowTrackedVisual()
         {
             if (BasisVisualTracker == null && LoadedDeviceRequest == null)

@@ -166,6 +166,7 @@ namespace Basis.Scripts.Avatar
             {
                 DeleteLastAvatar(Player, true);
                 Player.BasisAvatar = Avatar;
+                Player.BasisAvatarTransform = Avatar.transform;
                 Player.BasisAvatar.Renders = Player.BasisAvatar.GetComponentsInChildren<Renderer>(true);
                 switch (Player)
                 {
@@ -241,6 +242,7 @@ namespace Basis.Scripts.Avatar
             if (InSceneLoadingAvatar.TryGetComponent(out BasisAvatar Avatar))
             {
                 Player.BasisAvatar = Avatar;
+                Player.BasisAvatarTransform = Avatar.transform;
                 Player.BasisAvatar.Renders = Player.BasisAvatar.GetComponentsInChildren<Renderer>(true);
                 int RenderCount = Player.BasisAvatar.Renders.Length;
                 if (Player.IsLocal)

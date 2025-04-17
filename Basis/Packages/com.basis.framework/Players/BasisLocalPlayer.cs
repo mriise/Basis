@@ -223,11 +223,11 @@ namespace Basis.Scripts.BasisSdk.Players
             {
                 LocalMuscleDriver.DisposeAllJobsData();
             }
-            if(LocalEyeFollow != null)
+            if (LocalEyeFollow != null)
             {
                 LocalEyeFollow.OnDestroy(this);
             }
-            if(FacialBlinkDriver != null)
+            if (FacialBlinkDriver != null)
             {
                 FacialBlinkDriver.OnDestroy();
             }
@@ -272,7 +272,7 @@ namespace Basis.Scripts.BasisSdk.Players
             }
 
             //moves all bones to where they belong
-            LocalBoneDriver.SimulateBonePositions(DeltaTime);
+            LocalBoneDriver.SimulateAndApply(this, DeltaTime);
             //moves Avatar Transform to where it belongs
             Quaternion Rotation = MoveAvatar();
             //Simulate Final Destination of IK
@@ -310,37 +310,34 @@ namespace Basis.Scripts.BasisSdk.Players
                 return Quaternion.identity;
             }
 
-            // Current world positions
-            Vector3 headPosition = BasisLocalBoneDriver.Head.OutgoingWorldData.position;//OutgoingWorldData is out of date here potentially?
+            // World positions
+            Vector3 headPosition = BasisLocalBoneDriver.Head.OutgoingWorldData.position;
             Vector3 hipsPosition = BasisLocalBoneDriver.Hips.OutgoingWorldData.position;
+            Quaternion parentWorldRotation = BasisLocalBoneDriver.Hips.OutgoingWorldData.rotation;
+
             currentDistance = Vector3.Distance(headPosition, hipsPosition);
 
+            // Use blended XZ center, but keep hips Y for grounded position
+            Vector3 blendedXZ = Vector3.Lerp(hipsPosition, headPosition, 0.5f);
+            blendedXZ.y = hipsPosition.y;
+            Vector3 centerPosition = blendedXZ;
 
             if (currentDistance <= LocalAvatarDriver.MaxExtendedDistance)
             {
-                // Within range: follow hips freely
                 output = -BasisLocalBoneDriver.Hips.TposeLocal.position;
             }
             else
             {
-                // Direction from hips to head
-                direction = (hipsPosition - headPosition).normalized;
-                // Head too far: pull hips toward head to reduce the stretch
-                overshoot = currentDistance - LocalAvatarDriver.MaxExtendedDistance;
-
-                // Move hips slightly toward head to restore default distance
-                correction = direction * overshoot;
-
-                // Apply correction to T-pose hips
-                float3 correctedHips = BasisLocalBoneDriver.Hips.TposeLocal.position + correction;
-
-                // Negate to match transform.localPosition logic
+                Vector3 direction = (hipsPosition - headPosition).normalized;
+                float overshoot = currentDistance - LocalAvatarDriver.MaxExtendedDistance;
+                Vector3 correction = direction * overshoot;
+                Vector3 TposeHips = BasisLocalBoneDriver.Hips.TposeLocal.position;
+                float3 correctedHips = TposeHips + correction;
                 output = -correctedHips;
             }
-            Vector3 parentWorldPosition = BasisLocalBoneDriver.Hips.OutgoingWorldData.position;
-            Quaternion parentWorldRotation = BasisLocalBoneDriver.Hips.OutgoingWorldData.rotation;
 
-            Vector3 childWorldPosition = parentWorldPosition + parentWorldRotation * output;
+            Vector3 childWorldPosition = centerPosition + parentWorldRotation * output;
+
             BasisAvatar.transform.SetPositionAndRotation(childWorldPosition, parentWorldRotation);
             return parentWorldRotation;
         }

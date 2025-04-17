@@ -115,7 +115,7 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
                 // All checks passed
                 PoseHandler = new HumanPoseHandler(
                     basisAvatar.Animator.avatar,
-                    basisAvatar.transform
+                    Player.BasisAvatarTransform
                 );
                 PoseHandler.GetHumanPose(ref HumanPose);
                 if (!basisAvatar.HasSendEvent)
