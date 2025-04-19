@@ -32,15 +32,15 @@ namespace Basis.Scripts.Device_Management.Devices.Simulation
 
             LocalRawPosition /= BasisLocalPlayer.Instance.CurrentHeight.SelectedPlayerToDefaultScale;
 
-            FinalPosition = LocalRawPosition * BasisLocalPlayer.Instance.CurrentHeight.SelectedPlayerToDefaultScale;
-            FinalRotation = LocalRawRotation;
+            TransformFinalPosition = LocalRawPosition * BasisLocalPlayer.Instance.CurrentHeight.SelectedPlayerToDefaultScale;
+            TransformFinalRotation = LocalRawRotation;
             if (hasRoleAssigned)
             {
                 if (Control.HasTracked != BasisHasTracked.HasNoTracker)
                 {
                     // Apply the position offset using math.mul for quaternion-vector multiplication
-                    Control.IncomingData.position = FinalPosition - math.mul(FinalRotation, AvatarPositionOffset * BasisLocalPlayer.Instance.CurrentHeight.SelectedAvatarToAvatarDefaultScale);
-                    Control.IncomingData.rotation = math.mul(FinalRotation, Quaternion.Euler(AvatarRotationOffset));
+                    Control.IncomingData.position = TransformFinalPosition - math.mul(TransformFinalRotation, AvatarPositionOffset * BasisLocalPlayer.Instance.CurrentHeight.SelectedAvatarToAvatarDefaultScale);
+                    Control.IncomingData.rotation = math.mul(TransformFinalRotation, Quaternion.Euler(AvatarRotationOffset));
                 }
             }
             UpdatePlayerControl();

@@ -4,7 +4,7 @@ using UnityEngine;
 /// -1 is fully closed
 /// </summary>
 [System.Serializable]
-public struct FingerPose
+public struct BasisFingerPose
 {
     public Vector2 ThumbPercentage;
     public Vector2 IndexPercentage;

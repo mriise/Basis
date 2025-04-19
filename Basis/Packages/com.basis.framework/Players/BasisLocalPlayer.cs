@@ -49,8 +49,8 @@ namespace Basis.Scripts.BasisSdk.Players
         public Action OnPlayersHeightChanged;
         public OrderedDelegate AfterFinalMove = new OrderedDelegate();
 
-        public LocalHeightInformation CurrentHeight;
-        public LocalHeightInformation LastHeight;
+        public LocalHeightInformation CurrentHeight = new LocalHeightInformation();
+        public LocalHeightInformation LastHeight= new LocalHeightInformation();
         public MicrophoneRecorder MicrophoneRecorder;
         public BasisLocalCameraDriver CameraDriver;
         //bones that we use to map between avatar and trackers

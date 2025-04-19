@@ -4,9 +4,9 @@ using UnityEngine.UI;
 namespace Basis.Scripts.UI
 {
     [System.Serializable]
-    public struct RaycastHitData
+    public struct BasisRaycastHitData
     {
-        public RaycastHitData(Graphic graphic, Vector3 worldHitPosition, Vector2 screenPosition, float distance, int displayIndex)
+        public BasisRaycastHitData(Graphic graphic, Vector3 worldHitPosition, Vector2 screenPosition, float distance, int displayIndex)
         {
             this.graphic = graphic;
             this.worldHitPosition = worldHitPosition;

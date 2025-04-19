@@ -13,9 +13,9 @@ using UnityEngine.Jobs;
 public class BasisMuscleDriver
 {
     [SerializeField]
-    public PoseData RestingOnePoseData;
+    public BasisPoseData RestingOnePoseData;
     [SerializeField]
-    public PoseData CurrentOnPoseData;
+    public BasisPoseData CurrentOnPoseData;
     //  public string[] Muscles;
     public float increment = 0.2f;
     public HumanPoseHandler poseHandler;
@@ -34,9 +34,9 @@ public class BasisMuscleDriver
     public float[] RightLittle;
 
     [SerializeField]
-    public FingerPose LeftFinger;
+    public BasisFingerPose LeftFinger;
     [SerializeField]
-    public FingerPose RightFinger;
+    public BasisFingerPose RightFinger;
 
     public Vector2 LastLeftThumbPercentage = new Vector2(-1.1f, -1.1f);
     public Vector2 LastLeftIndexPercentage = new Vector2(-1.1f, -1.1f);
@@ -49,20 +49,20 @@ public class BasisMuscleDriver
     public Vector2 LastRightMiddlePercentage = new Vector2(-1.1f, -1.1f);
     public Vector2 LastRightRingPercentage = new Vector2(-1.1f, -1.1f);
     public Vector2 LastRightLittlePercentage = new Vector2(-1.1f, -1.1f);
-    public Dictionary<Vector2, PoseDataAdditional> CoordToPose = new Dictionary<Vector2, PoseDataAdditional>();
+    public Dictionary<Vector2, BasisPoseDataAdditional> CoordToPose = new Dictionary<Vector2, BasisPoseDataAdditional>();
     public Vector2[] CoordKeys; // Cached array of keys for optimization
 
-    public PoseDataAdditional LeftThumbAdditional;
-    public PoseDataAdditional LeftIndexAdditional;
-    public PoseDataAdditional LeftMiddleAdditional;
-    public PoseDataAdditional LeftRingAdditional;
-    public PoseDataAdditional LeftLittleAdditional;
+    public BasisPoseDataAdditional LeftThumbAdditional;
+    public BasisPoseDataAdditional LeftIndexAdditional;
+    public BasisPoseDataAdditional LeftMiddleAdditional;
+    public BasisPoseDataAdditional LeftRingAdditional;
+    public BasisPoseDataAdditional LeftLittleAdditional;
 
-    public PoseDataAdditional RightThumbAdditional;
-    public PoseDataAdditional RightIndexAdditional;
-    public PoseDataAdditional RightMiddleAdditional;
-    public PoseDataAdditional RightRingAdditional;
-    public PoseDataAdditional RightLittleAdditional;
+    public BasisPoseDataAdditional RightThumbAdditional;
+    public BasisPoseDataAdditional RightIndexAdditional;
+    public BasisPoseDataAdditional RightMiddleAdditional;
+    public BasisPoseDataAdditional RightRingAdditional;
+    public BasisPoseDataAdditional RightLittleAdditional;
     public NativeArray<Vector2> CoordKeysArray;
     public NativeArray<float> DistancesArray;
     public NativeArray<int> closestIndexArray;
@@ -111,20 +111,20 @@ public class BasisMuscleDriver
         CoordToPose.Clear();
 
         // List to hold all PoseData points
-        List<PoseDataAdditional> points = new List<PoseDataAdditional>();
+        List<BasisPoseDataAdditional> points = new List<BasisPoseDataAdditional>();
 
         // Loop through the square grid using the increment
         for (float x = BottomLeft.x; x <= BottomRight.x; x += increment)
         {
             for (float y = BottomLeft.y; y <= TopLeft.y; y += increment)
             {
-                PoseData poseData = new PoseData();
+                BasisPoseData poseData = new BasisPoseData();
 
                 // Set and record pose based on x and y coordinates
                 SetAndRecordPose(x, ref poseData, y);
 
                 // Add the poseData to the list
-                PoseDataAdditional poseadd = new PoseDataAdditional
+                BasisPoseDataAdditional poseadd = new BasisPoseDataAdditional
                 {
                     PoseData = poseData,
                     Coord = new Vector2(x, y)
@@ -134,40 +134,40 @@ public class BasisMuscleDriver
         }
 
         // Optionally, handle the situation where increment doesn't land exactly on the corner points
-        PoseData topLeftPose = new PoseData();
+        BasisPoseData topLeftPose = new BasisPoseData();
         SetAndRecordPose(TopLeft.x, ref topLeftPose, TopLeft.y);
         // Add the poseData to the list
-        PoseDataAdditional poseDataAdditional = new PoseDataAdditional
+        BasisPoseDataAdditional poseDataAdditional = new BasisPoseDataAdditional
         {
             PoseData = topLeftPose,
             Coord = TopLeft
         };
         points.Add(poseDataAdditional);
 
-        PoseData topRightPose = new PoseData();
+        BasisPoseData topRightPose = new BasisPoseData();
         SetAndRecordPose(TopRight.x, ref topRightPose, TopRight.y);
         // Add the poseData to the list
-        poseDataAdditional = new PoseDataAdditional
+        poseDataAdditional = new BasisPoseDataAdditional
         {
             PoseData = topRightPose,
             Coord = TopRight
         };
         points.Add(poseDataAdditional);
 
-        PoseData bottomLeftPose = new PoseData();
+        BasisPoseData bottomLeftPose = new BasisPoseData();
         SetAndRecordPose(BottomLeft.x, ref bottomLeftPose, BottomLeft.y);
         // Add the poseData to the list
-        poseDataAdditional = new PoseDataAdditional
+        poseDataAdditional = new BasisPoseDataAdditional
         {
             PoseData = bottomLeftPose,
             Coord = BottomLeft
         };
         points.Add(poseDataAdditional);
 
-        PoseData bottomRightPose = new PoseData();
+        BasisPoseData bottomRightPose = new BasisPoseData();
         SetAndRecordPose(BottomRight.x, ref bottomRightPose, BottomRight.y);
         // Add the poseData to the list
-        poseDataAdditional = new PoseDataAdditional
+        poseDataAdditional = new BasisPoseDataAdditional
         {
             PoseData = bottomRightPose,
             Coord = BottomRight
@@ -232,11 +232,11 @@ public class BasisMuscleDriver
     {
         UpdateAllFingers(BasisLocalAvatarDriver.References, ref CurrentOnPoseData);
     }
-    public void RecordCurrentPose(ref PoseData poseData)
+    public void RecordCurrentPose(ref BasisPoseData poseData)
     {
 
         // Record all finger poses
-        NativeArray<MuscleLocalPose> allFingerPoses = RecordAllFingerPoses(allTransforms, allHasProximal);
+        NativeArray<BasisMuscleLocalPose> allFingerPoses = RecordAllFingerPoses(allTransforms, allHasProximal);
 
         // Distribute poses to individual fingers
         int offset = 0;
@@ -263,17 +263,17 @@ public class BasisMuscleDriver
         return hasProximalArrays.SelectMany(h => h).ToArray();
     }
 
-    private void ExtractFingerPoses(ref MuscleLocalPose[] poses, NativeArray<MuscleLocalPose> allPoses, ref int offset, int length)
+    private void ExtractFingerPoses(ref BasisMuscleLocalPose[] poses, NativeArray<BasisMuscleLocalPose> allPoses, ref int offset, int length)
     {
         if (poses == null || poses.Length != length)
         {
-            poses = new MuscleLocalPose[length];
+            poses = new BasisMuscleLocalPose[length];
         }
 
-        NativeArray<MuscleLocalPose>.Copy(allPoses, offset, poses, 0, length);
+        NativeArray<BasisMuscleLocalPose>.Copy(allPoses, offset, poses, 0, length);
         offset += length;
     }
-    public void SetAndRecordPose(float fillValue, ref PoseData poseData, float Splane)
+    public void SetAndRecordPose(float fillValue, ref BasisPoseData poseData, float Splane)
     {
         // Apply muscle data to both hands
         SetMuscleData(ref LeftThumb, fillValue, Splane);
@@ -312,7 +312,7 @@ public class BasisMuscleDriver
         Array.Fill(muscleArray, fillValue);
         muscleArray[1] = specificValue;
     }
-    public void UpdateAllFingers(Basis.Scripts.Common.BasisTransformMapping Map, ref PoseData Current)
+    public void UpdateAllFingers(Basis.Scripts.Common.BasisTransformMapping Map, ref BasisPoseData Current)
     {
         float Rotation = LerpSpeed * Time.deltaTime;
 
@@ -396,7 +396,7 @@ public class BasisMuscleDriver
         }
         UpdateFingerPoses(Map.RightLittle, RightLittleAdditional.PoseData.RightLittle, ref Current.RightLittle, Map.HasRightLittle, Rotation);
     }
-    public void UpdateFingerPoses(Transform[] proximal, MuscleLocalPose[] poses, ref MuscleLocalPose[] currentPoses, bool[] hasProximal, float rotation)
+    public void UpdateFingerPoses(Transform[] proximal, BasisMuscleLocalPose[] poses, ref BasisMuscleLocalPose[] currentPoses, bool[] hasProximal, float rotation)
     {
         // Update proximal pose if available
         if (hasProximal[0])
@@ -434,21 +434,21 @@ public class BasisMuscleDriver
             proximal[2].SetLocalPositionAndRotation(newDistalPosition, newDistalRotation);
         }
     }
-    public bool GetClosestValue(Vector2 percentage, out PoseDataAdditional first)
+    public bool GetClosestValue(Vector2 percentage, out BasisPoseDataAdditional first)
     {
         // Create and schedule the distance computation job
-        var distanceJob = new FindClosestPointJob
+        var distanceJob = new BasisFindClosestPointJob
         {
             target = percentage,
-            coordKeys = CoordKeysArray,
-            distances = DistancesArray
+            CoordKeys = CoordKeysArray,
+            Distances = DistancesArray
         };
 
         JobHandle distanceJobHandle = distanceJob.Schedule(CoordKeysArray.Length, 64);
         distanceJobHandle.Complete();
 
         // Create and schedule the parallel reduction job
-        var reductionJob = new FindMinDistanceJob
+        var reductionJob = new BasisFindMinDistanceJob
         {
             distances = DistancesArray,
             closestIndex = closestIndexArray
@@ -465,13 +465,13 @@ public class BasisMuscleDriver
         return CoordToPose.TryGetValue(closestPoint, out first);
     }
 
-    private NativeArray<MuscleLocalPose> RecordAllFingerPoses(Transform[] allTransforms, bool[] allHasProximal)
+    private NativeArray<BasisMuscleLocalPose> RecordAllFingerPoses(Transform[] allTransforms, bool[] allHasProximal)
     {
         int length = allTransforms.Length;
 
         // Prepare NativeArrays and TransformAccessArray
         NativeArray<bool> hasProximalArray = new NativeArray<bool>(length, Allocator.Persistent);
-        NativeArray<MuscleLocalPose> fingerPoses = new NativeArray<MuscleLocalPose>(length, Allocator.Persistent);
+        NativeArray<BasisMuscleLocalPose> fingerPoses = new NativeArray<BasisMuscleLocalPose>(length, Allocator.Persistent);
         TransformAccessArray transformAccessArray = new TransformAccessArray(length);
 
         // Fill NativeArrays and TransformAccessArray
@@ -482,7 +482,7 @@ public class BasisMuscleDriver
         }
 
         // Create and schedule the job
-        RecordAllFingersJob job = new RecordAllFingersJob
+        BasisRecordAllFingersJob job = new BasisRecordAllFingersJob
         {
             HasProximal = hasProximalArray,
             FingerPoses = fingerPoses

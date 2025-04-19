@@ -1,7 +1,7 @@
 using Unity.Mathematics;
 
 [System.Serializable]
-public struct MuscleLocalPose
+public struct BasisMuscleLocalPose
 {
     public float3 position;
     public quaternion rotation;

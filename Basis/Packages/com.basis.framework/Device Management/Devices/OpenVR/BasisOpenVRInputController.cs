@@ -20,17 +20,17 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
         {
             if (HasOnUpdate && poseAction != null)
             {
-                poseAction[inputSource].onUpdate -= SteamVR_Behaviour_Pose_OnUpdate;
+                poseAction[inputSource].onUpdate -= SteamVR_Behavior_Pose_OnUpdate;
                 HasOnUpdate = false;
             }
             inputSource = SteamVR_Input_Sources;
             Device = device;
-           InitalizeTracking(UniqueID, UnUniqueID, subSystems, AssignTrackedRole, basisBoneTrackedRole);
+            InitalizeTracking(UniqueID, UnUniqueID, subSystems, AssignTrackedRole, basisBoneTrackedRole);
             if (poseAction != null)
             {
                 if (HasOnUpdate == false)
                 {
-                    poseAction[inputSource].onUpdate += SteamVR_Behaviour_Pose_OnUpdate;
+                    poseAction[inputSource].onUpdate += SteamVR_Behavior_Pose_OnUpdate;
                     HasOnUpdate = true;
                 }
             }
@@ -45,7 +45,7 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
         {
             if (poseAction != null)
             {
-                poseAction[inputSource].onUpdate -= SteamVR_Behaviour_Pose_OnUpdate;
+                poseAction[inputSource].onUpdate -= SteamVR_Behavior_Pose_OnUpdate;
                 HasOnUpdate = false;
             }
             if (SkeletonHandInput != null)
@@ -72,7 +72,7 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
                 UpdatePlayerControl();
             }
         }
-        private void SteamVR_Behaviour_Pose_OnUpdate(SteamVR_Action_Pose fromAction, SteamVR_Input_Sources fromSource)
+        private void SteamVR_Behavior_Pose_OnUpdate(SteamVR_Action_Pose fromAction, SteamVR_Input_Sources fromSource)
         {
             UpdateHistoryBuffer();
             if (HasOnUpdate)
@@ -80,17 +80,17 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
                 LocalRawPosition = poseAction[inputSource].localPosition;
                 LocalRawRotation = poseAction[inputSource].localRotation;
             }
-            FinalPosition = LocalRawPosition * BasisLocalPlayer.Instance.CurrentHeight.SelectedAvatarToAvatarDefaultScale;
-            FinalRotation = LocalRawRotation;
+            TransformFinalPosition = LocalRawPosition * BasisLocalPlayer.Instance.CurrentHeight.SelectedAvatarToAvatarDefaultScale;
+            TransformFinalRotation = LocalRawRotation;
             if (hasRoleAssigned)
             {
                 if (Control.HasTracked != BasisHasTracked.HasNoTracker)
                 {
                     // Apply position offset using math.mul for quaternion-vector multiplication
-                    Control.IncomingData.position = FinalPosition - math.mul(FinalRotation, AvatarPositionOffset * BasisLocalPlayer.Instance.CurrentHeight.SelectedAvatarToAvatarDefaultScale);
+                    Control.IncomingData.position = TransformFinalPosition - math.mul(TransformFinalRotation, AvatarPositionOffset * BasisLocalPlayer.Instance.CurrentHeight.SelectedAvatarToAvatarDefaultScale);
 
                     // Apply rotation offset using math.mul for quaternion multiplication
-                    Control.IncomingData.rotation = math.mul(FinalRotation, Quaternion.Euler(AvatarRotationOffset));
+                    Control.IncomingData.rotation = math.mul(TransformFinalRotation, Quaternion.Euler(AvatarRotationOffset));
                 }
             }
         }

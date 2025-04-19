@@ -49,19 +49,19 @@ public class BasisOpenXRHeadInput : BasisInput
         if (Position.action != null) LocalRawPosition = Position.action.ReadValue<Vector3>();
         if (Rotation.action != null) LocalRawRotation = Rotation.action.ReadValue<Quaternion>();
 
-        FinalPosition = BasisLocalPlayer.Instance?.CurrentHeight != null
+        TransformFinalPosition = BasisLocalPlayer.Instance?.CurrentHeight != null
             ? LocalRawPosition * BasisLocalPlayer.Instance.CurrentHeight.SelectedAvatarToAvatarDefaultScale
             : LocalRawPosition;
 
-        FinalRotation = LocalRawRotation;
+        TransformFinalRotation = LocalRawRotation;
 
         if (hasRoleAssigned && Control.HasTracked != BasisHasTracked.HasNoTracker)
         {
             // Apply position offset using math.mul for quaternion-vector multiplication
-            Control.IncomingData.position = FinalPosition - math.mul(FinalRotation, AvatarPositionOffset * BasisLocalPlayer.Instance.CurrentHeight.SelectedAvatarToAvatarDefaultScale);
+            Control.IncomingData.position = TransformFinalPosition - math.mul(TransformFinalRotation, AvatarPositionOffset * BasisLocalPlayer.Instance.CurrentHeight.SelectedAvatarToAvatarDefaultScale);
 
             // Apply rotation offset using math.mul for quaternion multiplication
-            Control.IncomingData.rotation = FinalRotation;
+            Control.IncomingData.rotation = TransformFinalRotation;
         }
 
         UpdatePlayerControl();

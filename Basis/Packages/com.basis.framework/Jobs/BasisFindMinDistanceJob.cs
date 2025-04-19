@@ -3,9 +3,11 @@ using Unity.Collections;
 using Unity.Jobs;
 
 [BurstCompile]
-public struct FindMinDistanceJob : IJob
+public struct BasisFindMinDistanceJob : IJob
 {
-    [ReadOnly] public NativeArray<float> distances;
+    [ReadOnly]
+    public NativeArray<float> distances;
+    [WriteOnly]
     public NativeArray<int> closestIndex;
 
     public void Execute()

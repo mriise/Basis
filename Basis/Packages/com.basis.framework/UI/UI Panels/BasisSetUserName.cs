@@ -14,7 +14,6 @@ namespace Basis.Scripts.UI.UI_Panels
         public TMP_InputField UserNameTMP_InputField;
         public Button Ready;
         public static string LoadFileName = "CachedUserName.BAS";
-        public bool UseAddressables;
         public Button AdvancedSettings;
         public GameObject AdvancedSettingsPanel;
         [Header("Advanced Settings")]

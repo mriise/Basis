@@ -1,20 +1,18 @@
-using Basis.Scripts.Device_Management.Devices;
-using Basis.Scripts.TransformBinders.BoneControl;
-using UnityEngine;
-using static BasisBaseMuscleDriver;
-using UnityEngine.InputSystem;
-using Unity.Mathematics;
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Device_Management;
-using UnityEngine.AddressableAssets;
-using UnityEngine.XR;
+using Basis.Scripts.Device_Management.Devices;
+using Basis.Scripts.TransformBinders.BoneControl;
 using System.Collections.Generic;
-
+using Unity.Mathematics;
+using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.InputSystem;
+using UnityEngine.XR;
 public class BasisOpenXRHandInput : BasisInput
 {
-    public FingerPose FingerCurls;
-    public InputActionProperty DevicePosition;
-    public InputActionProperty DeviceRotation;
+    public BasisFingerPose FingerCurls;
+    public InputActionProperty DeviceActionPosition;
+    public InputActionProperty DeviceActionRotation;
     public InputActionProperty PalmPosition;
     public InputActionProperty PalmRotation;
     public InputActionProperty Trigger;
@@ -25,7 +23,11 @@ public class BasisOpenXRHandInput : BasisInput
     public InputActionProperty Primary2DAxis;
     public InputActionProperty Secondary2DAxis;
 
+    public Vector3 Palmdeviceposition;
+    public Quaternion PalmdeviceRotation;
 
+    public float3 GripTransformPosition;
+    public quaternion GripTransformRotation;
     public void Initialize(string UniqueID, string UnUniqueID, string subSystems, bool AssignTrackedRole, BasisBoneTrackedRole basisBoneTrackedRole)
     {
         InitalizeTracking(UniqueID, UnUniqueID, subSystems, AssignTrackedRole, basisBoneTrackedRole);
@@ -51,11 +53,11 @@ public class BasisOpenXRHandInput : BasisInput
         PalmPosition.action.Enable();
         PalmRotation.action.Enable();
 
-        DevicePosition = new InputActionProperty(new InputAction($"{devicePath}/devicePosition", InputActionType.Value, $"{devicePath}/devicePosition", expectedControlType: "Vector3"));
-        DeviceRotation = new InputActionProperty(new InputAction($"{devicePath}/deviceRotation", InputActionType.Value, $"{devicePath}/deviceRotation", expectedControlType: "Quaternion"));
+        DeviceActionPosition = new InputActionProperty(new InputAction($"{devicePath}/devicePosition", InputActionType.Value, $"{devicePath}/devicePosition", expectedControlType: "Vector3"));
+        DeviceActionRotation = new InputActionProperty(new InputAction($"{devicePath}/deviceRotation", InputActionType.Value, $"{devicePath}/deviceRotation", expectedControlType: "Quaternion"));
 
-        DevicePosition.action.Enable();
-        DeviceRotation.action.Enable();
+        DeviceActionPosition.action.Enable();
+        DeviceActionRotation.action.Enable();
     }
     private void SetupInputActions(string devicePath)
     {
@@ -64,7 +66,6 @@ public class BasisOpenXRHandInput : BasisInput
             Debug.LogError("Device path is null or empty.");
             return;
         }
-
         Trigger = new InputActionProperty(new InputAction(devicePath + "/trigger", InputActionType.Value, devicePath + "/trigger", expectedControlType: "Float"));
         Grip = new InputActionProperty(new InputAction(devicePath + "/grip", InputActionType.Value, devicePath + "/grip", expectedControlType: "Float"));
         PrimaryButton = new InputActionProperty(new InputAction(devicePath + "/primaryButton", InputActionType.Button, devicePath + "/primaryButton", expectedControlType: "Button"));
@@ -72,10 +73,8 @@ public class BasisOpenXRHandInput : BasisInput
         MenuButton = new InputActionProperty(new InputAction(devicePath + "/menuButton", InputActionType.Button, devicePath + "/menuButton", expectedControlType: "Button"));
         Primary2DAxis = new InputActionProperty(new InputAction(devicePath + "/primary2DAxis", InputActionType.Value, devicePath + "/primary2DAxis", expectedControlType: "Vector2"));
         Secondary2DAxis = new InputActionProperty(new InputAction(devicePath + "/secondary2DAxis", InputActionType.Value, devicePath + "/secondary2DAxis", expectedControlType: "Vector2"));
-
         EnableInputActions();
     }
-
     private void EnableInputActions()
     {
         EnableInputAction(PalmPosition);
@@ -88,7 +87,6 @@ public class BasisOpenXRHandInput : BasisInput
         EnableInputAction(Primary2DAxis);
         EnableInputAction(Secondary2DAxis);
     }
-
     private void DisableInputActions()
     {
         DisableInputAction(PalmPosition);
@@ -101,7 +99,6 @@ public class BasisOpenXRHandInput : BasisInput
         DisableInputAction(Primary2DAxis);
         DisableInputAction(Secondary2DAxis);
     }
-
     private void EnableInputAction(InputActionProperty actionProperty) => actionProperty.action?.Enable();
     private void DisableInputAction(InputActionProperty actionProperty) => actionProperty.action?.Disable();
 
@@ -110,21 +107,20 @@ public class BasisOpenXRHandInput : BasisInput
         DisableInputActions();
         base.OnDestroy();
     }
-    public Vector3 deviceposition;
-    public Quaternion deviceRotation;
     public override void DoPollData()
     {
-        LocalRawPosition = PalmPosition.action.ReadValue<Vector3>();
-         LocalRawRotation = PalmRotation.action.ReadValue<Quaternion>();
+        Palmdeviceposition = PalmPosition.action.ReadValue<Vector3>();
+        PalmdeviceRotation = PalmRotation.action.ReadValue<Quaternion>();
 
-        deviceposition = DevicePosition.action.ReadValue<Vector3>();
-        deviceRotation = DeviceRotation.action.ReadValue<Quaternion>();
+        LocalRawPosition = DeviceActionPosition.action.ReadValue<Vector3>();
+        LocalRawRotation = DeviceActionRotation.action.ReadValue<Quaternion>();
 
-        FinalPosition = BasisLocalPlayer.Instance?.CurrentHeight != null
-            ? LocalRawPosition * BasisLocalPlayer.Instance.CurrentHeight.SelectedAvatarToAvatarDefaultScale
-            : LocalRawPosition;
+        float Scale = BasisLocalPlayer.Instance.CurrentHeight.SelectedAvatarToAvatarDefaultScale;
+        GripTransformPosition = Palmdeviceposition * Scale;
+        GripTransformRotation = PalmdeviceRotation;
 
-        FinalRotation = LocalRawRotation;
+        TransformFinalPosition = LocalRawPosition * Scale;
+        TransformFinalRotation = LocalRawRotation;
 
         InputState.Primary2DAxis = Primary2DAxis.action?.ReadValue<Vector2>() ?? Vector2.zero;
         InputState.Secondary2DAxis = Secondary2DAxis.action?.ReadValue<Vector2>() ?? Vector2.zero;
@@ -140,10 +136,10 @@ public class BasisOpenXRHandInput : BasisInput
         if (hasRoleAssigned && Control.HasTracked != BasisHasTracked.HasNoTracker)
         {
             // Apply position offset using math.mul for quaternion-vector multiplication
-            Control.IncomingData.position = FinalPosition - math.mul(FinalRotation, AvatarPositionOffset * BasisLocalPlayer.Instance.CurrentHeight.SelectedAvatarToAvatarDefaultScale);
+            Control.IncomingData.position = GripTransformPosition - math.mul(GripTransformRotation, AvatarPositionOffset * Scale);
 
             // Apply rotation offset using math.mul for quaternion multiplication
-            Control.IncomingData.rotation = math.mul(FinalRotation, Quaternion.Euler(AvatarRotationOffset));
+            Control.IncomingData.rotation = math.mul(GripTransformRotation, Quaternion.Euler(AvatarRotationOffset));
         }
 
         CalculateFingerCurls();
@@ -207,7 +203,7 @@ public class BasisOpenXRHandInput : BasisInput
                                 break;
                         }
 
-                        BasisDebug.Log("name was found to be "+ LoadRequest + " for device " + Device.name + " picked from " + inputDevices.Count, BasisDebug.LogTag.Device);
+                        BasisDebug.Log("name was found to be " + LoadRequest + " for device " + Device.name + " picked from " + inputDevices.Count, BasisDebug.LogTag.Device);
 
                         var op = Addressables.LoadAssetAsync<GameObject>(LoadRequest);
                         GameObject go = op.WaitForCompletion();

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 namespace Basis.Scripts.UI
 {
     /// </summary>
-    sealed class RaycastHitComparer : IComparer<RaycastHitData>
+    sealed class BasisRaycastHitComparer : IComparer<BasisRaycastHitData>
     {
-        public int Compare(RaycastHitData a, RaycastHitData b)
+        public int Compare(BasisRaycastHitData a, BasisRaycastHitData b)
             => b.graphic.depth.CompareTo(a.graphic.depth);
     }
 }

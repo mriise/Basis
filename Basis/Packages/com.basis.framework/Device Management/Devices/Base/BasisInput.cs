@@ -25,8 +25,8 @@ namespace Basis.Scripts.Device_Management.Devices
         public float3 LocalRawPosition;
         public quaternion LocalRawRotation;
         [Header("Final Data normally just modified by EyeHeight/AvatarEyeHeight)")]
-        public float3 FinalPosition;
-        public quaternion FinalRotation;
+        public float3 TransformFinalPosition;
+        public quaternion TransformFinalRotation;
         [Header("Avatar Offset Applied Per Frame")]
         public float3 AvatarPositionOffset = Vector3.zero;
         public float3 AvatarRotationOffset = Vector3.zero;
@@ -183,7 +183,7 @@ namespace Basis.Scripts.Device_Management.Devices
         }
         public void ApplyFinalMovement()
         {
-            transform.SetLocalPositionAndRotation(FinalPosition, FinalRotation);
+            transform.SetLocalPositionAndRotation(TransformFinalPosition, TransformFinalRotation);
         }
         public void UnAssignFullBodyTrackers()
         {

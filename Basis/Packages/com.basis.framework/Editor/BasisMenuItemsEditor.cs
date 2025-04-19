@@ -58,7 +58,7 @@ public static class BasisMenuItemsEditor
     public static void DestroyAndRebuildXRInput()
     {
         DestroyXRInput();
-        List<StoredPreviousDevice> allDevicesToRemove = new List<StoredPreviousDevice>(BasisDeviceManagement.Instance.PreviouslyConnectedDevices);
+        List<BasisStoredPreviousDevice> allDevicesToRemove = new List<BasisStoredPreviousDevice>(BasisDeviceManagement.Instance.PreviouslyConnectedDevices);
         foreach (var device in allDevicesToRemove)
         {
            FindSimulate().CreatePhysicalTrackedDevice(device.UniqueID, "{htc}vr_tracker_vive_3_0");

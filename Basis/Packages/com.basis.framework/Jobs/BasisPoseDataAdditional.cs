@@ -2,9 +2,9 @@ using UnityEngine;
 
 [SerializeField]
 [System.Serializable]
-public struct PoseDataAdditional
+public struct BasisPoseDataAdditional
 {
     [SerializeField]
-    public PoseData PoseData;
+    public BasisPoseData PoseData;
     public Vector2 Coord;
 }

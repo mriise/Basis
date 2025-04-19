@@ -77,7 +77,7 @@ namespace Basis.Scripts.Device_Management
         [SerializeField]
         public List<BasisLockToInput> BasisLockToInputs = new List<BasisLockToInput>();
         [SerializeField]
-        public List<StoredPreviousDevice> PreviouslyConnectedDevices = new List<StoredPreviousDevice>();
+        public List<BasisStoredPreviousDevice> PreviouslyConnectedDevices = new List<BasisStoredPreviousDevice>();
         [SerializeField]
         public List<BasisDeviceMatchSettings> UseAbleDeviceConfigs = new List<BasisDeviceMatchSettings>();
         [SerializeField]
@@ -417,7 +417,7 @@ namespace Basis.Scripts.Device_Management
             if (AllInputDevices.Contains(basisXRInput) == false)
             {
                 AllInputDevices.Add(basisXRInput);
-                if (RestoreDevice(basisXRInput.SubSystemIdentifier, basisXRInput.UniqueDeviceIdentifier, out StoredPreviousDevice PreviousDevice))
+                if (RestoreDevice(basisXRInput.SubSystemIdentifier, basisXRInput.UniqueDeviceIdentifier, out BasisStoredPreviousDevice PreviousDevice))
                 {
                     if (CheckBeforeOverride(PreviousDevice))
                     {
@@ -436,7 +436,7 @@ namespace Basis.Scripts.Device_Management
             }
             return false;
         }
-        IEnumerator RestoreInversetOffsets(BasisInput basisXRInput, StoredPreviousDevice PreviousDevice)
+        IEnumerator RestoreInversetOffsets(BasisInput basisXRInput, BasisStoredPreviousDevice PreviousDevice)
         {
             yield return new WaitForEndOfFrame();
             if (basisXRInput != null && basisXRInput.Control != null)
@@ -450,7 +450,7 @@ namespace Basis.Scripts.Device_Management
             }
 
         }
-        public bool CheckBeforeOverride(StoredPreviousDevice Stored)
+        public bool CheckBeforeOverride(BasisStoredPreviousDevice Stored)
         {
             foreach (var device in AllInputDevices)
             {
@@ -491,7 +491,7 @@ namespace Basis.Scripts.Device_Management
         {
             if (DevicesThatsGettingPurged.TryGetRole(out BasisBoneTrackedRole Role) && DevicesThatsGettingPurged.Control != null)
             {
-                StoredPreviousDevice StoredPreviousDevice = new StoredPreviousDevice
+                BasisStoredPreviousDevice StoredPreviousDevice = new BasisStoredPreviousDevice
                 { InverseOffsetFromBone = DevicesThatsGettingPurged.Control.InverseOffsetFromBone }; ;
 
                 StoredPreviousDevice.trackedRole = Role;
@@ -501,9 +501,9 @@ namespace Basis.Scripts.Device_Management
                 PreviouslyConnectedDevices.Add(StoredPreviousDevice);
             }
         }
-        public bool RestoreDevice(string SubSystem, string id, out StoredPreviousDevice StoredPreviousDevice)
+        public bool RestoreDevice(string SubSystem, string id, out BasisStoredPreviousDevice StoredPreviousDevice)
         {
-            foreach (StoredPreviousDevice Device in PreviouslyConnectedDevices)
+            foreach (BasisStoredPreviousDevice Device in PreviouslyConnectedDevices)
             {
                 if (Device.UniqueID == id && Device.SubSystem == SubSystem)
                 {
