@@ -1,4 +1,3 @@
-using Basis.Scripts.Avatar;
 using Basis.Scripts.Common;
 using System;
 using Unity.Burst;

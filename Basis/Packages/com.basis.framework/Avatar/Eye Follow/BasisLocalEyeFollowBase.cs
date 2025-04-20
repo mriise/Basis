@@ -17,8 +17,8 @@ namespace Basis.Scripts.Eye_Follow
         public static bool Override = false;
         public float lookSpeed; // Speed of looking
                                 // Adjustable parameters
-        public float MinlookAroundInterval = 1; // Interval between each look around in seconds
-        public float MaxlookAroundInterval = 6;
+        public float MinLookAroundInterval = 1; // Interval between each look around in seconds
+        public float MaxLookAroundInterval = 6;
         public float MaximumLookDistance = 0.25f; // Maximum offset from the target position
         public float minLookSpeed = 0.03f; // Minimum speed of looking
         public float maxLookSpeed = 0.1f; // Maximum speed of looking
@@ -40,9 +40,9 @@ namespace Basis.Scripts.Eye_Follow
         public float3 RightEyeTargetWorld;
         public float3 CenterTargetWorld;
         public float3 AppliedOffset;
-        public float3 EyeFowards = new float3(0, 0, 1);
+        public float3 EyeForwards = new float3(0, 0, 1);
 
-        public float CurrentlookAroundInterval;
+        public float CurrentLookAroundInterval;
         public float timer; // Timer to track look-around interval
         public float DistanceBeforeTeleport = 30;
         public static BasisLocalEyeFollowBase Instance;
@@ -179,9 +179,9 @@ namespace Basis.Scripts.Eye_Follow
                 timer += Time.deltaTime;
 
                 // Check if it's time to look around
-                if (timer > CurrentlookAroundInterval)
+                if (timer > CurrentLookAroundInterval)
                 {
-                    CurrentlookAroundInterval = UnityEngine.Random.Range(MinlookAroundInterval, MaxlookAroundInterval);
+                    CurrentLookAroundInterval = UnityEngine.Random.Range(MinLookAroundInterval, MaxLookAroundInterval);
                     AppliedOffset = UnityEngine.Random.insideUnitSphere * MaximumLookDistance;
 
                     // Reset timer and randomize look speed
@@ -191,10 +191,10 @@ namespace Basis.Scripts.Eye_Follow
 
                 HeadTransform.GetPositionAndRotation(out Vector3 headPosition, out Quaternion headRotation);
                 float3 float3headPosition = headPosition;
-                quaternion QheadRotation = headRotation;
+                quaternion QHeadRotation = headRotation;
                 quaternion InversedHeadRotation = math.inverse(headRotation);
                 // Calculate the randomized target position using float3 for optimized math operations
-                float3 targetPosition = float3headPosition + math.mul(QheadRotation, EyeFowards) + AppliedOffset;
+                float3 targetPosition = float3headPosition + math.mul(QHeadRotation, EyeForwards) + AppliedOffset;
 
                 // Check distance for teleporting, otherwise smooth move
                 if (math.distance(targetPosition, CenterTargetWorld) > DistanceBeforeTeleport || wasDisabled)
