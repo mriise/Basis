@@ -1,4 +1,5 @@
 using Basis.Network.Core;
+using Basis.Scripts.Avatar;
 using Basis.Scripts.Networking.NetworkedAvatar;
 using Basis.Scripts.Profiler;
 using LiteNetLib;
@@ -139,7 +140,7 @@ namespace Basis.Scripts.Networking.Transmitters
                 }
                 if (Rec.RemotePlayer.HasJiggles)
                 {
-                   if(float.IsNaN(CalculatedDistances[Index]) || CalculatedDistances[Index] == 0)
+                    if (float.IsNaN(CalculatedDistances[Index]) || CalculatedDistances[Index] == 0)
                     {
                         CalculatedDistances[Index] = 0.1f;
                     }
@@ -147,23 +148,11 @@ namespace Basis.Scripts.Networking.Transmitters
                 }
                 Rec.RemotePlayer.FacialBlinkDriver.Simulate();
                 Rec.RemotePlayer.EyeFollow.Simulate();
-                /*
-                if (Rec.RemotePlayer.IsNotFallBack != AvatarIndex[Index])
+                if (Rec.RemotePlayer.InAvatarRange != AvatarIndex[Index])
                 {
-                    if (AvatarIndex[Index])
-                    {
-                        BasisLoadableBundle BasisLoadableBundle = BasisBundleConversionNetwork.ConvertNetworkBytesToBasisLoadableBundle(Rec.RemotePlayer.CACM.byteArray);
-
-                        Rec.RemotePlayer.CreateAvatar(Rec.RemotePlayer.CACM.loadMode, BasisLoadableBundle);
-                        Rec.RemotePlayer.IsNotFallBack = true;
-                    }
-                    else
-                    {
-                     //   BasisAvatarFactory.LoadLoadingAvatar(Rec.RemotePlayer, BasisAvatarFactory.LoadingAvatar.BasisLocalEncryptedBundle.LocalBundleFile);
-                       // Rec.RemotePlayer.IsNotFallBack = false;
-                    }
+                    Rec.RemotePlayer.InAvatarRange = AvatarIndex[Index];
+                    Rec.RemotePlayer.CreateAvatar(Rec.RemotePlayer.CACM.loadMode, Rec.RemotePlayer.AlwaysRequestedAvatar);
                 }
-                */
             }
         }
         /// <summary>

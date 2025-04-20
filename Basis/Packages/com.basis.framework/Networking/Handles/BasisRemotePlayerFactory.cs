@@ -10,7 +10,7 @@ using static SerializableBasis;
 
 namespace Basis.Scripts.Networking
 {
-    public static class BasisNetworkHandleRemote
+    public static class BasisRemotePlayerFactory
     {
         public static async Task HandleCreateRemotePlayer(LiteNetLib.NetPacketReader reader,Transform Parent)
         {
@@ -37,7 +37,7 @@ namespace Basis.Scripts.Networking
                 // Retrieve the results
                 BasisRemotePlayer remote = await createRemotePlayerTask;
                 // Continue with the rest of the code
-                RemoteInitalization(BasisNetworkReceiver, remote);
+                RemoteInitialization(BasisNetworkReceiver, remote);
                 if (BasisNetworkManagement.AddPlayer(BasisNetworkReceiver))
                 {
                     BasisDebug.Log("Added Player AT " + BasisNetworkReceiver.NetId);
@@ -63,7 +63,7 @@ namespace Basis.Scripts.Networking
                 return null;
             }
         }
-        public static void RemoteInitalization(BasisNetworkReceiver BasisNetworkReceiver, BasisRemotePlayer RemotePlayer)
+        public static void RemoteInitialization(BasisNetworkReceiver BasisNetworkReceiver, BasisRemotePlayer RemotePlayer)
         {
             BasisNetworkReceiver.Player = RemotePlayer;
             RemotePlayer.NetworkReceiver = BasisNetworkReceiver;

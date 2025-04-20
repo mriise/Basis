@@ -529,7 +529,7 @@ namespace Basis.Scripts.Networking
                     }
                     BasisNetworkManagement.MainThreadContext.Post(async _ =>
                     {
-                        await BasisNetworkHandleRemote.HandleCreateRemotePlayer(Reader, this.transform);
+                        await BasisRemotePlayerFactory.HandleCreateRemotePlayer(Reader, this.transform);
                         Reader.Recycle();
                     }, null);
                     break;
@@ -543,7 +543,7 @@ namespace Basis.Scripts.Networking
                     BasisNetworkManagement.MainThreadContext.Post(async _ =>
                     {
                         //this one is called first and is also generally where the issues are.
-                        await BasisNetworkHandleRemote.HandleCreateRemotePlayer(Reader, this.transform);
+                        await BasisRemotePlayerFactory.HandleCreateRemotePlayer(Reader, this.transform);
                         Reader.Recycle();
                     }, null);
                     break;

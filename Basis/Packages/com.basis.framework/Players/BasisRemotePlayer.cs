@@ -27,6 +27,9 @@ namespace Basis.Scripts.BasisSdk.Players
         public byte AlwaysRequestedMode;
         [SerializeField]
         public BasisRemoteEyeFollow EyeFollow = new BasisRemoteEyeFollow();
+
+        public bool InAvatarRange = true;
+
         public async Task RemoteInitialize(ClientAvatarChangeMessage cACM, PlayerMetaDataMessage PlayerMetaDataMessage)
         {
             CACM = cACM;
@@ -86,7 +89,7 @@ namespace Basis.Scripts.BasisSdk.Players
             AlwaysRequestedMode = Mode;
             AlwaysRequestedAvatar = BasisLoadableBundle;
             BasisPlayerSettingsData BasisPlayerSettingsData = await BasisPlayerSettingsManager.RequestPlayerSettings(UUID);
-            if (BasisPlayerSettingsData.AvatarVisible)
+            if (BasisPlayerSettingsData.AvatarVisible && InAvatarRange)
             {
                 if (BasisLoadableBundle.BasisLocalEncryptedBundle.LocalConnectorPath == BasisAvatarFactory.LoadingAvatar.BasisLocalEncryptedBundle.LocalConnectorPath)
                 {

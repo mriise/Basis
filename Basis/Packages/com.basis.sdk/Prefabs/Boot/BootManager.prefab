@@ -1319,7 +1319,7 @@ MonoBehaviour:
       DefaultPlatform: 1
       ExcludePlatform: 0
       ValueToggle: 1
-      EditorVisable: 1
+      EditorVisable: 0
     SupportedRenderPipeline: 030000000400000000000000
     Round: 0
     RoundTo: 2
@@ -1885,7 +1885,7 @@ MonoBehaviour:
       DefaultPlatform: 0
       ExcludePlatform: 0
       ValueToggle: 0
-      EditorVisable: 1
+      EditorVisable: 0
     SupportedRenderPipeline: 030000000400000000000000
     Round: 0
     RoundTo: 2
@@ -2055,7 +2055,7 @@ MonoBehaviour:
       DefaultPlatform: 0
       ExcludePlatform: 0
       ValueToggle: 0
-      EditorVisable: 0
+      EditorVisable: 1
     SupportedRenderPipeline: 030000000400000000000000
     Round: 0
     RoundTo: 0
@@ -2069,7 +2069,7 @@ MonoBehaviour:
     ValueDefault: 75
     Explanation: 
     selectedValue: 75
-    Type: 4
+    Type: 3
     TextDescription: {fileID: 0}
     ObjectInput: {fileID: 0}
     ApplyInput: {fileID: 0}
@@ -2561,7 +2561,7 @@ MonoBehaviour:
     Index: 34
     SelectableValueList: []
     Min: 0
-    Max: 0
+    Max: 75
   DefaultSaveType:
     Platform: 0
     SaveType: JSON
