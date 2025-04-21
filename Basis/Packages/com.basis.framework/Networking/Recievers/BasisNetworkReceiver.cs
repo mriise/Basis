@@ -25,11 +25,15 @@ namespace Basis.Scripts.Networking.Receivers
         public Queue<AvatarBuffer> PayloadQueue = new Queue<AvatarBuffer>();
         public BasisRemotePlayer RemotePlayer;
         public bool HasEvents = false;
+
         private NativeArray<float3> OutputVectors;      // Merged positions and scales
         private NativeArray<float3> TargetVectors; // Merged target positions and scales
         private NativeArray<float> musclesPreEuro;
         private NativeArray<float> targetMuscles;
         private NativeArray<float> EuroValuesOutput;
+        private NativeArray<float2> positionFilters;
+        private NativeArray<float2> derivativeFilters;
+
         public JobHandle musclesHandle;
         public JobHandle AvatarHandle;
         public UpdateAvatarMusclesJob musclesJob = new UpdateAvatarMusclesJob();
@@ -51,7 +55,10 @@ namespace Basis.Scripts.Networking.Receivers
 
         public bool updateFilters;
         public bool enableEuroFilter = true;
-
+        public JobHandle EuroFilterHandle;
+        public Vector3 PositionOffset;
+        public bool LogFirstError = false;
+        public float[] Eyes = new float[4];
         /// <summary>
         /// Perform computations to interpolate and update avatar state.
         /// </summary>
@@ -152,8 +159,6 @@ namespace Basis.Scripts.Networking.Receivers
                 return Vector3.one;
             }
         }
-        public JobHandle EuroFilterHandle;
-        public Vector3 PositionOffset;
         public void Apply(double TimeAsDouble, float DeltaTime)
         {
             if (PoseHandler != null)
@@ -181,7 +186,10 @@ namespace Basis.Scripts.Networking.Receivers
                         First = Last;
                         Last = result;
 
-                        TimeBeforeCompletion = Last.SecondsInterval;
+                        if (Last != null)
+                        {
+                            TimeBeforeCompletion = Last.SecondsInterval;
+                        }
                         TimeInThePast = TimeAsDouble;
                     }
                 }
@@ -202,7 +210,6 @@ namespace Basis.Scripts.Networking.Receivers
                 }
             }
         }
-        public bool LogFirstError = false;
         public void EnQueueAvatarBuffer(ref AvatarBuffer avatarBuffer)
         {
             if(avatarBuffer == null)
@@ -264,7 +271,6 @@ namespace Basis.Scripts.Networking.Receivers
             // Adjust the local scale of the animator's transform
             animator.transform.localScale = Scale;  // Directly adjust scale with output scaling
         }
-        public float[] Eyes = new float[4];
         public static Vector3 Divide(Vector3 a, Vector3 b)
         {
             // Define a small epsilon to avoid division by zero, using a flexible value based on magnitude
@@ -301,8 +307,6 @@ namespace Basis.Scripts.Networking.Receivers
 
            await RemotePlayer.CreateAvatar(ServerAvatarChangeMessage.clientAvatarChangeMessage.loadMode, BasisLoadableBundle);
         }
-        private NativeArray<float2> positionFilters;
-        private NativeArray<float2> derivativeFilters;
         public override void Initialize()
         {
             if (!Ready)
@@ -338,10 +342,10 @@ namespace Basis.Scripts.Networking.Receivers
         }
         public void ForceUpdateFilters()
         {
-            for (int i = 0; i < LocalAvatarSyncMessage.StoredBones; i++)
+            for (int Index = 0; Index < LocalAvatarSyncMessage.StoredBones; Index++)
             {
-                positionFilters[i] = new float2(0,0);
-                derivativeFilters[i] = new float2(0,0);
+                positionFilters[Index] = new float2(0,0);
+                derivativeFilters[Index] = new float2(0,0);
             }
 
             oneEuroFilterJob = new BasisOneEuroFilterParallelJob
@@ -372,12 +376,14 @@ namespace Basis.Scripts.Networking.Receivers
             if (derivativeFilters != null && derivativeFilters.IsCreated) derivativeFilters.Dispose();
 
             // Unsubscribe from events if required
-            if (HasEvents && RemotePlayer?.RemoteAvatarDriver != null)
+            if (RemotePlayer != null)
             {
-                RemotePlayer.RemoteAvatarDriver.CalibrationComplete -= OnCalibration;
-                HasEvents = false;
+                if (HasEvents && RemotePlayer.RemoteAvatarDriver != null)
+                {
+                    RemotePlayer.RemoteAvatarDriver.CalibrationComplete -= OnCalibration;
+                    HasEvents = false;
+                }
             }
-
             // Handle audio receiver module cleanup
             AudioReceiverModule?.OnDestroy();
         }

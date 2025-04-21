@@ -13,6 +13,8 @@ namespace Basis.Scripts.Drivers
         public BasisBoneControl Head;
         public BasisBoneControl Hips;
         public BasisBoneControl Mouth;
+        public bool HasHead;
+        public bool HasHips;
         public void InitializeRemote()
         {
             FindBone(out Head, BasisBoneTrackedRole.Head);
@@ -26,10 +28,6 @@ namespace Basis.Scripts.Drivers
                 Hips.HasTracked = BasisHasTracked.HasTracker;
             }
             FindBone(out Mouth, BasisBoneTrackedRole.Mouth);
-        }
-        public void OnDestroy()
-        {
-            DeInitializeGizmos();
         }
         public void CalculateHeadBoneData()
         {
@@ -47,8 +45,6 @@ namespace Basis.Scripts.Drivers
                 Hips.IncomingData.rotation = Rotation;
             }
         }
-        public bool HasHead;
-        public bool HasHips;
         public void OnCalibration(BasisRemotePlayer remotePlayer)
         {
             HeadAvatar = RemotePlayer.BasisAvatar.Animator.GetBoneTransform(HumanBodyBones.Head);

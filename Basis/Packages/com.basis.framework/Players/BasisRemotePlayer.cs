@@ -12,6 +12,8 @@ namespace Basis.Scripts.BasisSdk.Players
     public class BasisRemotePlayer : BasisPlayer
     {
         [SerializeField]
+        public BasisRemoteEyeFollow EyeFollow = new BasisRemoteEyeFollow();
+        [SerializeField]
         public BasisRemoteBoneDriver RemoteBoneDriver = new BasisRemoteBoneDriver();
         [SerializeField]
         public BasisRemoteAvatarDriver RemoteAvatarDriver = new BasisRemoteAvatarDriver();
@@ -21,12 +23,7 @@ namespace Basis.Scripts.BasisSdk.Players
         public bool OutOfRangeFromLocal = false;
         public ClientAvatarChangeMessage CACM;
         public Transform NetworkedVoice;
-        [SerializeField]
-        public BasisRemoteEyeFollow EyeFollow = new BasisRemoteEyeFollow();
-
         public bool InAvatarRange = true;
-
-
         public byte AlwaysRequestedMode;//0 downloading 1 local
         [HideInInspector]
         public BasisLoadableBundle AlwaysRequestedAvatar;
@@ -60,7 +57,7 @@ namespace Basis.Scripts.BasisSdk.Players
         }
         public async void ReloadAvatar()
         {
-           await CreateAvatar(AlwaysRequestedMode, AlwaysRequestedAvatar);
+            await CreateAvatar(AlwaysRequestedMode, AlwaysRequestedAvatar);
         }
         public async Task CreateAvatar(byte Mode, BasisLoadableBundle BasisLoadableBundle)
         {
@@ -94,12 +91,12 @@ namespace Basis.Scripts.BasisSdk.Players
             if (FacialBlinkDriver != null)
             {
                 FacialBlinkDriver.OnDestroy();
-            } 
-            if(EyeFollow != null)
+            }
+            if (EyeFollow != null)
             {
                 EyeFollow.OnDestroy();
             }
-
+            RemoteBoneDriver.DeInitializeGizmos();
         }
         public void RemoteCalibration()
         {
