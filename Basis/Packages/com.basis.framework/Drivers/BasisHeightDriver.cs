@@ -5,7 +5,7 @@ using Basis.Scripts.Device_Management.Devices;
 using Basis.Scripts.Drivers;
 using Basis.Scripts.TransformBinders.BoneControl;
 using UnityEngine;
-using static Basis.Scripts.BasisSdk.Players.LocalHeightInformation;
+using static Basis.Scripts.BasisSdk.Players.BasisLocalHeightInformation;
 
 public static class BasisHeightDriver
 {
@@ -14,7 +14,7 @@ public static class BasisHeightDriver
     /// Adjusts the player's eye height after allowing all devices and systems to reset to their native size. 
     /// This method waits for 4 frames (including asynchronous frames) to ensure the final positions are updated.
     /// </summary>
-    public static void SetPlayersEyeHeight(BasisLocalPlayer LocalPlayer, SelectedHeightMode SelectedHeightMode)
+    public static void SetPlayersEyeHeight(BasisLocalPlayer LocalPlayer, BasisSelectedHeightMode SelectedHeightMode)
     {
         if (LocalPlayer == null)
         {

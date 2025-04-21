@@ -1,7 +1,7 @@
 namespace Basis.Scripts.BasisSdk.Players
 {
     [System.Serializable]
-    public class LocalHeightInformation
+    public partial class BasisLocalHeightInformation
     {
         public string AvatarName;
 
@@ -22,23 +22,18 @@ namespace Basis.Scripts.BasisSdk.Players
 
         public float SelectedPlayerToDefaultScale = 1f;
         public float SelectedAvatarToAvatarDefaultScale = 1f;
-        public enum SelectedHeightMode
-        {
-            ArmSpan,
-            EyeHeight,
-        }
-        public void PickRatio(SelectedHeightMode Height)
+        public void PickRatio(BasisSelectedHeightMode Height)
         {
             switch(Height)
             {
-                case SelectedHeightMode.ArmSpan:
+                case BasisSelectedHeightMode.ArmSpan:
                     SelectedPlayerHeight = PlayerArmSpan;
                     SelectedAvatarHeight = AvatarArmSpan;
 
                     SelectedPlayerToDefaultScale = ArmRatioPlayerToDefaultScale;
                     SelectedAvatarToAvatarDefaultScale = ArmRatioAvatarToAvatarDefaultScale;
                     break;
-                    case SelectedHeightMode.EyeHeight:
+                    case BasisSelectedHeightMode.EyeHeight:
                     SelectedPlayerHeight = PlayerEyeHeight;
                     SelectedAvatarHeight = AvatarEyeHeight;
 
@@ -47,9 +42,16 @@ namespace Basis.Scripts.BasisSdk.Players
                     break;
             }
         }
-        public void CopyTo(LocalHeightInformation target)
+        public void CopyTo(BasisLocalHeightInformation target)
         {
-            if (target == null) return;
+            if (target == null)
+            {
+                return;
+            }
+            else
+            {
+                BasisDebug.LogError("Missing Target Height Information");
+            }
 
             target.AvatarName = this.AvatarName;
             target.PlayerEyeHeight = this.PlayerEyeHeight;

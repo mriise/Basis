@@ -5,7 +5,7 @@ using System;
 namespace Basis.Scripts.BasisSdk.Players
 {
     [Serializable]
-    public struct AvatarNetworkLoadInformation
+    public struct BasisAvatarNetworkLoad
     {
         public string URL;
         public string UnlockPassword;
@@ -36,7 +36,7 @@ namespace Basis.Scripts.BasisSdk.Players
         /// <summary>
         /// Decodes from compressed byte data back to the structure using custom string deserialization and DeflateStream decompression.
         /// </summary>
-        public static AvatarNetworkLoadInformation DecodeFromBytes(byte[] compressedData)
+        public static BasisAvatarNetworkLoad DecodeFromBytes(byte[] compressedData)
         {
             using var compressedStream = new MemoryStream(compressedData);
             using var deflateStream = new DeflateStream(compressedStream, CompressionMode.Decompress);
@@ -48,7 +48,7 @@ namespace Basis.Scripts.BasisSdk.Players
             using var memoryStream = new MemoryStream(rawData);
             using var reader = new BinaryReader(memoryStream);
 
-            return new AvatarNetworkLoadInformation
+            return new BasisAvatarNetworkLoad
             {
                 URL = ReadString(reader),
                 UnlockPassword = ReadString(reader)
@@ -67,7 +67,7 @@ namespace Basis.Scripts.BasisSdk.Players
 
         /// <summary>
         /// Reads a string from the BinaryReader based on its length (stored as a ushort).
-        /// </summary>
+        /// </summary> 
         private static string ReadString(BinaryReader reader)
         {
             ushort length = reader.ReadUInt16(); // Read the length

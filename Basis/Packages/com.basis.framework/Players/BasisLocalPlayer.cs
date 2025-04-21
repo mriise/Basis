@@ -49,8 +49,8 @@ namespace Basis.Scripts.BasisSdk.Players
         public Action OnPlayersHeightChanged;
         public OrderedDelegate AfterFinalMove = new OrderedDelegate();
 
-        public LocalHeightInformation CurrentHeight = new LocalHeightInformation();
-        public LocalHeightInformation LastHeight= new LocalHeightInformation();
+        public BasisLocalHeightInformation CurrentHeight = new BasisLocalHeightInformation();
+        public BasisLocalHeightInformation LastHeight= new BasisLocalHeightInformation();
         public MicrophoneRecorder MicrophoneRecorder;
         public BasisLocalCameraDriver CameraDriver;
         //bones that we use to map between avatar and trackers
@@ -64,7 +64,7 @@ namespace Basis.Scripts.BasisSdk.Players
         //how the player is able to move and have physics applied to them
         [Header("Character Driver")]
         [SerializeField]
-        public LocalCharacterDriver LocalCharacterDriver = new LocalCharacterDriver();
+        public BasisLocalCharacterDriver LocalCharacterDriver = new BasisLocalCharacterDriver();
         //Animations
         [Header("Animator Driver")]
         [SerializeField]

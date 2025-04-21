@@ -7,7 +7,7 @@ using static Basis.Scripts.BasisSdk.Players.BasisPlayer;
 namespace Basis.Scripts.BasisCharacterController
 {
     [System.Serializable]
-    public class LocalCharacterDriver
+    public class BasisLocalCharacterDriver
     {
         public CharacterController characterController;
         public Vector3 bottomPointLocalspace;

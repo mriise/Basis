@@ -83,11 +83,11 @@ namespace Basis.Scripts.Avatar
                         Output = await DownloadAndLoadAvatar(BasisLoadableBundle, Player);
                         break;
                 }
-                Player.AvatarMetaData =  BasisBundleConversionNetwork.ConvertFromNetwork(new AvatarNetworkLoadInformation() {  URL = BasisLoadableBundle.BasisRemoteBundleEncrypted.CombinedURL, UnlockPassword = BasisLoadableBundle.UnlockPassword });
+                Player.AvatarMetaData =  BasisBundleConversionNetwork.ConvertFromNetwork(new BasisAvatarNetworkLoad() {  URL = BasisLoadableBundle.BasisRemoteBundleEncrypted.CombinedURL, UnlockPassword = BasisLoadableBundle.UnlockPassword });
                 Player.AvatarLoadMode = Mode;
 
                 InitializePlayerAvatar(Player, Output);
-                BasisHeightDriver.SetPlayersEyeHeight(Player, LocalHeightInformation.SelectedHeightMode.EyeHeight);
+                BasisHeightDriver.SetPlayersEyeHeight(Player, BasisLocalHeightInformation.BasisSelectedHeightMode.EyeHeight);
                 Player.AvatarSwitched();
             }
             catch (Exception e)
@@ -140,7 +140,7 @@ namespace Basis.Scripts.Avatar
                         Output = await DownloadAndLoadAvatar(BasisLoadableBundle, Player);
                         break;
                 }
-                Player.AvatarMetaData = BasisBundleConversionNetwork.ConvertFromNetwork(new AvatarNetworkLoadInformation() { URL = BasisLoadableBundle.BasisRemoteBundleEncrypted.CombinedURL, UnlockPassword = BasisLoadableBundle.UnlockPassword });
+                Player.AvatarMetaData = BasisBundleConversionNetwork.ConvertFromNetwork(new BasisAvatarNetworkLoad() { URL = BasisLoadableBundle.BasisRemoteBundleEncrypted.CombinedURL, UnlockPassword = BasisLoadableBundle.UnlockPassword });
                 Player.AvatarLoadMode = Mode;
 
                 InitializePlayerAvatar(Player, Output);

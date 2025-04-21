@@ -153,7 +153,7 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
                     array = buffer,
                     messageIndex = MessageIndex
                 };
-                BasisNetworkManagement.Instance.Transmitter.AddAdditonal(AAD);
+                BasisNetworkManagement.Instance.Transmitter.AddAdditional(AAD);
             }
             else
             {

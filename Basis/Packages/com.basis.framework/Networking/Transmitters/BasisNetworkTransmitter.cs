@@ -1,5 +1,4 @@
 using Basis.Network.Core;
-using Basis.Scripts.Avatar;
 using Basis.Scripts.Networking.NetworkedAvatar;
 using Basis.Scripts.Profiler;
 using LiteNetLib;
@@ -7,14 +6,11 @@ using LiteNetLib.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using static SerializableBasis;
-
-
 namespace Basis.Scripts.Networking.Transmitters
 {
     [DefaultExecutionOrder(15001)]
@@ -44,7 +40,7 @@ namespace Basis.Scripts.Networking.Transmitters
         public float DefaultInterval = 0.0333333333333333f;
         public float BaseMultiplier = 1f; // Starting multiplier.
         public float IncreaseRate = 0.005f; // Rate of increase per unit distance.
-        public CombinedDistanceAndClosestTransformJob distanceJob = new CombinedDistanceAndClosestTransformJob();
+        public BasisDistanceJobs distanceJob = new BasisDistanceJobs();
         public JobHandle distanceJobHandle;
         public int IndexLength = -1;
         public float SlowestSendRate = 2.5f;
@@ -56,13 +52,16 @@ namespace Basis.Scripts.Networking.Transmitters
         public bool[] AvatarIndex;
         public ushort[] HearingIndexToId;
 
-        public AdditionalAvatarData[] AdditionalAvatarDatas;
+        public AdditionalAvatarData[] AdditionalAvatarData;
         public Dictionary<byte, AdditionalAvatarData> SendingOutAvatarData = new Dictionary<byte, AdditionalAvatarData>();
+        public float[] CalculatedDistances;
+        public static Action AfterAvatarChanges;
+
         /// <summary>
         /// schedules data going out. replaces existing byte index.
         /// </summary>
         /// <param name="AvatarData"></param>
-        public void AddAdditonal(AdditionalAvatarData AvatarData)
+        public void AddAdditional(AdditionalAvatarData AvatarData)
         {
             SendingOutAvatarData[AvatarData.messageIndex] = AvatarData;
         }
@@ -111,7 +110,6 @@ namespace Basis.Scripts.Networking.Transmitters
             distanceJob.DistanceResults.CopyTo(MicrophoneRangeIndex);
             distanceJob.HearingResults.CopyTo(HearingIndex);
             distanceJob.AvatarResults.CopyTo(AvatarIndex);
-
             distanceJob.distances.CopyTo(CalculatedDistances);
 
             MicrophoneOutputCheck();
@@ -160,7 +158,6 @@ namespace Basis.Scripts.Networking.Transmitters
         /// </summary>
         public void MicrophoneOutputCheck()
         {
-
             if (AreBoolArraysEqual(MicrophoneRangeIndex, LastMicrophoneRangeIndex) == false)
             {
                 //BasisDebug.Log("Arrays where not equal!");
@@ -247,7 +244,6 @@ namespace Basis.Scripts.Networking.Transmitters
                 BasisDebug.Log("Already Ready");
             }
         }
-        public float[] CalculatedDistances;
         public void ScheduleCheck()
         {
             distanceJob.AvatarDistance = SMModuleDistanceBasedReductions.AvatarRange;
@@ -322,7 +318,6 @@ namespace Basis.Scripts.Networking.Transmitters
 
             distanceJob.smallestDistance = smallestDistance;
         }
-        public static Action AfterAvatarChanges;
         public override void DeInitialize()
         {
             if (Ready)
@@ -367,50 +362,6 @@ namespace Basis.Scripts.Networking.Transmitters
             ClientAvatarChangeMessage.Serialize(Writer);
             BasisNetworkManagement.LocalPlayerPeer.Send(Writer, BasisNetworkCommons.AvatarChangeMessage, DeliveryMethod.ReliableOrdered);
             BasisNetworkProfiler.AvatarChangeMessageCounter.Sample(Writer.Length);
-        }
-        [BurstCompile]
-        public struct CombinedDistanceAndClosestTransformJob : IJobParallelFor
-        {
-            public float VoiceDistance;
-            public float HearingDistance;
-            public float AvatarDistance;
-            [ReadOnly]
-            public float3 referencePosition;
-            [ReadOnly]
-            public NativeArray<float3> targetPositions;
-
-            [WriteOnly]
-            public NativeArray<float> distances;
-            [WriteOnly]
-            public NativeArray<bool> DistanceResults;
-            [WriteOnly]
-            public NativeArray<bool> HearingResults;
-            [WriteOnly]
-            public NativeArray<bool> AvatarResults;
-
-            // Shared result for the smallest distance
-            [NativeDisableParallelForRestriction]
-            public NativeArray<float> smallestDistance;
-
-            public void Execute(int index)
-            {
-                // Calculate distance
-                Vector3 diff = targetPositions[index] - referencePosition;
-                float sqrDistance = diff.sqrMagnitude;
-                distances[index] = sqrDistance;
-
-                // Determine boolean results
-                DistanceResults[index] = sqrDistance < VoiceDistance;
-                HearingResults[index] = sqrDistance < HearingDistance;
-                AvatarResults[index] = sqrDistance < AvatarDistance;
-
-                // Update the smallest distance (atomic operation to avoid race conditions)
-                float currentSmallest = smallestDistance[0];
-                if (sqrDistance < currentSmallest)
-                {
-                    smallestDistance[0] = sqrDistance;
-                }
-            }
         }
     }
 }
