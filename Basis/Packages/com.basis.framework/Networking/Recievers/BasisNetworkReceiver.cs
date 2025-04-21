@@ -61,6 +61,12 @@ namespace Basis.Scripts.Networking.Receivers
             {
                 if (HasAvatarInitialized)
                 {
+
+                    // Complete previously scheduled jobs to avoid scheduling over incomplete ones
+                    if (AvatarHandle.IsCompleted) AvatarHandle.Complete();
+                    if (musclesHandle.IsCompleted) musclesHandle.Complete();
+                    if (EuroFilterHandle.IsCompleted) EuroFilterHandle.Complete();
+
                     // Calculate interpolation time
                     interpolationTime = Mathf.Clamp01((float)((TimeAsDouble - TimeInThePast) / TimeBeforeCompletion));
                     if(First == null)
@@ -107,6 +113,9 @@ namespace Basis.Scripts.Networking.Receivers
                         BasisDebug.LogError($"Error in Muscle Copy: {ex.Message}\nStack Trace:\n{ex.StackTrace}");
                     }
                     AvatarJob.Time = interpolationTime;
+
+
+                    //need to make sure AvatarJob and so on its complete and ready to be rescheduled
 
                     AvatarHandle = AvatarJob.Schedule();
 
@@ -285,12 +294,12 @@ namespace Basis.Scripts.Networking.Receivers
                 Player.AudioReceived?.Invoke(false);
             }
         }
-        public void ReceiveAvatarChangeRequest(ServerAvatarChangeMessage ServerAvatarChangeMessage)
+        public async void ReceiveAvatarChangeRequest(ServerAvatarChangeMessage ServerAvatarChangeMessage)
         {
             RemotePlayer.CACM = ServerAvatarChangeMessage.clientAvatarChangeMessage;
             BasisLoadableBundle BasisLoadableBundle = BasisBundleConversionNetwork.ConvertNetworkBytesToBasisLoadableBundle(ServerAvatarChangeMessage.clientAvatarChangeMessage.byteArray);
 
-            RemotePlayer.CreateAvatar(ServerAvatarChangeMessage.clientAvatarChangeMessage.loadMode, BasisLoadableBundle);
+           await RemotePlayer.CreateAvatar(ServerAvatarChangeMessage.clientAvatarChangeMessage.loadMode, BasisLoadableBundle);
         }
         private NativeArray<float2> positionFilters;
         private NativeArray<float2> derivativeFilters;

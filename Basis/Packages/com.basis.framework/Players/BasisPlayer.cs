@@ -1,4 +1,3 @@
-using Basis.Scripts.Addressable_Driver;
 using Basis.Scripts.Drivers;
 using System;
 using System.Threading;
@@ -12,9 +11,6 @@ namespace Basis.Scripts.BasisSdk.Players
         public string UUID;
         public BasisAvatar BasisAvatar;
         public Transform BasisAvatarTransform;
-        public AddressableGenericResource AvatarAddressableGenericResource;
-        [HideInInspector]
-        public BasisLoadableBundle AvatarMetaData;
         public bool HasAvatarDriver;
         public event Action OnAvatarSwitched;
         public event Action OnAvatarSwitchedFallBack;
@@ -25,7 +21,7 @@ namespace Basis.Scripts.BasisSdk.Players
         public bool FaceIsVisible;
         public BasisMeshRendererCheck FaceRenderer;
         public CancellationToken CurrentAvatarsCancellationToken;
-        public byte AvatarLoadMode;//0 downloading 1 local
+
 
         public BasisProgressReport AvatarProgress = new BasisProgressReport();
         public CancellationToken CancellationToken;
@@ -33,6 +29,11 @@ namespace Basis.Scripts.BasisSdk.Players
         public bool HasJiggles = false;
         public delegate void SimulationHandler();
         public SimulationHandler OnPreSimulateBones;
+
+        public bool IsConsideredFallBackAvatar = true;
+        public byte AvatarLoadMode;//0 downloading 1 local
+        [HideInInspector]
+        public BasisLoadableBundle AvatarMetaData;
 
         [SerializeField]
         public BasisAvatarStrainJiggleDriver BasisAvatarStrainJiggleDriver = new BasisAvatarStrainJiggleDriver();

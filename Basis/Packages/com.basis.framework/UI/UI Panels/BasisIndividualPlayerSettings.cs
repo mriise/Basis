@@ -76,7 +76,7 @@ public class BasisIndividualPlayerSettings : BasisUIBase
         AvatarVisibleText.text = settings.AvatarVisible ? "Hide Avatar" : "Show Avatar";
         if (RemotePlayer != null)
         {
-            RemotePlayer.CreateAvatar(RemotePlayer.AlwaysRequestedMode, RemotePlayer.AlwaysRequestedAvatar);
+            RemotePlayer.ReloadAvatar();
         }
     }
     public async void ChangePlayersVolume(string playerUUID, float volume)

@@ -15,7 +15,7 @@ namespace Basis.Scripts.Networking.Transmitters
 {
     [DefaultExecutionOrder(15001)]
     [System.Serializable]
-    public partial class BasisNetworkTransmitter : BasisNetworkPlayer
+    public class BasisNetworkTransmitter : BasisNetworkPlayer
     {
         public bool HasEvents = false;
         public float timer = 0f;
@@ -149,7 +149,7 @@ namespace Basis.Scripts.Networking.Transmitters
                 if (Rec.RemotePlayer.InAvatarRange != AvatarIndex[Index])
                 {
                     Rec.RemotePlayer.InAvatarRange = AvatarIndex[Index];
-                    Rec.RemotePlayer.CreateAvatar(Rec.RemotePlayer.CACM.loadMode, Rec.RemotePlayer.AlwaysRequestedAvatar);
+                    Rec.RemotePlayer.ReloadAvatar();
                 }
             }
         }

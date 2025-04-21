@@ -48,38 +48,28 @@ public static class BasisLoadHandler
     }
     /// <summary>
     /// this will take 30 seconds to execute
-    /// the gameobject will be nuked right away
     /// after that we wait for 30 seconds to see if we can also remove the bundle!
     /// </summary>
-    /// <param name="Destroy"></param>
     /// <param name="LoadedKey"></param>
-    /// <param name="DestroyImmediately"></param>
     /// <returns></returns>
-    public static async Task DestroyGameobject(GameObject Destroy, string LoadedKey, bool DestroyImmediately = false)
+    public static async Task RequestDeIncrementOfBundle(BasisLoadableBundle loadableBundle)
     {
-        if (DestroyImmediately)
-        {
-            GameObject.DestroyImmediate(Destroy);
-        }
-        else
-        {
-            GameObject.Destroy(Destroy);
-        }
-        if (LoadedBundles.TryGetValue(LoadedKey, out BasisTrackedBundleWrapper Wrapper))
+        string CombinedURL = loadableBundle.BasisRemoteBundleEncrypted.CombinedURL;
+        if (LoadedBundles.TryGetValue(CombinedURL, out BasisTrackedBundleWrapper Wrapper))
         {
             Wrapper.DeIncrement();
             bool State = await Wrapper.UnloadIfReady();
             if (State)
             {
-                LoadedBundles.Remove(LoadedKey);
+                LoadedBundles.Remove(CombinedURL);
                 return;
             }
         }
         else
         {
-            if (LoadedKey.ToLower() != BasisAvatarFactory.LoadingAvatar.BasisRemoteBundleEncrypted.CombinedURL.ToLower())
+            if (CombinedURL.ToLower() != BasisAvatarFactory.LoadingAvatar.BasisRemoteBundleEncrypted.CombinedURL.ToLower())
             {
-                BasisDebug.LogError($"tried to find Loaded Key {LoadedKey} but could not find it!");
+                BasisDebug.LogError($"tried to find Loaded Key {CombinedURL} but could not find it!");
             }
         }
     }

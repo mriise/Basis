@@ -7,7 +7,7 @@ namespace Basis.Scripts.UI.NamePlate
     public class RemoteNamePlateDriver : MonoBehaviour
     {
         // Use an array for better performance
-        private BasisNamePlate[] basisRemotePlayers = new BasisNamePlate[0];
+        private BasisRemoteNamePlate[] basisRemotePlayers = new BasisRemoteNamePlate[0];
         private int count = 0; // Track the number of active elements
         public static RemoteNamePlateDriver Instance;
         public Color NormalColor;
@@ -42,7 +42,7 @@ namespace Basis.Scripts.UI.NamePlate
         /// <summary>
         /// Adds a new BasisNamePlate to the array.
         /// </summary>
-        public void AddNamePlate(BasisNamePlate newNamePlate)
+        public void AddNamePlate(BasisRemoteNamePlate newNamePlate)
         {
             if (newNamePlate == null) return;
 
@@ -65,7 +65,7 @@ namespace Basis.Scripts.UI.NamePlate
         /// <summary>
         /// Removes an existing BasisNamePlate from the array.
         /// </summary>
-        public void RemoveNamePlate(BasisNamePlate namePlateToRemove)
+        public void RemoveNamePlate(BasisRemoteNamePlate namePlateToRemove)
         {
             if (namePlateToRemove == null) return;
 
@@ -106,7 +106,7 @@ namespace Basis.Scripts.UI.NamePlate
         /// </summary>
         private void ResizeArray(int newSize)
         {
-            BasisNamePlate[] newArray = new BasisNamePlate[newSize];
+            BasisRemoteNamePlate[] newArray = new BasisRemoteNamePlate[newSize];
             for (int Index = 0; Index < count; Index++)
             {
                 newArray[Index] = basisRemotePlayers[Index];
@@ -121,7 +121,7 @@ namespace Basis.Scripts.UI.NamePlate
             Vector3 Position = BasisLocalCameraDriver.Position;
             for (int Index = 0; Index < count; Index++)
             {
-                BasisNamePlate NamePlate = basisRemotePlayers[Index];
+                BasisRemoteNamePlate NamePlate = basisRemotePlayers[Index];
                 if (NamePlate.IsVisible)
                 {
                     cachedDirection = NamePlate.HipTarget.OutgoingWorldData.position;

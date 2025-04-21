@@ -18,18 +18,18 @@ namespace Basis.Scripts.BasisSdk.Players
         [SerializeField]
         public BasisNetworkReceiver NetworkReceiver;
         public bool HasEvents = false;
-        public bool LockAvatarFromChanging;
         public bool OutOfRangeFromLocal = false;
         public ClientAvatarChangeMessage CACM;
         public Transform NetworkedVoice;
-        [HideInInspector]
-        public BasisLoadableBundle AlwaysRequestedAvatar;
-        public byte AlwaysRequestedMode;
         [SerializeField]
         public BasisRemoteEyeFollow EyeFollow = new BasisRemoteEyeFollow();
 
         public bool InAvatarRange = true;
 
+
+        public byte AlwaysRequestedMode;//0 downloading 1 local
+        [HideInInspector]
+        public BasisLoadableBundle AlwaysRequestedAvatar;
         public async Task RemoteInitialize(ClientAvatarChangeMessage cACM, PlayerMetaDataMessage PlayerMetaDataMessage)
         {
             CACM = cACM;
@@ -43,7 +43,7 @@ namespace Basis.Scripts.BasisSdk.Players
                 RemoteAvatarDriver.CalibrationComplete += RemoteCalibration;
                 HasEvents = true;
             }
-            await BasisRemoteNamePlate.LoadRemoteNamePlate(this);
+            await BasisRemoteNamePlateFactory.LoadRemoteNamePlate(this);
         }
         public async Task LoadAvatarFromInitial(ClientAvatarChangeMessage CACM)
         {
@@ -51,17 +51,34 @@ namespace Basis.Scripts.BasisSdk.Players
             {
                 this.CACM = CACM;
                 BasisLoadableBundle BasisLoadedBundle = BasisBundleConversionNetwork.ConvertNetworkBytesToBasisLoadableBundle(CACM.byteArray);
-                AlwaysRequestedAvatar = BasisLoadedBundle;
                 BasisPlayerSettingsData BasisPlayerSettingsData = await BasisPlayerSettingsManager.RequestPlayerSettings(UUID);
-                if (BasisPlayerSettingsData.AvatarVisible)
-                {
-                    await BasisAvatarFactory.LoadAvatarRemote(this, CACM.loadMode, BasisLoadedBundle);
-                }
-                else
-                {
-                    BasisAvatarFactory.DeleteLastAvatar(this, false);
-                    BasisAvatarFactory.LoadLoadingAvatar(this, BasisAvatarFactory.LoadingAvatar.BasisLocalEncryptedBundle.LocalConnectorPath);
-                }
+
+                AlwaysRequestedAvatar = BasisLoadedBundle;
+                AlwaysRequestedMode = CACM.loadMode;
+                ReloadAvatar();
+            }
+        }
+        public async void ReloadAvatar()
+        {
+           await CreateAvatar(AlwaysRequestedMode, AlwaysRequestedAvatar);
+        }
+        public async Task CreateAvatar(byte Mode, BasisLoadableBundle BasisLoadableBundle)
+        {
+            BasisDebug.Log("Remote Player Create Avatar Request");
+            BasisPlayerSettingsData BasisPlayerSettingsData = await BasisPlayerSettingsManager.RequestPlayerSettings(UUID);
+
+            AlwaysRequestedAvatar = BasisLoadableBundle;
+            AlwaysRequestedMode = Mode;
+
+            if (BasisPlayerSettingsData.AvatarVisible && InAvatarRange)
+            {
+                BasisDebug.Log("loading avatar from " + BasisLoadableBundle.BasisRemoteBundleEncrypted.CombinedURL + " with net mode " + Mode);
+                await BasisAvatarFactory.LoadAvatarRemote(this, Mode, BasisLoadableBundle);
+            }
+            else
+            {
+                BasisDebug.Log("Going to load Loading Avatar Instead of requested Avatar");
+                BasisAvatarFactory.RemoveOldAvatarAndLoadFallback(this, BasisAvatarFactory.LoadingAvatar.BasisLocalEncryptedBundle.LocalConnectorPath);
             }
         }
         public void OnDestroy()
@@ -77,39 +94,12 @@ namespace Basis.Scripts.BasisSdk.Players
             if (FacialBlinkDriver != null)
             {
                 FacialBlinkDriver.OnDestroy();
-            }
+            } 
             if(EyeFollow != null)
             {
                 EyeFollow.OnDestroy();
             }
 
-        }
-        public async void CreateAvatar(byte Mode, BasisLoadableBundle BasisLoadableBundle)
-        {
-            AlwaysRequestedMode = Mode;
-            AlwaysRequestedAvatar = BasisLoadableBundle;
-            BasisPlayerSettingsData BasisPlayerSettingsData = await BasisPlayerSettingsManager.RequestPlayerSettings(UUID);
-            if (BasisPlayerSettingsData.AvatarVisible && InAvatarRange)
-            {
-                if (BasisLoadableBundle.BasisLocalEncryptedBundle.LocalConnectorPath == BasisAvatarFactory.LoadingAvatar.BasisLocalEncryptedBundle.LocalConnectorPath)
-                {
-                    BasisDebug.Log("Avatar Load string was null or empty using fallback!");
-                    await BasisAvatarFactory.LoadAvatarRemote(this, BasisPlayer.LoadModeError, BasisLoadableBundle);
-                }
-                else
-                {
-                    BasisDebug.Log("loading avatar from " + BasisLoadableBundle.BasisLocalEncryptedBundle.LocalConnectorPath + " with net mode " + Mode);
-                    if (LockAvatarFromChanging == false)
-                    {
-                        await BasisAvatarFactory.LoadAvatarRemote(this, Mode, BasisLoadableBundle);
-                    }
-                }
-            }
-            else
-            {
-                BasisAvatarFactory.DeleteLastAvatar(this,false);
-                BasisAvatarFactory.LoadLoadingAvatar(this, BasisAvatarFactory.LoadingAvatar.BasisLocalEncryptedBundle.LocalConnectorPath);
-            }
         }
         public void RemoteCalibration()
         {

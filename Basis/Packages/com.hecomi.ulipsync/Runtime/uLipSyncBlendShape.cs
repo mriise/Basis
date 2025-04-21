@@ -126,7 +126,14 @@ namespace uLipSync
 
         protected virtual void OnApplyBlendShapes()
         {
-            if (!skinnedMeshRenderer) return;
+            if (skinnedMeshRenderer == null)
+            {
+                return;
+            }
+            if (skinnedMeshRenderer.sharedMesh == null)
+            {
+                return;
+            }
 
             if (skinnedMeshRenderer.sharedMesh.blendShapeCount != 0)
             {
