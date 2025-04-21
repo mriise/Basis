@@ -281,7 +281,7 @@ namespace Basis.Scripts.Avatar
             {
                 //if the avatar has been nuked lets assume its been responsibly deIncremented.
                 //its worse to nuke content instead of keeping it around in memory from a bad Act.
-                BasisDebug.LogError("trying to remove Deleted Avatar");
+               // BasisDebug.LogError("trying to remove Deleted Avatar");
 
             }
         }

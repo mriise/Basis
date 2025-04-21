@@ -164,7 +164,6 @@ namespace Basis.Scripts.Device_Management
         public async Task Initialize()
         {
             CommandLineArgs.Initialize(BakedInCommandLineArgs, out string ForcedDevicemanager);
-            LoadAndOrSaveDefaultDeviceConfigs();
             InstantiationParameters parameters = new InstantiationParameters();
             await BasisPlayerFactory.CreateLocalPlayer(parameters);
 
@@ -184,10 +183,6 @@ namespace Basis.Scripts.Device_Management
                 HasEvents = true;
             }
             await OnInitializationCompleted?.Invoke();
-        }
-        public void LoadAndOrSaveDefaultDeviceConfigs()
-        {
-            LoadAndOrSaveDefaultDeviceConfigs(Application.persistentDataPath + "/Devices");
         }
         public async Task RunAfterInitialized()
         {
@@ -515,41 +510,6 @@ namespace Basis.Scripts.Device_Management
             }
             StoredPreviousDevice = null;
             return false;
-        }
-        public void LoadAndOrSaveDefaultDeviceConfigs(string directoryPath)
-        {
-            var builtInDevices = BasisDeviceNameMatcher.BasisDevice;
-            //save to disc any that do not exist
-            BasisDeviceLoaderAndSaver.SaveDevices(directoryPath, builtInDevices);
-            //now lets load them all and override versions that are outdated.
-            List<BasisDeviceMatchSettings> loadedDevices = BasisDeviceLoaderAndSaver.LoadDeviceAsync(directoryPath);
-
-            // Dictionary to store devices by DeviceID for quick lookup
-            var deviceDictionary = builtInDevices.ToDictionary(
-                device => string.IsNullOrEmpty(device.DeviceID) ? InvalidConst : device.DeviceID,
-                device => device
-            );
-
-            foreach (var loadedDevice in loadedDevices)
-            {
-                var loadedDeviceID = string.IsNullOrEmpty(loadedDevice.DeviceID) ? InvalidConst : loadedDevice.DeviceID;
-
-                if (deviceDictionary.TryGetValue(loadedDeviceID, out var existingDevice))
-                {
-                    // Replace the built-in device if the loaded one has a higher version number
-                    if (loadedDevice.VersionNumber > existingDevice.VersionNumber)
-                    {
-                        deviceDictionary[loadedDeviceID] = loadedDevice;
-                    }
-                }
-                else
-                {
-                    // Add the new loaded device
-                    deviceDictionary[loadedDeviceID] = loadedDevice;
-                }
-            }
-
-            UseAbleDeviceConfigs = deviceDictionary.Values.ToList();
         }
         public static void EnqueueOnMainThread(Action action)
         {

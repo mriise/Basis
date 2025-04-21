@@ -102,7 +102,7 @@ namespace Basis.Scripts.UI
                 LineRenderer.numCornerVertices = 12;
                 LineRenderer.gameObject.layer = UILayer;
             }
-            if (BasisDeviceMatchableNames.HasRayCastRedical)
+            if (BasisDeviceMatchableNames.HasRayCastRadical)
             {
                 CreateRadical();
                 HasRedicalRenderer = true;

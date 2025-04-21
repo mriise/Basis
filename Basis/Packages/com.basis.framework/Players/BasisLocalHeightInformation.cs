@@ -50,7 +50,7 @@ namespace Basis.Scripts.BasisSdk.Players
             }
             else
             {
-                BasisDebug.LogError("Missing Target Height Information");
+                BasisDebug.Log("Missing Target Height Information");
             }
 
             target.AvatarName = this.AvatarName;
