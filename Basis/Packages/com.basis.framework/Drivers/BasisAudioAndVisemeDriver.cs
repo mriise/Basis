@@ -159,7 +159,7 @@ namespace Basis.Scripts.Drivers
                 PhonemeBlendShapeInfo info = phonemeBlendShapeTable[Index];
                 uLipSyncBlendShape.AddBlendShape(info.phoneme, info.blendShape);
             }
-            uLipSyncBlendShape.CreateArray();
+            uLipSyncBlendShape.BlendShapeInfos = uLipSyncBlendShape.CachedblendShapes.ToArray();
             if (FirstTime)
             {
                 uLipSync.uLipSyncBlendShape = uLipSyncBlendShape;

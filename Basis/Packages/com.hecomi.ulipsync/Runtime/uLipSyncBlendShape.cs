@@ -3,237 +3,104 @@ using System.Collections.Generic;
 
 namespace uLipSync
 {
-
     [ExecuteAlways]
-    public class uLipSyncBlendShape : AnimationBakableMonoBehaviour
+    public class uLipSyncBlendShape : MonoBehaviour
     {
-        [System.Serializable]
-        public class BlendShapeInfo
-        {
-            public string phoneme;
-            public int index = -1;
-            public float maxWeight = 1f;
-
-            public float weight { get; set; } = 0f;
-            public float weightVelocity { get; set; } = 0f;
-        }
         public SkinnedMeshRenderer skinnedMeshRenderer;
         public List<BlendShapeInfo> CachedblendShapes = new List<BlendShapeInfo>();
+        public BlendShapeInfo[] BlendShapeInfos;
+
+        [Range(0f, 0.3f)]
+        public float smoothness = 0.05f;
         public float maxBlendShapeValue = 100f;
         public float minVolume = -2.5f;
         public float maxVolume = -1.5f;
-        [Range(0f, 0.3f)] public float smoothness = 0.05f;
         public bool usePhonemeBlend = false;
 
-        LipSyncInfo _info = new LipSyncInfo();
-        bool _lipSyncUpdated = false;
-        float _volume = 0f;
-        float _openCloseVelocity = 0f;
-        protected float volume => _volume;
-
-#if UNITY_EDITOR
-        bool _isAnimationBaking = false;
-        float _animBakeDeltaTime = 1f / 60;
-#endif
-
-        void UpdateLipSync()
-        {
-            UpdateVolume();
-            UpdateVowels();
-            _lipSyncUpdated = false;
-        }
+        private LipSyncInfo _info = new LipSyncInfo();
+        private float _volume = 0f;
+        private float _openCloseVelocity = 0f;
 
         public void OnLipSyncUpdate(LipSyncInfo info)
         {
+            if (skinnedMeshRenderer == null || BlendShapeInfos == null || BlendShapeInfos.Length == 0)
+                return;
+
             _info = info;
-            _lipSyncUpdated = true;
-            UpdateLipSync();
-            OnApplyBlendShapes();
-        }
 
-        float SmoothDamp(float value, float target, ref float velocity)
-        {
-#if UNITY_EDITOR
-            if (_isAnimationBaking)
-            {
-                return Mathf.SmoothDamp(value, target, ref velocity, smoothness, Mathf.Infinity, _animBakeDeltaTime);
-            }
-#endif
-            return Mathf.SmoothDamp(value, target, ref velocity, smoothness);
-        }
-
-        void UpdateVolume()
-        {
             float normVol = 0f;
-            if (_lipSyncUpdated && _info.rawVolume > 0f)
+            if (_info.rawVolume > 0f)
             {
                 normVol = Mathf.Log10(_info.rawVolume);
-                normVol = (normVol - minVolume) / Mathf.Max(maxVolume - minVolume, 1e-4f);
-                normVol = Mathf.Clamp(normVol, 0f, 1f);
+                normVol = Mathf.Clamp01((normVol - minVolume) / Mathf.Max(maxVolume - minVolume, 1e-4f));
             }
-            _volume = SmoothDamp(_volume, normVol, ref _openCloseVelocity);
-        }
 
-        void UpdateVowels()
-        {
-            float sum = 0f;
+            _volume = SmoothDamp(_volume, normVol, ref _openCloseVelocity);
+            float globalMultiplier = _volume * maxBlendShapeValue;
+
+            float totalWeight = 0f;
             var ratios = _info.phonemeRatios;
             int count = BlendShapeInfos.Length;
 
-            // First pass: Compute weights and accumulate the sum
-            for (int Index = 0; Index < count; Index++)
+            // First pass: compute weights and total sum
+            for (int i = 0; i < count; i++)
             {
-                BlendShapeInfo bs = BlendShapeInfos[Index];
+                var bs = BlendShapeInfos[i];
                 float targetWeight = 0f;
 
                 if (usePhonemeBlend && ratios != null && !string.IsNullOrEmpty(bs.phoneme))
                 {
                     ratios.TryGetValue(bs.phoneme, out targetWeight);
                 }
-                else
+                else if (bs.phoneme == _info.phoneme)
                 {
-                    targetWeight = (bs.phoneme == _info.phoneme) ? 1f : 0f;
+                    targetWeight = 1f;
                 }
-
-                float weightVel = bs.weightVelocity;
-                bs.weight = SmoothDamp(bs.weight, targetWeight, ref weightVel);
-                bs.weightVelocity = weightVel;
-                sum += bs.weight;
+                float weightVelocity = bs.weightVelocity;
+                bs.weight = SmoothDamp(bs.weight, targetWeight, ref weightVelocity);
+                bs.weightVelocity = weightVelocity;
+                totalWeight += bs.weight;
             }
 
-            // Second pass: Normalize weights if needed
-            if (sum > 0f)
+            float invTotal = (totalWeight > 0f) ? (1f / totalWeight) : 0f;
+
+            // Second pass: normalize + apply
+            for (int i = 0; i < count; i++)
             {
-                float invSum = 1f / sum; // Precompute reciprocal for performance
-                for (int i = 0; i < count; i++)
-                {
-                    BlendShapeInfos[i].weight *= invSum;
-                }
-            }
-            else
-            {
-                for (int i = 0; i < count; i++)
-                {
-                    BlendShapeInfos[i].weight = 0f;
-                }
+                var bs = BlendShapeInfos[i];
+
+                if (bs.index < 0) continue;
+
+                float weight = bs.weight * invTotal;
+                float finalWeight = weight * bs.maxWeight * globalMultiplier;
+
+                skinnedMeshRenderer.SetBlendShapeWeight(bs.index, finalWeight);
             }
         }
-        protected virtual void OnApplyBlendShapes()
+
+        float SmoothDamp(float value, float target, ref float velocity)
         {
-            if (skinnedMeshRenderer == null || BlendShapeInfos == null || BlendShapeInfos.Length == 0)
-            {
-                return;
-            }
-
-            float globalMultiplier = volume * maxBlendShapeValue;
-
-            for (int Index = 0; Index < BlendShapeInfos.Length; Index++)
-            {
-                BlendShapeInfo bs = BlendShapeInfos[Index];
-                if (bs.index < 0)
-                {
-                    continue;
-                }
-
-                if (globalMultiplier == 0)
-                {
-                    skinnedMeshRenderer.SetBlendShapeWeight(bs.index, 0);
-                }
-                else
-                {
-                    float weight = bs.weight * bs.maxWeight * globalMultiplier;
-                    skinnedMeshRenderer.SetBlendShapeWeight(bs.index, weight);
-                }
-            }
+            return Mathf.SmoothDamp(value, target, ref velocity, smoothness);
         }
 
         public BlendShapeInfo GetBlendShapeInfo(string phoneme)
         {
-            foreach (BlendShapeInfo info in CachedblendShapes)
-            {
-                if (info.phoneme == phoneme)
-                {
-                    return info;
-                }
-            }
-            return null;
+            return CachedblendShapes.Find(info => info.phoneme == phoneme);
         }
-        public BlendShapeInfo[] BlendShapeInfos;
-        public void CreateArray()
-        {
-            BlendShapeInfos = CachedblendShapes.ToArray();
-        }
+
         public void AddBlendShape(string phoneme, int blendShape)
         {
-            BlendShapeInfo bs = GetBlendShapeInfo(phoneme);
+            var bs = GetBlendShapeInfo(phoneme);
             if (bs == null)
             {
-                bs = new BlendShapeInfo() { phoneme = phoneme };
+                bs = new BlendShapeInfo { phoneme = phoneme };
+                CachedblendShapes.Add(bs);
             }
-            CachedblendShapes.Add(bs);
-            if (skinnedMeshRenderer == null)
+
+            if (skinnedMeshRenderer != null)
             {
-                return;
+                bs.index = blendShape;
             }
-            bs.index = blendShape;
         }
-
-#if UNITY_EDITOR
-        public override GameObject target => skinnedMeshRenderer?.gameObject;
-
-        public override List<string> GetPropertyNames()
-        {
-            var names = new List<string>();
-            var mesh = skinnedMeshRenderer.sharedMesh;
-
-            for (int Index = 0; Index < BlendShapeInfos.Length; Index++)
-            {
-                BlendShapeInfo bs = BlendShapeInfos[Index];
-                if (bs.index < 0) continue;
-                var name = mesh.GetBlendShapeName(bs.index);
-                name = "blendShape." + name;
-                names.Add(name);
-            }
-
-            return names;
-        }
-
-        public override List<float> GetPropertyWeights()
-        {
-            var weights = new List<float>();
-
-            for (int Index = 0; Index < BlendShapeInfos.Length; Index++)
-            {
-                BlendShapeInfo bs = BlendShapeInfos[Index];
-                if (bs.index < 0) continue;
-                var weight = bs.weight * bs.maxWeight * volume * maxBlendShapeValue;
-                weights.Add(weight);
-            }
-
-            return weights;
-        }
-
-        public override float maxWeight => 100f;
-        public override float minWeight => 0f;
-
-        public override void OnAnimationBakeStart()
-        {
-            _isAnimationBaking = true;
-        }
-
-        public override void OnAnimationBakeUpdate(LipSyncInfo info, float dt)
-        {
-            _info = info;
-            _animBakeDeltaTime = dt;
-            _lipSyncUpdated = true;
-            UpdateLipSync();
-        }
-
-        public override void OnAnimationBakeEnd()
-        {
-            _isAnimationBaking = false;
-        }
-#endif
     }
-
 }
