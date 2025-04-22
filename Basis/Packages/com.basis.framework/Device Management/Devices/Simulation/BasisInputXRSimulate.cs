@@ -18,21 +18,21 @@ namespace Basis.Scripts.Device_Management.Devices.Simulation
             {
                 Vector3 randomOffset = new Vector3(UnityEngine.Random.Range(-MinMaxOffset, MinMaxOffset), UnityEngine.Random.Range(-MinMaxOffset, MinMaxOffset), UnityEngine.Random.Range(-MinMaxOffset, MinMaxOffset));
 
-                Quaternion randomRotation = UnityEngine.Random.rotation;
-                Quaternion lerpedRotation = Quaternion.Lerp(FollowMovement.localRotation, randomRotation, LerpAmount * Time.deltaTime);
+                float LerpAmounts = LerpAmount * Time.deltaTime;
+                Quaternion LerpRotation = Quaternion.Lerp(FollowMovement.localRotation, UnityEngine.Random.rotation, LerpAmounts);
+                Vector3 newPosition = Vector3.Lerp(FollowMovement.localPosition, FollowMovement.localPosition + randomOffset, LerpAmounts);
 
-                Vector3 originalPosition = FollowMovement.localPosition;
-                Vector3 newPosition = Vector3.Lerp(originalPosition, originalPosition + randomOffset, LerpAmount * Time.deltaTime);
-
-                FollowMovement.SetLocalPositionAndRotation(newPosition, lerpedRotation);
+                FollowMovement.SetLocalPositionAndRotation(newPosition, LerpRotation);
             }
             FollowMovement.GetLocalPositionAndRotation(out Vector3 VOut, out Quaternion QOut);
             LocalRawPosition = VOut;
             LocalRawRotation = QOut;
 
-            LocalRawPosition /= BasisLocalPlayer.Instance.CurrentHeight.SelectedPlayerToDefaultScale;
+            float SPTDS = BasisLocalPlayer.Instance.CurrentHeight.SelectedPlayerToDefaultScale;
 
-            TransformFinalPosition = LocalRawPosition * BasisLocalPlayer.Instance.CurrentHeight.SelectedPlayerToDefaultScale;
+            LocalRawPosition /= SPTDS;
+
+            TransformFinalPosition = LocalRawPosition * SPTDS;
             TransformFinalRotation = LocalRawRotation;
             if (hasRoleAssigned)
             {
