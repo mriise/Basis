@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Basis.Scripts.Drivers
 {
     [System.Serializable]
-    public class BasisRemoteBoneDriver : BaseBoneDriver
+    public class BasisRemoteBoneDriver : BasisBaseBoneDriver
     {
         public BasisRemotePlayer RemotePlayer;
         public Transform HeadAvatar;

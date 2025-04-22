@@ -12,16 +12,16 @@ using static SerializableBasis;
 
 namespace Basis
 {
-    class Program
+    partial class Program
     {
         public static string Password = "default_password";
-        private static readonly object nameLock = new object(); // To synchronize name generation
+        private static readonly Lock nameLock = new Lock(); // To synchronize name generation
         public static NetPeer LocalPLayer;
 
         public static string Ip = "localhost";//server1.basisvr.org //localhost
         public static int Port = 4296;
 
-        public static byte[] AvatarMessage = new byte[LocalAvatarSyncMessage.AvatarSyncSize];
+        public static byte[] AvatarMessage = new byte[LocalAvatarSyncMessage.AvatarSyncSize +1];
         public static Vector3 Position = new Vector3(0, 0, 0);
         public static Quaternion Rotation = new Quaternion(0, 0, 0, 1);
         public static float[] FloatArray = new float[LocalAvatarSyncMessage.StoredBones];
@@ -103,8 +103,6 @@ namespace Basis
                 }
                 BNL.Log("Server shut down successfully.");
             };
-            ushort[] UshortArray = new ushort[LocalAvatarSyncMessage.StoredBones];
-            // Keep the application running
             while (true)
             {
                 SendMovement();
@@ -119,49 +117,6 @@ namespace Basis
             {
                 switch (channel)
                 {
-                    /*
-                    case BasisNetworkCommons.MovementChannel:
-                        {
-                            ServerSideSyncPlayerMessage SSM = new ServerSideSyncPlayerMessage();
-                            SSM.Deserialize(Reader, true);
-                            Reader.Recycle();
-                            NetDataWriter Writer = new NetDataWriter(true, 202);
-                            SSM.avatarSerialization.Serialize(Writer, true);
-                            if (Writer.Length == 0)
-                            {
-                                BNL.LogError("trying to sending a message without a length NetworkReceiveEvent!");
-                            }
-                            else
-                            {
-                                LocalPLayer.Send(Writer, BasisNetworkCommons.MovementChannel, deliveryMethod);
-                            }
-
-                            break;
-                        }
-
-                    case BasisNetworkCommons.FallChannel:
-                        {
-                            if (deliveryMethod == DeliveryMethod.Unreliable)
-                            {
-                                if (Reader.TryGetByte(out byte Byte))
-                                {
-                                    //  NetworkReceiveEvent(peer, Reader, Byte, deliveryMethod);
-                                }
-                                else
-                                {
-                                    BNL.LogError($"Unknown channel no data remains: {channel} " + Reader.AvailableBytes);
-                                    Reader.Recycle();
-                                }
-                            }
-                            else
-                            {
-                                BNL.LogError($"Unknown channel: {channel} " + Reader.AvailableBytes);
-                                Reader.Recycle();
-                            }
-
-                            break;
-                        }
-                    */
                     case BasisNetworkCommons.AuthIdentityMessage:
                         {
                             AuthIdentityMessage(peer, Reader, channel);
@@ -206,12 +161,14 @@ namespace Basis
             }
             BNL.Log("Completed");
         }
+        public static Vector3 MinPosition = new Vector3(30, 30, 30);
+        public static Vector3 MaxPosition = new Vector3(80, 80, 80);
         public static void SendMovement()
         {
             if (LocalPLayer != null)
             {
                 int Offset = 0;
-                Position = Randomizer.GetRandomPosition(new Vector3(30,30,30),new Vector3(80,80,80));
+                Position = Randomizer.GetRandomPosition(MinPosition, MaxPosition);
                 WriteVectorFloatToBytes(Position, ref AvatarMessage, ref Offset);
                 WriteQuaternionToBytes(Rotation, ref AvatarMessage, ref Offset, RotationCompression);
                 WriteUShortsToBytes(UshortArray, ref AvatarMessage, ref Offset);
@@ -224,16 +181,6 @@ namespace Basis
                     LocalPLayer.Send(AvatarMessage, BasisNetworkCommons.MovementChannel, DeliveryMethod.Sequenced);
                 }
             }
-        }
-
-        public static ushort Compress(float value, float MinValue, float MaxValue, float valueDiffence)
-        {
-            // Clamp the value to ensure it's within the specified range
-            value = Math.Clamp(value, MinValue, MaxValue);
-
-            // Map the float value to the ushort range
-            float normalized = (value - MinValue) / (valueDiffence); // 0..1
-            return (ushort)(normalized * ushortRangeDifference);//+ UShortMin (its always zero)
         }
         public static void WriteUShortsToBytes(ushort[] values, ref byte[] bytes, ref int offset)
         {
@@ -362,15 +309,6 @@ namespace Basis
                 Array.Resize(ref bytes, requiredSize);
             }
         }
-
-        // Ensure the byte array is large enough for reading
-        private static void EnsureSize(byte[] bytes, int requiredSize)
-        {
-            if (bytes.Length < requiredSize)
-            {
-                throw new ArgumentException("Byte array is too small for the required size. Current Size is " + bytes.Length + " But Required " + requiredSize);
-            }
-        }
         // Manual conversion of quaternion to bytes (without BitConverter)
         public static void WriteQuaternionToBytes(Quaternion rotation, ref byte[] bytes, ref int offset, BasisRangedUshortFloatData compressor)
         {
@@ -386,28 +324,6 @@ namespace Basis
             bytes[offset] = (byte)(compressedW & 0xFF);           // Low byte
             bytes[offset + 1] = (byte)((compressedW >> 8) & 0xFF); // High byte
             offset += 2;
-        }
-        // Object pool for byte arrays to avoid allocation during runtime
-        private class ObjectPool<T>
-        {
-            private readonly Func<T> createFunc;
-            private readonly Stack<T> pool;
-
-            public ObjectPool(Func<T> createFunc)
-            {
-                this.createFunc = createFunc;
-                this.pool = new Stack<T>();
-            }
-
-            public T Get()
-            {
-                return pool.Count > 0 ? pool.Pop() : createFunc();
-            }
-
-            public void Return(T item)
-            {
-                pool.Push(item);
-            }
         }
     }
 }

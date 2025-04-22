@@ -13,7 +13,7 @@ using static BundledContentHolder;
 public static class BasisLoadHandler
 {
     public static Dictionary<string, BasisTrackedBundleWrapper> LoadedBundles = new Dictionary<string, BasisTrackedBundleWrapper>();
-    public static ConcurrentDictionary<string, OnDiscInformation> OnDiscData = new ConcurrentDictionary<string, OnDiscInformation>();
+    public static ConcurrentDictionary<string, BasisOnDiscInformation> OnDiscData = new ConcurrentDictionary<string, BasisOnDiscInformation>();
     public static bool IsInitialized = false;
 
     private static readonly object _discInfoLock = new object();
@@ -155,7 +155,7 @@ public static class BasisLoadHandler
 
     public static async Task HandleBundleAndMetaLoading(BasisTrackedBundleWrapper wrapper, BasisProgressReport report, CancellationToken cancellationToken)
     {
-        bool IsMetaOnDisc = IsMetaDataOnDisc(wrapper.LoadableBundle.BasisRemoteBundleEncrypted.CombinedURL, out OnDiscInformation MetaInfo);
+        bool IsMetaOnDisc = IsMetaDataOnDisc(wrapper.LoadableBundle.BasisRemoteBundleEncrypted.CombinedURL, out BasisOnDiscInformation MetaInfo);
 
         (BasisBundleGenerated, byte[],string) output = new(null, null,string.Empty);
         if (IsMetaOnDisc)
@@ -182,7 +182,7 @@ public static class BasisLoadHandler
                 BasisDebug.Log($"we already have this AssetToLoadName in our loaded bundles using that instead! {AssetToLoadName}");
                 if (IsMetaOnDisc == false)
                 {
-                    OnDiscInformation newDiscInfo = new OnDiscInformation
+                    BasisOnDiscInformation newDiscInfo = new BasisOnDiscInformation
                     {
                         StoredRemote = wrapper.LoadableBundle.BasisRemoteBundleEncrypted,
                         StoredLocal = wrapper.LoadableBundle.BasisLocalEncryptedBundle,
@@ -206,7 +206,7 @@ public static class BasisLoadHandler
 
         if (IsMetaOnDisc == false)
         {
-            OnDiscInformation newDiscInfo = new OnDiscInformation
+            BasisOnDiscInformation newDiscInfo = new BasisOnDiscInformation
             {
                 StoredRemote = wrapper.LoadableBundle.BasisRemoteBundleEncrypted,
                 StoredLocal = wrapper.LoadableBundle.BasisLocalEncryptedBundle,
@@ -216,7 +216,7 @@ public static class BasisLoadHandler
             await AddDiscInfo(newDiscInfo);
         }
     }
-    public static bool IsMetaDataOnDisc(string MetaURL, out OnDiscInformation info)
+    public static bool IsMetaDataOnDisc(string MetaURL, out BasisOnDiscInformation info)
     {
         lock (_discInfoLock)
         {
@@ -232,11 +232,11 @@ public static class BasisLoadHandler
                 }
             }
 
-            info = new OnDiscInformation();
+            info = new BasisOnDiscInformation();
             return false;
         }
     }
-    public static bool IsBundleDataOnDisc(string BundleURL, out OnDiscInformation info)
+    public static bool IsBundleDataOnDisc(string BundleURL, out BasisOnDiscInformation info)
     {
         lock (_discInfoLock)
         {
@@ -252,12 +252,12 @@ public static class BasisLoadHandler
                 }
             }
 
-            info = new OnDiscInformation();
+            info = new BasisOnDiscInformation();
             return false;
         }
     }
 
-    public static async Task AddDiscInfo(OnDiscInformation discInfo)
+    public static async Task AddDiscInfo(BasisOnDiscInformation discInfo)
     {
         if (OnDiscData.TryAdd(discInfo.StoredRemote.CombinedURL, discInfo))
         {
@@ -343,7 +343,7 @@ public static class BasisLoadHandler
                 try
                 {
                     byte[] fileData = await File.ReadAllBytesAsync(file);
-                    OnDiscInformation discInfo = SerializationUtility.DeserializeValue<OnDiscInformation>(fileData, DataFormat.Binary);
+                    BasisOnDiscInformation discInfo = SerializationUtility.DeserializeValue<BasisOnDiscInformation>(fileData, DataFormat.Binary);
                     OnDiscData.TryAdd(discInfo.StoredRemote.CombinedURL, discInfo);
                 }
                 catch (Exception ex)

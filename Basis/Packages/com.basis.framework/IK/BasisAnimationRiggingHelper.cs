@@ -16,7 +16,7 @@ public static class BasisAnimationRiggingHelper
         Constraint.data.M_CalibratedOffset = TargetPositionOffset;
         Constraint.data.M_CalibratedRotation = TargetRotationOffset;
     }
-    public static void Damp(BasisLocalAvatarDriver AvatarDriver, BaseBoneDriver driver, GameObject Parent, Transform Source, BasisBoneTrackedRole Role, float rotationWeight = 1, float positionWeight = 1)
+    public static void Damp(BasisLocalAvatarDriver AvatarDriver, BasisBaseBoneDriver driver, GameObject Parent, Transform Source, BasisBoneTrackedRole Role, float rotationWeight = 1, float positionWeight = 1)
     {
         driver.FindBone(out BasisBoneControl Target, Role);
         GameObject DTData = CreateAndSetParent(Parent.transform, $"Bone Role {Role.ToString()}");
@@ -48,7 +48,7 @@ public static class BasisAnimationRiggingHelper
         DT.data.constrainedZAxis = true;
         GeneratedRequiredTransforms(AvatarDriver, Source);
     }
-    public static void MultiRotation(BasisLocalAvatarDriver AvatarDriver, BaseBoneDriver driver, GameObject Parent, Transform Source, BasisBoneTrackedRole Role, float rotationWeight = 1)
+    public static void MultiRotation(BasisLocalAvatarDriver AvatarDriver, BasisBaseBoneDriver driver, GameObject Parent, Transform Source, BasisBoneTrackedRole Role, float rotationWeight = 1)
     {
         driver.FindBone(out BasisBoneControl Target, Role);
         GameObject DTData = CreateAndSetParent(Parent.transform, $"Bone Role {Role.ToString()}");
@@ -67,7 +67,7 @@ public static class BasisAnimationRiggingHelper
         DT.data.constrainedZAxis = true;
         GeneratedRequiredTransforms(AvatarDriver, Source);
     }
-    public static void MultiPositional(BasisLocalAvatarDriver AvatarDriver, BaseBoneDriver driver, GameObject Parent, Transform Source, BasisBoneTrackedRole Role, float positionWeight = 1)
+    public static void MultiPositional(BasisLocalAvatarDriver AvatarDriver, BasisBaseBoneDriver driver, GameObject Parent, Transform Source, BasisBoneTrackedRole Role, float positionWeight = 1)
     {
         driver.FindBone(out BasisBoneControl Target, Role);
         GameObject DTData = CreateAndSetParent(Parent.transform, $"Bone Role {Role.ToString()}");
@@ -83,7 +83,7 @@ public static class BasisAnimationRiggingHelper
         DT.data.constrainedZAxis = true;
         GeneratedRequiredTransforms(AvatarDriver, Source);
     }
-    public static void OverrideTransform(BasisLocalAvatarDriver AvatarDriver, BaseBoneDriver driver, GameObject Parent, Transform Source, BasisBoneTrackedRole Role, float rotationWeight = 1, float positionWeight = 1, OverrideTransformData.Space Space = OverrideTransformData.Space.World)
+    public static void OverrideTransform(BasisLocalAvatarDriver AvatarDriver, BasisBaseBoneDriver driver, GameObject Parent, Transform Source, BasisBoneTrackedRole Role, float rotationWeight = 1, float positionWeight = 1, OverrideTransformData.Space Space = OverrideTransformData.Space.World)
     {
         driver.FindBone(out BasisBoneControl Target, Role);
         GameObject DTData = CreateAndSetParent(Parent.transform, $"Bone Role {Role.ToString()}");
@@ -95,7 +95,7 @@ public static class BasisAnimationRiggingHelper
         DT.data.space = Space;
         GeneratedRequiredTransforms(AvatarDriver, Source);
     }
-    public static void TwistChain(BaseBoneDriver driver, GameObject Parent, Transform root, Transform tip, BasisBoneTrackedRole Root, BasisBoneTrackedRole Tip, float rotationWeight = 1, float positionWeight = 1)
+    public static void TwistChain(BasisBaseBoneDriver driver, GameObject Parent, Transform root, Transform tip, BasisBoneTrackedRole Root, BasisBoneTrackedRole Tip, float rotationWeight = 1, float positionWeight = 1)
     {
         driver.FindBone(out BasisBoneControl RootTarget, Root);
         driver.FindBone(out BasisBoneControl TipTarget, Tip);
@@ -112,7 +112,7 @@ public static class BasisAnimationRiggingHelper
         DT.data.rootTarget = root;
         //GeneratedRequiredTransforms(root, References.Hips);
     }
-    public static void CreateTwoBone(BasisLocalAvatarDriver AvatarDriver, BaseBoneDriver driver, GameObject Parent, Transform root, Transform mid, Transform tip, BasisBoneTrackedRole TargetRole, BasisBoneTrackedRole BendRole, bool UseBoneRole, out BasisTwoBoneIKConstraint TwoBoneIKConstraint, bool maintainTargetPositionOffset, bool maintainTargetRotationOffset)
+    public static void CreateTwoBone(BasisLocalAvatarDriver AvatarDriver, BasisBaseBoneDriver driver, GameObject Parent, Transform root, Transform mid, Transform tip, BasisBoneTrackedRole TargetRole, BasisBoneTrackedRole BendRole, bool UseBoneRole, out BasisTwoBoneIKConstraint TwoBoneIKConstraint, bool maintainTargetPositionOffset, bool maintainTargetRotationOffset)
     {
         driver.FindBone(out BasisBoneControl TargetControl, TargetRole);
 
@@ -141,7 +141,7 @@ public static class BasisAnimationRiggingHelper
         TwoBoneIKConstraint.data.tip = tip;
         GeneratedRequiredTransforms(AvatarDriver, tip);
     }
-    public static void CreateTwoBoneHand(BasisLocalAvatarDriver AvatarDriver, BaseBoneDriver driver, GameObject Parent, Transform root, Transform mid, Transform tip, BasisBoneTrackedRole TargetRole, BasisBoneTrackedRole BendRole, bool UseBoneRole, out BasisTwoBoneIKConstraintHand TwoBoneIKConstraint, bool maintainTargetPositionOffset, bool maintainTargetRotationOffset)
+    public static void CreateTwoBoneHand(BasisLocalAvatarDriver AvatarDriver, BasisBaseBoneDriver driver, GameObject Parent, Transform root, Transform mid, Transform tip, BasisBoneTrackedRole TargetRole, BasisBoneTrackedRole BendRole, bool UseBoneRole, out BasisTwoBoneIKConstraintHand TwoBoneIKConstraint, bool maintainTargetPositionOffset, bool maintainTargetRotationOffset)
     {
         driver.FindBone(out BasisBoneControl TargetControl, TargetRole);
 

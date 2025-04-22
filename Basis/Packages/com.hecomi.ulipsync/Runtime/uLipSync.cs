@@ -24,7 +24,10 @@ namespace uLipSync
         NativeArray<float> _scores;
         NativeArray<LipSyncJob.Info> _info;
         List<int> _requestedCalibrationVowels = new List<int>();
-        Dictionary<string, float> _ratios = new Dictionary<string, float>();
+
+        string[] _phonemeNames;
+        float[] _ratiosBuffer;
+
         public float[] UpdateResultsBuffer;
         public int phonemeCount;
         public NativeArray<float> mfcc => _mfccForOther;
@@ -32,60 +35,46 @@ namespace uLipSync
         public float[] Inputs;
         int mfccNum => profile ? profile.mfccNum : 12;
         public uLipSyncBlendShape uLipSyncBlendShape;
-        public void Initalize()
-        {
-            AllocateBuffers();
-        }
-
-        void OnDisable()
-        {
-            _jobHandle.Complete();
-            DisposeBuffers();
-        }
-
+        public int outputSampleRate;
+        public int PhonemesCount;
+        public int mfccsCount;
+        Dictionary<string, float> _ratios = new Dictionary<string, float>();
         public void LateUpdate()
         {
-            if (_jobHandle.IsCompleted == false)
-            {
+            if (!_jobHandle.IsCompleted)
                 return;
-            }
-            _jobHandle.Complete(); // Wait for async job completion
+
+            _jobHandle.Complete();
             _mfccForOther.CopyFrom(_mfcc);
 
-            // Main phoneme identification
-            int index = _info[0].mainPhonemeIndex;
-            string mainPhoneme = profile.GetPhoneme(index);
+            int mainIndex = _info[0].mainPhonemeIndex;
+            string mainPhoneme = _phonemeNames[mainIndex];
 
-            // Calculate sumScore and populate UpdateResultsBuffer
             float sumScore = 0f;
             _scores.CopyTo(UpdateResultsBuffer);
-            for (int i = 0; i < phonemeCount; ++i)
+            for (int Index = 0; Index < phonemeCount; ++Index)
             {
-                sumScore += UpdateResultsBuffer[i];
+                sumScore += UpdateResultsBuffer[Index];
             }
 
-            // Clear and update _ratios
+            float invSum = sumScore > 0f ? 1f / sumScore : 0f;
+
+            // Optimized ratio calculation using array
+            for (int Index = 0; Index < phonemeCount; ++Index)
+            {
+                _ratiosBuffer[Index] = UpdateResultsBuffer[Index] * invSum;
+            }
+
+            // Only build dictionary once per frame
             _ratios.Clear();
-            float invSumScore = sumScore > 0f ? 1f / sumScore : 0f; // Precompute inverse for efficiency
             for (int i = 0; i < phonemeCount; ++i)
             {
-                string phoneme = profile.GetPhoneme(i);
-                float ratio = UpdateResultsBuffer[i] * invSumScore; // Avoid division in loop
-                if (!_ratios.TryGetValue(phoneme, out float existingRatio))
-                {
-                    _ratios[phoneme] = ratio; // Add new
-                }
-                else
-                {
-                    _ratios[phoneme] = existingRatio + ratio; // Accumulate
-                }
+                _ratios[_phonemeNames[i]] = _ratiosBuffer[i];
             }
 
-            // Normalize volume
             float rawVol = _info[0].volume;
             float normVol = math.clamp((math.log10(rawVol) - Common.DefaultMinVolume) / (Common.DefaultMaxVolume - Common.DefaultMinVolume), 0f, 1f);
 
-            // Update result
             result = new LipSyncInfo()
             {
                 phoneme = mainPhoneme,
@@ -93,36 +82,31 @@ namespace uLipSync
                 rawVolume = rawVol,
                 phonemeRatios = _ratios,
             };
-            index = 0;
+
             uLipSyncBlendShape.OnLipSyncUpdate(result);
-            int Count = _requestedCalibrationVowels.Count;
-            for (int Index = 0; Index < Count; Index++)
+
+            // Calibration
+            for (int i = 0; i < _requestedCalibrationVowels.Count; ++i)
             {
-                index = _requestedCalibrationVowels[Index];
-                profile.UpdateMfcc(index, mfcc, true);
+                int idx = _requestedCalibrationVowels[i];
+                profile.UpdateMfcc(idx, mfcc, true);
             }
-
             _requestedCalibrationVowels.Clear();
-             index = 0;
 
+            int index = 0;
             for (int i = 0; i < mfccsCount && index < PhonemesCount; i++)
             {
-                NativeArray<float> mfccNativeArray = profile.mfccs[i].mfccNativeArray;
-
-                // Determine how many elements to copy
-                int remainingLength = PhonemesCount - index;
-                int copyLength = math.min(12, remainingLength);
-
-                // Use NativeArray.CopyTo for batch copying
-                NativeArray<float>.Copy(mfccNativeArray, 0, _phonemes, index, copyLength);
-
-                index += copyLength;
+                var mfccNativeArray = profile.mfccs[i].mfccNativeArray;
+                int remaining = PhonemesCount - index;
+                int length = math.min(12, remaining);
+                NativeArray<float>.Copy(mfccNativeArray, 0, _phonemes, index, length);
+                index += length;
             }
+
             if (!_isDataReceived) return;
             _isDataReceived = false;
 
             CachedInputSampleCount = inputSampleCount;
-            index = 0;
             lock (_lockObject)
             {
                 _inputData.CopyFrom(Inputs);
@@ -146,6 +130,16 @@ namespace uLipSync
             };
 
             _jobHandle = lipSyncJob.Schedule();
+        }
+        public void Initalize()
+        {
+            AllocateBuffers();
+        }
+
+        void OnDisable()
+        {
+            _jobHandle.Complete();
+            DisposeBuffers();
         }
         void AllocateBuffers()
         {
@@ -176,11 +170,15 @@ namespace uLipSync
                 PhonemesCount = mfccNum * phonemeCount;
                 mfccsCount = profile.mfccs.Count;
                 outputSampleRate = AudioSettings.outputSampleRate;
+
+                _phonemeNames = new string[phonemeCount];
+                _ratiosBuffer = new float[phonemeCount];
+                for (int i = 0; i < phonemeCount; ++i)
+                {
+                    _phonemeNames[i] = profile.GetPhoneme(i);
+                }
             }
         }
-        public int outputSampleRate;
-        public int PhonemesCount;
-        public int mfccsCount;
         void DisposeBuffers()
         {
             if (!_allocated) return;

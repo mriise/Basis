@@ -27,6 +27,7 @@ namespace Basis.Scripts.UI.NamePlate
         private WaitForSeconds cachedReturnDelay;
         private WaitForEndOfFrame cachedEndOfFrame;
         public Color CurrentColor;
+        public Transform Self;
         /// <summary>
         /// can only be called once after that the text is nuked and a mesh render is just used with a filter
         /// </summary>
@@ -50,6 +51,7 @@ namespace Basis.Scripts.UI.NamePlate
             BasisRemotePlayer.AudioReceived += OnAudioReceived;
             BasisRemotePlayer.OnAvatarSwitched += RebuildRenderCheck;
             BasisRemotePlayer.OnAvatarSwitchedFallBack += RebuildRenderCheck;
+            Self = this.transform;
             RemoteNamePlateDriver.Instance.AddNamePlate(this);
             LoadingText.enableVertexGradient = false;
             // Text.enableCulling = true;

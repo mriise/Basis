@@ -163,7 +163,7 @@ namespace Basis.Scripts.Device_Management
         }
         public async Task Initialize()
         {
-            CommandLineArgs.Initialize(BakedInCommandLineArgs, out string ForcedDevicemanager);
+            BasisCommandLineArgs.Initialize(BakedInCommandLineArgs, out string ForcedDevicemanager);
             InstantiationParameters parameters = new InstantiationParameters();
             await BasisPlayerFactory.CreateLocalPlayer(parameters);
 

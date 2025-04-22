@@ -67,9 +67,9 @@ namespace Basis.Scripts.Drivers
             OnHeightChanged();
             if (HasEvents == false)
             {
-                MicrophoneRecorder.OnPausedAction += OnPausedEvent;
-                MicrophoneRecorder.MainThreadOnHasAudio += MicrophoneTransmitting;
-                MicrophoneRecorder.MainThreadOnHasSilence += MicrophoneNotTransmitting;
+                BasisMicrophoneRecorder.OnPausedAction += OnPausedEvent;
+                BasisMicrophoneRecorder.MainThreadOnHasAudio += MicrophoneTransmitting;
+                BasisMicrophoneRecorder.MainThreadOnHasSilence += MicrophoneNotTransmitting;
                 RenderPipelineManager.beginCameraRendering += BeginCameraRendering;
                 BasisDeviceManagement.Instance.OnBootModeChanged += OnModeSwitch;
                 BasisLocalPlayer.Instance.OnPlayersHeightChanged += OnHeightChanged;
@@ -80,7 +80,7 @@ namespace Basis.Scripts.Drivers
             StartingScale = SpriteRendererIcon.transform.localScale;
             // Target scale for the "bounce" effect (e.g., 1.2 times larger)
             largerScale = StartingScale * 1.2f;
-            UpdateMicrophoneVisuals(MicrophoneRecorder.isPaused, false);
+            UpdateMicrophoneVisuals(BasisMicrophoneRecorder.isPaused, false);
 
             if (SteamAudioListener != null)
             {
@@ -190,7 +190,7 @@ namespace Basis.Scripts.Drivers
             RenderPipelineManager.beginCameraRendering -= BeginCameraRendering;
             BasisDeviceManagement.Instance.OnBootModeChanged -= OnModeSwitch;
             BasisLocalPlayer.Instance.OnPlayersHeightChanged -= OnHeightChanged;
-            MicrophoneRecorder.OnPausedAction -= OnPausedEvent;
+            BasisMicrophoneRecorder.OnPausedAction -= OnPausedEvent;
             HasEvents = false;
             HasInstance = false;
         }
@@ -285,8 +285,8 @@ namespace Basis.Scripts.Drivers
             {
                 RenderPipelineManager.beginCameraRendering -= BeginCameraRendering;
                 BasisDeviceManagement.Instance.OnBootModeChanged -= OnModeSwitch;
-                MicrophoneRecorder.MainThreadOnHasAudio -= MicrophoneTransmitting;
-                MicrophoneRecorder.MainThreadOnHasSilence -= MicrophoneNotTransmitting;
+                BasisMicrophoneRecorder.MainThreadOnHasAudio -= MicrophoneTransmitting;
+                BasisMicrophoneRecorder.MainThreadOnHasSilence -= MicrophoneNotTransmitting;
                 HasEvents = false;
             }
         }

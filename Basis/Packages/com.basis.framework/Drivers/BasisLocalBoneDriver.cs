@@ -4,7 +4,7 @@ using Basis.Scripts.TransformBinders.BoneControl;
 namespace Basis.Scripts.Drivers
 {
     [System.Serializable]
-    public class BasisLocalBoneDriver : BaseBoneDriver
+    public class BasisLocalBoneDriver : BasisBaseBoneDriver
     {
         public static BasisBoneControl Head;
         public static BasisBoneControl Hips;

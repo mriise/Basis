@@ -7,7 +7,7 @@ namespace Basis.Scripts.UI.NamePlate
     public class RemoteNamePlateDriver : MonoBehaviour
     {
         // Use an array for better performance
-        private BasisRemoteNamePlate[] basisRemotePlayers = new BasisRemoteNamePlate[0];
+        private BasisRemoteNamePlate[] RemoteNamePlates = new BasisRemoteNamePlate[0];
         private int count = 0; // Track the number of active elements
         public static RemoteNamePlateDriver Instance;
         public Color NormalColor;
@@ -44,22 +44,29 @@ namespace Basis.Scripts.UI.NamePlate
         /// </summary>
         public void AddNamePlate(BasisRemoteNamePlate newNamePlate)
         {
-            if (newNamePlate == null) return;
+            if (newNamePlate == null)
+            {
+                return;
+            }
+
 
             // Check if it already exists
             for (int i = 0; i < count; i++)
             {
-                if (basisRemotePlayers[i] == newNamePlate) return;
+                if (RemoteNamePlates[i] == newNamePlate)
+                {
+                    return;
+                }
             }
 
             // Resize if necessary
-            if (count >= basisRemotePlayers.Length)
+            if (count >= RemoteNamePlates.Length)
             {
-                ResizeArray(basisRemotePlayers.Length == 0 ? 4 : basisRemotePlayers.Length * 2);
+                ResizeArray(RemoteNamePlates.Length == 0 ? 4 : RemoteNamePlates.Length * 2);
             }
 
             // Add the new nameplate
-            basisRemotePlayers[count++] = newNamePlate;
+            RemoteNamePlates[count++] = newNamePlate;
         }
 
         /// <summary>
@@ -71,15 +78,15 @@ namespace Basis.Scripts.UI.NamePlate
 
             for (int RemotePlayerIndex = 0; RemotePlayerIndex < count; RemotePlayerIndex++)
             {
-                if (basisRemotePlayers[RemotePlayerIndex] == namePlateToRemove)
+                if (RemoteNamePlates[RemotePlayerIndex] == namePlateToRemove)
                 {
                     // Shift elements down to remove the nameplate
                     for (int Index = RemotePlayerIndex; Index < count - 1; Index++)
                     {
-                        basisRemotePlayers[Index] = basisRemotePlayers[Index + 1];
+                        RemoteNamePlates[Index] = RemoteNamePlates[Index + 1];
                     }
 
-                    basisRemotePlayers[--count] = null; // Clear the last element
+                    RemoteNamePlates[--count] = null; // Clear the last element
                     break;
                 }
             }
@@ -95,10 +102,10 @@ namespace Basis.Scripts.UI.NamePlate
             // Shift elements down to remove the nameplate
             for (int i = index; i < count - 1; i++)
             {
-                basisRemotePlayers[i] = basisRemotePlayers[i + 1];
+                RemoteNamePlates[i] = RemoteNamePlates[i + 1];
             }
 
-            basisRemotePlayers[--count] = null; // Clear the last element
+            RemoteNamePlates[--count] = null; // Clear the last element
         }
 
         /// <summary>
@@ -109,10 +116,10 @@ namespace Basis.Scripts.UI.NamePlate
             BasisRemoteNamePlate[] newArray = new BasisRemoteNamePlate[newSize];
             for (int Index = 0; Index < count; Index++)
             {
-                newArray[Index] = basisRemotePlayers[Index];
+                newArray[Index] = RemoteNamePlates[Index];
             }
 
-            basisRemotePlayers = newArray;
+            RemoteNamePlates = newArray;
         }
         public float x;
         public float z;
@@ -121,14 +128,14 @@ namespace Basis.Scripts.UI.NamePlate
             Vector3 Position = BasisLocalCameraDriver.Position;
             for (int Index = 0; Index < count; Index++)
             {
-                BasisRemoteNamePlate NamePlate = basisRemotePlayers[Index];
+                BasisRemoteNamePlate NamePlate = RemoteNamePlates[Index];
                 if (NamePlate.IsVisible)
                 {
                     cachedDirection = NamePlate.HipTarget.OutgoingWorldData.position;
                     cachedDirection.y += NamePlate.MouthTarget.TposeLocal.position.y / YHeightMultiplier;
                     dirToCamera = Position - cachedDirection;
                     cachedRotation = Quaternion.Euler(x, Mathf.Atan2(dirToCamera.x, dirToCamera.z) * Mathf.Rad2Deg, z);
-                    NamePlate.transform.SetPositionAndRotation(cachedDirection, cachedRotation);
+                    NamePlate.Self.SetPositionAndRotation(cachedDirection, cachedRotation);
                 }
             }
         }

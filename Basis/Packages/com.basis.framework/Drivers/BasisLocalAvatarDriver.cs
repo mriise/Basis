@@ -259,7 +259,7 @@ namespace Basis.Scripts.Drivers
                 GameObject.Destroy(RightToeRig.gameObject);
             }
         }
-        public void ComputeOffsets(BaseBoneDriver BaseBoneDriver)
+        public void ComputeOffsets(BasisBaseBoneDriver BaseBoneDriver)
         {
             //head
             SetAndCreateLock(BaseBoneDriver, BasisBoneTrackedRole.CenterEye, BasisBoneTrackedRole.Head, 40, 35, true);

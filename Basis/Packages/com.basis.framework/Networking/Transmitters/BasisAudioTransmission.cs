@@ -42,13 +42,13 @@ namespace Basis.Scripts.Networking.Transmitters
                 if (!HasEvents)
                 {
                         // Hook up the event handlers
-                        MicrophoneRecorder.OnHasAudio += OnAudioReady;
-                        MicrophoneRecorder.OnHasSilence += SendSilenceOverNetwork;
+                        BasisMicrophoneRecorder.OnHasAudio += OnAudioReady;
+                        BasisMicrophoneRecorder.OnHasSilence += SendSilenceOverNetwork;
                         HasEvents = true;
                         // Ensure the output buffer is properly initialized and matches the packet size
-                        if (MicrophoneRecorder.PacketSize != AudioSegmentData.TotalLength)
+                        if (BasisMicrophoneRecorder.PacketSize != AudioSegmentData.TotalLength)
                         {
-                            AudioSegmentData = new AudioSegmentDataMessage(new byte[MicrophoneRecorder.PacketSize]);
+                            AudioSegmentData = new AudioSegmentDataMessage(new byte[BasisMicrophoneRecorder.PacketSize]);
                         }
                 }
 
@@ -59,11 +59,11 @@ namespace Basis.Scripts.Networking.Transmitters
         {
             if (HasEvents)
             {
-                MicrophoneRecorder.OnHasAudio -= OnAudioReady;
-                MicrophoneRecorder.OnHasSilence -= SendSilenceOverNetwork;
+                BasisMicrophoneRecorder.OnHasAudio -= OnAudioReady;
+                BasisMicrophoneRecorder.OnHasSilence -= SendSilenceOverNetwork;
                 HasEvents = false;
             }
-            MicrophoneRecorder.OnDestroy();
+            BasisMicrophoneRecorder.OnDestroy();
             encoder.Dispose();
             encoder = null;
         }
@@ -72,12 +72,12 @@ namespace Basis.Scripts.Networking.Transmitters
             if (NetworkedPlayer.HasReasonToSendAudio)
             {
                 // UnityEngine.BasisDebug.Log("Sending out Audio");
-                if (MicrophoneRecorder.PacketSize != AudioSegmentData.TotalLength)
+                if (BasisMicrophoneRecorder.PacketSize != AudioSegmentData.TotalLength)
                 {
-                    AudioSegmentData = new AudioSegmentDataMessage(new byte[MicrophoneRecorder.PacketSize]);
+                    AudioSegmentData = new AudioSegmentDataMessage(new byte[BasisMicrophoneRecorder.PacketSize]);
                 }
                 // Encode the audio data from the microphone recorder's buffer
-                AudioSegmentData.LengthUsed = encoder.Encode(MicrophoneRecorder.processBufferArray,MicrophoneRecorder.SampleRate, AudioSegmentData.buffer, AudioSegmentData.TotalLength);
+                AudioSegmentData.LengthUsed = encoder.Encode(BasisMicrophoneRecorder.processBufferArray,BasisMicrophoneRecorder.SampleRate, AudioSegmentData.buffer, AudioSegmentData.TotalLength);
 
                 NetDataWriter writer = new NetDataWriter();
                 AudioSegmentData.Serialize(writer);

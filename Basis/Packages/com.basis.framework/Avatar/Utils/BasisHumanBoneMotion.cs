@@ -1,4 +1,4 @@
-public enum HumanBoneMotion
+public enum BasisHumanBoneMotion
 {
     // Spine
     SpineFrontBack = 0,

@@ -31,7 +31,7 @@ namespace Basis.Scripts.Drivers
             remotePlayer.BasisAvatar.Animator.enabled = false;
             CalibrationComplete?.Invoke();
         }
-        public void ComputeOffsets(BaseBoneDriver BBD)
+        public void ComputeOffsets(BasisBaseBoneDriver BBD)
         {
             SetAndCreateLock(BBD, BasisBoneTrackedRole.Head, BasisBoneTrackedRole.Neck,  40, 12, true);
 

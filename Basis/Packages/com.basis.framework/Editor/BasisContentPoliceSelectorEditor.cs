@@ -1,11 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
-using UnityEngine;
 
 [CustomEditor(typeof(ContentPoliceSelector))]
-public class ContentPoliceSelectorEditor : Editor
+public class BasisContentPoliceSelectorEditor : Editor
 {
     public List<Type> monoBehaviourTypes;
     public string[] typeNames;

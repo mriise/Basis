@@ -2,7 +2,7 @@ using UnityEditor;
 
 namespace Basis.Scripts.Device_Management.Editor
 {
-public static class DeviceManagementEditor
+public static class BasisDeviceManagementEditor
 {
     [MenuItem("Basis/ForceLoadXR")]
     public static void ForceLoadXR()

@@ -171,7 +171,7 @@ namespace Basis.Scripts.Drivers
             }
             return false;
         }
-        public void CalculateTransformPositions(BasisPlayer BasisPlayer, BaseBoneDriver driver)
+        public void CalculateTransformPositions(BasisPlayer BasisPlayer, BasisBaseBoneDriver driver)
         {
             BasisDebug.Log("CalculateTransformPositions", BasisDebug.LogTag.Avatar);
             UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<BasisFallBackBoneData> BasisFallBackBoneDataAsync = Addressables.LoadAssetAsync<BasisFallBackBoneData>(BoneData);
@@ -309,7 +309,7 @@ namespace Basis.Scripts.Drivers
                 bone.TposeLocal.rotation = quaternion.identity;
             }
         }
-        public void SetAndCreateLock(BaseBoneDriver BaseBoneDriver, BasisBoneTrackedRole LockToBoneRole, BasisBoneTrackedRole AssignedTo, float PositionLerpAmount, float QuaternionLerpAmount, bool CreateLocks = true)
+        public void SetAndCreateLock(BasisBaseBoneDriver BaseBoneDriver, BasisBoneTrackedRole LockToBoneRole, BasisBoneTrackedRole AssignedTo, float PositionLerpAmount, float QuaternionLerpAmount, bool CreateLocks = true)
         {
             if (CreateLocks)
             {

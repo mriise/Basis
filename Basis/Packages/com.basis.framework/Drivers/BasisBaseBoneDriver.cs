@@ -10,7 +10,7 @@ using UnityEngine;
 namespace Basis.Scripts.Drivers
 {
     [System.Serializable]
-    public abstract class BaseBoneDriver
+    public abstract class BasisBaseBoneDriver
     {
         //figures out how to get the mouth bone and eye position
         public int ControlsLength;

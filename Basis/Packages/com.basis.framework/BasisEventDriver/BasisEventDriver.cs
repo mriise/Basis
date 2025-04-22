@@ -51,7 +51,7 @@ public class BasisEventDriver : MonoBehaviour
         {
             BasisLocalPlayer.Instance.SimulateOnLateUpdate();
         }
-        MicrophoneRecorder.MicrophoneUpdate();
+        BasisMicrophoneRecorder.MicrophoneUpdate();
         RemoteNamePlateDriver.SimulateNamePlates();
         BasisNetworkManagement.SimulateNetworkApply();
     }

@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using static Basis.Scripts.Drivers.BaseBoneDriver;
+using static Basis.Scripts.Drivers.BasisBaseBoneDriver;
 namespace Basis.Scripts.BasisSdk.Players
 {
     public class BasisLocalPlayer : BasisPlayer
@@ -84,7 +84,7 @@ namespace Basis.Scripts.BasisSdk.Players
             {
                 Instance = this;
             }
-            MicrophoneRecorder.OnPausedAction += OnPausedEvent;
+            BasisMicrophoneRecorder.OnPausedAction += OnPausedEvent;
             OnLocalPlayerCreated?.Invoke();
             IsLocal = true;
             LocalBoneDriver.CreateInitialArrays(this.transform, true);
@@ -108,7 +108,7 @@ namespace Basis.Scripts.BasisSdk.Players
             {
                 await CreateAvatar(BasisPlayer.LoadModeLocal, BasisAvatarFactory.LoadingAvatar);
             }
-            MicrophoneRecorder.TryInitialize();
+            BasisMicrophoneRecorder.TryInitialize();
             PlayerReady = true;
             OnLocalPlayerCreatedAndReady?.Invoke();
             BasisSceneFactory BasisSceneFactory = FindFirstObjectByType<BasisSceneFactory>(FindObjectsInactive.Exclude);
@@ -133,11 +133,11 @@ namespace Basis.Scripts.BasisSdk.Players
         }
         public void OnApplicationQuit()
         {
-            MicrophoneRecorder.StopProcessingThread();
+            BasisMicrophoneRecorder.StopProcessingThread();
         }
         public async Task LoadInitialAvatar(BasisDataStore.BasisSavedAvatar LastUsedAvatar)
         {
-            if (BasisLoadHandler.IsMetaDataOnDisc(LastUsedAvatar.UniqueID, out OnDiscInformation info))
+            if (BasisLoadHandler.IsMetaDataOnDisc(LastUsedAvatar.UniqueID, out BasisOnDiscInformation info))
             {
                 await BasisDataStoreAvatarKeys.LoadKeys();
                 List<BasisDataStoreAvatarKeys.AvatarKey> activeKeys = BasisDataStoreAvatarKeys.DisplayKeys();
@@ -199,8 +199,8 @@ namespace Basis.Scripts.BasisSdk.Players
             LocalVisemeDriver.TryInitialize(this);
             if (HasCalibrationEvents == false)
             {
-                MicrophoneRecorder.OnHasAudio += DriveAudioToViseme;
-                MicrophoneRecorder.OnHasSilence += DriveAudioToViseme;
+                BasisMicrophoneRecorder.OnHasAudio += DriveAudioToViseme;
+                BasisMicrophoneRecorder.OnHasSilence += DriveAudioToViseme;
                 HasCalibrationEvents = true;
             }
         }
@@ -214,8 +214,8 @@ namespace Basis.Scripts.BasisSdk.Players
             }
             if (HasCalibrationEvents)
             {
-                MicrophoneRecorder.OnHasAudio -= DriveAudioToViseme;
-                MicrophoneRecorder.OnHasSilence -= DriveAudioToViseme;
+                BasisMicrophoneRecorder.OnHasAudio -= DriveAudioToViseme;
+                BasisMicrophoneRecorder.OnHasSilence -= DriveAudioToViseme;
                 HasCalibrationEvents = false;
             }
             if (LocalMuscleDriver != null)
@@ -230,14 +230,14 @@ namespace Basis.Scripts.BasisSdk.Players
             {
                 FacialBlinkDriver.OnDestroy();
             }
-            MicrophoneRecorder.OnPausedAction -= OnPausedEvent;
+            BasisMicrophoneRecorder.OnPausedAction -= OnPausedEvent;
             LocalAnimatorDriver.OnDestroy(this);
             LocalBoneDriver.DeInitializeGizmos();
             BasisUILoadingBar.DeInitalize();
         }
         public void DriveAudioToViseme()
         {
-            LocalVisemeDriver.ProcessAudioSamples(MicrophoneRecorder.processBufferArray, 1, MicrophoneRecorder.processBufferArray.Length);
+            LocalVisemeDriver.ProcessAudioSamples(BasisMicrophoneRecorder.processBufferArray, 1, BasisMicrophoneRecorder.processBufferArray.Length);
         }
         private void OnPausedEvent(bool IsPaused)
         {

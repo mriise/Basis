@@ -2,11 +2,10 @@ using Basis.Scripts.Device_Management;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 namespace Basis.Scripts.Command_Line_Args
 {
-    public static class CommandLineArgs
+    public static class BasisCommandLineArgs
     {
         private const string DisableFlag = "--disable-";
         private const string ForceFlag = "--force-";

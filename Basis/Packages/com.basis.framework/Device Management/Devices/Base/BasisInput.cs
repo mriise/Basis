@@ -311,7 +311,7 @@ namespace Basis.Scripts.Device_Management.Devices
                     {
                         if (BasisInputModuleHandler.Instance.HasHoverONInput == false)
                         {
-                            MicrophoneRecorder.ToggleIsPaused();
+                            BasisMicrophoneRecorder.ToggleIsPaused();
                         }
                     }
                     break;
@@ -327,7 +327,7 @@ namespace Basis.Scripts.Device_Management.Devices
                     {
                         if (BasisInputModuleHandler.Instance.HasHoverONInput == false)
                         {
-                            MicrophoneRecorder.ToggleIsPaused();
+                            BasisMicrophoneRecorder.ToggleIsPaused();
                         }
                     }
                     break;

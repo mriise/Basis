@@ -118,36 +118,24 @@ namespace uLipSync
                 }
             }
         }
-
-        public void ApplyBlendShapes()
-        {
-            OnApplyBlendShapes();
-        }
-
         protected virtual void OnApplyBlendShapes()
         {
-            if (skinnedMeshRenderer == null)
-            {
+            if (skinnedMeshRenderer == null || blendShapes == null || blendShapes.Count == 0)
                 return;
-            }
-            if (skinnedMeshRenderer.sharedMesh == null)
-            {
-                return;
-            }
 
-            if (skinnedMeshRenderer.sharedMesh.blendShapeCount != 0)
+            float globalMultiplier = volume * maxBlendShapeValue;
+
+            foreach (var bs in blendShapes)
             {
-                // Iterate through blendShapes once and set blend shape weights
-                for (int Index = 0; Index < blendShapes.Count; Index++)
+                if (bs.index < 0)
+                    continue;
+                if (globalMultiplier == 0)
                 {
-                    BlendShapeInfo bs = blendShapes[Index];
-                    if (bs.index < 0) continue;
-
-                    // Reset the blend shape weight to zero
-                    skinnedMeshRenderer.SetBlendShapeWeight(bs.index, 0f);
-
-                    // Calculate and apply the new weight
-                    float weight = bs.weight * bs.maxWeight * volume * maxBlendShapeValue;
+                    skinnedMeshRenderer.SetBlendShapeWeight(bs.index, 0);
+                }
+                else
+                {
+                    float weight = bs.weight * bs.maxWeight * globalMultiplier;
                     skinnedMeshRenderer.SetBlendShapeWeight(bs.index, weight);
                 }
             }
