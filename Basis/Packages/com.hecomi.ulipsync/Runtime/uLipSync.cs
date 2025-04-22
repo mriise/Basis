@@ -3,10 +3,8 @@ using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
 using System.Collections.Generic;
-
 namespace uLipSync
 {
-
     public class uLipSync : MonoBehaviour
     {
         public Profile profile;
@@ -24,9 +22,7 @@ namespace uLipSync
         NativeArray<float> _scores;
         NativeArray<LipSyncJob.Info> _info;
         List<int> _requestedCalibrationVowels = new List<int>();
-
         string[] _phonemeNames;
-
         public float[] UpdateResultsBuffer;
         public int phonemeCount;
         public NativeArray<float> mfcc => _mfccForOther;
@@ -38,9 +34,10 @@ namespace uLipSync
         public int mfccsCount;
         Dictionary<string, float> phonemeRatios = new Dictionary<string, float>();
         public string mainPhoneme;
-
         public float NormalVolume;
         public float rawVolume;
+         public bool RequestedCalibration = false;
+        public int CachedInputSampleCount;
         public void LateUpdate()
         {
             if (!_jobHandle.IsCompleted)
@@ -64,12 +61,13 @@ namespace uLipSync
             // Optimized ratio calculation using array
             for (int Index = 0; Index < phonemeCount; ++Index)
             {
-                phonemeRatios[_phonemeNames[Index]] = UpdateResultsBuffer[Index] * invSum;
+                string PhonemeName = _phonemeNames[Index];
+                phonemeRatios[PhonemeName] = UpdateResultsBuffer[Index] * invSum;
 
             }
 
-             rawVolume = _info[0].volume;
-             NormalVolume = math.clamp((math.log10(rawVolume) - Common.DefaultMinVolume) / (Common.DefaultMaxVolume - Common.DefaultMinVolume), 0f, 1f);
+            rawVolume = _info[0].volume;
+            NormalVolume = math.clamp((math.log10(rawVolume) - Common.DefaultMinVolume) / (Common.DefaultMaxVolume - Common.DefaultMinVolume), 0f, 1f);
             uLipSyncBlendShape.OnLipSyncUpdate(mainPhoneme, NormalVolume, rawVolume, phonemeRatios);
 
             if (RequestedCalibration)
@@ -92,7 +90,10 @@ namespace uLipSync
                 index += length;
             }
 
-            if (!_isDataReceived) return;
+            if (!_isDataReceived)
+            {
+                return;
+            }
             _isDataReceived = false;
 
             CachedInputSampleCount = inputSampleCount;
@@ -187,7 +188,6 @@ namespace uLipSync
                 _info.Dispose();
             }
         }
-        public bool RequestedCalibration = false;
         public void RequestCalibration(int index)
         {
             RequestedCalibration = true;
@@ -202,7 +202,6 @@ namespace uLipSync
                 return Mathf.CeilToInt(profile.sampleCount * r);
             }
         }
-        public int CachedInputSampleCount;
         public void OnDataReceived(float[] input, int channels, int length)
         {
             lock (_lockObject)

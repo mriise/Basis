@@ -19,11 +19,8 @@ namespace uLipSync
         private float _volume = 0f;
         private float _openCloseVelocity = 0f;
 
-        public void OnLipSyncUpdate( string phoneme,float volume, float rawVolume,Dictionary<string, float> phonemeRatios)
+        public void OnLipSyncUpdate(string phoneme, float volume, float rawVolume, Dictionary<string, float> phonemeRatios)
         {
-            if (skinnedMeshRenderer == null || BlendShapeInfos == null || BlendShapeInfos.Length == 0)
-                return;
-
             float normVol = 0f;
             if (rawVolume > 0f)
             {
@@ -72,9 +69,18 @@ namespace uLipSync
 
                 // Skip setting if final weight is very close to the last value
                 if (Mathf.Abs(bs.LastValue - finalWeight) < 0.01f)
+                {
                     continue;
+                }
 
-                skinnedMeshRenderer.SetBlendShapeWeight(bs.index, finalWeight);
+                if (finalWeight <= 0)
+                {
+                    skinnedMeshRenderer.SetBlendShapeWeight(bs.index, 0);
+                }
+                else
+                {
+                    skinnedMeshRenderer.SetBlendShapeWeight(bs.index, finalWeight);
+                }
                 bs.LastValue = finalWeight;
             }
         }
