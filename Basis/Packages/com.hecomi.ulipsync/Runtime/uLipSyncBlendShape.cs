@@ -16,22 +16,18 @@ namespace uLipSync
         public float minVolume = -2.5f;
         public float maxVolume = -1.5f;
         public bool usePhonemeBlend = false;
-
-        private LipSyncInfo _info = new LipSyncInfo();
         private float _volume = 0f;
         private float _openCloseVelocity = 0f;
 
-        public void OnLipSyncUpdate(LipSyncInfo info)
+        public void OnLipSyncUpdate( string phoneme,float volume, float rawVolume,Dictionary<string, float> phonemeRatios)
         {
             if (skinnedMeshRenderer == null || BlendShapeInfos == null || BlendShapeInfos.Length == 0)
                 return;
 
-            _info = info;
-
             float normVol = 0f;
-            if (_info.rawVolume > 0f)
+            if (rawVolume > 0f)
             {
-                normVol = Mathf.Log10(_info.rawVolume);
+                normVol = Mathf.Log10(rawVolume);
                 normVol = Mathf.Clamp01((normVol - minVolume) / Mathf.Max(maxVolume - minVolume, 1e-4f));
             }
 
@@ -39,23 +35,23 @@ namespace uLipSync
             float globalMultiplier = _volume * maxBlendShapeValue;
 
             float totalWeight = 0f;
-            var ratios = _info.phonemeRatios;
             int count = BlendShapeInfos.Length;
 
             // First pass: compute weights and total sum
-            for (int i = 0; i < count; i++)
+            for (int Index = 0; Index < count; Index++)
             {
-                var bs = BlendShapeInfos[i];
+                var bs = BlendShapeInfos[Index];
                 float targetWeight = 0f;
 
-                if (usePhonemeBlend && ratios != null && !string.IsNullOrEmpty(bs.phoneme))
+                if (usePhonemeBlend && phonemeRatios != null && !string.IsNullOrEmpty(bs.phoneme))
                 {
-                    ratios.TryGetValue(bs.phoneme, out targetWeight);
+                    phonemeRatios.TryGetValue(bs.phoneme, out targetWeight);
                 }
-                else if (bs.phoneme == _info.phoneme)
+                else if (bs.phoneme == phoneme)
                 {
                     targetWeight = 1f;
                 }
+
                 float weightVelocity = bs.weightVelocity;
                 bs.weight = SmoothDamp(bs.weight, targetWeight, ref weightVelocity);
                 bs.weightVelocity = weightVelocity;
@@ -74,7 +70,12 @@ namespace uLipSync
                 float weight = bs.weight * invTotal;
                 float finalWeight = weight * bs.maxWeight * globalMultiplier;
 
+                // Skip setting if final weight is very close to the last value
+                if (Mathf.Abs(bs.LastValue - finalWeight) < 0.01f)
+                    continue;
+
                 skinnedMeshRenderer.SetBlendShapeWeight(bs.index, finalWeight);
+                bs.LastValue = finalWeight;
             }
         }
 

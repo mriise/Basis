@@ -26,19 +26,21 @@ namespace uLipSync
         List<int> _requestedCalibrationVowels = new List<int>();
 
         string[] _phonemeNames;
-        float[] _ratiosBuffer;
 
         public float[] UpdateResultsBuffer;
         public int phonemeCount;
         public NativeArray<float> mfcc => _mfccForOther;
-        public LipSyncInfo result { get; private set; } = new LipSyncInfo();
         public float[] Inputs;
         int mfccNum => profile ? profile.mfccNum : 12;
         public uLipSyncBlendShape uLipSyncBlendShape;
         public int outputSampleRate;
         public int PhonemesCount;
         public int mfccsCount;
-        Dictionary<string, float> _ratios = new Dictionary<string, float>();
+        Dictionary<string, float> phonemeRatios = new Dictionary<string, float>();
+        public string mainPhoneme;
+
+        public float NormalVolume;
+        public float rawVolume;
         public void LateUpdate()
         {
             if (!_jobHandle.IsCompleted)
@@ -48,7 +50,7 @@ namespace uLipSync
             _mfccForOther.CopyFrom(_mfcc);
 
             int mainIndex = _info[0].mainPhonemeIndex;
-            string mainPhoneme = _phonemeNames[mainIndex];
+            mainPhoneme = _phonemeNames[mainIndex];
 
             float sumScore = 0f;
             _scores.CopyTo(UpdateResultsBuffer);
@@ -62,37 +64,24 @@ namespace uLipSync
             // Optimized ratio calculation using array
             for (int Index = 0; Index < phonemeCount; ++Index)
             {
-                _ratiosBuffer[Index] = UpdateResultsBuffer[Index] * invSum;
+                phonemeRatios[_phonemeNames[Index]] = UpdateResultsBuffer[Index] * invSum;
+
             }
 
-            // Only build dictionary once per frame
-            _ratios.Clear();
-            for (int Index = 0; Index < phonemeCount; ++Index)
+             rawVolume = _info[0].volume;
+             NormalVolume = math.clamp((math.log10(rawVolume) - Common.DefaultMinVolume) / (Common.DefaultMaxVolume - Common.DefaultMinVolume), 0f, 1f);
+            uLipSyncBlendShape.OnLipSyncUpdate(mainPhoneme, NormalVolume, rawVolume, phonemeRatios);
+
+            if (RequestedCalibration)
             {
-                _ratios[_phonemeNames[Index]] = _ratiosBuffer[Index];
+                for (int i = 0; i < _requestedCalibrationVowels.Count; ++i)
+                {
+                    int idx = _requestedCalibrationVowels[i];
+                    profile.UpdateMfcc(idx, mfcc, true);
+                }
+                _requestedCalibrationVowels.Clear();
+                RequestedCalibration = false;
             }
-
-            float rawVol = _info[0].volume;
-            float normVol = math.clamp((math.log10(rawVol) - Common.DefaultMinVolume) / (Common.DefaultMaxVolume - Common.DefaultMinVolume), 0f, 1f);
-
-            result = new LipSyncInfo()
-            {
-                phoneme = mainPhoneme,
-                volume = normVol,
-                rawVolume = rawVol,
-                phonemeRatios = _ratios,
-            };
-
-            uLipSyncBlendShape.OnLipSyncUpdate(result);
-
-            // Calibration
-            for (int i = 0; i < _requestedCalibrationVowels.Count; ++i)
-            {
-                int idx = _requestedCalibrationVowels[i];
-                profile.UpdateMfcc(idx, mfcc, true);
-            }
-            _requestedCalibrationVowels.Clear();
-
             int index = 0;
             for (int i = 0; i < mfccsCount && index < PhonemesCount; i++)
             {
@@ -172,7 +161,6 @@ namespace uLipSync
                 outputSampleRate = AudioSettings.outputSampleRate;
 
                 _phonemeNames = new string[phonemeCount];
-                _ratiosBuffer = new float[phonemeCount];
                 for (int i = 0; i < phonemeCount; ++i)
                 {
                     _phonemeNames[i] = profile.GetPhoneme(i);
@@ -199,8 +187,10 @@ namespace uLipSync
                 _info.Dispose();
             }
         }
+        public bool RequestedCalibration = false;
         public void RequestCalibration(int index)
         {
+            RequestedCalibration = true;
             _requestedCalibrationVowels.Add(index);
         }
         int inputSampleCount
@@ -213,7 +203,7 @@ namespace uLipSync
             }
         }
         public int CachedInputSampleCount;
-        public void OnDataReceived(float[] input, int channels,int length)
+        public void OnDataReceived(float[] input, int channels, int length)
         {
             lock (_lockObject)
             {
@@ -227,5 +217,4 @@ namespace uLipSync
             _isDataReceived = true;
         }
     }
-
 }
