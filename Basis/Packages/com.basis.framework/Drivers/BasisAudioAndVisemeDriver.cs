@@ -153,12 +153,13 @@ namespace Basis.Scripts.Drivers
                     HasViseme[Index] = false;
                 }
             }
-            uLipSyncBlendShape.blendShapes.Clear();
+            uLipSyncBlendShape.CachedblendShapes.Clear();
             for (int Index = 0; Index < phonemeBlendShapeTable.Count; Index++)
             {
                 PhonemeBlendShapeInfo info = phonemeBlendShapeTable[Index];
                 uLipSyncBlendShape.AddBlendShape(info.phoneme, info.blendShape);
             }
+            uLipSyncBlendShape.CreateArray();
             if (FirstTime)
             {
                 uLipSync.uLipSyncBlendShape = uLipSyncBlendShape;

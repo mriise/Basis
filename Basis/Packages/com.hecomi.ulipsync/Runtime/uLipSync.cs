@@ -67,9 +67,9 @@ namespace uLipSync
 
             // Only build dictionary once per frame
             _ratios.Clear();
-            for (int i = 0; i < phonemeCount; ++i)
+            for (int Index = 0; Index < phonemeCount; ++Index)
             {
-                _ratios[_phonemeNames[i]] = _ratiosBuffer[i];
+                _ratios[_phonemeNames[Index]] = _ratiosBuffer[Index];
             }
 
             float rawVol = _info[0].volume;

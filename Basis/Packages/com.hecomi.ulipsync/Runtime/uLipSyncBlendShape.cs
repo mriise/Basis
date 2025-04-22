@@ -18,7 +18,7 @@ namespace uLipSync
             public float weightVelocity { get; set; } = 0f;
         }
         public SkinnedMeshRenderer skinnedMeshRenderer;
-        public List<BlendShapeInfo> blendShapes = new List<BlendShapeInfo>();
+        public List<BlendShapeInfo> CachedblendShapes = new List<BlendShapeInfo>();
         public float maxBlendShapeValue = 100f;
         public float minVolume = -2.5f;
         public float maxVolume = -1.5f;
@@ -78,12 +78,12 @@ namespace uLipSync
         {
             float sum = 0f;
             var ratios = _info.phonemeRatios;
-            int count = blendShapes.Count;
+            int count = BlendShapeInfos.Length;
 
             // First pass: Compute weights and accumulate the sum
-            for (int i = 0; i < count; i++)
+            for (int Index = 0; Index < count; Index++)
             {
-                BlendShapeInfo bs = blendShapes[i];
+                BlendShapeInfo bs = BlendShapeInfos[Index];
                 float targetWeight = 0f;
 
                 if (usePhonemeBlend && ratios != null && !string.IsNullOrEmpty(bs.phoneme))
@@ -107,28 +107,34 @@ namespace uLipSync
                 float invSum = 1f / sum; // Precompute reciprocal for performance
                 for (int i = 0; i < count; i++)
                 {
-                    blendShapes[i].weight *= invSum;
+                    BlendShapeInfos[i].weight *= invSum;
                 }
             }
             else
             {
                 for (int i = 0; i < count; i++)
                 {
-                    blendShapes[i].weight = 0f;
+                    BlendShapeInfos[i].weight = 0f;
                 }
             }
         }
         protected virtual void OnApplyBlendShapes()
         {
-            if (skinnedMeshRenderer == null || blendShapes == null || blendShapes.Count == 0)
+            if (skinnedMeshRenderer == null || BlendShapeInfos == null || BlendShapeInfos.Length == 0)
+            {
                 return;
+            }
 
             float globalMultiplier = volume * maxBlendShapeValue;
 
-            foreach (var bs in blendShapes)
+            for (int Index = 0; Index < BlendShapeInfos.Length; Index++)
             {
+                BlendShapeInfo bs = BlendShapeInfos[Index];
                 if (bs.index < 0)
+                {
                     continue;
+                }
+
                 if (globalMultiplier == 0)
                 {
                     skinnedMeshRenderer.SetBlendShapeWeight(bs.index, 0);
@@ -143,24 +149,33 @@ namespace uLipSync
 
         public BlendShapeInfo GetBlendShapeInfo(string phoneme)
         {
-            foreach (BlendShapeInfo info in blendShapes)
+            foreach (BlendShapeInfo info in CachedblendShapes)
             {
-                if (info.phoneme == phoneme) return info;
+                if (info.phoneme == phoneme)
+                {
+                    return info;
+                }
             }
             return null;
         }
-
-        public BlendShapeInfo AddBlendShape(string phoneme, int blendShape)
+        public BlendShapeInfo[] BlendShapeInfos;
+        public void CreateArray()
         {
-            var bs = GetBlendShapeInfo(phoneme);
-            if (bs == null) bs = new BlendShapeInfo() { phoneme = phoneme };
-
-            blendShapes.Add(bs);
-
-            if (!skinnedMeshRenderer) return bs;
+            BlendShapeInfos = CachedblendShapes.ToArray();
+        }
+        public void AddBlendShape(string phoneme, int blendShape)
+        {
+            BlendShapeInfo bs = GetBlendShapeInfo(phoneme);
+            if (bs == null)
+            {
+                bs = new BlendShapeInfo() { phoneme = phoneme };
+            }
+            CachedblendShapes.Add(bs);
+            if (skinnedMeshRenderer == null)
+            {
+                return;
+            }
             bs.index = blendShape;
-
-            return bs;
         }
 
 #if UNITY_EDITOR
@@ -171,8 +186,9 @@ namespace uLipSync
             var names = new List<string>();
             var mesh = skinnedMeshRenderer.sharedMesh;
 
-            foreach (var bs in blendShapes)
+            for (int Index = 0; Index < BlendShapeInfos.Length; Index++)
             {
+                BlendShapeInfo bs = BlendShapeInfos[Index];
                 if (bs.index < 0) continue;
                 var name = mesh.GetBlendShapeName(bs.index);
                 name = "blendShape." + name;
@@ -186,9 +202,9 @@ namespace uLipSync
         {
             var weights = new List<float>();
 
-            for (int Index = 0; Index < blendShapes.Count; Index++)
+            for (int Index = 0; Index < BlendShapeInfos.Length; Index++)
             {
-                BlendShapeInfo bs = blendShapes[Index];
+                BlendShapeInfo bs = BlendShapeInfos[Index];
                 if (bs.index < 0) continue;
                 var weight = bs.weight * bs.maxWeight * volume * maxBlendShapeValue;
                 weights.Add(weight);
