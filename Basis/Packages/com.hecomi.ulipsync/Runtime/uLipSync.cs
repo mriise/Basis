@@ -32,7 +32,8 @@ namespace uLipSync
         public int outputSampleRate;
         public int PhonemesCount;
         public int mfccsCount;
-        Dictionary<string, float> phonemeRatios = new Dictionary<string, float>();
+        float[] phonemeRatios;
+        Dictionary<string, int> _phonemeNameToIndex = new Dictionary<string, int>();
         public string mainPhoneme;
         public float NormalVolume;
         public float rawVolume;
@@ -58,17 +59,14 @@ namespace uLipSync
 
             float invSum = sumScore > 0f ? 1f / sumScore : 0f;
 
-            // Optimized ratio calculation using array
-            for (int Index = 0; Index < phonemeCount; ++Index)
+            for (int i = 0; i < phonemeCount; ++i)
             {
-                string PhonemeName = _phonemeNames[Index];
-                phonemeRatios[PhonemeName] = UpdateResultsBuffer[Index] * invSum;
-
+                phonemeRatios[i] = UpdateResultsBuffer[i] * invSum;
             }
 
             rawVolume = _info[0].volume;
             NormalVolume = math.clamp((math.log10(rawVolume) - Common.DefaultMinVolume) / (Common.DefaultMaxVolume - Common.DefaultMinVolume), 0f, 1f);
-            uLipSyncBlendShape.OnLipSyncUpdate(mainPhoneme, NormalVolume, rawVolume, phonemeRatios);
+            OnLipSyncUpdate();
 
             if (RequestedCalibration)
             {
@@ -121,6 +119,75 @@ namespace uLipSync
 
             _jobHandle = lipSyncJob.Schedule();
         }
+        public void OnLipSyncUpdate()
+        {
+            float normVol = 0f;
+            if (rawVolume > 0f)
+            {
+                normVol = Mathf.Log10(rawVolume);
+                normVol = Mathf.Clamp01((normVol - uLipSyncBlendShape.minVolume) / Mathf.Max(uLipSyncBlendShape.maxVolume - uLipSyncBlendShape.minVolume, 1e-4f));
+            }
+
+            uLipSyncBlendShape._volume = uLipSyncBlendShape.SmoothDamp(uLipSyncBlendShape._volume, normVol, ref uLipSyncBlendShape._openCloseVelocity);
+            float globalMultiplier = uLipSyncBlendShape._volume * uLipSyncBlendShape.maxBlendShapeValue;
+
+            float totalWeight = 0f;
+            int count = uLipSyncBlendShape.BlendShapeInfos.Length;
+
+            // First pass: compute weights and total sum
+            for (int Index = 0; Index < count; Index++)
+            {
+                var bs = uLipSyncBlendShape.BlendShapeInfos[Index];
+                float targetWeight = 0f;
+
+                if (uLipSyncBlendShape.usePhonemeBlend && !string.IsNullOrEmpty(bs.phoneme))
+                {
+                    if (_phonemeNameToIndex.TryGetValue(bs.phoneme, out int idx) && idx < phonemeRatios.Length)
+                    {
+                        targetWeight = phonemeRatios[idx];
+                    }
+                }
+                //mainPhoneme, NormalVolume, rawVolume, phonemeRatios
+                else if (bs.phoneme == mainPhoneme)
+                {
+                    targetWeight = 1f;
+                }
+
+                float weightVelocity = bs.weightVelocity;
+                bs.weight = uLipSyncBlendShape.SmoothDamp(bs.weight, targetWeight, ref weightVelocity);
+                bs.weightVelocity = weightVelocity;
+                totalWeight += bs.weight;
+            }
+
+            float invTotal = (totalWeight > 0f) ? (1f / totalWeight) : 0f;
+
+            // Second pass: normalize + apply
+            for (int i = 0; i < count; i++)
+            {
+                var bs = uLipSyncBlendShape.BlendShapeInfos[i];
+
+                if (bs.index < 0) continue;
+
+                float weight = bs.weight * invTotal;
+                float finalWeight = weight * bs.maxWeight * globalMultiplier;
+
+                // Skip setting if final weight is very close to the last value
+                if (Mathf.Abs(bs.LastValue - finalWeight) < 0.01f)
+                {
+                    continue;
+                }
+
+                if (finalWeight <= 0)
+                {
+                    uLipSyncBlendShape.skinnedMeshRenderer.SetBlendShapeWeight(bs.index, 0);
+                }
+                else
+                {
+                    uLipSyncBlendShape.skinnedMeshRenderer.SetBlendShapeWeight(bs.index, finalWeight);
+                }
+                bs.LastValue = finalWeight;
+            }
+        }
         public void Initalize()
         {
             AllocateBuffers();
@@ -162,9 +229,13 @@ namespace uLipSync
                 outputSampleRate = AudioSettings.outputSampleRate;
 
                 _phonemeNames = new string[phonemeCount];
+                phonemeRatios = new float[phonemeCount];
+                _phonemeNameToIndex.Clear();
                 for (int i = 0; i < phonemeCount; ++i)
                 {
-                    _phonemeNames[i] = profile.GetPhoneme(i);
+                    string name = profile.GetPhoneme(i);
+                    _phonemeNames[i] = name;
+                    _phonemeNameToIndex[name] = i;
                 }
             }
         }
