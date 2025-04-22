@@ -19,7 +19,7 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
             }
             int Length = syncMessage.avatarSerialization.array.Length;
             baseReceiver.Offset = 0;
-            AvatarBuffer avatarBuffer = new AvatarBuffer
+            BasisAvatarBuffer avatarBuffer = new BasisAvatarBuffer
             {
                 Position = BasisUnityBitPackerExtensions.ReadVectorFloatFromBytes(ref syncMessage.avatarSerialization.array, ref baseReceiver.Offset),//12
                 rotation = BasisUnityBitPackerExtensions.ReadQuaternionFromBytes(ref syncMessage.avatarSerialization.array, BasisNetworkPlayer.RotationCompression, ref baseReceiver.Offset)//14
@@ -58,7 +58,7 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
             }
             int Length = syncMessage.array.Length;
             baseReceiver.Offset = 0;
-            AvatarBuffer avatarBuffer = new AvatarBuffer
+            BasisAvatarBuffer avatarBuffer = new BasisAvatarBuffer
             {
                 Position = BasisUnityBitPackerExtensions.ReadVectorFloatFromBytes(ref syncMessage.array, ref baseReceiver.Offset),//12
                 rotation = BasisUnityBitPackerExtensions.ReadQuaternionFromBytes(ref syncMessage.array, BasisNetworkPlayer.RotationCompression, ref baseReceiver.Offset)//14

@@ -22,7 +22,7 @@ namespace Basis.Scripts.Networking.Receivers
         [Header("Interpolation Settings")]
         public double delayTime = 0.1f; // How far behind real-time we want to stay, hopefully double is good.
         [SerializeField]
-        public Queue<AvatarBuffer> PayloadQueue = new Queue<AvatarBuffer>();
+        public Queue<BasisAvatarBuffer> PayloadQueue = new Queue<BasisAvatarBuffer>();
         public BasisRemotePlayer RemotePlayer;
         public bool HasEvents = false;
 
@@ -40,8 +40,8 @@ namespace Basis.Scripts.Networking.Receivers
         public UpdateAvatarJob AvatarJob = new UpdateAvatarJob();
         public float[] MuscleFinalStageOutput = new float[LocalAvatarSyncMessage.StoredBones];
         public quaternion OutputRotation;
-        public AvatarBuffer First;
-        public AvatarBuffer Last;
+        public BasisAvatarBuffer First;
+        public BasisAvatarBuffer Last;
         public static int BufferCapacityBeforeCleanup = 3;
         public float interpolationTime;
         public double TimeBeforeCompletion;
@@ -181,7 +181,7 @@ namespace Basis.Scripts.Networking.Receivers
                         BasisCalibratedCoords Coords = RemotePlayer.RemoteBoneDriver.Mouth.OutgoingWorldData;
                         AudioReceiverModule.AudioSourceTransform.SetPositionAndRotation(Coords.position, Coords.rotation);
                     }
-                    if (interpolationTime >= 1 && PayloadQueue.TryDequeue(out AvatarBuffer result))
+                    if (interpolationTime >= 1 && PayloadQueue.TryDequeue(out BasisAvatarBuffer result))
                     {
                         First = Last;
                         Last = result;
@@ -210,7 +210,7 @@ namespace Basis.Scripts.Networking.Receivers
                 }
             }
         }
-        public void EnQueueAvatarBuffer(ref AvatarBuffer avatarBuffer)
+        public void EnQueueAvatarBuffer(ref BasisAvatarBuffer avatarBuffer)
         {
             if(avatarBuffer == null)
             {
@@ -224,7 +224,7 @@ namespace Basis.Scripts.Networking.Receivers
                     PayloadQueue.Enqueue(avatarBuffer);
                     while (PayloadQueue.Count > BufferCapacityBeforeCleanup)
                     {
-                        PayloadQueue.TryDequeue(out AvatarBuffer Buffer);
+                        PayloadQueue.TryDequeue(out BasisAvatarBuffer Buffer);
                     }
                 }
                 else

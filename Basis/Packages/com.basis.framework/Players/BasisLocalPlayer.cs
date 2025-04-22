@@ -51,7 +51,6 @@ namespace Basis.Scripts.BasisSdk.Players
 
         public BasisLocalHeightInformation CurrentHeight = new BasisLocalHeightInformation();
         public BasisLocalHeightInformation LastHeight= new BasisLocalHeightInformation();
-        public MicrophoneRecorder MicrophoneRecorder;
         public BasisLocalCameraDriver CameraDriver;
         //bones that we use to map between avatar and trackers
         [Header("Bone Driver")]
@@ -109,10 +108,6 @@ namespace Basis.Scripts.BasisSdk.Players
             {
                 await CreateAvatar(BasisPlayer.LoadModeLocal, BasisAvatarFactory.LoadingAvatar);
             }
-            if (MicrophoneRecorder == null)
-            {
-                MicrophoneRecorder = BasisHelpers.GetOrAddComponent<MicrophoneRecorder>(BasisDeviceManagement.Instance.gameObject);
-            }
             MicrophoneRecorder.TryInitialize();
             PlayerReady = true;
             OnLocalPlayerCreatedAndReady?.Invoke();
@@ -135,6 +130,10 @@ namespace Basis.Scripts.BasisSdk.Players
             }
             BasisUILoadingBar.Initalize();
 
+        }
+        public void OnApplicationQuit()
+        {
+            MicrophoneRecorder.StopProcessingThread();
         }
         public async Task LoadInitialAvatar(BasisDataStore.BasisSavedAvatar LastUsedAvatar)
         {
@@ -200,8 +199,8 @@ namespace Basis.Scripts.BasisSdk.Players
             LocalVisemeDriver.TryInitialize(this);
             if (HasCalibrationEvents == false)
             {
-                MicrophoneRecorderBase.OnHasAudio += DriveAudioToViseme;
-                MicrophoneRecorderBase.OnHasSilence += DriveAudioToViseme;
+                MicrophoneRecorder.OnHasAudio += DriveAudioToViseme;
+                MicrophoneRecorder.OnHasSilence += DriveAudioToViseme;
                 HasCalibrationEvents = true;
             }
         }
@@ -215,8 +214,8 @@ namespace Basis.Scripts.BasisSdk.Players
             }
             if (HasCalibrationEvents)
             {
-                MicrophoneRecorderBase.OnHasAudio -= DriveAudioToViseme;
-                MicrophoneRecorderBase.OnHasSilence -= DriveAudioToViseme;
+                MicrophoneRecorder.OnHasAudio -= DriveAudioToViseme;
+                MicrophoneRecorder.OnHasSilence -= DriveAudioToViseme;
                 HasCalibrationEvents = false;
             }
             if (LocalMuscleDriver != null)

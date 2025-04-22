@@ -16,7 +16,6 @@ namespace Basis.Scripts.Networking.Transmitters
         public OpusEncoder encoder;
         public BasisNetworkPlayer NetworkedPlayer;
         public BasisLocalPlayer Local;
-        public MicrophoneRecorder Recorder;
 
         public bool IsInitalized = false;
         public bool HasEvents = false;
@@ -38,13 +37,10 @@ namespace Basis.Scripts.Networking.Transmitters
                 //encoder.Ctl(EncoderCTL.OPUS_SET_VBR,ref VBR);
                 // Cast the networked player to a local player to access the microphone recorder
                 Local = (BasisLocalPlayer)networkedPlayer.Player;
-                Recorder = Local.MicrophoneRecorder;
 
                 // If there are no events hooked up yet, attach them
                 if (!HasEvents)
                 {
-                    if (Recorder != null)
-                    {
                         // Hook up the event handlers
                         MicrophoneRecorder.OnHasAudio += OnAudioReady;
                         MicrophoneRecorder.OnHasSilence += SendSilenceOverNetwork;
@@ -54,7 +50,6 @@ namespace Basis.Scripts.Networking.Transmitters
                         {
                             AudioSegmentData = new AudioSegmentDataMessage(new byte[MicrophoneRecorder.PacketSize]);
                         }
-                    }
                 }
 
                 IsInitalized = true;
@@ -68,10 +63,7 @@ namespace Basis.Scripts.Networking.Transmitters
                 MicrophoneRecorder.OnHasSilence -= SendSilenceOverNetwork;
                 HasEvents = false;
             }
-            if (Recorder != null)
-            {
-                GameObject.Destroy(Recorder.gameObject);
-            }
+            MicrophoneRecorder.OnDestroy();
             encoder.Dispose();
             encoder = null;
         }

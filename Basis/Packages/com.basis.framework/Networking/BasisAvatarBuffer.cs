@@ -2,7 +2,7 @@ using static SerializableBasis;
 
 namespace Basis.Scripts.Networking.NetworkedAvatar
 {
-    public class AvatarBuffer
+    public class BasisAvatarBuffer
     {
         public Unity.Mathematics.quaternion rotation;
         public Unity.Mathematics.float3 Scale;

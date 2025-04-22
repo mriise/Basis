@@ -5,7 +5,7 @@ using Basis.Scripts.Device_Management;
 using System.Threading;
 using Unity.Collections;
 using Unity.Jobs;
-public partial class MicrophoneRecorder : MicrophoneRecorderBase
+public static class MicrophoneRecorder
 {
     private static int head = 0;
     private static int bufferLength;
@@ -20,17 +20,64 @@ public partial class MicrophoneRecorder : MicrophoneRecorderBase
     private static object processingLock = new object();
     private static int position;
     private static NativeArray<float> PBA;
-    private static LogarithmicVolumeAdjustmentJob VAJ;
+    private static BasisVolumeAdjustmentJob VAJ;
     private static JobHandle handle;
     public const string MicrophoneState = "MicrophoneState";
-    public bool TryInitialize()
+    public static Action OnHasAudio;
+    public static Action OnHasSilence; // Event triggered when silence is detected
+    public static AudioClip clip;
+    public static bool IsInitialize = false;
+    public static string MicrophoneDevice = null;
+    public static int ProcessBufferLength;
+    public static float Volume = 1; // Volume adjustment factor, default to 1 (no adjustment)
+    [HideInInspector]
+    public static float[] microphoneBufferArray;
+    [HideInInspector]
+    public static float[] processBufferArray;
+    [HideInInspector]
+    public static float[] rmsValues;
+    public static int rmsIndex = 0;
+    public static float averageRms;
+#if !UNITY_ANDROID
+    public static RNNoise.NET.Denoiser Denoiser = new RNNoise.NET.Denoiser();
+#endif
+    public static int minFreq = 48000;
+    public static int maxFreq = 48000;
+    public static int SampleRate;
+    private static bool ScheduleMainHasAudio;
+    private static bool ScheduleMainHasSilence;
+    public static Action MainThreadOnHasAudio;
+    public static Action MainThreadOnHasSilence; // Event triggered when silence is detected
+    private static readonly object _lock = new object();
+    public static void OnDestroy()
+    {
+        StopProcessingThread();  // Stop the processing thread
+        if (HasEvents)
+        {
+            SMDMicrophone.OnMicrophoneChanged -= ResetMicrophones;
+            SMDMicrophone.OnMicrophoneVolumeChanged -= ChangeMicrophoneVolume;
+            SMDMicrophone.OnMicrophoneUseDenoiserChanged -= ConfigureDenoiser;
+            BasisDeviceManagement.Instance.OnBootModeChanged -= OnBootModeChanged;
+
+            HasEvents = false;
+        }
+        // Dispose the NativeArray when done to avoid memory leaks
+        if (VAJ.processBufferArray.IsCreated)
+        {
+            VAJ.processBufferArray.Dispose();
+        }
+#if !UNITY_ANDROID
+        Denoiser.Dispose();
+#endif
+    }
+    public static bool TryInitialize()
     {
         if (!IsInitialize)
         {
             if (!HasEvents)
             {
-               int value = PlayerPrefs.GetInt(MicrophoneState,0);
-                if(value == 0)
+                int value = PlayerPrefs.GetInt(MicrophoneState, 0);
+                if (value == 0)
                 {
                     SetPauseState(true);
                 }
@@ -53,39 +100,16 @@ public partial class MicrophoneRecorder : MicrophoneRecorderBase
         }
         return false;
     }
-    public new void OnDestroy()
-    {
-        StopProcessingThread();  // Stop the processing thread
-        if (HasEvents)
-        {
-            SMDMicrophone.OnMicrophoneChanged -= ResetMicrophones;
-            SMDMicrophone.OnMicrophoneVolumeChanged -= ChangeMicrophoneVolume;
-            SMDMicrophone.OnMicrophoneUseDenoiserChanged -= ConfigureDenoiser;
-            BasisDeviceManagement.Instance.OnBootModeChanged -= OnBootModeChanged;
-
-            HasEvents = false;
-        }
-        // Dispose the NativeArray when done to avoid memory leaks
-        if (VAJ.processBufferArray.IsCreated)
-        {
-            VAJ.processBufferArray.Dispose();
-        }
-        base.OnDestroy();
-    }
-
-    private void ConfigureDenoiser(bool useDenoiser)
+    private static void ConfigureDenoiser(bool useDenoiser)
     {
         UseDenoiser = useDenoiser;
         BasisDebug.Log("Setting Denoiser To " + UseDenoiser);
     }
-    private void OnBootModeChanged(string mode)
+    private static void OnBootModeChanged(string mode)
     {
         ResetMicrophones(SMDMicrophone.SelectedMicrophone);
     }
-    public int minFreq = 48000;
-    public int maxFreq = 48000;
-    public static int SampleRate;
-    public void ResetMicrophones(string newMicrophone)
+    public static void ResetMicrophones(string newMicrophone)
     {
         if (string.IsNullOrEmpty(newMicrophone))
         {
@@ -123,7 +147,7 @@ public partial class MicrophoneRecorder : MicrophoneRecorderBase
                 processBufferArray = LocalOpusSettings.CalculateProcessBuffer();
                 SampleRate = LocalOpusSettings.SampleRate();
                 PBA = new NativeArray<float>(processBufferArray, Allocator.Persistent);
-                VAJ = new LogarithmicVolumeAdjustmentJob
+                VAJ = new BasisVolumeAdjustmentJob
                 {
                     processBufferArray = PBA,
                     Volume = Volume
@@ -142,7 +166,7 @@ public partial class MicrophoneRecorder : MicrophoneRecorderBase
         }
     }
 
-    private void StopMicrophone()
+    private static void StopMicrophone()
     {
         if (string.IsNullOrEmpty(MicrophoneDevice))
         {
@@ -154,23 +178,23 @@ public partial class MicrophoneRecorder : MicrophoneRecorderBase
         MicrophoneIsStarted = false;
     }
 
-    public void ToggleIsPaused()
+    public static void ToggleIsPaused()
     {
         IsPaused = !IsPaused;
     }
 
-    public void SetPauseState(bool isPaused)
+    public static void SetPauseState(bool isPaused)
     {
         IsPaused = isPaused;
     }
 
-    public bool GetPausedState()
+    public static bool GetPausedState()
     {
         return IsPaused;
     }
 
     public static bool isPaused = false;
-    private bool IsPaused
+    private static bool IsPaused
     {
         get
         {
@@ -178,7 +202,7 @@ public partial class MicrophoneRecorder : MicrophoneRecorderBase
         }
         set
         {
-            PlayerPrefs.SetInt(MicrophoneState,isPaused ? 1 : 0);
+            PlayerPrefs.SetInt(MicrophoneState, isPaused ? 1 : 0);
             isPaused = value;
             if (isPaused)
             {
@@ -191,11 +215,6 @@ public partial class MicrophoneRecorder : MicrophoneRecorderBase
             OnPausedAction?.Invoke(isPaused);
         }
     }
-    private static bool ScheduleMainHasAudio;
-    private static bool ScheduleMainHasSilence;
-    public static Action MainThreadOnHasAudio;
-    public static Action MainThreadOnHasSilence; // Event triggered when silence is detected
-    private static readonly object _lock = new object();
     public static void MicrophoneUpdate()
     {
         if (MicrophoneIsStarted)
@@ -230,7 +249,7 @@ public partial class MicrophoneRecorder : MicrophoneRecorderBase
         }
     }
 
-    void StartProcessingThread()
+    static void StartProcessingThread()
     {
         processingThread = new Thread(() =>
         {
@@ -248,7 +267,7 @@ public partial class MicrophoneRecorder : MicrophoneRecorderBase
         processingThread.Start();
     }
 
-    void StopProcessingThread()
+    public static void StopProcessingThread()
     {
         lock (processingLock)
         {
@@ -265,11 +284,7 @@ public partial class MicrophoneRecorder : MicrophoneRecorderBase
             }
         }
     }
-    void OnApplicationQuit()
-    {
-        StopProcessingThread();
-    }
-    public void ProcessAudioData(int position)
+    public static void ProcessAudioData(int position)
     {
         int dataLength = GetDataLength(bufferLength, head, position);
 
@@ -302,7 +317,7 @@ public partial class MicrophoneRecorder : MicrophoneRecorderBase
                 {
                     ScheduleMainHasAudio = true;
                 }
-             }
+            }
             else
             {
                 OnHasSilence?.Invoke();
@@ -316,7 +331,7 @@ public partial class MicrophoneRecorder : MicrophoneRecorderBase
             dataLength -= ProcessBufferLength;
         }
     }
-    public void AdjustVolume()
+    public static void AdjustVolume()
     {
         VAJ.processBufferArray.CopyFrom(processBufferArray);
 
@@ -325,7 +340,7 @@ public partial class MicrophoneRecorder : MicrophoneRecorderBase
 
         VAJ.processBufferArray.CopyTo(processBufferArray);
     }
-    public float GetRMS()
+    public static float GetRMS()
     {
         // Use a double for the sum to avoid overflow and precision issues
         double sum = 0.0;
@@ -338,7 +353,7 @@ public partial class MicrophoneRecorder : MicrophoneRecorderBase
 
         return Mathf.Sqrt((float)(sum / ProcessBufferLength));
     }
-    public int GetDataLength(int bufferLength, int head, int position)
+    public static int GetDataLength(int bufferLength, int head, int position)
     {
         if (position < head)
         {
@@ -349,27 +364,27 @@ public partial class MicrophoneRecorder : MicrophoneRecorderBase
             return position - head;
         }
     }
-    public void ChangeMicrophoneVolume(float volume)
+    public static void ChangeMicrophoneVolume(float volume)
     {
         Volume = volume;
         // Create the job
         VAJ.Volume = Volume;
-        BasisDebug.Log("Set Microphone Volume To "+ Volume);
+        BasisDebug.Log("Set Microphone Volume To " + Volume);
     }
-    public void ApplyDeNoise()
+    public static void ApplyDeNoise()
     {
 #if !UNITY_ANDROID
         Denoiser.Denoise(processBufferArray);
 #endif
     }
-    public void RollingRMS()
+    public static void RollingRMS()
     {
         float rms = GetRMS();
         rmsValues[rmsIndex] = rms;
         rmsIndex = (rmsIndex + 1) % LocalOpusSettings.rmsWindowSize;
         averageRms = rmsValues.Average();
     }
-    public bool IsTransmitWorthy()
+    public static bool IsTransmitWorthy()
     {
         return averageRms > LocalOpusSettings.silenceThreshold;
     }
