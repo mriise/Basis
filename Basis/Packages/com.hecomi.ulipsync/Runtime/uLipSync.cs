@@ -172,7 +172,7 @@ namespace uLipSync
                 float finalWeight = weight * bs.maxWeight * globalMultiplier;
 
                 // Skip setting if final weight is very close to the last value
-                if (Mathf.Abs(bs.LastValue - finalWeight) < 0.01f)
+                if (Mathf.Abs(bs.LastValue - finalWeight) < 0.001f)
                 {
                     continue;
                 }
