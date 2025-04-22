@@ -54,13 +54,19 @@ namespace Basis.Scripts.Animator_Driver
             currentVelocity = Quaternion.Inverse(BasisLocalBoneDriver.Hips.OutgoingWorldData.rotation)
                               * (BasisLocalPlayer.Instance.LocalCharacterDriver.bottomPointLocalspace - BasisLocalPlayer.Instance.LocalCharacterDriver.LastbottomPoint) / DeltaTime;
 
-            // Check if currentVelocity or previousRawVelocity contain NaN values
-            if (float.IsNaN(currentVelocity.x) || float.IsNaN(currentVelocity.y) || float.IsNaN(currentVelocity.z) ||
-                float.IsNaN(previousRawVelocity.x) || float.IsNaN(previousRawVelocity.y) || float.IsNaN(previousRawVelocity.z))
-            {
-                previousRawVelocity = Vector3.zero;  // Reset to a safe default
-                return;
-            }
+            // Sanitize currentVelocity
+            currentVelocity = new Vector3(
+                float.IsNaN(currentVelocity.x) ? 0f : currentVelocity.x,
+                float.IsNaN(currentVelocity.y) ? 0f : currentVelocity.y,
+                float.IsNaN(currentVelocity.z) ? 0f : currentVelocity.z
+            );
+
+            // Sanitize previousRawVelocity
+            previousRawVelocity = new Vector3(
+                float.IsNaN(previousRawVelocity.x) ? 0f : previousRawVelocity.x,
+                float.IsNaN(previousRawVelocity.y) ? 0f : previousRawVelocity.y,
+                float.IsNaN(previousRawVelocity.z) ? 0f : previousRawVelocity.z
+            );
 
             Vector3 velocityDifference = currentVelocity - previousRawVelocity;
 
@@ -106,13 +112,6 @@ namespace Basis.Scripts.Animator_Driver
 
 
             basisAnimatorVariableApply.BasisAnimatorVariables.AngularVelocity = dampenedAngularVelocity;
-            /*
-            if (basisAnimatorVariableApply.BasisAnimatorVariables.isMoving == false)
-            {
-                basisAnimatorVariableApply.BasisAnimatorVariables.isMoving = angularVelocity.sqrMagnitude > LargerThenVelocityCheckRotation;
-                basisAnimatorVariableApply.BasisAnimatorVariables.Velocity = dampenedAngularVelocity; // Update to use dampened angular velocity
-            }
-            */
 
             basisAnimatorVariableApply.UpdateAnimator(ScaleMovementBy);
 
@@ -128,14 +127,12 @@ namespace Basis.Scripts.Animator_Driver
         private void JustJumped()
         {
             basisAnimatorVariableApply.BasisAnimatorVariables.IsJumping = true;
-            basisAnimatorVariableApply.UpdateJumpState();
+            //basisAnimatorVariableApply.UpdateJumpState();
         }
-
         private void JustLanded()
         {
             basisAnimatorVariableApply.UpdateIsLandingState();
         }
-
         public void Initialize(Animator animator)
         {
             this.Animator = animator;

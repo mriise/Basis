@@ -136,7 +136,7 @@ namespace Basis.Scripts.Drivers
             Builder.enabled = false;
             Calibration(player.BasisAvatar);
             BasisLocalPlayer.Instance.LocalBoneDriver.RemoveAllListeners();
-            BasisLocalPlayer.Instance.LocalEyeFollow.Initalize(this, player);
+            BasisLocalPlayer.Instance.BasisLocalEyeDriver.Initalize(this, player);
             SetMatrixOverride();
             updateWhenOffscreen(true);
             if (References.Hashead)

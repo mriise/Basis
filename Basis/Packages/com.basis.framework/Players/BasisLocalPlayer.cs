@@ -72,10 +72,10 @@ namespace Basis.Scripts.BasisSdk.Players
         [Header("Muscle Driver")]
         [SerializeField]
         public BasisMuscleDriver LocalMuscleDriver = new BasisMuscleDriver();
-        [Header("Eye Follow")]
+        [Header("Eye Driver")]
         [SerializeField]
-        public BasisLocalEyeFollowBase LocalEyeFollow = new BasisLocalEyeFollowBase();
-        [Header("Mouth Visemes")]
+        public BasisLocalEyeDriver BasisLocalEyeDriver = new BasisLocalEyeDriver();
+        [Header("Mouth & Visemes Driver")]
         [SerializeField]
         public BasisAudioAndVisemeDriver LocalVisemeDriver = new BasisAudioAndVisemeDriver();
         public async Task LocalInitialize()
@@ -222,9 +222,9 @@ namespace Basis.Scripts.BasisSdk.Players
             {
                 LocalMuscleDriver.DisposeAllJobsData();
             }
-            if (LocalEyeFollow != null)
+            if (BasisLocalEyeDriver != null)
             {
-                LocalEyeFollow.OnDestroy(this);
+                BasisLocalEyeDriver.OnDestroy(this);
             }
             if (FacialBlinkDriver != null)
             {

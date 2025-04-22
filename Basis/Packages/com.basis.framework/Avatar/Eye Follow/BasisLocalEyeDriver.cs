@@ -9,7 +9,7 @@ namespace Basis.Scripts.Eye_Follow
 {
     [DefaultExecutionOrder(15002)]
     [System.Serializable]
-    public class BasisLocalEyeFollowBase
+    public class BasisLocalEyeDriver
     {
         public quaternion leftEyeInitialRotation;
         public quaternion rightEyeInitialRotation;
@@ -45,7 +45,7 @@ namespace Basis.Scripts.Eye_Follow
         public float CurrentLookAroundInterval;
         public float timer; // Timer to track look-around interval
         public float DistanceBeforeTeleport = 30;
-        public static BasisLocalEyeFollowBase Instance;
+        public static BasisLocalEyeDriver Instance;
         public void OnDestroy(BasisLocalPlayer Player)
         {
             HasHead = false;
