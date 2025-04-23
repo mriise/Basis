@@ -52,7 +52,11 @@ public static class BasisBundleManagement
 
         bundleWrapper.LoadableBundle.BasisLocalEncryptedBundle = storedBundle;
         string metaUrl = bundleWrapper.LoadableBundle.BasisRemoteBundleEncrypted.CombinedURL;
-        if (!IsValidUrl(metaUrl)) return new(null, null, "Invalid CombinedURL!");
+
+        if (!IsValidUrl(metaUrl))
+        {
+            return new(null, null, "Invalid CombinedURL!");
+        }
         try
         {
             BasisDebug.Log($"Processing on-disk meta at {storedBundle.LocalConnectorPath}");
@@ -79,8 +83,9 @@ public static class BasisBundleManagement
         }
         catch (Exception ex)
         {
-            BasisDebug.LogError($"Error during download and processing of meta: {ex.Message} {ex.StackTrace} {ex?.InnerException?.StackTrace}");
-            return new(null, null, $"Error during download and processing of meta: {ex.Message} {ex.StackTrace} {ex?.InnerException?.StackTrace}");
+            string Parse = $"{ex.Message} {ex.StackTrace} {ex?.InnerException?.StackTrace}";
+            BasisDebug.LogError($"Error during download and processing of meta: {Parse}");
+            return new(null, null, $"Error during download and processing of meta: {Parse}");
         }
     }
 

@@ -85,50 +85,59 @@ public static class BasisIOManagement
 
     public static async Task<(BasisBundleConnector, byte[])> ReadBEEFile(string filePath, string vp, BasisProgressReport progressCallback, CancellationToken cancellationToken = default)
     {
-        BasisBundleConnector connector;
-        byte[] sectionData;
         if (!File.Exists(filePath))
         {
             BasisDebug.LogError($"File not found: {filePath}");
             return (null, null);
         }
 
-        using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true))
-        using (BinaryReader reader = new BinaryReader(fileStream))
+        BasisBundleConnector connector = null;
+        byte[] sectionData = null;
+
+        using FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 81920, useAsync: true);
+
+        byte[] sizeBytes = new byte[sizeof(int)];
+        int read = await fileStream.ReadAsync(sizeBytes, 0, sizeof(int), cancellationToken);
+        if (read < sizeof(int))
         {
-            long fileSize = reader.BaseStream.Length;
-            //   BasisDebug.Log($"Total Size of File: {fileSize} bytes");
-
-            byte[] sizeBytes = reader.ReadBytes(sizeof(int));
-            //   BasisDebug.Log($"Raw size bytes: {BitConverter.ToString(sizeBytes)}");
-
-            if (sizeBytes.Length < sizeof(int))
-            {
-                BasisDebug.LogError("Failed to read the connector size - file might be corrupted.");
-                return (null, null);
-            }
-
-            if (!BitConverter.IsLittleEndian)
-                Array.Reverse(sizeBytes);
-
-            int connectorSize = BitConverter.ToInt32(sizeBytes, 0);
-            //  BasisDebug.Log($"Connector size read: {connectorSize}");
-
-            if (connectorSize <= 0 || connectorSize > fileSize - reader.BaseStream.Position)
-            {
-                BasisDebug.LogError("Invalid connector size detected! Possible corruption or incorrect file format.");
-                return (null, null);
-            }
-
-            byte[] connectorBytes = reader.ReadBytes(connectorSize);
-            //  BasisDebug.Log($"Read Connector file size: {connectorBytes.Length}");
-
-            connector = await BasisEncryptionToData.GenerateMetaFromBytes(vp, connectorBytes, progressCallback);
-
-            long remainingBytes = fileSize - reader.BaseStream.Position;
-            sectionData = reader.ReadBytes((int)remainingBytes);
-            //  BasisDebug.Log($"Read section length: {sectionData.Length}");
+            BasisDebug.LogError("Failed to read the connector size - file might be corrupted.");
+            return (null, null);
         }
+
+        if (!BitConverter.IsLittleEndian)
+        {
+            Array.Reverse(sizeBytes);
+        }
+
+        int connectorSize = BitConverter.ToInt32(sizeBytes, 0);
+        long remaining = fileStream.Length - fileStream.Position;
+
+        if (connectorSize <= 0 || connectorSize > remaining)
+        {
+            BasisDebug.LogError("Invalid connector size detected! Possible corruption or incorrect file format.");
+            return (null, null);
+        }
+
+        byte[] connectorBytes = new byte[connectorSize];
+        int connectorRead = await fileStream.ReadAsync(connectorBytes, 0, connectorSize, cancellationToken);
+        if (connectorRead < connectorSize)
+        {
+            BasisDebug.LogError("Failed to read the full connector block.");
+            return (null, null);
+        }
+
+        connector = await BasisEncryptionToData.GenerateMetaFromBytes(vp, connectorBytes, progressCallback);
+
+        long sectionLength = fileStream.Length - fileStream.Position;
+        sectionData = new byte[sectionLength];
+        int sectionRead = await fileStream.ReadAsync(sectionData, 0, (int)sectionLength, cancellationToken);
+
+        if (sectionRead < sectionLength)
+        {
+            BasisDebug.LogError("Failed to read the full section data.");
+            return (null, null);
+        }
+
         return (connector, sectionData);
     }
     public static async Task<byte[]> DownloadFileRange(string url, string localFilePath, BasisProgressReport progressCallback, CancellationToken cancellationToken = default,long startByte = 0, long? endByte = null, bool loadToMemory = false)

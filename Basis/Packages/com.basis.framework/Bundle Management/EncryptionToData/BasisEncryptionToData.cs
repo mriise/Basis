@@ -46,37 +46,30 @@ public static class BasisEncryptionToData
 
         return assetBundleCreateRequest;
     }
-    public static async Task<BasisBundleConnector> GenerateMetaFromBytes(string VP, byte[] Bytes, BasisProgressReport progressCallback)
+    public static async Task<BasisBundleConnector> GenerateMetaFromBytes(string password, byte[] encryptedBytes, BasisProgressReport progressCallback)
     {
-        var BasisPassword = new BasisEncryptionWrapper.BasisPassword
-        {
-            VP = VP
-        };
-        string UniqueID = BasisGenerateUniqueID.GenerateUniqueID();
-        // BasisDebug.Log("BasisLoadableBundle.UnlockPassword" + BasisLoadableBundle.UnlockPassword);
-        byte[] LoadedMetaData = await BasisEncryptionWrapper.DecryptDataAsync(UniqueID, Bytes, BasisPassword, progressCallback);
+        var basisPassword = new BasisEncryptionWrapper.BasisPassword { VP = password };
+        string uniqueID = BasisGenerateUniqueID.GenerateUniqueID();
+
+        byte[] decryptedMeta = await BasisEncryptionWrapper.DecryptDataAsync(uniqueID, encryptedBytes, basisPassword, progressCallback);
+
         BasisDebug.Log("Converting decrypted meta file to BasisBundleInformation...", BasisDebug.LogTag.Event);
-        if (ConvertBytesToJson(LoadedMetaData, out BasisBundleConnector BasisBundleConnector))
-        {
-            return BasisBundleConnector;
-        }
-        else
-        {
-            return null;
-        }
+
+        return ConvertBytesToJson(decryptedMeta, out var connector) ? connector : null;
     }
-    public static bool ConvertBytesToJson(byte[] ConnectorBytes,out BasisBundleConnector BasisBundleConnector)
+
+    public static bool ConvertBytesToJson(byte[] data, out BasisBundleConnector connector)
     {
-        if (ConnectorBytes == null || ConnectorBytes.Length == 0)
+        connector = null;
+
+        if (data == null || data.Length == 0)
         {
             BasisDebug.LogError($"Data for {nameof(BasisBundleConnector)} is empty or null.", BasisDebug.LogTag.Event);
-            BasisBundleConnector = null;
             return false;
         }
 
-        // Convert the byte array to a JSON string (assuming UTF-8 encoding)
-        BasisDebug.Log($"Converting byte array to JSON string...", BasisDebug.LogTag.Event);
-        BasisBundleConnector = SerializationUtility.DeserializeValue<BasisBundleConnector>(ConnectorBytes, DataFormat.JSON);
+        BasisDebug.Log("Converting byte array to JSON string...", BasisDebug.LogTag.Event);
+        connector = SerializationUtility.DeserializeValue<BasisBundleConnector>(data, DataFormat.JSON);
         return true;
     }
 }
