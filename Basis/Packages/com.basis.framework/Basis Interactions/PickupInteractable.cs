@@ -106,7 +106,7 @@ public class PickupInteractable : InteractableObject
             input.TryGetRole(out BasisBoneTrackedRole role) &&
             Inputs.TryGetByRole(role, out BasisInputWrapper found) &&
             found.GetState() == InteractInputState.Ignored &&
-            IsWithinRange(input.transform.position);
+            IsWithinRange(found.BoneControl.OutgoingWorldData.position);
     }
     public override bool CanInteract(BasisInput input)
     {
@@ -118,7 +118,7 @@ public class PickupInteractable : InteractableObject
             input.TryGetRole(out BasisBoneTrackedRole role) &&
             Inputs.TryGetByRole(role, out BasisInputWrapper found) &&
             found.GetState() == InteractInputState.Hovering &&
-            IsWithinRange(input.transform.position);
+            IsWithinRange(found.BoneControl.OutgoingWorldData.position);
     }
 
     public override void OnHoverStart(BasisInput input)
@@ -156,6 +156,9 @@ public class PickupInteractable : InteractableObject
             // same input that was highlighting previously
             if (wrapper.GetState() == InteractInputState.Hovering)
             {
+                Vector3 inPos = wrapper.BoneControl.OutgoingWorldData.position;
+                Quaternion inRot = wrapper.BoneControl.OutgoingWorldData.rotation;
+
                 if (RigidRef != null && KinematicWhileInteracting)
                 {
                     _previousKinematicValue = RigidRef.isKinematic;
@@ -169,10 +172,12 @@ public class PickupInteractable : InteractableObject
 
                 transform.GetPositionAndRotation(out Vector3 restPos, out Quaternion restRot);
                 InputConstraint.SetRestPositionAndRotation(restPos, restRot);
-                var offsetPos = Quaternion.Inverse(input.transform.rotation) * (transform.position - input.transform.position);
-                var offsetRot = Quaternion.Inverse(input.transform.rotation) * transform.rotation;
+
+                var offsetPos = Quaternion.Inverse(inRot) * (transform.position - inPos);
+                var offsetRot = Quaternion.Inverse(inRot) * transform.rotation;
                 InputConstraint.SetOffsetPositionAndRotation(0, offsetPos, offsetRot);
-                // PC.SetOffsetPositionAndRotation(input.transform.InverseTransformPoint(restPos), );
+
+                // Debug.Log($"[OnInteractStart] Frame: {Time.frameCount}, Input Source Rot: {inRot.eulerAngles}, Object Rot: {transform.rotation.eulerAngles}, Calculated Offset: {offsetRot.eulerAngles}");
                 InputConstraint.Enabled = true;
 
                 OnInteractStartEvent?.Invoke(input);
@@ -264,9 +269,11 @@ public class PickupInteractable : InteractableObject
                 PollDesktopManipulation(Inputs.desktopCenterEye.Source);
             }
 
+            // Debug.Log($"[InputUpdate] Frame: {Time.frameCount}, Source inRot: {inRot.eulerAngles}, Stored Offset: {InputConstraint.sources[0].rotationOffset.eulerAngles}");
             InputConstraint.UpdateSourcePositionAndRotation(0, inPos, inRot);
             if (InputConstraint.Evaluate(out Vector3 pos, out Quaternion rot))
             {
+                // Debug.Log($"[InputUpdate] Frame: {Time.frameCount}, Evaluated Target Rot: {rot.eulerAngles}");
                 //pretty sure rigidbody is the real issue with the jitter here.
                 //as rigidbody occurs on physics timestamp? -LD
                 RigidRef.Move(pos, rot);

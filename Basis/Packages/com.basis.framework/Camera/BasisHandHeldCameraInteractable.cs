@@ -78,7 +78,7 @@ public abstract class BasisHandHeldCameraInteractable : InteractableObject
             input.TryGetRole(out BasisBoneTrackedRole role) &&
             Inputs.TryGetByRole(role, out BasisInputWrapper found) &&
             found.GetState() == InteractInputState.Ignored &&
-            IsWithinRange(input.transform.position);
+            IsWithinRange(found.BoneControl.OutgoingWorldData.position);
     }
     public override bool CanInteract(BasisInput input)
     {
@@ -88,7 +88,7 @@ public abstract class BasisHandHeldCameraInteractable : InteractableObject
             input.TryGetRole(out BasisBoneTrackedRole role) &&
             Inputs.TryGetByRole(role, out BasisInputWrapper found) &&
             found.GetState() == InteractInputState.Hovering &&
-            IsWithinRange(input.transform.position);
+            IsWithinRange(found.BoneControl.OutgoingWorldData.position);
     }
 
     public override void OnHoverStart(BasisInput input)
@@ -125,13 +125,16 @@ public abstract class BasisHandHeldCameraInteractable : InteractableObject
         {
             if (wrapper.GetState() == InteractInputState.Hovering)
             {
+                Vector3 inPos = wrapper.BoneControl.OutgoingWorldData.position;
+                Quaternion inRot = wrapper.BoneControl.OutgoingWorldData.rotation;
+
                 Inputs.ChangeStateByRole(wrapper.Role, InteractInputState.Interacting);
                 RequiresUpdateLoop = true;
 
                 transform.GetPositionAndRotation(out Vector3 restPos, out Quaternion restRot);
                 InputConstraint.SetRestPositionAndRotation(restPos, restRot);
-                var offsetPos = Quaternion.Inverse(input.transform.rotation) * (transform.position - input.transform.position);
-                var offsetRot = Quaternion.Inverse(input.transform.rotation) * transform.rotation;
+                var offsetPos = Quaternion.Inverse(inRot) * (transform.position - inPos);
+                var offsetRot = Quaternion.Inverse(inRot) * transform.rotation;
                 InputConstraint.SetOffsetPositionAndRotation(0, offsetPos, offsetRot);
                 InputConstraint.Enabled = true;
 

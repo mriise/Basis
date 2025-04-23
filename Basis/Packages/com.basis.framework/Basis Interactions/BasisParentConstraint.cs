@@ -66,7 +66,7 @@ public class BasisParentConstraint
             }
             else
             {
-                weightedRot = Quaternion.Slerp(weightedRot, worldRotation, source.weight);
+                weightedRot = Quaternion.Slerp(weightedRot, worldRotation, source.weight / (totalWeight + source.weight));
             }
 
             totalWeight += source.weight;
