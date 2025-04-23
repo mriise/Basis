@@ -143,7 +143,7 @@ public class PlayerInteract : MonoBehaviour
                 rayHit.collider.TryGetComponent(out hitInteractable);
 
             bool isValidHoverHit = false;
-            if (hoverSphere.ResultCount != 0 && ClosestHoverInteractable(hoverSphere) is var result && result.Item2 != null) {
+            if (hoverSphere.ResultCount != 0 && ClosestInfluencableHover(hoverSphere, interactInput.input) is var result && result.Item2 != null) {
                 isValidHoverHit = true;
                 hitInteractable = result.Item2;
             }
@@ -251,7 +251,6 @@ public class PlayerInteract : MonoBehaviour
         // hit a different target than last time
         if (interactInput.lastTarget != null && interactInput.lastTarget.GetInstanceID() != hitInteractable.GetInstanceID())
         {
-            // TODO: grab button instead of full trigger
             // Holding Logic: 
             if (IsInputTriggered(interactInput.input))
             {
@@ -308,7 +307,6 @@ public class PlayerInteract : MonoBehaviour
         // hitting same interactable
         else
         {
-            // TODO: middle finger grab instead of full trigger
             // Pickup logic: 
             // per input an object can be either held or hovered, not both. Objects can ignore this by purposfully modifying IsHovered/IsInteracted.
             if (IsInputTriggered(interactInput.input))
@@ -456,7 +454,7 @@ public class PlayerInteract : MonoBehaviour
 
             // hover target
             Gizmos.color = Color.blue;
-            if (device.hoverSphere != null && ClosestHoverInteractable(device.hoverSphere) is var result && result.Item2 != null)
+            if (device.hoverSphere != null && ClosestInfluencableHover(device.hoverSphere, device.input) is var result && result.Item2 != null)
             {
                 Gizmos.DrawLine(device.interactOrigin.position, result.Item1.closestPointToCenter);
             }
@@ -475,11 +473,18 @@ public class PlayerInteract : MonoBehaviour
         return input.TryGetRole(out BasisBoneTrackedRole role) && role == BasisBoneTrackedRole.CenterEye;
     }
 
-    private (HoverSphere.HoverResult, InteractableObject) ClosestHoverInteractable(HoverSphere hoverSphere)
+    /// <summary>
+    /// Gets the closest InteractableObject in the given HoverSphere where IsInfluencable is true for the given input
+    /// </summary>
+    /// <param name="hoverSphere"></param>
+    /// <param name="input"></param>
+    /// <returns></returns>
+    private (HoverSphere.HoverResult, InteractableObject) ClosestInfluencableHover(HoverSphere hoverSphere, BasisInput input)
     {
-        (HoverSphere.HoverResult, InteractableObject) hit = hoverSphere.Results[..hoverSphere.ResultCount]
+        (HoverSphere.HoverResult, InteractableObject) @out = hoverSphere.Results[..hoverSphere.ResultCount]
             .Select(hit => hit.collider.TryGetComponent(out InteractableObject component) ? (hit, component) : (default, null))
-            .FirstOrDefault(interact => interact.component != null);
-        return hit;
+            .Where(interact => interact.component != null && interact.component.IsInfluencable(input))
+            .FirstOrDefault();
+        return @out;
     }
 }

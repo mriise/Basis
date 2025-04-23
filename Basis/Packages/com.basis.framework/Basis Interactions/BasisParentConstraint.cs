@@ -37,7 +37,7 @@ public class BasisParentConstraint
     {
         if (
             !Enabled || 
-            GlobalWeight <= 0 ||
+            GlobalWeight <= float.Epsilon ||
             sources == null ||
             sources.Length == 0
         ) {

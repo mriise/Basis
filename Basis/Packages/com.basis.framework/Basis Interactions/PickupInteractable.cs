@@ -13,6 +13,8 @@ public class PickupInteractable : InteractableObject
 {
     [Header("Pickup Settings")]
     public bool KinematicWhileInteracting = true;
+    [Tooltip("Enables the ability to self-steal")]
+    public bool CanSelfSteal = true;
     public float DesktopRotateSpeed = 0.1f;
     [Tooltip("Unity units per scroll step")]
     public float DesktopZoopSpeed = 0.2f;
@@ -25,7 +27,6 @@ public class PickupInteractable : InteractableObject
     [Space(5)]
     public float minAngularVelocity = 0.1f;
     public float interactEndAngularVelocityMultiplier = 1;
-
 
     [Header("References")]
     public Collider ColliderRef;
@@ -46,7 +47,7 @@ public class PickupInteractable : InteractableObject
     const float k_DesktopZoopSmoothing = 0.2f;
     const float k_DesktopZoopMaxVelocity = 10f;
 
-    private static string headPauseRequestName; 
+    private static string headPauseRequestName;
 
     public void Start()
     {
@@ -59,7 +60,7 @@ public class PickupInteractable : InteractableObject
             TryGetComponent(out ColliderRef);
         }
         InputConstraint = new BasisParentConstraint();
-        InputConstraint.sources = new BasisParentConstraint.SourceData[]{new() {weight = 1f}};
+        InputConstraint.sources = new BasisParentConstraint.SourceData[] { new() { weight = 1f } };
         InputConstraint.Enabled = false;
 
         headPauseRequestName = $"{nameof(PickupInteractable)}: {gameObject.GetInstanceID()}";
@@ -100,8 +101,9 @@ public class PickupInteractable : InteractableObject
     {
         // BasisDebug.Log($"CanHover {string.Join(", ", Inputs.ToArray().Select(x => x.GetState()))}");
         // BasisDebug.Log($"CanHover {!DisableInteract}, {!Inputs.AnyInteracting()}, {input.TryGetRole(out BasisBoneTrackedRole r)}, {Inputs.TryGetByRole(r, out BasisInputWrapper f)}, {r}, {f.GetState()}");
-        return !DisableInteract &&
+        return !DisableInfluence &&
             !IsPuppeted &&
+            (!Inputs.AnyInteracting() || CanSelfSteal) &&
             Inputs.IsInputAdded(input) &&
             input.TryGetRole(out BasisBoneTrackedRole role) &&
             Inputs.TryGetByRole(role, out BasisInputWrapper found) &&
@@ -112,8 +114,9 @@ public class PickupInteractable : InteractableObject
     {
         // BasisDebug.Log($"CanInteract {!DisableInteract}, {!Inputs.AnyInteracting()}, {input.TryGetRole(out BasisBoneTrackedRole r)}, {Inputs.TryGetByRole(r, out BasisInputWrapper f)}, {r}, {f.GetState()}");
         // currently hovering can interact only, only one interacting at a time
-        return !DisableInteract &&
+        return !DisableInfluence &&
             !IsPuppeted &&
+            (!Inputs.AnyInteracting() || CanSelfSteal) &&
             Inputs.IsInputAdded(input) &&
             input.TryGetRole(out BasisBoneTrackedRole role) &&
             Inputs.TryGetByRole(role, out BasisInputWrapper found) &&
@@ -129,7 +132,7 @@ public class PickupInteractable : InteractableObject
         var added = Inputs.ChangeStateByRole(found.Value.Role, InteractInputState.Hovering);
         if (!added)
             BasisDebug.LogWarning(nameof(PickupInteractable) + " did not find role for input on hover");
-        
+
         OnHoverStartEvent?.Invoke(input);
         HighlightObject(true);
     }
@@ -151,7 +154,11 @@ public class PickupInteractable : InteractableObject
     }
     public override void OnInteractStart(BasisInput input)
     {
-        if(input.TryGetRole(out BasisBoneTrackedRole role) && Inputs.TryGetByRole(role, out BasisInputWrapper wrapper))
+        // clean up interacting ourselves (system wont do this for us)
+        if (CanSelfSteal)
+            Inputs.ForEachWithState(OnInteractEnd, InteractInputState.Interacting);
+        
+        if (input.TryGetRole(out BasisBoneTrackedRole role) && Inputs.TryGetByRole(role, out BasisInputWrapper wrapper))
         {
             // same input that was highlighting previously
             if (wrapper.GetState() == InteractInputState.Hovering)
@@ -191,11 +198,14 @@ public class PickupInteractable : InteractableObject
         {
             BasisDebug.LogWarning(nameof(PickupInteractable) + " did not find role for input on Interact start");
         }
+        // cleaup hovers if we arent supposed to be able to self-steal
+        if (!CanSelfSteal)
+            Inputs.ForEachWithState(i => OnHoverEnd(i, false), InteractInputState.Hovering);
     }
 
     public override void OnInteractEnd(BasisInput input)
     {
-        if(input.TryGetRole(out BasisBoneTrackedRole role) && Inputs.TryGetByRole(role, out BasisInputWrapper wrapper))
+        if (input.TryGetRole(out BasisBoneTrackedRole role) && Inputs.TryGetByRole(role, out BasisInputWrapper wrapper))
         {
             if (wrapper.GetState() == InteractInputState.Interacting)
             {
@@ -217,13 +227,17 @@ public class PickupInteractable : InteractableObject
                 }
 
                 InputConstraint.Enabled = false;
+                InputConstraint.sources = new BasisParentConstraint.SourceData[] { new() { weight = 1f } };
 
-                OnDropVelocity();
+                if (!RigidRef.isKinematic)
+                {
+                    OnDropVelocity();
+                }
 
                 // syncNetworking.IsOwner = false;
                 OnInteractEndEvent?.Invoke(input);
             }
-        }        
+        }
     }
 
     /// <summary>
@@ -232,7 +246,7 @@ public class PickupInteractable : InteractableObject
     private void OnDropVelocity()
     {
         var linear = RigidRef.linearVelocity;
-        var angular  = RigidRef.angularVelocity;
+        var angular = RigidRef.angularVelocity;
         if (linear.magnitude >= minLinearVelocity)
         {
             linear *= interactEndLinearVelocityMultiplier;
@@ -315,7 +329,7 @@ public class PickupInteractable : InteractableObject
             // BasisDebug.Log("Setting initial target to current offset:" + targetOffset + " : " + currentOffset);
             targetOffset = currentOffset;
         }
-        
+
         if (mouseScroll != 0)
         {
             Transform sourceTransform = BasisLocalCameraDriver.Instance.Camera.transform;
@@ -335,16 +349,16 @@ public class PickupInteractable : InteractableObject
             {
                 targetOffset = newTargetOffset;
             }
-        }                
+        }
 
         var dampendOffset = Vector3.SmoothDamp(currentOffset, targetOffset, ref currentZoopVelocity, k_DesktopZoopSmoothing, k_DesktopZoopMaxVelocity);
         InputConstraint.sources[0].positionOffset = dampendOffset;
-        
+
 
 
         if (DesktopEye.InputState.Secondary2DAxisClick)
         {
-            if(!pauseHead)
+            if (!pauseHead)
             {
                 BasisAvatarEyeInput.Instance.PauseHead(headPauseRequestName);
                 pauseHead = true;
@@ -363,14 +377,15 @@ public class PickupInteractable : InteractableObject
         else if (pauseHead)
         {
             pauseHead = false;
-            if(!BasisAvatarEyeInput.Instance.UnPauseHead(headPauseRequestName))
+            if (!BasisAvatarEyeInput.Instance.UnPauseHead(headPauseRequestName))
             {
                 BasisDebug.LogWarning(nameof(PickupInteractable) + " was unable to un-pause head movement, this is a bug!");
             }
         }
     }
 
-    private BasisInputWrapper? GetActiveInteracting() {
+    private BasisInputWrapper? GetActiveInteracting()
+    {
 
         if (Inputs.desktopCenterEye.GetState() == InteractInputState.Interacting)
             return Inputs.desktopCenterEye;
@@ -379,7 +394,7 @@ public class PickupInteractable : InteractableObject
         else if (Inputs.rightHand.GetState() == InteractInputState.Interacting)
             return Inputs.rightHand;
         else
-            return null;   
+            return null;
     }
 
     public override void StartRemoteControl()
