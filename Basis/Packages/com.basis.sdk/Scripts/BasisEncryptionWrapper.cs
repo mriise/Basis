@@ -128,15 +128,15 @@ public static class BasisEncryptionWrapper
         {
             var keyBytes = key.GetBytes(KeySize);
             keyDeriveWatch.Stop();
-            BasisDebug.Log($"[{UniqueID}] Key derived in {keyDeriveWatch.ElapsedMilliseconds}ms");
+          //  BasisDebug.Log($"[{UniqueID}] Key derived in {keyDeriveWatch.ElapsedMilliseconds}ms");
 
             using (var aes = Aes.Create())
             {
                 aes.Key = keyBytes;
                 aes.IV = iv;
 
-                reportProgress?.ReportProgress(UniqueID, 60f, "Setting Up Decryption");
-                BasisDebug.Log($"[{UniqueID}] AES setup at {stopwatch.ElapsedMilliseconds}ms");
+               reportProgress?.ReportProgress(UniqueID, 60f, "Setting Up Decryption");
+               // BasisDebug.Log($"[{UniqueID}] AES setup at {stopwatch.ElapsedMilliseconds}ms");
 
                 using (var decryptor = aes.CreateDecryptor())
                 using (var inputStream = new MemoryStream(dataToDecrypt, SaltSize + IvSize, dataToDecrypt.Length - SaltSize - IvSize, false))
@@ -157,7 +157,7 @@ public static class BasisEncryptionWrapper
                     } while (bytesRead > 0);
 
                     decryptWatch.Stop();
-                    BasisDebug.Log($"[{UniqueID}] Data decrypted in {decryptWatch.ElapsedMilliseconds}ms");
+                  //  BasisDebug.Log($"[{UniqueID}] Data decrypted in {decryptWatch.ElapsedMilliseconds}ms");
                     reportProgress?.ReportProgress(UniqueID, 90f, "Finalizing Decryption");
 
                     // Copy only the actual data to the final output buffer
