@@ -20,16 +20,26 @@ public class PlayerInteract : MonoBehaviour
     [System.Serializable]
     public struct InteractInput
     {
+        [HideInInspector]
+        [field: System.NonSerialized]
         public string deviceUid { get; set; }
         [SerializeField]
+        [HideInInspector]
+        [field: System.NonSerialized]
         public BasisInput input { get; set; }
+        [HideInInspector]
+        [field: System.NonSerialized]
         public Transform interactOrigin { get; set; }
         // TODO: use this ref
         [SerializeField]
+        [HideInInspector]
+        [field: System.NonSerialized]
         public LineRenderer lineRenderer { get; set; }
         [SerializeField]
-        public HoverInteractSphere hoverInteract { get; set; }
+        public HoverSphere hoverSphere { get; set; }
         [SerializeField]
+        [HideInInspector]
+        [field: System.NonSerialized]
         public InteractableObject lastTarget { get; set; }
 
         public bool IsInput(BasisInput input)
@@ -120,24 +130,35 @@ public class PlayerInteract : MonoBehaviour
                 BasisDebug.LogWarning("Pickup input device unexpectedly null, input devices likely changed");
                 continue;
             }
-            HoverInteractSphere hoverSphere = interactInput.hoverInteract;
+            HoverSphere hoverSphere = interactInput.hoverSphere;
+
+            // poll hover
+            hoverSphere.PollSystem(interactInput.interactOrigin.position);
 
             RaycastHit rayHit;
             InteractableObject hitInteractable = null;
-            bool isValidRayHit = interactInput.input.BasisPointRaycaster.FirstHit(out rayHit, raycastDistance) &&((1 << rayHit.collider.gameObject.layer) & InteractableLayerMask) != 0 && rayHit.collider.TryGetComponent(out hitInteractable);
+            bool isValidRayHit =
+                interactInput.input.BasisPointRaycaster.FirstHit(out rayHit, raycastDistance) && // UI will block pickup interact
+                ((1 << rayHit.collider.gameObject.layer) & InteractableLayerMask) != 0 &&
+                rayHit.collider.TryGetComponent(out hitInteractable);
 
-            if (isValidRayHit || hoverSphere.HoverTarget != null)
+            bool isValidHoverHit = false;
+            if (hoverSphere.ResultCount != 0 && ClosestInfluencableHover(hoverSphere, interactInput.input) is var result && result.Item2 != null)
             {
-                // prioritize hover
-                if (hoverSphere.HoverTarget != null)
-                {
-                    hitInteractable = hoverSphere.HoverTarget;
-                }
+                isValidHoverHit = true;
+                hitInteractable = result.Item2;
+            }
 
+            if (isValidRayHit || isValidHoverHit)
+            {
                 if (hitInteractable != null)
                 {
                     // NOTE: this will skip a frame of hover after stopping interact
                     interactInput = UpdatePickupState(hitInteractable, interactInput);
+                }
+                else
+                {
+                    BasisDebug.LogWarning("Player Interact expected a registered hit but found null. This is a bug, please report.");
                 }
             }
             // hover misssed entirely
@@ -233,7 +254,6 @@ public class PlayerInteract : MonoBehaviour
         // hit a different target than last time
         if (interactInput.lastTarget != null && interactInput.lastTarget.GetInstanceID() != hitInteractable.GetInstanceID())
         {
-            // TODO: grab button instead of full trigger
             // Holding Logic: 
             if (IsInputTriggered(interactInput.input))
             {
@@ -290,7 +310,6 @@ public class PlayerInteract : MonoBehaviour
         // hitting same interactable
         else
         {
-            // TODO: middle finger grab instead of full trigger
             // Pickup logic: 
             // per input an object can be either held or hovered, not both. Objects can ignore this by purposfully modifying IsHovered/IsInteracted.
             if (IsInputTriggered(interactInput.input))
@@ -379,8 +398,10 @@ public class PlayerInteract : MonoBehaviour
         GameObject interactOrigin = new GameObject("Interact Origin");
 
         LineRenderer lineRenderer = interactOrigin.AddComponent<LineRenderer>();
-        SphereCollider sphereCollider = interactOrigin.AddComponent<SphereCollider>();
-        HoverInteractSphere interactSphere = interactOrigin.AddComponent<HoverInteractSphere>();
+
+        // deskies cant hover grab :)
+        // TODO: pass up max hits for config 
+        HoverSphere hoverSphere = new HoverSphere(interactOrigin.transform.position, hoverRadius, 128, InteractableLayerMask, !IsDesktopCenterEye(input));
 
         interactOrigin.transform.SetParent(input.transform);
         interactOrigin.layer = LayerMask.NameToLayer("Ignore Raycast");
@@ -397,11 +418,7 @@ public class PlayerInteract : MonoBehaviour
         lineRenderer.numCapVertices = 0;
         lineRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 
-        sphereCollider.isTrigger = true;
-        sphereCollider.center = Vector3.zero;
-        sphereCollider.radius = hoverRadius;
-        // deskies cant hover grab :)
-        sphereCollider.enabled = !IsDesktopCenterEye(input);
+
 
 
         InteractInput interactInput = new InteractInput()
@@ -410,7 +427,7 @@ public class PlayerInteract : MonoBehaviour
             input = input,
             interactOrigin = interactOrigin.transform,
             lineRenderer = lineRenderer,
-            hoverInteract = interactSphere,
+            hoverSphere = hoverSphere,
         };
         List<InteractInput> interactInputList = InteractInputs.ToList();
         interactInputList.Add(interactInput);
@@ -424,18 +441,34 @@ public class PlayerInteract : MonoBehaviour
         {
             InteractInput device = InteractInputs[Index];
 
-            Gizmos.color = Color.magenta;
 
-            // hover target line
-            if (device.hoverInteract != null && device.hoverInteract.HoverTarget != null)
+            Gizmos.color = Color.magenta;
+            if (device.hoverSphere.ResultCount > 1)
             {
-                Gizmos.DrawLine(device.interactOrigin.position, device.hoverInteract.TargetClosestPoint);
+                var hits = device.hoverSphere.Results[1..device.hoverSphere.ResultCount] // skip first, is colored later
+                    .Select(hit => hit.collider.TryGetComponent(out InteractableObject component) ? (hit, component) : (default, null))
+                    .Where(hit => hit.component != null && hit.hit.distanceToCenter != float.NegativeInfinity);
+                // hover list
+                foreach (var hit in hits)
+                {
+                    // BasisDebug.Log($"hit: {hit}");
+                    Gizmos.DrawLine(device.interactOrigin.position, hit.Item1.closestPointToCenter);
+                }
             }
+
+
+            // hover target
+            Gizmos.color = Color.blue;
+            if (device.hoverSphere != null && ClosestInfluencableHover(device.hoverSphere, device.input) is var result && result.Item2 != null)
+            {
+                Gizmos.DrawLine(device.interactOrigin.position, result.Item1.closestPointToCenter);
+            }
+            Gizmos.color = Color.gray;
 
             // hover sphere
             if (!IsDesktopCenterEye(device.input))
             {
-                Gizmos.DrawWireSphere(device.interactOrigin.position, hoverRadius);
+                Gizmos.DrawWireSphere(device.hoverSphere.WorldPosition, hoverRadius);
             }
         }
     }
@@ -443,5 +476,20 @@ public class PlayerInteract : MonoBehaviour
     public bool IsDesktopCenterEye(BasisInput input)
     {
         return input.TryGetRole(out BasisBoneTrackedRole role) && role == BasisBoneTrackedRole.CenterEye;
+    }
+
+    /// <summary>
+    /// Gets the closest InteractableObject in the given HoverSphere where IsInfluencable is true for the given input
+    /// </summary>
+    /// <param name="hoverSphere"></param>
+    /// <param name="input"></param>
+    /// <returns></returns>
+    private (HoverSphere.HoverResult, InteractableObject) ClosestInfluencableHover(HoverSphere hoverSphere, BasisInput input)
+    {
+        (HoverSphere.HoverResult, InteractableObject) @out = hoverSphere.Results[..hoverSphere.ResultCount]
+            .Select(hit => hit.collider.TryGetComponent(out InteractableObject component) ? (hit, component) : (default, null))
+            .Where(interact => interact.component != null && interact.component.IsInfluencable(input))
+            .FirstOrDefault();
+        return @out;
     }
 }

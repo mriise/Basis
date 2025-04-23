@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Device_Management.Devices;
 using Basis.Scripts.TransformBinders.BoneControl;
@@ -27,7 +26,7 @@ public abstract partial class InteractableObject
         /// </summary>
         Interacting,
     }
-    
+
     [Serializable]
     public struct BasisInputWrapper
     {
@@ -44,10 +43,11 @@ public abstract partial class InteractableObject
             if (state == InteractInputState.NotAdded)
                 return false;
             // UnityEngine.Debug.Log($"New Input: {source != null}, {source.TryGetRole(out BasisBoneTrackedRole r)}, {BasisLocalPlayer.Instance.LocalBoneDriver.FindBone(out BasisBoneControl c, r)}, {r}", source.gameObject);
-            if (source != null && 
+            if (source != null &&
                 source.TryGetRole(out BasisBoneTrackedRole role) &&
                 BasisLocalPlayer.Instance.LocalBoneDriver.FindBone(out BasisBoneControl control, role)
-            ) {
+            )
+            {
                 wrapper.Source = source;
                 wrapper.BoneControl = control;
                 wrapper.State = state;

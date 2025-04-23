@@ -225,23 +225,23 @@ namespace Basis.Scripts.UI.NamePlate
         }
         public override bool CanHover(BasisInput input)
         {
-            return !DisableInteract &&
+            return !DisableInfluence &&
                 !IsPuppeted &&
                 Inputs.IsInputAdded(input) &&
                 input.TryGetRole(out BasisBoneTrackedRole role) &&
                 Inputs.TryGetByRole(role, out BasisInputWrapper found) &&
                 found.GetState() == InteractInputState.Ignored &&
-                IsWithinRange(input.transform.position);
+                IsWithinRange(found.BoneControl.OutgoingWorldData.position);
         }
         public override bool CanInteract(BasisInput input)
         {
-            return !DisableInteract &&
+            return !DisableInfluence &&
                 !IsPuppeted &&
                 Inputs.IsInputAdded(input) &&
                 input.TryGetRole(out BasisBoneTrackedRole role) &&
                 Inputs.TryGetByRole(role, out BasisInputWrapper found) &&
                 found.GetState() == InteractInputState.Hovering &&
-                IsWithinRange(input.transform.position);
+                IsWithinRange(found.BoneControl.OutgoingWorldData.position);
         }
 
         public override void OnHoverStart(BasisInput input)
