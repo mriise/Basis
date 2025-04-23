@@ -5,7 +5,7 @@ using UnityEngine;
 
 // Needs Rigidbody for hover sphere `OnTriggerStay`
 [Serializable]
-public abstract partial class InteractableObject: MonoBehaviour 
+public abstract partial class InteractableObject : MonoBehaviour
 {
     public InputSources Inputs = new(0);
 
@@ -14,9 +14,11 @@ public abstract partial class InteractableObject: MonoBehaviour
     [SerializeField]
     private bool disableInfluence = false;
     // NOTE: unity editor will not use the set function so setting disabling Interact in play will not cleanup inputs
-    public bool DisableInfluence {
+    public bool DisableInfluence
+    {
         get => disableInfluence;
-        set {
+        set
+        {
             // remove hover and interacting on disable
             if (value)
             {
@@ -49,7 +51,7 @@ public abstract partial class InteractableObject: MonoBehaviour
     public Action<BasisInput> OnHoverStartEvent;
     public Action<BasisInput, bool> OnHoverEndEvent;
     public Action OnInfluenceEnable;
-    public Action OnInfluenceDisable; 
+    public Action OnInfluenceDisable;
 
     // Having Start/OnDestroy as virtuals is icky but I cant think of a more elegant way of doing this.
     // We already recommend calling the base method for Interact/Hover Start/End, so hopefully it wont be too big an issue.
@@ -65,7 +67,7 @@ public abstract partial class InteractableObject: MonoBehaviour
     {
         var Devices = Basis.Scripts.Device_Management.BasisDeviceManagement.Instance.AllInputDevices;
         Devices.OnListAdded += OnInputAdded;
-        Devices.OnListItemRemoved += OnInputRemoved;        
+        Devices.OnListItemRemoved += OnInputRemoved;
         foreach (BasisInput device in Devices)
         {
             OnInputAdded(device);
@@ -83,11 +85,11 @@ public abstract partial class InteractableObject: MonoBehaviour
     {
         // dont expect to add non-role inputs
         // NOTE: when extra (non role) inputs are needed we are going to need to rewrite this
-        if(!input.TryGetRole(out Basis.Scripts.TransformBinders.BoneControl.BasisBoneTrackedRole r))
+        if (!input.TryGetRole(out Basis.Scripts.TransformBinders.BoneControl.BasisBoneTrackedRole r))
             return;
 
-        
-        if(!Inputs.SetInputByRole(input, InteractInputState.Ignored))
+
+        if (!Inputs.SetInputByRole(input, InteractInputState.Ignored))
             BasisDebug.LogError("New input added not setup as expected by InteractableObject");
         else
         {
@@ -96,7 +98,7 @@ public abstract partial class InteractableObject: MonoBehaviour
     }
 
     private void OnInputRemoved(BasisInput input)
-    {        
+    {
         if (input.TryGetRole(out Basis.Scripts.TransformBinders.BoneControl.BasisBoneTrackedRole role))
             if (!Inputs.RemoveByRole(role))
                 BasisDebug.LogError("Something went wrong while removing input");
@@ -118,7 +120,7 @@ public abstract partial class InteractableObject: MonoBehaviour
         return Vector3.Distance(transform.position, source) <= InteractRange;
     }
 
-    
+
     /// <summary>
     /// Gets collider on self, override with cached get whenever possible.
     /// </summary>

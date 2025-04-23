@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using UnityEngine.TestTools;
 
 [Serializable]
 public class BasisParentConstraint
@@ -36,11 +35,12 @@ public class BasisParentConstraint
     public bool Evaluate(out Vector3 pos, out Quaternion rot)
     {
         if (
-            !Enabled || 
+            !Enabled ||
             GlobalWeight <= float.Epsilon ||
             sources == null ||
             sources.Length == 0
-        ) {
+        )
+        {
             pos = Vector3.zero;
             rot = Quaternion.identity;
             return false;
@@ -54,7 +54,7 @@ public class BasisParentConstraint
         {
             ref SourceData source = ref sources[Index];
             if (source.weight <= 0f) continue;
-        
+
             // pos offset is in local space to the sorce
             Vector3 worldOffset = source.rotation * source.positionOffset;
             weightedPos += (source.position + worldOffset) * source.weight;

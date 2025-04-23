@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.LowLevelPhysics;
-using UnityEngine.UIElements;
 
 [System.Serializable]
 public class HoverSphere
@@ -88,7 +85,7 @@ public class HoverSphere
             ResultCount = 0;
             return;
         }
-        WorldPosition = worldPositionUpdate; 
+        WorldPosition = worldPositionUpdate;
 
         if (MaxResults != HitResults.Length)
         {

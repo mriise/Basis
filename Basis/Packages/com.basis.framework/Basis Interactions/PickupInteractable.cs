@@ -157,7 +157,7 @@ public class PickupInteractable : InteractableObject
         // clean up interacting ourselves (system wont do this for us)
         if (CanSelfSteal)
             Inputs.ForEachWithState(OnInteractEnd, InteractInputState.Interacting);
-        
+
         if (input.TryGetRole(out BasisBoneTrackedRole role) && Inputs.TryGetByRole(role, out BasisInputWrapper wrapper))
         {
             // same input that was highlighting previously

@@ -143,18 +143,21 @@ public class PlayerInteract : MonoBehaviour
                 rayHit.collider.TryGetComponent(out hitInteractable);
 
             bool isValidHoverHit = false;
-            if (hoverSphere.ResultCount != 0 && ClosestInfluencableHover(hoverSphere, interactInput.input) is var result && result.Item2 != null) {
+            if (hoverSphere.ResultCount != 0 && ClosestInfluencableHover(hoverSphere, interactInput.input) is var result && result.Item2 != null)
+            {
                 isValidHoverHit = true;
                 hitInteractable = result.Item2;
             }
-            
+
             if (isValidRayHit || isValidHoverHit)
             {
                 if (hitInteractable != null)
                 {
                     // NOTE: this will skip a frame of hover after stopping interact
                     interactInput = UpdatePickupState(hitInteractable, interactInput);
-                } else {
+                }
+                else
+                {
                     BasisDebug.LogWarning("Player Interact expected a registered hit but found null. This is a bug, please report.");
                 }
             }
@@ -440,12 +443,14 @@ public class PlayerInteract : MonoBehaviour
 
 
             Gizmos.color = Color.magenta;
-            if (device.hoverSphere.ResultCount > 1) {
+            if (device.hoverSphere.ResultCount > 1)
+            {
                 var hits = device.hoverSphere.Results[1..device.hoverSphere.ResultCount] // skip first, is colored later
                     .Select(hit => hit.collider.TryGetComponent(out InteractableObject component) ? (hit, component) : (default, null))
                     .Where(hit => hit.component != null && hit.hit.distanceToCenter != float.NegativeInfinity);
                 // hover list
-                foreach (var hit in hits) {
+                foreach (var hit in hits)
+                {
                     // BasisDebug.Log($"hit: {hit}");
                     Gizmos.DrawLine(device.interactOrigin.position, hit.Item1.closestPointToCenter);
                 }
@@ -459,7 +464,7 @@ public class PlayerInteract : MonoBehaviour
                 Gizmos.DrawLine(device.interactOrigin.position, result.Item1.closestPointToCenter);
             }
             Gizmos.color = Color.gray;
-        
+
             // hover sphere
             if (!IsDesktopCenterEye(device.input))
             {

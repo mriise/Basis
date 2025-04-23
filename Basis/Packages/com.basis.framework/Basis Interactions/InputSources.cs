@@ -6,12 +6,13 @@ using Basis.Scripts.TransformBinders.BoneControl;
 public abstract partial class InteractableObject
 {
     [Serializable]
-    public struct InputSources {
+    public struct InputSources
+    {
         public BasisInputWrapper desktopCenterEye, leftHand, rightHand;
 
         private BasisInputWrapper[] primary; // scratch array to avoid alloc on ToArray
         public BasisInputWrapper[] extras;
-        
+
         public InputSources(uint extrasCount)
         {
             desktopCenterEye = default;
@@ -54,21 +55,22 @@ public abstract partial class InteractableObject
         {
             if (desktopCenterEye.GetState() == state)
                 func(desktopCenterEye.Source);
-            
+
             if (leftHand.GetState() == state)
                 func(leftHand.Source);
-            
+
             if (rightHand.GetState() == state)
                 func(rightHand.Source);
-            
-            if (!skipExtras) {
-                for (int i = 0; i < extras.Length; i++) 
+
+            if (!skipExtras)
+            {
+                for (int i = 0; i < extras.Length; i++)
                 {
                     if (extras[i].GetState() == state)
                         func(extras[i].Source);
                 }
             }
-            
+
         }
 
         public readonly BasisInputWrapper? FindExcludeExtras(BasisInput input)
@@ -100,8 +102,8 @@ public abstract partial class InteractableObject
                 return false;
             string inUDI = input.UniqueDeviceIdentifier;
 
-            bool contains = leftHand.GetState() != InteractInputState.NotAdded && leftHand.Source.UniqueDeviceIdentifier == inUDI || 
-                            rightHand.GetState() != InteractInputState.NotAdded && rightHand.Source.UniqueDeviceIdentifier == inUDI || 
+            bool contains = leftHand.GetState() != InteractInputState.NotAdded && leftHand.Source.UniqueDeviceIdentifier == inUDI ||
+                            rightHand.GetState() != InteractInputState.NotAdded && rightHand.Source.UniqueDeviceIdentifier == inUDI ||
                             desktopCenterEye.GetState() != InteractInputState.NotAdded && desktopCenterEye.Source.UniqueDeviceIdentifier == inUDI;
 
             if (!skipExtras)
@@ -129,7 +131,7 @@ public abstract partial class InteractableObject
                 return false;
 
             switch (wrapper.Role)
-            {    
+            {
                 case BasisBoneTrackedRole.CenterEye:
                     desktopCenterEye = wrapper;
                     return true;
