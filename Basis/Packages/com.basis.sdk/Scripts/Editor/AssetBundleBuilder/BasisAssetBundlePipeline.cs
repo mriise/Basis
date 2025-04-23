@@ -60,7 +60,7 @@ public static class BasisAssetBundlePipeline
     {
         return await BuildAssetBundle(true, null, scene, settings, Password, Target);
     }
-    public static async Task<(bool,(BasisBundleGenerated, AssetBundleBuilder.InformationHash))> BuildAssetBundle(bool isScene, GameObject asset, Scene scene, BasisAssetBundleObject settings, string Password, BuildTarget Target)
+    public static async Task<(bool, (BasisBundleGenerated, AssetBundleBuilder.InformationHash))> BuildAssetBundle(bool isScene, GameObject asset, Scene scene, BasisAssetBundleObject settings, string Password, BuildTarget Target)
     {
         ScriptingImplementation ResetTo = ScriptingImplementation.IL2CPP;
         if (EditorUserBuildSettings.activeBuildTarget != Target)
@@ -147,8 +147,7 @@ public static class BasisAssetBundlePipeline
             {
                 PlayerSettings.SetScriptingBackend(namedBuildTarget, ResetTo);
             }
-            return new(false,( null, new AssetBundleBuilder.InformationHash()));
+            return new(false, (null, new AssetBundleBuilder.InformationHash()));
         }
     }
-
 }

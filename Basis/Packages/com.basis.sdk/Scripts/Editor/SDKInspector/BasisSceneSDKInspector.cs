@@ -14,9 +14,6 @@ public class BasisSceneSDKInspector : Editor
     public VisualElement rootElement;
     public VisualElement uiElementsRoot;
     private Label resultLabel; // Store the result label for later clearing
-
-    public BasisAssetBundleObject assetBundleObject;
-
     public void OnEnable()
     {
         visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(BasisSDKConstants.SceneuxmlPath);
@@ -35,38 +32,13 @@ public class BasisSceneSDKInspector : Editor
         {
             uiElementsRoot = visualTree.CloneTree();
             rootElement.Add(uiElementsRoot);
-
-            // Multi-select dropdown (Foldout with Toggles)
-            Foldout buildTargetFoldout = new Foldout { text = "Select Build Targets", value = false }; // Expanded by default
-            uiElementsRoot.Add(buildTargetFoldout);
-            if (assetBundleObject == null)
-            {
-                assetBundleObject = AssetDatabase.LoadAssetAtPath<BasisAssetBundleObject>(BasisAssetBundleObject.AssetBundleObject);
-
-            }
-            foreach (var target in BasisSDKConstants.allowedTargets)
-            {
-                // Check if the target is already selected
-                bool isSelected = assetBundleObject.selectedTargets.Contains(target);
-
-                Toggle toggle = new Toggle(BasisSDKConstants.targetDisplayNames[target])
-                {
-                    value = isSelected // Set the toggle based on whether the target is in the selected list
-                };
-
-                toggle.RegisterValueChangedCallback(evt =>
-                {
-                    if (evt.newValue)
-                        assetBundleObject.selectedTargets.Add(target);
-                    else
-                        assetBundleObject.selectedTargets.Remove(target);
-                });
-
-                buildTargetFoldout.Add(toggle);
-            }
+            BasisSDKCommonInspector.CreateBuildTargetOptions(uiElementsRoot);
+            BasisSDKCommonInspector.CreateBuildOptionsDropdown(uiElementsRoot);
 
             // Build Button
             Button buildButton = BasisHelpersGizmo.Button(uiElementsRoot, BasisSDKConstants.BuildButton);
+
+            BasisAssetBundleObject assetBundleObject = AssetDatabase.LoadAssetAtPath<BasisAssetBundleObject>(BasisAssetBundleObject.AssetBundleObject);
             buildButton.clicked += () => Build(buildButton, assetBundleObject.selectedTargets);
         }
         else

@@ -13,24 +13,24 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
     {
         public OpenVRDevice Device;
         public SteamVR_Input_Sources inputSource;
-        public SteamVR_Action_Pose poseAction = SteamVR_Input.GetAction<SteamVR_Action_Pose>("Pose");
+        public SteamVR_Action_Pose DeviceposeAction = SteamVR_Input.GetAction<SteamVR_Action_Pose>("Pose");
         public BasisOpenVRInputSkeleton SkeletonHandInput = null;
         public bool HasOnUpdate = false;
         public void Initialize(OpenVRDevice device, string UniqueID, string UnUniqueID, string subSystems, bool AssignTrackedRole, BasisBoneTrackedRole basisBoneTrackedRole, SteamVR_Input_Sources SteamVR_Input_Sources)
         {
-            if (HasOnUpdate && poseAction != null)
+            if (HasOnUpdate && DeviceposeAction != null)
             {
-                poseAction[inputSource].onUpdate -= SteamVR_Behavior_Pose_OnUpdate;
+                DeviceposeAction[inputSource].onUpdate -= SteamVR_Behavior_Pose_OnUpdate;
                 HasOnUpdate = false;
             }
             inputSource = SteamVR_Input_Sources;
             Device = device;
             InitalizeTracking(UniqueID, UnUniqueID, subSystems, AssignTrackedRole, basisBoneTrackedRole);
-            if (poseAction != null)
+            if (DeviceposeAction != null)
             {
                 if (HasOnUpdate == false)
                 {
-                    poseAction[inputSource].onUpdate += SteamVR_Behavior_Pose_OnUpdate;
+                    DeviceposeAction[inputSource].onUpdate += SteamVR_Behavior_Pose_OnUpdate;
                     HasOnUpdate = true;
                 }
             }
@@ -43,9 +43,9 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
         }
         public new void OnDestroy()
         {
-            if (poseAction != null)
+            if (DeviceposeAction != null)
             {
-                poseAction[inputSource].onUpdate -= SteamVR_Behavior_Pose_OnUpdate;
+                DeviceposeAction[inputSource].onUpdate -= SteamVR_Behavior_Pose_OnUpdate;
                 HasOnUpdate = false;
             }
             if (SkeletonHandInput != null)
@@ -77,8 +77,8 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
             UpdateHistoryBuffer();
             if (HasOnUpdate)
             {
-                LocalRawPosition = poseAction[inputSource].localPosition;
-                LocalRawRotation = poseAction[inputSource].localRotation;
+                LocalRawPosition = DeviceposeAction[inputSource].localPosition;
+                LocalRawRotation = DeviceposeAction[inputSource].localRotation;
             }
             TransformFinalPosition = LocalRawPosition * BasisLocalPlayer.Instance.CurrentHeight.SelectedAvatarToAvatarDefaultScale;
             TransformFinalRotation = LocalRawRotation;
@@ -102,21 +102,21 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
             int currentFrame = Time.frameCount;
             if (lastFrameUpdated != currentFrame)
             {
-                historyBuffer.Update(poseAction[inputSource].localPosition, poseAction[inputSource].localRotation, poseAction[inputSource].velocity, poseAction[inputSource].angularVelocity);
+                historyBuffer.Update(DeviceposeAction[inputSource].localPosition, DeviceposeAction[inputSource].localRotation, DeviceposeAction[inputSource].velocity, DeviceposeAction[inputSource].angularVelocity);
                 lastFrameUpdated = currentFrame;
             }
         }
         public Vector3 GetVelocity()
         {
-            return poseAction[inputSource].velocity;
+            return DeviceposeAction[inputSource].velocity;
         }
         public Vector3 GetAngularVelocity()
         {
-            return poseAction[inputSource].angularVelocity;
+            return DeviceposeAction[inputSource].angularVelocity;
         }
         public bool GetVelocitiesAtTimeOffset(float secondsFromNow, out Vector3 velocity, out Vector3 angularVelocity)
         {
-            return poseAction[inputSource].GetVelocitiesAtTimeOffset(secondsFromNow, out velocity, out angularVelocity);
+            return DeviceposeAction[inputSource].GetVelocitiesAtTimeOffset(secondsFromNow, out velocity, out angularVelocity);
         }
         public void GetEstimatedPeakVelocities(out Vector3 velocity, out Vector3 angularVelocity)
         {
@@ -124,8 +124,8 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
 
             historyBuffer.GetAverageVelocities(out velocity, out angularVelocity, 2, top);
         }
-        public bool isValid { get { return poseAction[inputSource].poseIsValid; } }
-        public bool isActive { get { return poseAction[inputSource].active; } }
+        public bool isValid { get { return DeviceposeAction[inputSource].poseIsValid; } }
+        public bool isActive { get { return DeviceposeAction[inputSource].active; } }
         #endregion
         public override void ShowTrackedVisual()
         {

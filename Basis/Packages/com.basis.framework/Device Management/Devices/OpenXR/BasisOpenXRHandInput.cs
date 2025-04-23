@@ -22,12 +22,6 @@ public class BasisOpenXRHandInput : BasisInput
     public InputActionProperty MenuButton;
     public InputActionProperty Primary2DAxis;
     public InputActionProperty Secondary2DAxis;
-
-    public Vector3 Palmdeviceposition;
-    public Quaternion PalmdeviceRotation;
-
-    public float3 GripTransformPosition;
-    public quaternion GripTransformRotation;
     public void Initialize(string UniqueID, string UnUniqueID, string subSystems, bool AssignTrackedRole, BasisBoneTrackedRole basisBoneTrackedRole)
     {
         InitalizeTracking(UniqueID, UnUniqueID, subSystems, AssignTrackedRole, basisBoneTrackedRole);
@@ -109,17 +103,10 @@ public class BasisOpenXRHandInput : BasisInput
     }
     public override void DoPollData()
     {
-        Palmdeviceposition = PalmPosition.action.ReadValue<Vector3>();
-        PalmdeviceRotation = PalmRotation.action.ReadValue<Quaternion>();
-
         LocalRawPosition = DeviceActionPosition.action.ReadValue<Vector3>();
         LocalRawRotation = DeviceActionRotation.action.ReadValue<Quaternion>();
 
-        float Scale = BasisLocalPlayer.Instance.CurrentHeight.SelectedAvatarToAvatarDefaultScale;
-        GripTransformPosition = Palmdeviceposition * Scale;
-        GripTransformRotation = PalmdeviceRotation;
-
-        TransformFinalPosition = LocalRawPosition * Scale;
+        TransformFinalPosition = LocalRawPosition * BasisLocalPlayer.Instance.CurrentHeight.SelectedAvatarToAvatarDefaultScale;
         TransformFinalRotation = LocalRawRotation;
 
         InputState.Primary2DAxis = Primary2DAxis.action?.ReadValue<Vector2>() ?? Vector2.zero;
@@ -132,16 +119,17 @@ public class BasisOpenXRHandInput : BasisInput
         InputState.SecondaryButtonGetState = SecondaryButton.action?.ReadValue<float>() > 0.5f;
 
         InputState.Trigger = Trigger.action?.ReadValue<float>() ?? 0f;
-
-        if (hasRoleAssigned && Control.HasTracked != BasisHasTracked.HasNoTracker)
+        if (hasRoleAssigned)
         {
-            // Apply position offset using math.mul for quaternion-vector multiplication
-            Control.IncomingData.position = GripTransformPosition - math.mul(GripTransformRotation, AvatarPositionOffset * Scale);
+            if (Control.HasTracked != BasisHasTracked.HasNoTracker)
+            {
+                // Apply position offset using math.mul for quaternion-vector multiplication
+                Control.IncomingData.position = TransformFinalPosition - math.mul(TransformFinalRotation, AvatarPositionOffset * BasisLocalPlayer.Instance.CurrentHeight.SelectedAvatarToAvatarDefaultScale);
 
-            // Apply rotation offset using math.mul for quaternion multiplication
-            Control.IncomingData.rotation = math.mul(GripTransformRotation, Quaternion.Euler(AvatarRotationOffset));
+                // Apply rotation offset using math.mul for quaternion multiplication
+                Control.IncomingData.rotation = math.mul(TransformFinalRotation, Quaternion.Euler(AvatarRotationOffset));
+            }
         }
-
         CalculateFingerCurls();
         UpdatePlayerControl();
     }

@@ -7,6 +7,7 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
+using System.Reflection;
 
 [CustomEditor(typeof(BasisAvatar))]
 public partial class BasisAvatarSDKInspector : Editor
@@ -26,7 +27,6 @@ public partial class BasisAvatarSDKInspector : Editor
     public Texture2D Texture;
     private Label resultLabel; // Store the result label for later clearing
     public string Error;
-    public BasisAssetBundleObject assetBundleObject;
     public BasisAvatarValidator BasisAvatarValidator;
     private void OnEnable()
     {
@@ -222,35 +222,9 @@ public partial class BasisAvatarSDKInspector : Editor
         avatarAutomaticVisemeDetectionClick.clicked += AutomaticallyFindVisemes;
         avatarAutomaticBlinkDetectionClick.clicked += AutomaticallyFindBlinking;
 
-        // Multi-select dropdown (Foldout with Toggles)
-        Foldout buildTargetFoldout = new Foldout { text = "Select Build Targets", value = false }; // Expanded by default
-        uiElementsRoot.Add(buildTargetFoldout);
-        if (assetBundleObject == null)
-        {
-            assetBundleObject = AssetDatabase.LoadAssetAtPath<BasisAssetBundleObject>(BasisAssetBundleObject.AssetBundleObject);
-
-        }
-
-        foreach (var target in BasisSDKConstants.allowedTargets)
-        {
-            // Check if the target is already selected
-            bool isSelected = assetBundleObject.selectedTargets.Contains(target);
-
-            Toggle toggle = new Toggle(BasisSDKConstants.targetDisplayNames[target])
-            {
-                value = isSelected // Set the toggle based on whether the target is in the selected list
-            };
-
-            toggle.RegisterValueChangedCallback(evt =>
-            {
-                if (evt.newValue)
-                    assetBundleObject.selectedTargets.Add(target);
-                else
-                    assetBundleObject.selectedTargets.Remove(target);
-            });
-
-            buildTargetFoldout.Add(toggle);
-        }
+        BasisSDKCommonInspector.CreateBuildTargetOptions(uiElementsRoot);
+        BasisSDKCommonInspector.CreateBuildOptionsDropdown(uiElementsRoot);
+        BasisAssetBundleObject assetBundleObject = AssetDatabase.LoadAssetAtPath<BasisAssetBundleObject>(BasisAssetBundleObject.AssetBundleObject);
         avatarBundleButton.clicked += () => EventCallbackAvatarBundle(assetBundleObject.selectedTargets);
 
         // Register Animator field change event
