@@ -492,12 +492,6 @@
       "source": "embedded",
       "dependencies": {}
     },
-    "net.virtualwebsite.ffmpegunity": {
-      "version": "file:FFmpeg.Unity",
-      "depth": 0,
-      "source": "embedded",
-      "dependencies": {}
-    },
     "org.basisvr.base128": {
       "version": "file:org.basisvr.base128-1.2.2.tgz",
       "depth": 0,
