@@ -26,7 +26,6 @@ namespace Basis.Scripts.Drivers
             }
         }
         private static string TPose = "Assets/Animator/Animated TPose.controller";
-        public static string BoneData = "Assets/ScriptableObjects/BoneData.asset";
         public Action CalibrationComplete;
         public Action TposeStateChange;
         public BasisTransformMapping References = new BasisTransformMapping();
@@ -72,7 +71,7 @@ namespace Basis.Scripts.Drivers
         public void Calibration(BasisAvatar Avatar)
         {
             FindSkinnedMeshRenders();
-            BasisTransformMapping.AutoDetectReferences(Player.BasisAvatar.Animator, Avatar.transform, out References);
+            BasisTransformMapping.AutoDetectReferences(Player.BasisAvatar.Animator, Avatar.transform, ref References);
             Player.FaceIsVisible = false;
             if (Avatar == null)
             {
@@ -92,7 +91,7 @@ namespace Basis.Scripts.Drivers
 
             if (BasisFacialBlinkDriver.MeetsRequirements(Avatar))
             {
-                Player.FacialBlinkDriver.Initialize(Player,Avatar);
+                Player.FacialBlinkDriver.Initialize(Player, Avatar);
             }
         }
         public void PutAvatarIntoTPose()
@@ -122,12 +121,13 @@ namespace Basis.Scripts.Drivers
         {
             // Get all renderers in the parent GameObject
             Renderer[] renderers = animatorParent.GetComponentsInChildren<Renderer>();
-            if (renderers.Length == 0)
+            int length = renderers.Length;
+            if (length == 0)
             {
                 return new Bounds(Vector3.zero, new Vector3(0.3f, BasisLocalPlayer.FallbackSize, 0.3f));
             }
             Bounds bounds = renderers[0].bounds;
-            for (int Index = 1; Index < renderers.Length; Index++)
+            for (int Index = 1; Index < length; Index++)
             {
                 bounds.Encapsulate(renderers[Index].bounds);
             }
@@ -173,9 +173,7 @@ namespace Basis.Scripts.Drivers
         }
         public void CalculateTransformPositions(BasisPlayer BasisPlayer, BasisBaseBoneDriver driver)
         {
-            BasisDebug.Log("CalculateTransformPositions", BasisDebug.LogTag.Avatar);
-            UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<BasisFallBackBoneData> BasisFallBackBoneDataAsync = Addressables.LoadAssetAsync<BasisFallBackBoneData>(BoneData);
-            BasisFallBackBoneData FBBD = BasisFallBackBoneDataAsync.WaitForCompletion();
+            //  BasisDebug.Log("CalculateTransformPositions", BasisDebug.LogTag.Avatar);
             for (int Index = 0; Index < driver.ControlsLength; Index++)
             {
                 BasisBoneControl Control = driver.Controls[Index];
@@ -188,12 +186,12 @@ namespace Basis.Scripts.Drivers
                 {
                     if (driver.trackedRoles[Index] == BasisBoneTrackedRole.Mouth)
                     {
-                        GetWorldSpaceRotAndPos(() => Player.BasisAvatar.AvatarMouthPosition,  out float3 TposeWorld);
+                        GetWorldSpaceRotAndPos(() => Player.BasisAvatar.AvatarMouthPosition, out float3 TposeWorld);
                         SetInitialData(BasisPlayer.BasisAvatar.Animator, Control, driver.trackedRoles[Index], TposeWorld);
                     }
                     else
                     {
-                        if (FBBD.FindBone(out BasisFallBone FallBackBone, driver.trackedRoles[Index]))
+                        if (BasisDeviceManagement.FBBD.FindBone(out BasisFallBone FallBackBone, driver.trackedRoles[Index]))
                         {
                             if (TryConvertToHumanoidRole(driver.trackedRoles[Index], out HumanBodyBones HumanBones))
                             {
@@ -212,7 +210,6 @@ namespace Basis.Scripts.Drivers
                     }
                 }
             }
-            Addressables.Release(BasisFallBackBoneDataAsync);
         }
         public void GetBoneRotAndPos(Transform driver, Animator anim, HumanBodyBones bone, Vector3 heightPercentage, out quaternion Rotation, out float3 Position, out bool UsedFallback)
         {
@@ -277,7 +274,7 @@ namespace Basis.Scripts.Drivers
                 return false;
             }
         }
-        public void SetInitialData(Animator animator, BasisBoneControl bone, BasisBoneTrackedRole Role,Vector3 WorldTpose)
+        public void SetInitialData(Animator animator, BasisBoneControl bone, BasisBoneTrackedRole Role, Vector3 WorldTpose)
         {
             bone.OutGoingData.position = BasisLocalBoneDriver.ConvertToAvatarSpaceInitial(animator, WorldTpose);//out Vector3 WorldSpaceFloor
             bone.TposeLocal.position = bone.OutGoingData.position;
@@ -321,7 +318,7 @@ namespace Basis.Scripts.Drivers
                 SkinnedMeshRenderer Render = SkinnedMeshRenderer[Index];
                 Render.forceMatrixRecalculationPerRender = State;
             }
-            BasisDebug.Log("Matrix ReCalculation State set to " + State);
+            //  BasisDebug.Log($"Matrix ReCalculation State set to {State}");
         }
         public void updateWhenOffscreen(bool State)
         {

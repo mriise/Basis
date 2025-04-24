@@ -61,7 +61,7 @@ namespace Basis.Scripts.BasisSdk.Players
         }
         public async Task CreateAvatar(byte Mode, BasisLoadableBundle BasisLoadableBundle)
         {
-            BasisDebug.Log("Remote Player Create Avatar Request");
+           //BasisDebug.Log("Remote Player Create Avatar Request");
             BasisPlayerSettingsData BasisPlayerSettingsData = await BasisPlayerSettingsManager.RequestPlayerSettings(UUID);
 
             AlwaysRequestedAvatar = BasisLoadableBundle;
@@ -69,12 +69,12 @@ namespace Basis.Scripts.BasisSdk.Players
 
             if (BasisPlayerSettingsData.AvatarVisible && InAvatarRange)
             {
-                BasisDebug.Log("loading avatar from " + BasisLoadableBundle.BasisRemoteBundleEncrypted.CombinedURL + " with net mode " + Mode);
+            //    BasisDebug.Log("loading avatar from " + BasisLoadableBundle.BasisRemoteBundleEncrypted.CombinedURL + " with net mode " + Mode);
                 await BasisAvatarFactory.LoadAvatarRemote(this, Mode, BasisLoadableBundle);
             }
             else
             {
-                BasisDebug.Log("Going to load Loading Avatar Instead of requested Avatar");
+               // BasisDebug.Log("Going to load Loading Avatar Instead of requested Avatar");
                 BasisAvatarFactory.RemoveOldAvatarAndLoadFallback(this, BasisAvatarFactory.LoadingAvatar.BasisLocalEncryptedBundle.LocalConnectorPath);
             }
         }

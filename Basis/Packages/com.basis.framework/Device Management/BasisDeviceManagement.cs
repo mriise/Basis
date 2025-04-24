@@ -12,9 +12,10 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceProviders;
 
 namespace Basis.Scripts.Device_Management
@@ -29,6 +30,7 @@ namespace Basis.Scripts.Device_Management
         public string CurrentMode = "None";
         [SerializeField]
         public const string Desktop = "Desktop";
+        public static string BoneData = "Assets/ScriptableObjects/BoneData.asset";
         public string DefaultMode()
         {
             if (IsMobile())
@@ -82,6 +84,8 @@ namespace Basis.Scripts.Device_Management
         public List<BasisDeviceMatchSettings> UseAbleDeviceConfigs = new List<BasisDeviceMatchSettings>();
         [SerializeField]
         public BasisLocalInputActions InputActions;
+        public static AsyncOperationHandle<BasisFallBackBoneData> BasisFallBackBoneDataAsync;
+        public static AsyncOperationHandle<uLipSync.Profile> LipSyncProfile;
         async void Start()
         {
             if (BasisHelpers.CheckInstance<BasisDeviceManagement>(Instance))
@@ -93,6 +97,15 @@ namespace Basis.Scripts.Device_Management
         }
         void OnDestroy()
         {
+            if (BasisFallBackBoneDataAsync.IsValid())
+            {
+                Addressables.Release(BasisFallBackBoneDataAsync);
+            }
+            if(LipSyncProfile.IsValid())
+            {
+                Addressables.Release(LipSyncProfile);
+            }
+
             ShutDownXR(true);
             if (TryFindBasisBaseTypeManagement(Desktop, out List<BasisBaseTypeManagement> Matched))
             {
@@ -164,6 +177,7 @@ namespace Basis.Scripts.Device_Management
         public async Task Initialize()
         {
             BasisCommandLineArgs.Initialize(BakedInCommandLineArgs, out string ForcedDevicemanager);
+            LoadFallbackData();
             InstantiationParameters parameters = new InstantiationParameters();
             await BasisPlayerFactory.CreateLocalPlayer(parameters);
 
@@ -183,6 +197,14 @@ namespace Basis.Scripts.Device_Management
                 HasEvents = true;
             }
             await OnInitializationCompleted?.Invoke();
+        }
+        public static BasisFallBackBoneData FBBD;
+        public void LoadFallbackData()
+        {
+            BasisFallBackBoneDataAsync = Addressables.LoadAssetAsync<BasisFallBackBoneData>(BoneData);
+            LipSyncProfile = Addressables.LoadAssetAsync<uLipSync.Profile>("Packages/com.hecomi.ulipsync/Assets/Profiles/uLipSync-Profile-Sample.asset");
+            FBBD = BasisFallBackBoneDataAsync.WaitForCompletion();
+            LipSyncProfile.WaitForCompletion();
         }
         public async Task RunAfterInitialized()
         {

@@ -30,8 +30,9 @@ namespace Basis.Scripts.Drivers
             LinkedPlayer = Player;
             blendShapeIndex.Clear();
             meshRenderer = Avatar.FaceBlinkMesh;
-            foreach (int Blink in Avatar.BlinkViseme)
+            for (int Index = 0; Index < Avatar.BlinkViseme.Length; Index++)
             {
+                int Blink = Avatar.BlinkViseme[Index];
                 if (Blink != -1)
                 {
                     blendShapeIndex.Add(Blink);
@@ -42,7 +43,7 @@ namespace Basis.Scripts.Drivers
             SetNextBlinkTime();
             if (LinkedPlayer != null && LinkedPlayer.FaceRenderer != null)
             {
-                BasisDebug.Log("Wired up Renderer Check For Blinking", BasisDebug.LogTag.Avatar);
+               // BasisDebug.Log("Wired up Renderer Check For Blinking", BasisDebug.LogTag.Avatar);
                 LinkedPlayer.FaceRenderer.Check += UpdateFaceVisibility;
                 UpdateFaceVisibility(LinkedPlayer.FaceIsVisible);
             }

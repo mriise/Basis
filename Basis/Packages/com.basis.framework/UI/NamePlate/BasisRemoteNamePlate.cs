@@ -76,7 +76,7 @@ namespace Basis.Scripts.UI.NamePlate
             HasRendererCheckWiredUp = false;
             if (BasisRemotePlayer != null && BasisRemotePlayer.FaceRenderer != null)
             {
-                BasisDebug.Log("Wired up Renderer Check For Blinking");
+              //  BasisDebug.Log("Wired up Renderer Check For Blinking");
                 BasisRemotePlayer.FaceRenderer.Check += UpdateFaceVisibility;
                 BasisRemotePlayer.FaceRenderer.DestroyCalled += AvatarUnloaded;
                 UpdateFaceVisibility(BasisRemotePlayer.FaceIsVisible);

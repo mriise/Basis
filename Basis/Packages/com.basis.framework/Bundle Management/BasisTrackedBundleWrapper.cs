@@ -83,7 +83,7 @@ public class BasisTrackedBundleWrapper
     public bool Increment()
     {
         Interlocked.Increment(ref _requestedTimes);
-        BasisDebug.Log($"Incremented Asset Load {LoadableBundle.BasisLocalEncryptedBundle.LocalConnectorPath}");
+      //  BasisDebug.Log($"Incremented Asset Load {LoadableBundle.BasisLocalEncryptedBundle.LocalConnectorPath}");
         return true;
     }
 
@@ -100,7 +100,7 @@ public class BasisTrackedBundleWrapper
             }
         } while (Interlocked.CompareExchange(ref _requestedTimes, current - 1, current) != current);
 
-        BasisDebug.Log($"DeIncremented Asset Load {LoadableBundle.BasisLocalEncryptedBundle.LocalConnectorPath}");
+       // BasisDebug.Log($"DeIncremented Asset Load {LoadableBundle.BasisLocalEncryptedBundle.LocalConnectorPath}");
         return true;
     }
 }

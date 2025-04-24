@@ -121,7 +121,7 @@ namespace Basis.Scripts.Avatar
                         Output = await DownloadAndLoadAvatar(BasisLoadableBundle, Player);
                         break;
                     case 1://Local Load
-                        BasisDebug.Log("Requested Avatar was a Addressable Avatar " + BasisLoadableBundle.BasisRemoteBundleEncrypted.CombinedURL, BasisDebug.LogTag.Avatar);
+                      //  BasisDebug.Log("Requested Avatar was a Addressable Avatar " + BasisLoadableBundle.BasisRemoteBundleEncrypted.CombinedURL, BasisDebug.LogTag.Avatar);
                         ChecksRequired Required = new ChecksRequired
                         {
                             UseContentRemoval = false,
@@ -132,7 +132,7 @@ namespace Basis.Scripts.Avatar
 
                         if (GameObjects.Count > 0)
                         {
-                            BasisDebug.Log("Found Avatar for " + BasisLoadableBundle.BasisRemoteBundleEncrypted.CombinedURL, BasisDebug.LogTag.Avatar);
+                          //  BasisDebug.Log("Found Avatar for " + BasisLoadableBundle.BasisRemoteBundleEncrypted.CombinedURL, BasisDebug.LogTag.Avatar);
                             Output = GameObjects[0];
                         }
                         else
@@ -273,7 +273,7 @@ namespace Basis.Scripts.Avatar
                 else
                 {
                     GameObject.Destroy(Player.BasisAvatar.gameObject);
-                    BasisDebug.Log("Unloading Last Avatar for Player " + Player.DisplayName);
+                 //   BasisDebug.Log("Unloading Last Avatar for Player " + Player.DisplayName);
                     await BasisLoadHandler.RequestDeIncrementOfBundle(Player.AvatarMetaData);
                 }
             }

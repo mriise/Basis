@@ -6,10 +6,11 @@ using System.Collections.Generic;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using Basis.Scripts.BasisSdk.Helpers;
+using Basis.Scripts.Device_Management;
 namespace Basis.Scripts.Drivers
 {
     [System.Serializable]
-    public class BasisAudioAndVisemeDriver
+    public partial class BasisAudioAndVisemeDriver
     {
         public int smoothAmount = 70;
         public bool[] HasViseme;
@@ -21,12 +22,6 @@ namespace Basis.Scripts.Drivers
         public List<PhonemeBlendShapeInfo> phonemeBlendShapeTable = new List<PhonemeBlendShapeInfo>();
         private uLipSync.Profile profile;
         public bool FirstTime = false;
-        [System.Serializable]
-        public class PhonemeBlendShapeInfo
-        {
-            public string phoneme;
-            public int blendShape;
-        }
         public bool WasSuccessful;
         public int HashInstanceID = -1;
         public bool TryInitialize(BasisPlayer BasisPlayer)
@@ -36,40 +31,36 @@ namespace Basis.Scripts.Drivers
             Player = BasisPlayer;
             if (Avatar == null)
             {
-                BasisDebug.Log("not setting up BasisVisemeDriver Avatar was null");
+               BasisDebug.Log("not setting up BasisVisemeDriver Avatar was null");
                 return false;
             }
             if (Avatar.FaceVisemeMesh == null)
             {
-                BasisDebug.Log("not setting up BasisVisemeDriver FaceVisemeMesh was null");
+              //  BasisDebug.Log("not setting up BasisVisemeDriver FaceVisemeMesh was null");
                 return false;
             }
             if (Avatar.FaceVisemeMesh.sharedMesh.blendShapeCount == 0)
             {
-                BasisDebug.Log("not setting up BasisVisemeDriver blendShapeCount was empty");
+              //  BasisDebug.Log("not setting up BasisVisemeDriver blendShapeCount was empty");
                 return false;
             }
             if (uLipSync == null)
             {
                 FirstTime = true;
             }
-            uLipSync = BasisHelpers.GetOrAddComponent<uLipSync.uLipSync>(BasisPlayer.gameObject);
+            if (uLipSync == null)
+            {
+                uLipSync = BasisHelpers.GetOrAddComponent<uLipSync.uLipSync>(BasisPlayer.gameObject);
+            }
             phonemeBlendShapeTable.Clear();
             if (uLipSync.profile == null)
             {
-                if (Profile == null)
-                {
-                    // Start loading the ScriptableObject from Addressables using the addressable key
-                    AsyncOperationHandle<uLipSync.Profile> handle = Addressables.LoadAssetAsync<uLipSync.Profile>("Packages/com.hecomi.ulipsync/Assets/Profiles/uLipSync-Profile-Sample.asset");
-
-                    // Wait for the operation to complete
-                    handle.WaitForCompletion();
-                    Profile = handle.Result;
-                }
-                uLipSync.profile = Profile;
+                uLipSync.profile = BasisDeviceManagement.LipSyncProfile.Result;
             }
-
-            uLipSyncBlendShape = BasisHelpers.GetOrAddComponent<uLipSyncBlendShape>(BasisPlayer.gameObject);
+            if (uLipSyncBlendShape == null)
+            {
+                uLipSyncBlendShape = BasisHelpers.GetOrAddComponent<uLipSyncBlendShape>(BasisPlayer.gameObject);
+            }
             uLipSyncBlendShape.usePhonemeBlend = true;
             uLipSyncBlendShape.skinnedMeshRenderer = Avatar.FaceVisemeMesh;
             BlendShapeCount = Avatar.FaceVisemeMovement.Length;
@@ -167,7 +158,7 @@ namespace Basis.Scripts.Drivers
             uLipSync.Initalize();
             if (Player != null && Player.FaceRenderer != null && HashInstanceID != Player.FaceRenderer.GetInstanceID())
             {
-                BasisDebug.Log("Wired up Renderer Check For Blinking");
+               // BasisDebug.Log("Wired up Renderer Check For Blinking");
                 Player.FaceRenderer.Check += UpdateFaceVisibility;
                 Player.FaceRenderer.DestroyCalled += TryShutdown;
             }
@@ -181,7 +172,6 @@ namespace Basis.Scripts.Drivers
             OnDeInitalize();
         }
         public bool uLipSyncEnabledState = true;
-        public Profile Profile { get => profile; set => profile = value; }
         private void UpdateFaceVisibility(bool State)
         {
             uLipSyncEnabledState = State;
