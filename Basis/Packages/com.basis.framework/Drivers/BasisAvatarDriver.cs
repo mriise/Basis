@@ -135,27 +135,152 @@ namespace Basis.Scripts.Drivers
         }
         public static bool TryConvertToBoneTrackingRole(HumanBodyBones body, out BasisBoneTrackedRole result)
         {
-            result = BasisBoneTrackedRole.Chest; // Set a default value or handle it based on your requirements
-
-            if (Enum.TryParse(body.ToString(), out BasisBoneTrackedRole parsedRole))
+            switch (body)
             {
-                result = parsedRole;
-                return true; // Successfully parsed
+                case HumanBodyBones.Head:
+                    result = BasisBoneTrackedRole.Head;
+                    return true;
+                case HumanBodyBones.Neck:
+                    result = BasisBoneTrackedRole.Neck;
+                    return true;
+                case HumanBodyBones.Chest:
+                    result = BasisBoneTrackedRole.Chest;
+                    return true;
+                case HumanBodyBones.Hips:
+                    result = BasisBoneTrackedRole.Hips;
+                    return true;
+                case HumanBodyBones.Spine:
+                    result = BasisBoneTrackedRole.Spine;
+                    return true;
+                case HumanBodyBones.LeftUpperLeg:
+                    result = BasisBoneTrackedRole.LeftUpperLeg;
+                    return true;
+                case HumanBodyBones.RightUpperLeg:
+                    result = BasisBoneTrackedRole.RightUpperLeg;
+                    return true;
+                case HumanBodyBones.LeftLowerLeg:
+                    result = BasisBoneTrackedRole.LeftLowerLeg;
+                    return true;
+                case HumanBodyBones.RightLowerLeg:
+                    result = BasisBoneTrackedRole.RightLowerLeg;
+                    return true;
+                case HumanBodyBones.LeftFoot:
+                    result = BasisBoneTrackedRole.LeftFoot;
+                    return true;
+                case HumanBodyBones.RightFoot:
+                    result = BasisBoneTrackedRole.RightFoot;
+                    return true;
+                case HumanBodyBones.LeftShoulder:
+                    result = BasisBoneTrackedRole.LeftShoulder;
+                    return true;
+                case HumanBodyBones.RightShoulder:
+                    result = BasisBoneTrackedRole.RightShoulder;
+                    return true;
+                case HumanBodyBones.LeftUpperArm:
+                    result = BasisBoneTrackedRole.LeftUpperArm;
+                    return true;
+                case HumanBodyBones.RightUpperArm:
+                    result = BasisBoneTrackedRole.RightUpperArm;
+                    return true;
+                case HumanBodyBones.LeftLowerArm:
+                    result = BasisBoneTrackedRole.LeftLowerArm;
+                    return true;
+                case HumanBodyBones.RightLowerArm:
+                    result = BasisBoneTrackedRole.RightLowerArm;
+                    return true;
+                case HumanBodyBones.LeftHand:
+                    result = BasisBoneTrackedRole.LeftHand;
+                    return true;
+                case HumanBodyBones.RightHand:
+                    result = BasisBoneTrackedRole.RightHand;
+                    return true;
+                case HumanBodyBones.LeftToes:
+                    result = BasisBoneTrackedRole.LeftToes;
+                    return true;
+                case HumanBodyBones.RightToes:
+                    result = BasisBoneTrackedRole.RightToes;
+                    return true;
+                case HumanBodyBones.Jaw:
+                    result = BasisBoneTrackedRole.Mouth;
+                    return true;
             }
-
-            return false; // Failed to parse
+            result = BasisBoneTrackedRole.Hips;
+            return false;
         }
-        public static bool TryConvertToHumanoidRole(BasisBoneTrackedRole body, out HumanBodyBones result)
+        public static bool TryConvertToHumanoidRole(BasisBoneTrackedRole role, out HumanBodyBones result)
         {
-            result = HumanBodyBones.Hips; // Set a default value or handle it based on your requirements
-
-            if (Enum.TryParse(body.ToString(), out HumanBodyBones parsedRole))
+            switch (role)
             {
-                result = parsedRole;
-                return true; // Successfully parsed
+                case BasisBoneTrackedRole.Head:
+                    result = HumanBodyBones.Head;
+                    return true;
+                case BasisBoneTrackedRole.Neck:
+                    result = HumanBodyBones.Neck;
+                    return true;
+                case BasisBoneTrackedRole.Chest:
+                    result = HumanBodyBones.Chest;
+                    return true;
+                case BasisBoneTrackedRole.Hips:
+                    result = HumanBodyBones.Hips;
+                    return true;
+                case BasisBoneTrackedRole.Spine:
+                    result = HumanBodyBones.Spine;
+                    return true;
+                case BasisBoneTrackedRole.LeftUpperLeg:
+                    result = HumanBodyBones.LeftUpperLeg;
+                    return true;
+                case BasisBoneTrackedRole.RightUpperLeg:
+                    result = HumanBodyBones.RightUpperLeg;
+                    return true;
+                case BasisBoneTrackedRole.LeftLowerLeg:
+                    result = HumanBodyBones.LeftLowerLeg;
+                    return true;
+                case BasisBoneTrackedRole.RightLowerLeg:
+                    result = HumanBodyBones.RightLowerLeg;
+                    return true;
+                case BasisBoneTrackedRole.LeftFoot:
+                    result = HumanBodyBones.LeftFoot;
+                    return true;
+                case BasisBoneTrackedRole.RightFoot:
+                    result = HumanBodyBones.RightFoot;
+                    return true;
+                case BasisBoneTrackedRole.LeftShoulder:
+                    result = HumanBodyBones.LeftShoulder;
+                    return true;
+                case BasisBoneTrackedRole.RightShoulder:
+                    result = HumanBodyBones.RightShoulder;
+                    return true;
+                case BasisBoneTrackedRole.LeftUpperArm:
+                    result = HumanBodyBones.LeftUpperArm;
+                    return true;
+                case BasisBoneTrackedRole.RightUpperArm:
+                    result = HumanBodyBones.RightUpperArm;
+                    return true;
+                case BasisBoneTrackedRole.LeftLowerArm:
+                    result = HumanBodyBones.LeftLowerArm;
+                    return true;
+                case BasisBoneTrackedRole.RightLowerArm:
+                    result = HumanBodyBones.RightLowerArm;
+                    return true;
+                case BasisBoneTrackedRole.LeftHand:
+                    result = HumanBodyBones.LeftHand;
+                    return true;
+                case BasisBoneTrackedRole.RightHand:
+                    result = HumanBodyBones.RightHand;
+                    return true;
+                case BasisBoneTrackedRole.LeftToes:
+                    result = HumanBodyBones.LeftToes;
+                    return true;
+                case BasisBoneTrackedRole.RightToes:
+                    result = HumanBodyBones.RightToes;
+                    return true;
+                case BasisBoneTrackedRole.Mouth:
+                    result = HumanBodyBones.Jaw;
+                    return true;
             }
 
-            return false; // Failed to parse
+            result = HumanBodyBones.Hips; // fallback
+            return false;
         }
         public static bool IsApartOfSpineVertical(BasisBoneTrackedRole Role)
         {
