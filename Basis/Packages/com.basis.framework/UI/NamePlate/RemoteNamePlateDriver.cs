@@ -1,5 +1,6 @@
 using Basis.Scripts.Device_Management;
 using Basis.Scripts.Drivers;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace Basis.Scripts.UI.NamePlate
@@ -7,8 +8,8 @@ namespace Basis.Scripts.UI.NamePlate
     public class RemoteNamePlateDriver : MonoBehaviour
     {
         // Use an array for better performance
-        private BasisRemoteNamePlate[] RemoteNamePlates = new BasisRemoteNamePlate[0];
-        private int count = 0; // Track the number of active elements
+        private static BasisRemoteNamePlate[] RemoteNamePlates = new BasisRemoteNamePlate[0];
+        private static int count = 0; // Track the number of active elements
         public static RemoteNamePlateDriver Instance;
         public Color NormalColor;
         public Color IsTalkingColor;
@@ -121,9 +122,9 @@ namespace Basis.Scripts.UI.NamePlate
 
             RemoteNamePlates = newArray;
         }
-        public float x;
-        public float z;
-        public void Simulate()
+        public static float x;
+        public static float z;
+        public static void SimulateNamePlates()
         {
             Vector3 Position = BasisLocalCameraDriver.Position;
             for (int Index = 0; Index < count; Index++)
@@ -134,16 +135,9 @@ namespace Basis.Scripts.UI.NamePlate
                     cachedDirection = NamePlate.HipTarget.OutgoingWorldData.position;
                     cachedDirection.y += NamePlate.MouthTarget.TposeLocal.position.y / YHeightMultiplier;
                     dirToCamera = Position - cachedDirection;
-                    cachedRotation = Quaternion.Euler(x, Mathf.Atan2(dirToCamera.x, dirToCamera.z) * Mathf.Rad2Deg, z);
+                    cachedRotation = Quaternion.Euler(x, math.atan2(dirToCamera.x, dirToCamera.z) * Mathf.Rad2Deg, z);
                     NamePlate.Self.SetPositionAndRotation(cachedDirection, cachedRotation);
                 }
-            }
-        }
-        public static void SimulateNamePlates()
-        {
-            if(Instance != null)
-            {
-                Instance.Simulate();
             }
         }
     }

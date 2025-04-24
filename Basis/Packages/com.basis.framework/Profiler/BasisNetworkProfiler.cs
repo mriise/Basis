@@ -1,10 +1,9 @@
 using System.Threading;
 using Unity.Profiling;
-using UnityEngine;
 
 namespace Basis.Scripts.Profiler
 {
-    public class BasisNetworkProfiler : MonoBehaviour
+    public static class BasisNetworkProfiler
     {
         public static readonly ProfilerCategory Category = ProfilerCategory.Network;
 
@@ -50,7 +49,7 @@ namespace Basis.Scripts.Profiler
         private const int CounterCount = 18;
         private static readonly long[] counters = new long[CounterCount];
 
-        public void Update()
+        public static void Update()
         {
             SampleAndReset(AudioSegmentDataMessageCounter, BasisNetworkProfilerCounter.AudioSegmentData);
             SampleAndReset(AuthenticationMessageCounter, BasisNetworkProfilerCounter.Authentication);

@@ -34,7 +34,7 @@ public class BasisIndividualPlayerSettings : BasisUIBase
 
     public static async void OpenPlayerSettings(BasisRemotePlayer RemotePlayer)
     {
-        BasisUIManagement.Instance.CloseAllMenus();
+        BasisUIManagement.CloseAllMenus();
         AddressableGenericResource resource = new AddressableGenericResource(Path, AddressableExpectedResult.SingleItem);
         BasisUIBase Base = OpenMenuNow(resource);
         BasisIndividualPlayerSettings PlayerSettings = (BasisIndividualPlayerSettings)Base;

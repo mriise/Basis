@@ -205,6 +205,7 @@ namespace Basis.Scripts.Networking
                         ReceiverArray[Index].Compute(TimeAsDouble);
                     }
                 }
+                BasisNetworkProfiler.Update();
             }
         }
         public static void SimulateNetworkApply()

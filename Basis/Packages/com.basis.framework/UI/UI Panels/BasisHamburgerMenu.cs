@@ -87,20 +87,20 @@ namespace Basis.Scripts.UI.UI_Panels
         }
         public static async Task OpenHamburgerMenu()
         {
-            BasisUIManagement.Instance.CloseAllMenus();
+            BasisUIManagement.CloseAllMenus();
             AddressableGenericResource resource = new AddressableGenericResource(MainMenuAddressableID, AddressableExpectedResult.SingleItem);
             await OpenThisMenu(resource);
         }
         public static void OpenHamburgerMenuNow()
         {
-            BasisUIManagement.Instance.CloseAllMenus();
+            BasisUIManagement.CloseAllMenus();
             AddressableGenericResource resource = new AddressableGenericResource(MainMenuAddressableID, AddressableExpectedResult.SingleItem);
             OpenMenuNow(resource);
         }
         public static async void OpenCamera(BasisHamburgerMenu BasisHamburgerMenu)
         {
             BasisHamburgerMenu.transform.GetPositionAndRotation(out Vector3 Position, out Quaternion Rotation);
-            BasisUIManagement.Instance.CloseAllMenus();
+            BasisUIManagement.CloseAllMenus();
             InstantiationParameters Pars = new InstantiationParameters(Position, Rotation, null);
             await BasisHandHeldCameraFactory.CreateCamera(Pars);
         }

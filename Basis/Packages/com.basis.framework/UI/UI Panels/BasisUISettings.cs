@@ -18,19 +18,19 @@ namespace Basis.Scripts.UI.UI_Panels
         }
         public void OpenConsole()
         {
-            BasisUIManagement.Instance.CloseAllMenus();
+            BasisUIManagement.CloseAllMenus();
             AddressableGenericResource resource = new AddressableGenericResource("LoggerUI", AddressableExpectedResult.SingleItem);
             OpenMenuNow(resource);
         }
         public void OpenAdminPanel()
         {
-            BasisUIManagement.Instance.CloseAllMenus();
+            BasisUIManagement.CloseAllMenus();
             AddressableGenericResource resource = new AddressableGenericResource("BasisUIAdminPanel", AddressableExpectedResult.SingleItem);
             OpenMenuNow(resource);
         }
         public void OpenControllerConfig()
         {
-            BasisUIManagement.Instance.CloseAllMenus();
+            BasisUIManagement.CloseAllMenus();
             AddressableGenericResource resource = new AddressableGenericResource("Assets/Prefabs/UI/BasisUIOffsetsManager.prefab", AddressableExpectedResult.SingleItem);
             OpenMenuNow(resource);
         }
