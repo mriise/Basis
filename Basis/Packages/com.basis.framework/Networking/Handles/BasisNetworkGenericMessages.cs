@@ -65,7 +65,7 @@ public static class BasisNetworkGenericMessages
     // Handler for server avatar data messages
     public static void HandleServerAvatarDataMessage(LiteNetLib.NetPacketReader reader, LiteNetLib.DeliveryMethod Method)
     {
-        BasisNetworkProfiler.ServerAvatarDataMessageCounter.Sample(reader.AvailableBytes);
+        BasisNetworkProfiler.AddToCounter(BasisNetworkProfilerCounter.ServerAvatarData,reader.AvailableBytes);
         ServerAvatarDataMessage serverAvatarDataMessage = new ServerAvatarDataMessage();
         serverAvatarDataMessage.Deserialize(reader);
         ushort avatarLinkID = serverAvatarDataMessage.avatarDataMessage.PlayerIdMessage.playerID; // destination
@@ -120,7 +120,7 @@ public static class BasisNetworkGenericMessages
             sceneDataMessage.Serialize(netDataWriter);
             BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter, BasisNetworkCommons.SceneChannel, deliveryMethod);
         }
-        BasisNetworkProfiler.SceneDataMessageCounter.Sample(netDataWriter.Length);
+        BasisNetworkProfiler.AddToCounter(BasisNetworkProfilerCounter.SceneData, netDataWriter.Length);
     }
     public static void NetIDAssign(LiteNetLib.NetPacketReader reader, LiteNetLib.DeliveryMethod Method)
     {

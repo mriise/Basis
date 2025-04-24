@@ -10,6 +10,7 @@ using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.UIElements;
 using static SerializableBasis;
 namespace Basis.Scripts.Networking.Transmitters
 {
@@ -187,7 +188,7 @@ namespace Basis.Scripts.Networking.Transmitters
                 NetDataWriter writer = new NetDataWriter();
                 VRM.Serialize(writer);
                 BasisNetworkManagement.LocalPlayerPeer.Send(writer, BasisNetworkCommons.AudioRecipients, DeliveryMethod.ReliableOrdered);
-                BasisNetworkProfiler.AudioRecipientsMessageCounter.Sample(writer.Length);
+                BasisNetworkProfiler.AddToCounter(BasisNetworkProfilerCounter.AudioRecipients, writer.Length);
             }
         }
         public static bool AreBoolArraysEqual(bool[] array1, bool[] array2)
@@ -361,7 +362,7 @@ namespace Basis.Scripts.Networking.Transmitters
             };
             ClientAvatarChangeMessage.Serialize(Writer);
             BasisNetworkManagement.LocalPlayerPeer.Send(Writer, BasisNetworkCommons.AvatarChangeMessage, DeliveryMethod.ReliableOrdered);
-            BasisNetworkProfiler.AvatarChangeMessageCounter.Sample(Writer.Length);
+            BasisNetworkProfiler.AddToCounter(BasisNetworkProfilerCounter.AvatarChange, Writer.Length);
         }
     }
 }

@@ -1,6 +1,7 @@
 using Basis.Scripts.Networking.Compression;
 using Basis.Scripts.Networking.Receivers;
 using Basis.Scripts.Profiler;
+using LiteNetLib.Utils;
 using System;
 using static SerializableBasis;
 using Vector3 = UnityEngine.Vector3;
@@ -30,7 +31,7 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
                 avatarBuffer.Muscles[Index] = Decompress(baseReceiver.CopyData[Index], BasisNetworkPlayer.MinMuscle[Index], BasisNetworkPlayer.MaxMuscle[Index]);
             }
             avatarBuffer.Scale = Vector3.one;
-            BasisNetworkProfiler.ServerSideSyncPlayerMessageCounter.Sample(Length);
+            BasisNetworkProfiler.AddToCounter(BasisNetworkProfilerCounter.ServerSideSyncPlayer, Length);
             avatarBuffer.SecondsInterval = syncMessage.interval / 1000.0f;
             baseReceiver.EnQueueAvatarBuffer(ref avatarBuffer);
             int Count = syncMessage.avatarSerialization.AdditionalAvatarDataSize;
@@ -73,7 +74,7 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
                 avatarBuffer.Muscles[Index] = Decompress(baseReceiver.CopyData[Index], BasisNetworkPlayer.MinMuscle[Index], BasisNetworkPlayer.MaxMuscle[Index]);
             }
             avatarBuffer.Scale = Vector3.one;
-            BasisNetworkProfiler.ServerSideSyncPlayerMessageCounter.Sample(Length);
+            BasisNetworkProfiler.AddToCounter(BasisNetworkProfilerCounter.ServerSideSyncPlayer, Length);
             avatarBuffer.SecondsInterval = 0.01f;
             baseReceiver.EnQueueAvatarBuffer(ref avatarBuffer);
             int Count = syncMessage.AdditionalAvatarDataSize;//1

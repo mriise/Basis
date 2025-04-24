@@ -81,7 +81,7 @@ namespace Basis.Scripts.Networking.Transmitters
 
                 NetDataWriter writer = new NetDataWriter();
                 AudioSegmentData.Serialize(writer);
-                BasisNetworkProfiler.AudioSegmentDataMessageCounter.Sample(AudioSegmentData.LengthUsed);
+                BasisNetworkProfiler.AddToCounter(BasisNetworkProfilerCounter.AudioSegmentData, AudioSegmentData.LengthUsed);
                 SendOutVoice(writer);
                 Local.AudioReceived?.Invoke(true);
             }
@@ -107,7 +107,7 @@ namespace Basis.Scripts.Networking.Transmitters
                 NetDataWriter writer = new NetDataWriter();
                 audioSilentSegmentData.LengthUsed = 0;
                 audioSilentSegmentData.Serialize(writer);
-                BasisNetworkProfiler.AudioSegmentDataMessageCounter.Sample(writer.Length);
+                BasisNetworkProfiler.AddToCounter(BasisNetworkProfilerCounter.AudioSegmentData, writer.Length);
                 SendOutVoice(writer);
                 Local.AudioReceived?.Invoke(false);
             }

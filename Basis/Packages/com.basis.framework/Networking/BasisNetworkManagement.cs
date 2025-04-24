@@ -699,7 +699,7 @@ namespace Basis.Scripts.Networking
             NetDataWriter netDataWriter = new NetDataWriter();
             OwnershipTransferMessage.Serialize(netDataWriter);
             BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter, BasisNetworkCommons.RemoveCurrentOwnerRequest, DeliveryMethod.ReliableSequenced);
-            BasisNetworkProfiler.OwnershipTransferMessageCounter.Sample(netDataWriter.Length);
+            BasisNetworkProfiler.AddToCounter(BasisNetworkProfilerCounter.OwnershipTransfer, netDataWriter.Length);
         }
         public static void TakeOwnership(string UniqueNetworkId, ushort NewOwner)
         {
@@ -714,7 +714,7 @@ namespace Basis.Scripts.Networking
             NetDataWriter netDataWriter = new NetDataWriter();
             OwnershipTransferMessage.Serialize(netDataWriter);
             BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter, BasisNetworkCommons.ChangeCurrentOwnerRequest, DeliveryMethod.ReliableSequenced);
-            BasisNetworkProfiler.OwnershipTransferMessageCounter.Sample(netDataWriter.Length);
+            BasisNetworkProfiler.AddToCounter(BasisNetworkProfilerCounter.OwnershipTransfer, netDataWriter.Length);
         }
         public static void RequestCurrentOwnership(string UniqueNetworkId)
         {
@@ -729,7 +729,7 @@ namespace Basis.Scripts.Networking
             NetDataWriter netDataWriter = new NetDataWriter();
             OwnershipTransferMessage.Serialize(netDataWriter);
             BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter,BasisNetworkCommons.GetCurrentOwnerRequest, DeliveryMethod.ReliableSequenced);
-            BasisNetworkProfiler.RequestOwnershipTransferMessageCounter.Sample(netDataWriter.Length);
+            BasisNetworkProfiler.AddToCounter(BasisNetworkProfilerCounter.RequestOwnershipTransfer, netDataWriter.Length);
         }
 
         public static bool AvatarToPlayer(BasisAvatar Avatar, out BasisPlayer BasisPlayer, out BasisNetworkPlayer NetworkedPlayer)

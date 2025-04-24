@@ -182,7 +182,7 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
                 AvatarDataMessage.Serialize(netDataWriter);
                 BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter, BasisNetworkCommons.AvatarChannel, DeliveryMethod);
             }
-            BasisNetworkProfiler.AvatarDataMessageCounter.Sample(netDataWriter.Length);
+            BasisNetworkProfiler.AddToCounter(BasisNetworkProfilerCounter.AvatarDataMessage, netDataWriter.Length);
         }
         public static void SetupData()
         {
