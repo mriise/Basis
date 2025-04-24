@@ -222,10 +222,7 @@ namespace Basis.Scripts.Drivers
                 if (boneTransform == null)
                 {
                     Rotation = driver.rotation;
-                    if (BasisHelpers.TryGetFloor(anim, out Position))
-                    {
-
-                    }
+                    Position = anim.transform.position;
                     // Position = new Vector3(0, Position.y, 0);
                     Position += CalculateFallbackOffset(bone, ActiveAvatarEyeHeight(), heightPercentage);
                     //Position = new Vector3(0, Position.y, 0);
@@ -242,10 +239,7 @@ namespace Basis.Scripts.Drivers
             else
             {
                 Rotation = driver.rotation;
-                if (BasisHelpers.TryGetFloor(anim, out Position))
-                {
-
-                }
+                Position = anim.transform.position;
                 Position = new Vector3(0, Position.y, 0);
                 Position += CalculateFallbackOffset(bone, ActiveAvatarEyeHeight(), heightPercentage);
                 Position = new Vector3(0, Position.y, 0);
@@ -255,24 +249,13 @@ namespace Basis.Scripts.Drivers
         public float3 CalculateFallbackOffset(HumanBodyBones bone, float fallbackHeight, float3 heightPercentage)
         {
             Vector3 height = fallbackHeight * heightPercentage;
-            return bone == HumanBodyBones.Hips ? Multiply(height, -Vector3.up) : Multiply(height, Vector3.up);
-        }
-        public static Vector3 Multiply(Vector3 value, Vector3 scale)
-        {
-            return new Vector3(value.x * scale.x, value.y * scale.y, value.z * scale.z);
+            return bone == HumanBodyBones.Hips ? math.mul(height, -Vector3.up) : math.mul(height, Vector3.up);
         }
         public void GetWorldSpaceRotAndPos(Func<Vector2> positionSelector, out float3 position)
         {
-            position = Vector3.zero;
-            if (BasisHelpers.TryGetFloor(Player.BasisAvatar.Animator, out float3 bottom))
-            {
-                Vector3 convertedToVector3 = BasisHelpers.AvatarPositionConversion(positionSelector());
-                position = BasisHelpers.ConvertFromLocalSpace(convertedToVector3, bottom);
-            }
-            else
-            {
-                BasisDebug.LogError("Missing bottom");
-            }
+            float3 bottom = Player.BasisAvatar.Animator.transform.position;
+            Vector3 convertedToVector3 = BasisHelpers.AvatarPositionConversion(positionSelector());
+            position = BasisHelpers.ConvertFromLocalSpace(convertedToVector3, bottom);
         }
         public void ForceUpdateAnimator(Animator Anim)
         {

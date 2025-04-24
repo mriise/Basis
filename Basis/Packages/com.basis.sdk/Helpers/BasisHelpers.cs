@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -57,12 +58,6 @@ namespace Basis.Scripts.BasisSdk.Helpers
         {
             return notFloorPosition + floorPosition;
         }
-
-        public static bool TryGetFloor(Animator animator, out float3 bottom)
-        {
-            bottom = animator.transform.position;
-            return true;
-        }
         public static bool TryGetVector3Bone(Animator animator, HumanBodyBones bone, out Vector3 position)
         {
             if (animator.avatar != null && animator.avatar.isHuman)
@@ -114,35 +109,47 @@ namespace Basis.Scripts.BasisSdk.Helpers
             reflectionMat.m32 = 0F;
             reflectionMat.m33 = 1F;
         }
-        // Extended sign: returns -1, 0 or 1 based on sign of a
-        public static float sgn(float a)
-        {
-            if (a > 0.0f) return 1.0f;
-            if (a < 0.0f) return -1.0f;
-            return 0.0f;
-        }
-        // taken from http://www.terathon.com/code/oblique.html
-        public static void CalculateObliqueMatrix(ref Matrix4x4 projection, Vector4 clipPlane)
-        {
-            Vector4 q = projection.inverse * new Vector4
-            (sgn(clipPlane.x),
-                sgn(clipPlane.y),
-                1.0f,
-                1.0f);
+        /// <summary>
+        /// Optimized sign function using built-in math
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float sgn(float a) => Mathf.Sign(a);
 
-            Vector4 c = clipPlane * (2.0F / (Vector4.Dot(clipPlane, q)));
-            // 第三行=剪切平面-第四行（third row = clip plane - fourth row）
+        /// <summary>
+        /// Calculates an oblique projection matrix
+        /// </summary>
+        public static void CalculateObliqueMatrix(ref Matrix4x4 projection, float4 clipPlane)
+        {
+            // Compute the clip-space corner point opposite the clipping plane
+            float4 q = projection.inverse * new float4(math.sign(clipPlane.x),math.sign(clipPlane.y),1.0f,1.0f);
+
+            // Calculate the scaled plane vector
+            float dot = math.dot(clipPlane, q);
+            if (dot == 0.0f)
+            {
+                return; // avoid divide-by-zero just in case
+            }
+            float4 c = clipPlane * (2.0f / dot);
+
+            // Replace the third row of the projection matrix
             projection[2] = c.x - projection[3];
             projection[6] = c.y - projection[7];
             projection[10] = c.z - projection[11];
             projection[14] = c.w - projection[15];
         }
-        public static Vector4 CameraSpacePlane(Matrix4x4 worldToCameraMatrix, Vector3 pos, Vector3 normal, float ClipOffset, float sideSign = 1.0f)
+
+        /// <summary>
+        /// Calculates camera-space plane from a world-space plane
+        /// </summary>
+        public static float4 CameraSpacePlane(in Matrix4x4 worldToCameraMatrix, in float3 pos, in float3 normal, float clipOffset, float sideSign = 1.0f)
         {
-            Vector3 offsetPos = pos + normal.normalized * ClipOffset;
-            Vector3 cpos = worldToCameraMatrix.MultiplyPoint(offsetPos);
-            Vector3 cnormal = worldToCameraMatrix.MultiplyVector(normal) * sideSign;
-            return new Vector4(cnormal.x, cnormal.y, cnormal.z, -Vector3.Dot(cpos, cnormal));
+            float3 offset = normal * clipOffset;
+            float3 offsetPos = pos + offset;
+
+            float3 cPos = worldToCameraMatrix.MultiplyPoint(offsetPos);
+            float3 cNormal = worldToCameraMatrix.MultiplyVector(normal) * sideSign;
+
+            return new float4(cNormal.x, cNormal.y, cNormal.z, -math.dot(cPos, cNormal));
         }
     }
 }

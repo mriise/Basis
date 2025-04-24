@@ -27,13 +27,11 @@ namespace Basis.Scripts.Editor
                 return;
             }
 
-            if (BasisHelpers.TryGetFloor(avatar.Animator, out float3 bottom))
-            {
-                Vector2 previousAvatarEyePosition = avatar.AvatarEyePosition;
-                Vector2 previousAvatarMouthPosition = avatar.AvatarMouthPosition;
-                UpdateAvatarPosition(Color.green,ref avatar.AvatarEyePosition, inspector.AvatarEyePositionState, avatar.transform.rotation, bottom, previousAvatarEyePosition, BasisSDKConstants.avatarEyePositionField, inspector.uiElementsRoot, avatar);
-                UpdateAvatarPosition(Color.blue, ref avatar.AvatarMouthPosition, inspector.AvatarMouthPositionState, avatar.transform.rotation, bottom, previousAvatarMouthPosition, BasisSDKConstants.avatarMouthPositionField, inspector.uiElementsRoot, avatar);
-            }
+            float3 bottom = avatar.Animator.transform.position;
+            Vector2 previousAvatarEyePosition = avatar.AvatarEyePosition;
+            Vector2 previousAvatarMouthPosition = avatar.AvatarMouthPosition;
+            UpdateAvatarPosition(Color.green, ref avatar.AvatarEyePosition, inspector.AvatarEyePositionState, avatar.transform.rotation, bottom, previousAvatarEyePosition, BasisSDKConstants.avatarEyePositionField, inspector.uiElementsRoot, avatar);
+            UpdateAvatarPosition(Color.blue, ref avatar.AvatarMouthPosition, inspector.AvatarMouthPositionState, avatar.transform.rotation, bottom, previousAvatarMouthPosition, BasisSDKConstants.avatarMouthPositionField, inspector.uiElementsRoot, avatar);
         }
 
         private static void UpdateAvatarPosition(Color GizmoColor,ref Vector2 avatarPosition, bool positionState, Quaternion rotation, Vector3 bottom, Vector2 previousPosition, string positionField, VisualElement uiElementsRoot, BasisAvatar avatar)

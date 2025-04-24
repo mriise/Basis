@@ -5,7 +5,6 @@ using Basis.Scripts.TransformBinders.BoneControl;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Mathematics;
 using UnityEngine;
 namespace Basis.Scripts.Drivers
 {
@@ -234,17 +233,7 @@ namespace Basis.Scripts.Drivers
         }
         public static Vector3 ConvertToAvatarSpaceInitial(Animator animator, Vector3 WorldSpace)// out Vector3 FloorPosition
         {
-            if (BasisHelpers.TryGetFloor(animator, out float3 Bottom))
-            {
-                //FloorPosition = Bottom;
-                return BasisHelpers.ConvertToLocalSpace(WorldSpace, Bottom);
-            }
-            else
-            {
-                //FloorPosition = Vector3.zero;
-                BasisDebug.LogError("Missing Avatar");
-                return Vector3.zero;
-            }
+            return BasisHelpers.ConvertToLocalSpace(WorldSpace, animator.transform.position);
         }
         public static Vector3 ConvertToWorldSpace(Vector3 WorldSpace, Vector3 LocalSpace)
         {
