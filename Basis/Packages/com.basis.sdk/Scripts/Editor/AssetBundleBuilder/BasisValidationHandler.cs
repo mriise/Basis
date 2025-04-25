@@ -1,4 +1,5 @@
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -8,13 +9,13 @@ public class BasisValidationHandler
     {
         if (prefab == null)
         {
-            Debug.LogError("Prefab is null.");
+            BasisDebug.LogError("Prefab is null.");
             return false;
         }
 
         if (!PrefabUtility.IsPartOfPrefabInstance(prefab) && !PrefabUtility.IsPartOfPrefabAsset(prefab))
         {
-            Debug.LogWarning($"GameObject '{prefab.name}' is not part of a prefab.");
+            BasisDebug.Log($"GameObject '{prefab.name}' is not part of a prefab.");
             return false;
         }
 
@@ -23,9 +24,13 @@ public class BasisValidationHandler
 
     public static bool IsSceneValid(Scene scene)
     {
-        if (scene.isDirty || string.IsNullOrEmpty(scene.path))
+        if(scene.isDirty)
         {
-            Debug.LogError("The active scene must be saved before building the AssetBundle.");
+           EditorSceneManager.SaveScene(scene);
+        }
+        if (string.IsNullOrEmpty(scene.path))
+        {
+            BasisDebug.LogError("The active scene must be saved before building the AssetBundle.");
             return false;
         }
 

@@ -78,7 +78,7 @@ public static class TemporaryStorageHandler
     private static void CloneAndAssignBakingSet(ProbeVolumePerSceneData data, string ReplaceWithSceneGUID)
     {
         ProbeVolumeBakingSet originalSet = data.bakingSet;
-        ProbeVolumeBakingSet duplicateSet = CloneBakingSet(originalSet, ReplaceWithSceneGUID);
+        ProbeVolumeBakingSet duplicateSet = CloneAndUpdateSceneGUID(originalSet, ReplaceWithSceneGUID);
 
         FieldInfo serializedBakingSetField = typeof(ProbeVolumePerSceneData).GetField("serializedBakingSet", BindingFlags.NonPublic | BindingFlags.Instance);
         if (serializedBakingSetField != null)
@@ -91,56 +91,80 @@ public static class TemporaryStorageHandler
             BasisDebug.LogError("Failed to find serializedBakingSet field via reflection");
         }
     }
-    private static ProbeVolumeBakingSet CloneBakingSet(ProbeVolumeBakingSet originalSet, string ReplaceWithSceneGUID)
+    [Serializable]
+    public struct SerializedPerSceneCellList
+    {
+        public string sceneGUID;
+        public List<int> cellList;
+    }
+
+    public static ProbeVolumeBakingSet CloneAndUpdateSceneGUID(ProbeVolumeBakingSet originalSet, string ReplaceWithSceneGUID)
     {
         ProbeVolumeBakingSet newSet = new ProbeVolumeBakingSet();
-        FieldInfo[] fields = typeof(ProbeVolumeBakingSet).GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        FieldInfo[] fields = typeof(ProbeVolumeBakingSet).GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
 
+        // Clone fields from the originalSet to newSet
         foreach (FieldInfo field in fields)
         {
             object value = field.GetValue(originalSet);
             field.SetValue(newSet, value);
         }
-        // Now update the scene GUIDs in the cloned set
-        for (int Index = 0; Index < newSet.sceneGUIDs.Count; Index++)
+
+        // Update scene GUIDs in the cloned set
+        for (int index = 0; index < newSet.sceneGUIDs.Count; index++)
         {
-            string SceneGUID = newSet.sceneGUIDs[Index];
-            BasisDebug.Log("Scene ID was " + SceneGUID);
+            string sceneGUID = newSet.sceneGUIDs[index];
+            BasisDebug.Log("Scene ID was " + sceneGUID);
 
             // Use reflection to update the scene GUID list in the new set
-            UpdateSceneGUIDUsingReflection(newSet, Index, ReplaceWithSceneGUID);
+            UpdateSceneGUIDUsingReflection(newSet, index, ReplaceWithSceneGUID);
         }
+
+        // Reflection to replace sceneGUIDs in m_SerializedPerSceneCellList
+        // Get the protected/private field m_SerializedPerSceneCellList
+        FieldInfo serializedPerSceneCellListField = typeof(ProbeVolumeBakingSet).GetField("m_SerializedPerSceneCellList", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
+
+        if (serializedPerSceneCellListField != null)
+        {
+            // Get the value of m_SerializedPerSceneCellList (which should be a List<SerializedPerSceneCellList>)
+            var serializedPerSceneCellList = serializedPerSceneCellListField.GetValue(newSet) as List<SerializedPerSceneCellList>;
+
+            if (serializedPerSceneCellList != null)
+            {
+                // Iterate over the list and update the sceneGUID for each SerializedPerSceneCellList item
+                for (int i = 0; i < serializedPerSceneCellList.Count; i++)
+                {
+                    var item = serializedPerSceneCellList[i];
+                    // Use reflection to access and set the sceneGUID in the struct
+                    FieldInfo sceneGUIDField = item.GetType().GetField("sceneGUID", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                    if (sceneGUIDField != null)
+                    {
+                        BasisDebug.Log($"Set m_SerializedPerSceneCellList Scene GUID to {ReplaceWithSceneGUID}");
+                        sceneGUIDField.SetValueDirect(__makeref(item), ReplaceWithSceneGUID);  // Set value for the struct
+                    }
+                }
+            }
+        }
+
         return newSet;
     }
-    public static void UpdateSceneGUIDUsingReflection(object target, int index, string ReplaceWithSceneGUID)
+
+
+    private static void UpdateSceneGUIDUsingReflection(ProbeVolumeBakingSet newSet, int index, string ReplaceWithSceneGUID)
     {
-        // Get the type of the target object
-        Type type = target.GetType();
+        // Assuming UpdateSceneGUIDUsingReflection updates the scene GUID of a specific index in some field of newSet
+        // If the m_SerializedPerSceneCellList has a corresponding reference, this would update that
+        FieldInfo sceneGUIDListField = typeof(ProbeVolumeBakingSet).GetField("sceneGUIDs", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy);
 
-        // Get the private field "m_SceneGUIDs" using reflection
-        FieldInfo fieldInfo = type.GetField("m_SceneGUIDs", BindingFlags.NonPublic | BindingFlags.Instance);
-
-        if (fieldInfo != null)
+        if (sceneGUIDListField != null)
         {
-            // Get the current value of the private field (the List<string>)
-            var sceneGUIDsList = (List<string>)fieldInfo.GetValue(target);
-
-            // Update the value in the list
-            if (index >= 0 && index < sceneGUIDsList.Count)
+            var sceneGUIDs = (List<string>)sceneGUIDListField.GetValue(newSet);
+            if (sceneGUIDs != null && index < sceneGUIDs.Count)
             {
-                sceneGUIDsList[index] = ReplaceWithSceneGUID;
+                sceneGUIDs[index] = ReplaceWithSceneGUID;
+                BasisDebug.Log($"Set sceneGUIDs Scene GUID to {ReplaceWithSceneGUID}");
+                sceneGUIDListField.SetValue(newSet, sceneGUIDs);
             }
-            else
-            {
-                BasisDebug.Log("Index out of bounds");
-            }
-
-            // Optionally, set the updated value back to the field (not needed in this case, because the list is already modified)
-            fieldInfo.SetValue(target, sceneGUIDsList);
-        }
-        else
-        {
-            BasisDebug.Log("Field 'm_SceneGUIDs' not found");
         }
     }
     /// <summary>
