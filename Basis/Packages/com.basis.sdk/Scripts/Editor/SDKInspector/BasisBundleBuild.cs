@@ -329,12 +329,6 @@ public static class BasisBundleBuild
             return false;
         }
 
-        if (string.IsNullOrEmpty(BasisContentBase.BasisBundleDescription.AssetBundleDescription))
-        {
-            Error = "Description was empty! Please provide a description in the field.";
-            return false;
-        }
-
         return true;
     }
     // Generates a random byte array of specified length

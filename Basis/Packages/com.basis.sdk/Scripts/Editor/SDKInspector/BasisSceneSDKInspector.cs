@@ -61,6 +61,7 @@ public class BasisSceneSDKInspector : Editor
 
         // Call the build function and capture result
         (bool success, string message) = await BasisBundleBuild.SceneBundleBuild(BasisScene, targets);
+        EditorUtility.ClearProgressBar();
         // Clear any previous result label
         ClearResultLabel();
 

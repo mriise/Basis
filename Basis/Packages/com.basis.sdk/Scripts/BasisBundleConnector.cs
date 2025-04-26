@@ -67,67 +67,6 @@ public class BasisBundleConnector
     {
         return platformMappings.TryGetValue(platformRequest, out var validPlatforms) && validPlatforms.Contains(Application.platform);
     }
-
-    /// <summary>
-    /// Validates the BasisBundleConnector and its dependencies for null or empty values.
-    /// </summary>
-    public bool Validate(out List<string> errors)
-    {
-        errors = new List<string>();
-
-        // Check Version
-        if (string.IsNullOrWhiteSpace(UniqueVersion))
-            errors.Add("Version is null or empty.");
-
-        // Check BasisBundleDescription
-        if (BasisBundleDescription == null)
-        {
-            errors.Add("BasisBundleDescription is null.");
-        }
-        else
-        {
-            if (string.IsNullOrWhiteSpace(BasisBundleDescription.AssetBundleName))
-                errors.Add("BasisBundleDescription.AssetBundleName is null or empty.");
-
-            if (string.IsNullOrWhiteSpace(BasisBundleDescription.AssetBundleDescription))
-                errors.Add("BasisBundleDescription.AssetBundleDescription is null or empty.");
-        }
-
-        // Check BasisBundleGenerated
-        if (BasisBundleGenerated == null || BasisBundleGenerated.Length == 0)
-        {
-            errors.Add("BasisBundleGenerated array is null or empty.");
-        }
-        else
-        {
-            for (int i = 0; i < BasisBundleGenerated.Length; i++)
-            {
-                var bundle = BasisBundleGenerated[i];
-                if (bundle == null)
-                {
-                    errors.Add($"BasisBundleGenerated[{i}] is null.");
-                    continue;
-                }
-
-                if (string.IsNullOrWhiteSpace(bundle.AssetBundleHash))
-                    errors.Add($"BasisBundleGenerated[{i}].AssetBundleHash is null or empty.");
-
-                if (string.IsNullOrWhiteSpace(bundle.AssetMode))
-                    errors.Add($"BasisBundleGenerated[{i}].AssetMode is null or empty.");
-
-                if (string.IsNullOrWhiteSpace(bundle.AssetToLoadName))
-                    errors.Add($"BasisBundleGenerated[{i}].AssetToLoadName is null or empty.");
-
-                if (string.IsNullOrWhiteSpace(bundle.Password))
-                    errors.Add($"BasisBundleGenerated[{i}].Password is null or empty.");
-
-                if (string.IsNullOrWhiteSpace(bundle.Platform))
-                    errors.Add($"BasisBundleGenerated[{i}].Platform is null or empty.");
-            }
-        }
-
-        return errors.Count == 0;
-    }
 }
 
 [System.Serializable]

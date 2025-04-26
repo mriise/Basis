@@ -7,8 +7,6 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-using System.Reflection;
-
 [CustomEditor(typeof(BasisAvatar))]
 public partial class BasisAvatarSDKInspector : Editor
 {
@@ -52,7 +50,13 @@ public partial class BasisAvatarSDKInspector : Editor
             BasisAvatarValidator = new BasisAvatarValidator(Avatar, rootElement);
             Button button = new Button();
             button.text = "Open Avatar Documentation";
-            button.clicked += delegate { Application.OpenURL(BasisSDKConstants.AvatarDocumentationURL); };
+            button.clicked += delegate
+            {
+                if (EditorUtility.DisplayDialog("Open Documentation", "Open Documentation", "Yes I want to open the documentation", "no send me back"))
+                {
+                    Application.OpenURL(BasisSDKConstants.AvatarDocumentationURL);
+                }
+            };
             rootElement.Add(button);
             BasisAutomaticSetupAvatarEditor.TryToAutomatic(this);
             SetupItems();
@@ -249,6 +253,7 @@ public partial class BasisAvatarSDKInspector : Editor
         {
             Debug.Log($"Building Gameobject Bundles for: {string.Join(", ", targets.ConvertAll(t => BasisSDKConstants.targetDisplayNames[t]))}");
             (bool success, string message) = await BasisBundleBuild.GameObjectBundleBuild(Avatar, targets);
+            EditorUtility.ClearProgressBar();
             // Clear any previous result label
             ClearResultLabel();
 

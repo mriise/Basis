@@ -56,7 +56,7 @@ public class BasisPropSDKInspector : Editor
 
         Debug.Log($"Building Gameobject Bundles for: {string.Join(", ", targets.ConvertAll(t => BasisSDKConstants.targetDisplayNames[t]))}");
         (bool success, string message) = await BasisBundleBuild.GameObjectBundleBuild(BasisProp, targets);
-
+        EditorUtility.ClearProgressBar();
         // Clear any previous result label
         ClearResultLabel();
 
