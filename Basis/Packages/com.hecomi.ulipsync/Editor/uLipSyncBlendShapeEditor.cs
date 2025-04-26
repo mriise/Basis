@@ -134,13 +134,6 @@ public class uLipSyncBlendShapeEditor : Editor
 
         rect.y += singleLineHeight;
 
-        float weight = EditorGUI.Slider(rect, "Max Weight", bs.maxWeight, 0f, 1f);
-        if (weight != bs.maxWeight)
-        {
-            Undo.RecordObject(target, "Change Max Weight");
-            bs.maxWeight = weight;
-        }
-
         rect.y += singleLineHeight;
     }
 

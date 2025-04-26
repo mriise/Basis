@@ -119,6 +119,7 @@ namespace uLipSync
 
             _jobHandle = lipSyncJob.Schedule();
         }
+        public float globalMultiplier;
         public void OnLipSyncUpdate()
         {
             if (uLipSyncBlendShape.skinnedMeshRenderer != null)
@@ -133,7 +134,7 @@ namespace uLipSync
                 }
 
                 uLipSyncBlendShape._volume = uLipSyncBlendShape.SmoothDamp(uLipSyncBlendShape._volume, normVol, ref uLipSyncBlendShape._openCloseVelocity);
-                float globalMultiplier = uLipSyncBlendShape._volume * uLipSyncBlendShape.maxBlendShapeValue;
+                globalMultiplier = uLipSyncBlendShape._volume * uLipSyncBlendShape.maxBlendShapeValue;
 
                 float totalWeight = 0f;
                 int count = uLipSyncBlendShape.BlendShapeInfos.Length;
@@ -163,8 +164,16 @@ namespace uLipSync
                     totalWeight += bs.weight;
                 }
 
-                float invTotal = (totalWeight > 0f) ? (1f / totalWeight) : 0f;
-
+                float BaseMultiply;
+                const float epsilon = 1e-6f;
+                if (Mathf.Abs(totalWeight) > epsilon)
+                {
+                    BaseMultiply = (1f / totalWeight) * globalMultiplier;
+                }
+                else
+                {
+                    BaseMultiply = globalMultiplier;
+                }
                 // Second pass: normalize + apply
                 for (int i = 0; i < count; i++)
                 {
@@ -172,19 +181,18 @@ namespace uLipSync
 
                     if (bs.index < 0) continue;
 
-                    float weight = bs.weight * invTotal;
-                    float finalWeight = weight * bs.maxWeight * globalMultiplier;
-                    finalWeight = math.clamp(finalWeight, 0f, 100);
-                    // Skip setting if final weight is very close to the last value
-                    if (Mathf.Abs(bs.LastValue - finalWeight) < 0.001f)
+                    MultipliedWeight = bs.weight * BaseMultiply;
+                    finalWeight = math.clamp(MultipliedWeight, 0f, 100);
+                    if (float.IsNaN(finalWeight))
                     {
-                        continue;
+                        finalWeight = 0f;
                     }
                     uLipSyncBlendShape.skinnedMeshRenderer.SetBlendShapeWeight(bs.index, finalWeight);
-                    bs.LastValue = finalWeight;
                 }
             }
         }
+        public float MultipliedWeight;
+        public float finalWeight;
         public void Initalize()
         {
             AllocateBuffers();
