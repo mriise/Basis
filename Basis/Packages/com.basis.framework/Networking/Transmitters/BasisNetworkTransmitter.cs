@@ -123,34 +123,44 @@ namespace Basis.Scripts.Networking.Transmitters
         {
             for (int Index = 0; Index < IndexLength; Index++)
             {
-                Receivers.BasisNetworkReceiver Rec = BasisNetworkManagement.ReceiverArray[Index];
-                if (Rec.AudioReceiverModule.IsPlaying != HearingIndex[Index])
+                try
                 {
-                    if (HearingIndex[Index])
+                    Receivers.BasisNetworkReceiver Rec = BasisNetworkManagement.ReceiverArray[Index];
+                    //first handle avatar itself
+                    if (Rec.RemotePlayer.InAvatarRange != AvatarIndex[Index])
                     {
-                        Rec.AudioReceiverModule.StartAudio();
-                        Rec.RemotePlayer.OutOfRangeFromLocal = false;
+                        Rec.RemotePlayer.InAvatarRange = AvatarIndex[Index];
+                        Rec.RemotePlayer.ReloadAvatar();
                     }
-                    else
+                    //then handle voice
+                    if (Rec.AudioReceiverModule.IsPlaying != HearingIndex[Index])
                     {
-                        Rec.AudioReceiverModule.StopAudio();
-                        Rec.RemotePlayer.OutOfRangeFromLocal = true;
+                        if (HearingIndex[Index])
+                        {
+                            Rec.AudioReceiverModule.StartAudio();
+                            Rec.RemotePlayer.OutOfRangeFromLocal = false;
+                        }
+                        else
+                        {
+                            Rec.AudioReceiverModule.StopAudio();
+                            Rec.RemotePlayer.OutOfRangeFromLocal = true;
+                        }
                     }
+                    //now we process the avatar based stuff in order of risk to break.
+                    if (Rec.RemotePlayer.HasJiggles)
+                    {
+                        if (float.IsNaN(CalculatedDistances[Index]) || CalculatedDistances[Index] == 0)
+                        {
+                            CalculatedDistances[Index] = 0.1f;
+                        }
+                        Rec.RemotePlayer.BasisAvatarStrainJiggleDriver.Simulate(CalculatedDistances[Index]);
+                    }
+                    Rec.RemotePlayer.EyeFollow.Simulate();
+                    Rec.RemotePlayer.FacialBlinkDriver.Simulate();
                 }
-                if (Rec.RemotePlayer.HasJiggles)
+                catch (Exception ex)
                 {
-                    if (float.IsNaN(CalculatedDistances[Index]) || CalculatedDistances[Index] == 0)
-                    {
-                        CalculatedDistances[Index] = 0.1f;
-                    }
-                    Rec.RemotePlayer.BasisAvatarStrainJiggleDriver.Simulate(CalculatedDistances[Index]);
-                }
-                Rec.RemotePlayer.FacialBlinkDriver.Simulate();
-                Rec.RemotePlayer.EyeFollow.Simulate();
-                if (Rec.RemotePlayer.InAvatarRange != AvatarIndex[Index])
-                {
-                    Rec.RemotePlayer.InAvatarRange = AvatarIndex[Index];
-                    Rec.RemotePlayer.ReloadAvatar();
+                    BasisDebug.LogError($"{ex} {ex.StackTrace}");
                 }
             }
         }

@@ -121,71 +121,68 @@ namespace uLipSync
         }
         public void OnLipSyncUpdate()
         {
-            float normVol = 0f;
-            if (rawVolume > 0f)
+            if (uLipSyncBlendShape.skinnedMeshRenderer != null)
             {
-                normVol = Mathf.Log10(rawVolume);
-                normVol = Mathf.Clamp01((normVol - uLipSyncBlendShape.minVolume) / Mathf.Max(uLipSyncBlendShape.maxVolume - uLipSyncBlendShape.minVolume, 1e-4f));
-            }
 
-            uLipSyncBlendShape._volume = uLipSyncBlendShape.SmoothDamp(uLipSyncBlendShape._volume, normVol, ref uLipSyncBlendShape._openCloseVelocity);
-            float globalMultiplier = uLipSyncBlendShape._volume * uLipSyncBlendShape.maxBlendShapeValue;
 
-            float totalWeight = 0f;
-            int count = uLipSyncBlendShape.BlendShapeInfos.Length;
-
-            // First pass: compute weights and total sum
-            for (int Index = 0; Index < count; Index++)
-            {
-                var bs = uLipSyncBlendShape.BlendShapeInfos[Index];
-                float targetWeight = 0f;
-
-                if (uLipSyncBlendShape.usePhonemeBlend && !string.IsNullOrEmpty(bs.phoneme))
+                float normVol = 0f;
+                if (rawVolume > 0f)
                 {
-                    if (_phonemeNameToIndex.TryGetValue(bs.phoneme, out int idx) && idx < phonemeRatios.Length)
+                    normVol = Mathf.Log10(rawVolume);
+                    normVol = Mathf.Clamp01((normVol - uLipSyncBlendShape.minVolume) / Mathf.Max(uLipSyncBlendShape.maxVolume - uLipSyncBlendShape.minVolume, 1e-4f));
+                }
+
+                uLipSyncBlendShape._volume = uLipSyncBlendShape.SmoothDamp(uLipSyncBlendShape._volume, normVol, ref uLipSyncBlendShape._openCloseVelocity);
+                float globalMultiplier = uLipSyncBlendShape._volume * uLipSyncBlendShape.maxBlendShapeValue;
+
+                float totalWeight = 0f;
+                int count = uLipSyncBlendShape.BlendShapeInfos.Length;
+
+                // First pass: compute weights and total sum
+                for (int Index = 0; Index < count; Index++)
+                {
+                    var bs = uLipSyncBlendShape.BlendShapeInfos[Index];
+                    float targetWeight = 0f;
+
+                    if (uLipSyncBlendShape.usePhonemeBlend && !string.IsNullOrEmpty(bs.phoneme))
                     {
-                        targetWeight = phonemeRatios[idx];
+                        if (_phonemeNameToIndex.TryGetValue(bs.phoneme, out int idx) && idx < phonemeRatios.Length)
+                        {
+                            targetWeight = phonemeRatios[idx];
+                        }
                     }
-                }
-                //mainPhoneme, NormalVolume, rawVolume, phonemeRatios
-                else if (bs.phoneme == mainPhoneme)
-                {
-                    targetWeight = 1f;
-                }
+                    //mainPhoneme, NormalVolume, rawVolume, phonemeRatios
+                    else if (bs.phoneme == mainPhoneme)
+                    {
+                        targetWeight = 1f;
+                    }
 
-                float weightVelocity = bs.weightVelocity;
-                bs.weight = uLipSyncBlendShape.SmoothDamp(bs.weight, targetWeight, ref weightVelocity);
-                bs.weightVelocity = weightVelocity;
-                totalWeight += bs.weight;
-            }
-
-            float invTotal = (totalWeight > 0f) ? (1f / totalWeight) : 0f;
-
-            // Second pass: normalize + apply
-            for (int i = 0; i < count; i++)
-            {
-                var bs = uLipSyncBlendShape.BlendShapeInfos[i];
-
-                if (bs.index < 0) continue;
-
-                float weight = bs.weight * invTotal;
-                float finalWeight = weight * bs.maxWeight * globalMultiplier;
-
-                // Skip setting if final weight is very close to the last value
-                if (Mathf.Abs(bs.LastValue - finalWeight) < 0.001f)
-                {
-                    continue;
+                    float weightVelocity = bs.weightVelocity;
+                    bs.weight = uLipSyncBlendShape.SmoothDamp(bs.weight, targetWeight, ref weightVelocity);
+                    bs.weightVelocity = weightVelocity;
+                    totalWeight += bs.weight;
                 }
 
-                if (finalWeight <= 0)
+                float invTotal = (totalWeight > 0f) ? (1f / totalWeight) : 0f;
+
+                // Second pass: normalize + apply
+                for (int i = 0; i < count; i++)
                 {
-                    uLipSyncBlendShape.skinnedMeshRenderer.SetBlendShapeWeight(bs.index, 0);
-                }
-                else
-                {
+                    var bs = uLipSyncBlendShape.BlendShapeInfos[i];
+
+                    if (bs.index < 0) continue;
+
+                    float weight = bs.weight * invTotal;
+                    float finalWeight = weight * bs.maxWeight * globalMultiplier;
+                    finalWeight = math.clamp(finalWeight, 0f, 100);
+                    // Skip setting if final weight is very close to the last value
+                    if (Mathf.Abs(bs.LastValue - finalWeight) < 0.001f)
+                    {
+                        continue;
+                    }
                     uLipSyncBlendShape.skinnedMeshRenderer.SetBlendShapeWeight(bs.index, finalWeight);
+                    bs.LastValue = finalWeight;
                 }
-                bs.LastValue = finalWeight;
             }
         }
         public void Initalize()
