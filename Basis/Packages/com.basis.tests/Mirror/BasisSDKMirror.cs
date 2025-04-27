@@ -163,7 +163,7 @@ public class BasisSDKMirror : MonoBehaviour
     }
     private void RenderCamera(Camera sourceCamera, MonoOrStereoscopicEye eye, ScriptableRenderContext context, Vector3 srcPosition, Quaternion srcRotation)
     {
-        var portalCamera = (eye == MonoOrStereoscopicEye.Right) ? RightCamera : LeftCamera;
+        Camera portalCamera = (eye == MonoOrStereoscopicEye.Right) ? RightCamera : LeftCamera;
         Vector3 eyeOffset;
         Matrix4x4 projMatrix;
         if (eye == MonoOrStereoscopicEye.Mono)
@@ -176,9 +176,15 @@ public class BasisSDKMirror : MonoBehaviour
             eyeOffset = sourceCamera.GetStereoViewMatrix((StereoscopicEye)eye).inverse.MultiplyPoint(Vector3.zero);
             projMatrix = sourceCamera.GetStereoProjectionMatrix((StereoscopicEye)eye);
         }
-        Vector3 reflectedPos = Vector3.Reflect(transform.InverseTransformPoint(eyeOffset), Vector3.forward);
-        Vector3 reflectedForward = Vector3.Reflect(transform.InverseTransformDirection(srcRotation * Vector3.forward), Vector3.forward);
-        Vector3 reflectedUp = Vector3.Reflect(transform.InverseTransformDirection(srcRotation * Vector3.up), Vector3.forward);
+
+        Quaternion Rotation = transform.rotation;
+        // Replace InverseTransformPoint
+        Vector3 localEyeOffset = InverseTransformPointCustom(transform.position, Rotation, eyeOffset);
+        // Replace InverseTransformDirection with our own
+        Vector3 reflectedForward = Vector3.Reflect(InverseTransformDirectionCustom(Rotation, srcRotation * Vector3.forward), Vector3.forward);
+        Vector3 reflectedUp = Vector3.Reflect(InverseTransformDirectionCustom(Rotation, srcRotation * Vector3.up), Vector3.forward);
+        Vector3 reflectedPos = Vector3.Reflect(localEyeOffset, Vector3.forward);
+
         Quaternion reflectedRotation = Quaternion.LookRotation(reflectedForward, reflectedUp);
 
         portalCamera.transform.SetLocalPositionAndRotation(reflectedPos, reflectedRotation);
@@ -191,6 +197,16 @@ public class BasisSDKMirror : MonoBehaviour
 #pragma warning disable CS0618
         UniversalRenderPipeline.RenderSingleCamera(context, portalCamera);
 #pragma warning restore CS0618
+    }
+    private Vector3 InverseTransformDirectionCustom(Quaternion rotation, Vector3 direction)
+    {
+        // Inverse transform the direction by the rotation only (ignore position)
+        return Quaternion.Inverse(rotation) * direction;
+    }
+    private Vector3 InverseTransformPointCustom(Vector3 position, Quaternion rotation, Vector3 point)
+    {
+        // Subtract the position, then remove rotation
+        return Quaternion.Inverse(rotation) * (point - position);
     }
     private void CreatePortalCamera(Camera sourceCamera, StereoscopicEye eye, ref Camera portalCamera, ref RenderTexture portalTexture)
     {
