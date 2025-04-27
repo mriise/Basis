@@ -80,13 +80,6 @@ public static class BasisAssetBundlePipeline
         {
             if (isScene)
             {
-
-                if (!BasisValidationHandler.IsSceneValid(scene))
-                {
-                    Debug.LogError("Invalid scene. AssetBundle build aborted.");
-                    return new(false, (null, new AssetBundleBuilder.InformationHash()));
-                }
-
                 OnBeforeBuildScene?.Invoke(scene, settings);
                 assetPath = TemporaryStorageHandler.SaveSceneToTemporaryStorage(scene, settings, out uniqueID);
             }

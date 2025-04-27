@@ -26,11 +26,12 @@ public class BasisValidationHandler
     {
         if(scene.isDirty)
         {
+            BasisDebug.Log("Saving Open Scene");
            EditorSceneManager.SaveScene(scene);
         }
         if (string.IsNullOrEmpty(scene.path))
         {
-            BasisDebug.LogError("The active scene must be saved before building the AssetBundle.");
+            BasisDebug.LogError("Scene Path was empty. Make sure the scene has been saved!");
             return false;
         }
 

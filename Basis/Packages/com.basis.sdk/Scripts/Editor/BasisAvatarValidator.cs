@@ -370,7 +370,7 @@ public class BasisAvatarValidator
     }
     public void CheckMesh(SkinnedMeshRenderer skinnedMeshRenderer, ref List<string> Errors, ref List<string> Warnings)
     {
-        if(skinnedMeshRenderer.sharedMesh == null)
+        if (skinnedMeshRenderer.sharedMesh == null)
         {
             Errors.Add(skinnedMeshRenderer.gameObject.name + " does not have a mesh assigned to its SkinnedMeshRenderer!");
             return;
@@ -391,18 +391,18 @@ public class BasisAvatarValidator
                 ModelImporter modelImporter = AssetImporter.GetAtPath(assetPath) as ModelImporter;
                 if (modelImporter != null)
                 {
-                   if(ModelImporterExtensions.IsLegacyBlendShapeNormalsEnabled(modelImporter))
+                    if (ModelImporterExtensions.IsLegacyBlendShapeNormalsEnabled(modelImporter))
                     {
-                        Warnings.Add("FaceVisemeMesh does not have legacy blendshapes enabled, which may increase file size.");
+
                     }
-                   else
+                    else
                     {
-                        Warnings.Add("FaceVisemeMesh does not have legacy blendshapes enabled, which may increase file size.");
+                        Warnings.Add($"{assetPath} does not have legacy blendshapes enabled, which may increase file size.");
                     }
                 }
             }
         }
-        if(skinnedMeshRenderer.allowOcclusionWhenDynamic == false)
+        if (skinnedMeshRenderer.allowOcclusionWhenDynamic == false)
         {
             Errors.Add("Avatar has Dynamic Occlusion disabled on Skinned Mesh Renderer " + skinnedMeshRenderer.gameObject.name);
         }

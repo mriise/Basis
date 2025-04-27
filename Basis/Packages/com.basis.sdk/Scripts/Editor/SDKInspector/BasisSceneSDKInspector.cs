@@ -58,7 +58,11 @@ public class BasisSceneSDKInspector : Editor
         }
 
         Debug.Log($"Building Scene Bundles for: {string.Join(", ", targets.ConvertAll(t => BasisSDKConstants.targetDisplayNames[t]))}");
-
+        if (!BasisValidationHandler.IsSceneValid(BasisScene.gameObject.scene))
+        {
+            Debug.LogError("Invalid scene. AssetBundle build aborted.");
+            return;
+        }
         // Call the build function and capture result
         (bool success, string message) = await BasisBundleBuild.SceneBundleBuild(BasisScene, targets);
         EditorUtility.ClearProgressBar();

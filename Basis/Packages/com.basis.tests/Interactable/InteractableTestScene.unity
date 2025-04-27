@@ -1566,8 +1566,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   BasisBundleDescription:
-    AssetBundleName: 
-    AssetBundleDescription: 
+    AssetBundleName: tet
+    AssetBundleDescription: test
   SpawnPoint: {fileID: 1262652855}
   RespawnHeight: -100
   RespawnCheckTimer: 0.1
