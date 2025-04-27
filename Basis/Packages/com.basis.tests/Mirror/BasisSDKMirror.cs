@@ -185,11 +185,8 @@ public class BasisSDKMirror : MonoBehaviour
             eyeOffset = sourceCamera.GetStereoViewMatrix(Eye).inverse.MultiplyPoint(Vector3.zero);
             projMatrix = sourceCamera.GetStereoProjectionMatrix(Eye);
         }
-
-        Quaternion Rotation = transform.rotation;
-        // Replace InverseTransformPoint
-        Vector3 localEyeOffset = InverseTransformPointCustom(transform.position, Rotation, eyeOffset);
-        // Replace InverseTransformDirection with our own
+        transform.GetPositionAndRotation(out Vector3 TransformPosition, out Quaternion Rotation);
+        Vector3 localEyeOffset = InverseTransformPointCustom(TransformPosition, Rotation, eyeOffset);
         Vector3 reflectedForward = Vector3.Reflect(InverseTransformDirectionCustom(Rotation, srcRotation * Vector3.forward), Vector3.forward);
         Vector3 reflectedUp = Vector3.Reflect(InverseTransformDirectionCustom(Rotation, srcRotation * Vector3.up), Vector3.forward);
         Vector3 reflectedPos = Vector3.Reflect(localEyeOffset, Vector3.forward);
