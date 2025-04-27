@@ -51,10 +51,15 @@ public class BasisSDKMirror : MonoBehaviour
     private Vector3 projectionDirection = -Vector3.forward;
     private Matrix4x4 scaledMatrix;
     private int instanceID;
-    private void Awake()
+    private void OnEnable()
     {
         IsActive = false;
         IsAbleToRender = false;
+        if (BasisLocalCameraDriver.HasInstance)
+        {
+            Initialize();
+        }
+        instanceID = gameObject.GetInstanceID();
         if (ReflectingLayers == 0)
         {
             int remoteLayer = LayerMask.NameToLayer("RemotePlayerAvatar");
@@ -62,23 +67,24 @@ public class BasisSDKMirror : MonoBehaviour
             int defaultLayer = LayerMask.NameToLayer("Default");
 
             if (remoteLayer < 0 || localLayer < 0 || defaultLayer < 0)
+            {
                 Debug.LogError("One or more required layers are missing.");
+            }
             else
+            {
                 ReflectingLayers = (1 << remoteLayer) | (1 << localLayer) | (1 << defaultLayer);
+            }
         }
-        basisMeshRendererCheck = BasisHelpers.GetOrAddComponent<BasisMeshRendererCheck>(Renderer.gameObject);
-        basisMeshRendererCheck.Check += VisibilityFlag;
-        BasisDeviceManagement.OnBootModeChanged += BootModeChanged;
-    }
-    private void OnEnable()
-    {
-        if (BasisLocalCameraDriver.HasInstance)
+
+        if (basisMeshRendererCheck == null)
         {
-            Initialize();
+            basisMeshRendererCheck = BasisHelpers.GetOrAddComponent<BasisMeshRendererCheck>(Renderer.gameObject);
         }
+        basisMeshRendererCheck.Check += VisibilityFlag;
+
+        BasisDeviceManagement.OnBootModeChanged += BootModeChanged;
         BasisLocalCameraDriver.InstanceExists += Initialize;
         RenderPipeline.beginCameraRendering += UpdateCamera;
-        instanceID = gameObject.GetInstanceID();
     }
     private void OnDisable()
     {
@@ -105,6 +111,7 @@ public class BasisSDKMirror : MonoBehaviour
         BasisLocalCameraDriver.InstanceExists -= Initialize;
         RenderPipeline.beginCameraRendering -= UpdateCamera;
         BasisLocalPlayer.Instance.LocalAvatarDriver.RemoveActiveMatrixOverride(instanceID);
+        basisMeshRendererCheck.Check -= VisibilityFlag;
     }
     private void Initialize()
     {
@@ -235,14 +242,17 @@ public class BasisSDKMirror : MonoBehaviour
     }
     private void CreatePortalCamera(Camera sourceCamera, StereoscopicEye eye, ref Camera portalCamera, ref RenderTexture portalTexture)
     {
-        portalTexture = new RenderTexture(XSize, YSize, depth)
+        portalTexture = new RenderTexture(XSize, YSize, 0, RenderTextureFormat.Default)
         {
             name = $"__MirrorReflection{eye}{GetInstanceID()}",
             isPowerOfTwo = true,
-            antiAliasing = Antialiasing
+            antiAliasing = Antialiasing,
+            depth = depth
         };
+
         Renderer.material = MirrorsMaterial;
         Renderer.sharedMaterial.SetTexture($"_ReflectionTex{eye}", portalTexture);
+
         CreateNewCamera(sourceCamera, out portalCamera);
         portalCamera.targetTexture = portalTexture;
     }
