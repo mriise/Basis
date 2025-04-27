@@ -116,29 +116,6 @@ namespace Basis.Scripts.BasisSdk.Helpers
         public static float sgn(float a) => Mathf.Sign(a);
 
         /// <summary>
-        /// Calculates an oblique projection matrix
-        /// </summary>
-        public static void CalculateObliqueMatrix(ref Matrix4x4 projection, float4 clipPlane)
-        {
-            // Compute the clip-space corner point opposite the clipping plane
-            float4 q = projection.inverse * new float4(math.sign(clipPlane.x),math.sign(clipPlane.y),1.0f,1.0f);
-
-            // Calculate the scaled plane vector
-            float dot = math.dot(clipPlane, q);
-            if (dot == 0.0f)
-            {
-                return; // avoid divide-by-zero just in case
-            }
-            float4 c = clipPlane * (2.0f / dot);
-
-            // Replace the third row of the projection matrix
-            projection[2] = c.x - projection[3];
-            projection[6] = c.y - projection[7];
-            projection[10] = c.z - projection[11];
-            projection[14] = c.w - projection[15];
-        }
-
-        /// <summary>
         /// Calculates camera-space plane from a world-space plane
         /// </summary>
         public static float4 CameraSpacePlane(in Matrix4x4 worldToCameraMatrix, in float3 pos, in float3 normal, float clipOffset, float sideSign = 1.0f)

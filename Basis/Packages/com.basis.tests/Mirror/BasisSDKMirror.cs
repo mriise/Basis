@@ -9,6 +9,7 @@ using Basis.Scripts.Device_Management;
 using Basis.Scripts.BasisSdk.Players;
 using System;
 using System.Collections;
+using Unity.Mathematics;
 public class BasisSDKMirror : MonoBehaviour
 {
     [Header("Main Settings")]
@@ -124,9 +125,9 @@ public class BasisSDKMirror : MonoBehaviour
 
         OnCamerasRenderering?.Invoke();
         BasisLocalAvatarDriver.ScaleHeadToNormal();
-        if (BasisLocalPlayer.Instance != null)
+        if (BasisLocalAvatarDriver.Instance != null)
         {
-            BasisLocalPlayer.Instance.LocalAvatarDriver.TryActiveMatrixOverride(instanceID);
+            BasisLocalAvatarDriver.Instance.TryActiveMatrixOverride(instanceID);
         }
 
         thisPosition = Renderer.transform.position;
@@ -173,8 +174,9 @@ public class BasisSDKMirror : MonoBehaviour
         }
         else
         {
-            eyeOffset = sourceCamera.GetStereoViewMatrix((StereoscopicEye)eye).inverse.MultiplyPoint(Vector3.zero);
-            projMatrix = sourceCamera.GetStereoProjectionMatrix((StereoscopicEye)eye);
+            StereoscopicEye Eye = (StereoscopicEye)eye;
+            eyeOffset = sourceCamera.GetStereoViewMatrix(Eye).inverse.MultiplyPoint(Vector3.zero);
+            projMatrix = sourceCamera.GetStereoProjectionMatrix(Eye);
         }
 
         Quaternion Rotation = transform.rotation;
@@ -192,12 +194,13 @@ public class BasisSDKMirror : MonoBehaviour
         Vector4 clipPlane = BasisHelpers.CameraSpacePlane(portalCamera.worldToCameraMatrix, thisPosition, normal, ClipPlaneOffset);
         clipPlane.x *= -1;
 
-        BasisHelpers.CalculateObliqueMatrix(ref projMatrix, clipPlane);
+        CalculateObliqueMatrix(ref projMatrix, clipPlane);
         portalCamera.projectionMatrix = scaledMatrix * projMatrix * scaledMatrix;
 #pragma warning disable CS0618
         UniversalRenderPipeline.RenderSingleCamera(context, portalCamera);
 #pragma warning restore CS0618
     }
+
     private Vector3 InverseTransformDirectionCustom(Quaternion rotation, Vector3 direction)
     {
         // Inverse transform the direction by the rotation only (ignore position)
@@ -207,6 +210,28 @@ public class BasisSDKMirror : MonoBehaviour
     {
         // Subtract the position, then remove rotation
         return Quaternion.Inverse(rotation) * (point - position);
+    }
+    /// <summary>
+    /// Calculates an oblique projection matrix
+    /// </summary>
+    public static void CalculateObliqueMatrix(ref Matrix4x4 projection, float4 clipPlane)
+    {
+        // Compute the clip-space corner point opposite the clipping plane
+        float4 q = projection.inverse * new float4(math.sign(clipPlane.x), math.sign(clipPlane.y), 1.0f, 1.0f);
+
+        // Calculate the scaled plane vector
+        float dot = math.dot(clipPlane, q);
+        if (dot == 0.0f)
+        {
+            return; // avoid divide-by-zero just in case
+        }
+        float4 c = clipPlane * (2.0f / dot);
+
+        // Replace the third row of the projection matrix
+        projection[2] = c.x - projection[3];
+        projection[6] = c.y - projection[7];
+        projection[10] = c.z - projection[11];
+        projection[14] = c.w - projection[15];
     }
     private void CreatePortalCamera(Camera sourceCamera, StereoscopicEye eye, ref Camera portalCamera, ref RenderTexture portalTexture)
     {
