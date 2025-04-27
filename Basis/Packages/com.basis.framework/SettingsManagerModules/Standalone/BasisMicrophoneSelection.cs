@@ -17,13 +17,13 @@ public class BasisMicrophoneSelection : MonoBehaviour
         Volume.wholeNumbers = false;
         Dropdown.onValueChanged.AddListener(ApplyChanges);
         Volume.onValueChanged.AddListener(VolumeChanged);
-        BasisDeviceManagement.Instance.OnBootModeChanged += OnBootModeChanged;
+        BasisDeviceManagement.OnBootModeChanged += OnBootModeChanged;
         GenerateUI();
     }
 
     public void OnDestroy()
     {
-        BasisDeviceManagement.Instance.OnBootModeChanged -= OnBootModeChanged;
+        BasisDeviceManagement.OnBootModeChanged -= OnBootModeChanged;
     }
 
     public void GenerateUI()

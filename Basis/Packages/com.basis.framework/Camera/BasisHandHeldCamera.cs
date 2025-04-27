@@ -143,7 +143,7 @@ public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
     {
         SetResolution(captureWidth, captureHeight, AntialiasingQuality.High, Format);
         yield return new WaitForEndOfFrame();
-        BasisLocalCameraDriver.Instance.ScaleHeadToNormal();
+        BasisLocalAvatarDriver.ScaleHeadToNormal();
         ToggleToneMapping(TonemappingMode.ACES);
         captureCamera.Render();
         yield return new WaitForEndOfFrame();
@@ -169,7 +169,7 @@ public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
     public void SetNormalAfterCapture()
     {
         ToggleToneMapping(TonemappingMode.Neutral);
-        BasisLocalCameraDriver.Instance.ScaleheadToZero();
+        BasisLocalAvatarDriver.ScaleheadToZero();
         SetResolution(PreviewCaptureWidth, PreviewCaptureHeight, AntialiasingQuality.Low);
     }
     public async void SaveScreenshotAsync(Texture2D screenshot)

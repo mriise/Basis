@@ -57,7 +57,7 @@ public static class BasisMicrophoneRecorder
             SMDMicrophone.OnMicrophoneChanged -= ResetMicrophones;
             SMDMicrophone.OnMicrophoneVolumeChanged -= ChangeMicrophoneVolume;
             SMDMicrophone.OnMicrophoneUseDenoiserChanged -= ConfigureDenoiser;
-            BasisDeviceManagement.Instance.OnBootModeChanged -= OnBootModeChanged;
+            BasisDeviceManagement.OnBootModeChanged -= OnBootModeChanged;
 
             HasEvents = false;
         }
@@ -88,7 +88,7 @@ public static class BasisMicrophoneRecorder
                 SMDMicrophone.OnMicrophoneChanged += ResetMicrophones;
                 SMDMicrophone.OnMicrophoneVolumeChanged += ChangeMicrophoneVolume;
                 SMDMicrophone.OnMicrophoneUseDenoiserChanged += ConfigureDenoiser;
-                BasisDeviceManagement.Instance.OnBootModeChanged += OnBootModeChanged;
+                BasisDeviceManagement.OnBootModeChanged += OnBootModeChanged;
                 HasEvents = true;
             }
             SMDMicrophone.LoadInMicrophoneData(BasisDeviceManagement.Instance.CurrentMode);

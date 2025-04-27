@@ -65,8 +65,8 @@ namespace Basis.Scripts.Device_Management
             return false;
         }
         public static BasisDeviceManagement Instance;
-        public event Action<string> OnBootModeChanged;
-        public event Action<string> OnBootModeStopped;
+        public static event Action<string> OnBootModeChanged;
+        public static event Action<string> OnBootModeStopped;
         public delegate Task InitializationCompletedHandler();
         public static event InitializationCompletedHandler OnInitializationCompleted;
         public BasisDeviceNameMatcher BasisDeviceNameMatcher;

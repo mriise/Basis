@@ -2,7 +2,6 @@ using Basis.Scripts.Avatar;
 using Basis.Scripts.BasisSdk.Helpers;
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Device_Management;
-using Basis.Scripts.Eye_Follow;
 using Basis.Scripts.TransformBinders.BoneControl;
 using System;
 using System.Collections.Generic;
@@ -100,8 +99,10 @@ namespace Basis.Scripts.Drivers
         public PlayableGraph PlayableGraph;
         public float MaxExtendedDistance;
         public Vector3 AvatarUPDownDirectionCalibration;//for ik that goes up down (head,legs)
+        public static BasisLocalAvatarDriver Instance;
         public void InitialLocalCalibration(BasisLocalPlayer player)
         {
+            Instance = this;
             BasisDebug.Log("InitialLocalCalibration");
             if (HasTPoseEvent == false)
             {
@@ -176,10 +177,42 @@ namespace Basis.Scripts.Drivers
             AvatarUPDownDirectionCalibration = Vector3.right;
             MaxExtendedDistance = Vector3.Distance(BasisLocalBoneDriver.Head.TposeLocal.position, BasisLocalBoneDriver.Hips.TposeLocal.position);
             BuildBuilder();
-            if (BasisLocalCameraDriver.Instance != null)
+            IsNormalHead = true;
+        }
+        public static bool IsNormalHead;
+        public static void ScaleHeadToNormal()
+        {
+            if (IsNormalHead)
             {
-                BasisLocalCameraDriver.Instance.IsNormalHead = true;
+                return;
             }
+            if (Instance == null)
+            {
+                return;
+            }
+            if (Instance.References.Hashead == false)
+            {
+                return;
+            }
+            Instance.References.head.localScale = HeadScale;
+            IsNormalHead = true;
+        }
+        public static void ScaleheadToZero()
+        {
+            if (IsNormalHead == false)
+            {
+                return;
+            }
+            if (Instance == null)
+            {
+                return;
+            }
+            if (Instance.References.Hashead == false)
+            {
+                return;
+            }
+            Instance.References.head.localScale = HeadScaledDown;
+            IsNormalHead = false;
         }
         public Dictionary<BasisBoneTrackedRole, Transform> StoredRolesTransforms;
         public void BuildBuilder()
