@@ -133,6 +133,20 @@ public abstract partial class InteractableObject : MonoBehaviour
         return null;
     }
 
+    /// <summary>
+    /// Be careful when using a value that changes OnInteract or OnHover when overriding, it may cause odd behavior.
+    /// </summary>
+    /// <param name="input"></param>
+    /// <returns>If the Interactable should change state from Hover to Interacting, e.g. when trigger is down</returns>
+    public virtual bool IsInteractTriggered(BasisInput input)
+    {
+        return input.InputState.GripButton ||
+            // special case for desktop (left-click)
+            input.TryGetRole(out Basis.Scripts.TransformBinders.BoneControl.BasisBoneTrackedRole role) && 
+            role == Basis.Scripts.TransformBinders.BoneControl.BasisBoneTrackedRole.CenterEye && 
+            input.InputState.Trigger == 1;
+    }
+
     public abstract bool CanHover(BasisInput input);
     public abstract bool IsHoveredBy(BasisInput input);
 

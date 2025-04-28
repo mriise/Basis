@@ -1,4 +1,5 @@
 using System.Linq;
+using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Device_Management.Devices;
 using Basis.Scripts.Device_Management.Devices.Desktop;
 using Basis.Scripts.Drivers;
@@ -234,7 +235,7 @@ public class PickupInteractable : InteractableObject
                     OnDropVelocity();
                 }
 
-                // syncNetworking.IsOwner = false;
+
                 OnInteractEndEvent?.Invoke(input);
             }
         }
@@ -279,7 +280,6 @@ public class PickupInteractable : InteractableObject
                 // override with current camera position in desktop mode
                 // TODO: this is weird??!? fixes jitter but only on forward rendered shaders
                 BasisLocalCameraDriver.GetPositionAndRotation(out inPos, out inRot);
-
                 PollDesktopManipulation(Inputs.desktopCenterEye.Source);
             }
 
@@ -419,6 +419,7 @@ public class PickupInteractable : InteractableObject
         }
         base.OnDestroy();
     }
+
 
 #if UNITY_EDITOR
     public void OnValidate()

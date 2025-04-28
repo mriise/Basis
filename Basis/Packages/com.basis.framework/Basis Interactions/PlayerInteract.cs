@@ -161,7 +161,7 @@ public class PlayerInteract : MonoBehaviour
                     BasisDebug.LogWarning("Player Interact expected a registered hit but found null. This is a bug, please report.");
                 }
             }
-            // hover misssed entirely
+            // hover misssed entirely. test for drop & clear hover
             else
             {
                 if (interactInput.lastTarget != null)
@@ -169,8 +169,8 @@ public class PlayerInteract : MonoBehaviour
                     // seperate if blocks in case implementation allows for hovering and holding of the same object
 
                     // TODO: proximity check so we dont keep interacting with objects out side of player's reach. Needs an impl that wont break under lag though. `|| !interactInput.targetObject.IsWithinRange(interactInput.input.transform)`
-                    // only drop if trigger was released
-                    if (!IsInputTriggered(interactInput.input) && interactInput.lastTarget.IsInteractingWith(interactInput.input))
+                    // Drop logic: only drop when not triggered
+                    if (!interactInput.lastTarget.IsInteractTriggered(interactInput.input) && interactInput.lastTarget.IsInteractingWith(interactInput.input))
                     {
                         interactInput.lastTarget.OnInteractEnd(interactInput.input);
                     }
@@ -255,7 +255,7 @@ public class PlayerInteract : MonoBehaviour
         if (interactInput.lastTarget != null && interactInput.lastTarget.GetInstanceID() != hitInteractable.GetInstanceID())
         {
             // Holding Logic: 
-            if (IsInputTriggered(interactInput.input))
+            if (interactInput.lastTarget.IsInteractTriggered(interactInput.input))
             {
                 // clear hover
                 if (interactInput.lastTarget.IsHoveredBy(interactInput.input))
@@ -312,7 +312,7 @@ public class PlayerInteract : MonoBehaviour
         {
             // Pickup logic: 
             // per input an object can be either held or hovered, not both. Objects can ignore this by purposfully modifying IsHovered/IsInteracted.
-            if (IsInputTriggered(interactInput.input))
+            if (hitInteractable.IsInteractTriggered(interactInput.input))
             {
                 // first clear hover...
                 if (hitInteractable.IsHoveredBy(interactInput.input))
@@ -348,11 +348,6 @@ public class PlayerInteract : MonoBehaviour
             }
         }
         return interactInput;
-    }
-
-    private bool IsInputTriggered(BasisInput input)
-    {
-        return input.InputState.GripButton || IsDesktopCenterEye(input) && input.InputState.Trigger == 1;
     }
 
     private void RemoveInput(string uid)

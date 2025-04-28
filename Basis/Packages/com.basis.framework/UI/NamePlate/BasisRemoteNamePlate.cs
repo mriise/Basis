@@ -332,5 +332,11 @@ namespace Basis.Scripts.UI.NamePlate
         public override void InputUpdate()
         {
         }
+
+        public override bool IsInteractTriggered(BasisInput input)
+        {
+            // click or mostly triggered
+            return input.InputState.Trigger >= 0.9;
+        }
     }
 }
