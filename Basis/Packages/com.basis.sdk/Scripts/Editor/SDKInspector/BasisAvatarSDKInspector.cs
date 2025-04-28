@@ -7,11 +7,12 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-
 [CustomEditor(typeof(BasisAvatar))]
 public partial class BasisAvatarSDKInspector : Editor
 {
     public static event Action<BasisAvatarSDKInspector> InspectorGuiCreated;
+    public static event Action ButtonClicked;
+    public static event Action ValueChanged;
     public VisualTreeAsset visualTree;
     public BasisAvatar Avatar;
     public VisualElement uiElementsRoot;
@@ -24,11 +25,18 @@ public partial class BasisAvatarSDKInspector : Editor
     public Texture2D Texture;
     private Label resultLabel; // Store the result label for later clearing
     public string Error;
-    public BasisAssetBundleObject assetBundleObject;
+    public BasisAvatarValidator BasisAvatarValidator;
     private void OnEnable()
     {
         visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(BasisSDKConstants.AvataruxmlPath);
         Avatar = (BasisAvatar)target;
+    }
+    public void OnDisable()
+    {
+        if (BasisAvatarValidator != null)
+        {
+            BasisAvatarValidator.OnDestroy();
+        }
     }
 
     public override VisualElement CreateInspectorGUI()
@@ -39,12 +47,21 @@ public partial class BasisAvatarSDKInspector : Editor
         {
             uiElementsRoot = visualTree.CloneTree();
             rootElement.Add(uiElementsRoot);
-
+            BasisAvatarValidator = new BasisAvatarValidator(Avatar, rootElement);
+            Button button = new Button();
+            button.text = "Open Avatar Documentation";
+            button.clicked += delegate
+            {
+                if (EditorUtility.DisplayDialog("Open Documentation", "Open Documentation", "Yes I want to open the documentation", "no send me back"))
+                {
+                    Application.OpenURL(BasisSDKConstants.AvatarDocumentationURL);
+                }
+            };
+            rootElement.Add(button);
             BasisAutomaticSetupAvatarEditor.TryToAutomatic(this);
             SetupItems();
             AvatarSDKJiggleBonesView.Initialize(this);
             AvatarSDKVisemes.Initialize(this);
-
             InspectorGuiCreated?.Invoke(this);
         }
         else
@@ -98,6 +115,7 @@ public partial class BasisAvatarSDKInspector : Editor
         AvatarEyePositionState = !AvatarEyePositionState;
         Button.text = "Eye Position Gizmo " + AvatarHelper.BoolToText(AvatarEyePositionState);
         EditorUtility.SetDirty(Avatar);
+        ButtonClicked?.Invoke();
     }
 
     public void ClickedAvatarMouthPositionButton(Button Button)
@@ -106,7 +124,25 @@ public partial class BasisAvatarSDKInspector : Editor
         AvatarMouthPositionState = !AvatarMouthPositionState;
         Button.text = "Mouth Position Gizmo " + AvatarHelper.BoolToText(AvatarMouthPositionState);
         EditorUtility.SetDirty(Avatar);
+        ButtonClicked?.Invoke();
     }
+
+    private void OnMouthHeightValueChanged(ChangeEvent<Vector2> evt)
+    {
+        Undo.RecordObject(Avatar, "Change Mouth Height");
+        Avatar.AvatarMouthPosition = new Vector3(evt.newValue.x, evt.newValue.y, 0);
+        EditorUtility.SetDirty(Avatar);
+        ValueChanged?.Invoke();
+    }
+
+    private void OnEyeHeightValueChanged(ChangeEvent<Vector2> evt)
+    {
+        Undo.RecordObject(Avatar, "Change Eye Height");
+        Avatar.AvatarEyePosition = new Vector3(evt.newValue.x, evt.newValue.y, 0);
+        EditorUtility.SetDirty(Avatar);
+        ValueChanged?.Invoke();
+    }
+
 
     public void EventCallbackAnimator(ChangeEvent<UnityEngine.Object> evt, ref Animator Renderer)
     {
@@ -136,25 +172,10 @@ public partial class BasisAvatarSDKInspector : Editor
         }
         EditorUtility.SetDirty(Avatar);
     }
-
-    private void OnMouthHeightValueChanged(ChangeEvent<Vector2> evt)
-    {
-        Undo.RecordObject(Avatar, "Change Mouth Height");
-        Avatar.AvatarMouthPosition = new Vector3(evt.newValue.x, evt.newValue.y, 0);
-        EditorUtility.SetDirty(Avatar);
-    }
-
-    private void OnEyeHeightValueChanged(ChangeEvent<Vector2> evt)
-    {
-        Undo.RecordObject(Avatar, "Change Eye Height");
-        Avatar.AvatarEyePosition = new Vector3(evt.newValue.x, evt.newValue.y,0);
-        EditorUtility.SetDirty(Avatar);
-    }
-
     private void OnSceneGUI()
     {
-        BasisAvatar avatar = (BasisAvatar)target;
-        BasisAvatarGizmoEditor.UpdateGizmos(this, avatar);
+        Avatar = (BasisAvatar)target;
+        BasisAvatarGizmoEditor.UpdateGizmos(this, Avatar);
     }
     public void SetupItems()
     {
@@ -177,11 +198,9 @@ public partial class BasisAvatarSDKInspector : Editor
         TextField AvatarNameField = uiElementsRoot.Q<TextField>(BasisSDKConstants.AvatarName);
         TextField AvatarDescriptionField = uiElementsRoot.Q<TextField>(BasisSDKConstants.AvatarDescription);
 
-        TextField AvatarpasswordField = uiElementsRoot.Q<TextField>(BasisSDKConstants.Avatarpassword);
+        TextField AvatarPasswordField = uiElementsRoot.Q<TextField>(BasisSDKConstants.Avatarpassword);
 
         ObjectField AvatarIconField = uiElementsRoot.Q<ObjectField>(BasisSDKConstants.AvatarIcon);
-
-        Label ErrorMessage = uiElementsRoot.Q<Label>(BasisSDKConstants.ErrorMessage);
 
         animatorField.allowSceneObjects = true;
         faceBlinkMeshField.allowSceneObjects = true;
@@ -207,35 +226,9 @@ public partial class BasisAvatarSDKInspector : Editor
         avatarAutomaticVisemeDetectionClick.clicked += AutomaticallyFindVisemes;
         avatarAutomaticBlinkDetectionClick.clicked += AutomaticallyFindBlinking;
 
-        // Multi-select dropdown (Foldout with Toggles)
-        Foldout buildTargetFoldout = new Foldout { text = "Select Build Targets", value = true }; // Expanded by default
-        uiElementsRoot.Add(buildTargetFoldout);
-        if (assetBundleObject == null)
-        {
-            assetBundleObject = AssetDatabase.LoadAssetAtPath<BasisAssetBundleObject>(BasisAssetBundleObject.AssetBundleObject);
-
-        }
-
-        foreach (var target in BasisSDKConstants.allowedTargets)
-        {
-            // Check if the target is already selected
-            bool isSelected = assetBundleObject.selectedTargets.Contains(target);
-
-            Toggle toggle = new Toggle(BasisSDKConstants.targetDisplayNames[target])
-            {
-                value = isSelected // Set the toggle based on whether the target is in the selected list
-            };
-
-            toggle.RegisterValueChangedCallback(evt =>
-            {
-                if (evt.newValue)
-                    assetBundleObject.selectedTargets.Add(target);
-                else
-                    assetBundleObject.selectedTargets.Remove(target);
-            });
-
-            buildTargetFoldout.Add(toggle);
-        }
+        BasisSDKCommonInspector.CreateBuildTargetOptions(uiElementsRoot);
+        BasisSDKCommonInspector.CreateBuildOptionsDropdown(uiElementsRoot);
+        BasisAssetBundleObject assetBundleObject = AssetDatabase.LoadAssetAtPath<BasisAssetBundleObject>(BasisAssetBundleObject.AssetBundleObject);
         avatarBundleButton.clicked += () => EventCallbackAvatarBundle(assetBundleObject.selectedTargets);
 
         // Register Animator field change event
@@ -248,9 +241,6 @@ public partial class BasisAvatarSDKInspector : Editor
         // Update Button Text
         avatarEyePositionClick.text = "Eye Position Gizmo " + AvatarHelper.BoolToText(AvatarEyePositionState);
         avatarMouthPositionClick.text = "Mouth Position Gizmo " + AvatarHelper.BoolToText(AvatarMouthPositionState);
-
-        ErrorMessage.visible = false;
-        ErrorMessage.text = "";
     }
     private async void EventCallbackAvatarBundle(List<BuildTarget> targets)
     {
@@ -259,10 +249,11 @@ public partial class BasisAvatarSDKInspector : Editor
             Debug.LogError("No build targets selected.");
             return;
         }
-        if (ValidateAvatar())
+        if (BasisAvatarValidator.ValidateAvatar(out List<string> Errors, out List<string> Warnings, out List<string> Passes))
         {
             Debug.Log($"Building Gameobject Bundles for: {string.Join(", ", targets.ConvertAll(t => BasisSDKConstants.targetDisplayNames[t]))}");
             (bool success, string message) = await BasisBundleBuild.GameObjectBundleBuild(Avatar, targets);
+            EditorUtility.ClearProgressBar();
             // Clear any previous result label
             ClearResultLabel();
 
@@ -288,7 +279,14 @@ public partial class BasisAvatarSDKInspector : Editor
         }
         else
         {
-            EditorUtility.DisplayDialog("Avatar Error", "The Avatar has a issue check the console for a error", "will do");
+            if (EditorUtility.DisplayDialog("Avatar Build Error", $"Please Resolve Or Consult The Documentation. \n {string.Join("\n", Errors)}", "OK", "Open Documentation"))
+            {
+
+            }
+            else
+            {
+                Application.OpenURL(BasisSDKConstants.AvatarDocumentationURL);
+            }
         }
     }
     private void ClearResultLabel()
@@ -298,50 +296,6 @@ public partial class BasisAvatarSDKInspector : Editor
             uiElementsRoot.Remove(resultLabel);  // Remove the label from the UI
             resultLabel = null; // Optionally reset the reference to null
         }
-    }
-    public bool ValidateAvatar()
-    {
-        if (Avatar == null)
-        {
-            Debug.LogError("Missing Avatar");
-            return false;
-        }
-        if (Avatar.Animator == null)
-        {
-            Debug.LogError("Missing Animator");
-            return false;
-        }
-        if (Avatar.BlinkViseme == null || Avatar.BlinkViseme.Length == 0)
-        {
-            Debug.LogError("BlinkViseme Meta Data was null or empty this should never occur");
-            return false;
-        }
-        if (Avatar.FaceVisemeMovement == null || Avatar.FaceVisemeMovement.Length == 0)
-        {
-            Debug.LogError("FaceVisemeMovement Meta Data was null or empty this should never occur");
-            return false;
-        }
-        if (Avatar.FaceBlinkMesh == null)
-        {
-            Debug.LogError("FaceBlinkMesh was null, please assign a skinned mesh does not need to be the face blink mesh just a mesh");
-            return false;
-        }
-        if (Avatar.FaceVisemeMesh == null)
-        {
-            Debug.LogError("FaceVisemeMesh was null, please assign a skinned mesh does not need to be the face blink mesh just a mesh");
-            return false;
-        }
-        if (Avatar.AvatarEyePosition == Vector2.zero)
-        {
-            Debug.LogError("Avatar Eye Position was empty");
-            return false;
-        }
-        if (Avatar.AvatarMouthPosition == Vector2.zero)
-        {
-            Debug.LogError("Avatar Mouth Position was empty");
-            return false;
-        }
-        return true;
     }
     public void OnAssignTexture2D(ChangeEvent<UnityEngine.Object> Texture2D)
     {

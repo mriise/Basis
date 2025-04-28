@@ -48,7 +48,12 @@ namespace Basis.Scripts.Animator_Driver
                 Animator.SetFloat(BasisAvatarAnimatorHash.HashCurrentVerticalMovement, verticalMovement);
                 BasisAnimatorVariables.cachedVerticalMovement = verticalMovement;
             }
-            UpdateJumpState();
+            if (BasisAnimatorVariables.cachedIsJumping != BasisAnimatorVariables.IsJumping)
+            {
+                Animator.SetBool(BasisAvatarAnimatorHash.HashIsJumping, BasisAnimatorVariables.IsJumping);
+                BasisAnimatorVariables.cachedIsJumping = BasisAnimatorVariables.IsJumping;
+            }
+           // UpdateJumpState();
             if (IsStopped != false)
             {
                 IsStopped = false;
@@ -90,9 +95,9 @@ namespace Basis.Scripts.Animator_Driver
             IsStopped = true;
             Animator.SetBool(BasisAvatarAnimatorHash.IsPaused, true);
         }
-        public void LoadCachedAnimatorHashes(Animator Anim)
+        public void LoadCachedAnimatorHashes(Animator animator)
         {
-            Animator = Anim;
+            Animator = animator;
             BasisAvatarAnimatorHash.HashCurrentHorizontalMovement = Animator.StringToHash("CurrentHorizontalMovement");
             BasisAvatarAnimatorHash.HashCurrentVerticalMovement = Animator.StringToHash("CurrentVerticalMovement");
             BasisAvatarAnimatorHash.HashCurrentSpeed = Animator.StringToHash("CurrentSpeed");
@@ -104,14 +109,6 @@ namespace Basis.Scripts.Animator_Driver
             BasisAvatarAnimatorHash.HashIsFalling = Animator.StringToHash("IsFalling");
             BasisAvatarAnimatorHash.HashIsLanding = Animator.StringToHash("IsLanding");
             BasisAvatarAnimatorHash.HashIsJumping = Animator.StringToHash("IsJumping");
-        }
-        public void UpdateJumpState()
-        {
-            if (BasisAnimatorVariables.cachedIsJumping != BasisAnimatorVariables.IsJumping)
-            {
-                Animator.SetBool(BasisAvatarAnimatorHash.HashIsJumping, BasisAnimatorVariables.IsJumping);
-                BasisAnimatorVariables.cachedIsJumping = BasisAnimatorVariables.IsJumping;
-            }
         }
         public void UpdateIsLandingState()
         {

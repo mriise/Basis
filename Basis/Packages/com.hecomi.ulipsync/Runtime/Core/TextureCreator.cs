@@ -72,47 +72,6 @@ public static class TextureCreator
         }
     }
 
-    public static Texture2D CreateBakedDataWaveTexture(BakedData data, int width, int height, float smooth = 0.85f)
-    {
-        var tex = new Texture2D(width, height);
-
-        if (!data.isValid) return tex;
-        
-        var texColors = GetOrCreatePixelData(tex);
-        var phonemeColorsTmp = new NativeArray<Color>(BakedData.phonemeColors, Allocator.TempJob);
-        int phonemeCount = data.frames[0].phonemes.Count;
-        var phonemeRatiosTmp = new NativeArray<float>(width * phonemeCount, Allocator.TempJob);
-        var volumesTmp = new NativeArray<float>(width, Allocator.TempJob);
-        var duration = data.duration;
-
-        for (int x = 0; x < width; ++x)
-        {
-            var t = (float)x / width * duration;
-            var frame = data.GetFrame(t);
-            for (int i = 0; i < phonemeCount; ++i)
-            {
-                phonemeRatiosTmp[x * phonemeCount + i] = frame.phonemes[i].ratio;
-            }
-            volumesTmp[x] = frame.volume;
-        }
-
-        var job = new CreateBakedDataWaveTextureJob()
-        {
-            texColors = texColors,
-            phonemeColors = phonemeColorsTmp,
-            phonemeRatios = phonemeRatiosTmp,
-            volumes = volumesTmp,
-            width = width,
-            height = height,
-            phonemeCount = phonemeCount,
-            smooth = Mathf.Clamp(smooth, 0f, 1f),
-        };
-        job.Schedule().Complete();
-
-        ApplyPixelData(tex, texColors);
-        return tex;
-    }
-
     [BurstCompile]
     struct CreateMfccTextureJob : IJob
     {

@@ -1,5 +1,5 @@
 using Basis.Scripts.Networking;
-using Basis.Scripts.Networking.Recievers;
+using Basis.Scripts.Networking.Receivers;
 using LiteNetLib;
 using static SerializableBasis;
 using System.Collections.Generic;

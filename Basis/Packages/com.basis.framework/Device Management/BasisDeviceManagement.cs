@@ -12,9 +12,10 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceProviders;
 
 namespace Basis.Scripts.Device_Management
@@ -29,6 +30,7 @@ namespace Basis.Scripts.Device_Management
         public string CurrentMode = "None";
         [SerializeField]
         public const string Desktop = "Desktop";
+        public static string BoneData = "Assets/ScriptableObjects/BoneData.asset";
         public string DefaultMode()
         {
             if (IsMobile())
@@ -63,8 +65,8 @@ namespace Basis.Scripts.Device_Management
             return false;
         }
         public static BasisDeviceManagement Instance;
-        public event Action<string> OnBootModeChanged;
-        public event Action<string> OnBootModeStopped;
+        public static event Action<string> OnBootModeChanged;
+        public static event Action<string> OnBootModeStopped;
         public delegate Task InitializationCompletedHandler();
         public static event InitializationCompletedHandler OnInitializationCompleted;
         public BasisDeviceNameMatcher BasisDeviceNameMatcher;
@@ -77,11 +79,13 @@ namespace Basis.Scripts.Device_Management
         [SerializeField]
         public List<BasisLockToInput> BasisLockToInputs = new List<BasisLockToInput>();
         [SerializeField]
-        public List<StoredPreviousDevice> PreviouslyConnectedDevices = new List<StoredPreviousDevice>();
+        public List<BasisStoredPreviousDevice> PreviouslyConnectedDevices = new List<BasisStoredPreviousDevice>();
         [SerializeField]
         public List<BasisDeviceMatchSettings> UseAbleDeviceConfigs = new List<BasisDeviceMatchSettings>();
         [SerializeField]
         public BasisLocalInputActions InputActions;
+        public static AsyncOperationHandle<BasisFallBackBoneData> BasisFallBackBoneDataAsync;
+        public static AsyncOperationHandle<uLipSync.Profile> LipSyncProfile;
         async void Start()
         {
             if (BasisHelpers.CheckInstance<BasisDeviceManagement>(Instance))
@@ -93,6 +97,15 @@ namespace Basis.Scripts.Device_Management
         }
         void OnDestroy()
         {
+            if (BasisFallBackBoneDataAsync.IsValid())
+            {
+                Addressables.Release(BasisFallBackBoneDataAsync);
+            }
+            if(LipSyncProfile.IsValid())
+            {
+                Addressables.Release(LipSyncProfile);
+            }
+
             ShutDownXR(true);
             if (TryFindBasisBaseTypeManagement(Desktop, out List<BasisBaseTypeManagement> Matched))
             {
@@ -163,8 +176,8 @@ namespace Basis.Scripts.Device_Management
         }
         public async Task Initialize()
         {
-            CommandLineArgs.Initialize(BakedInCommandLineArgs, out string ForcedDevicemanager);
-            LoadAndOrSaveDefaultDeviceConfigs();
+            BasisCommandLineArgs.Initialize(BakedInCommandLineArgs, out string ForcedDevicemanager);
+            LoadFallbackData();
             InstantiationParameters parameters = new InstantiationParameters();
             await BasisPlayerFactory.CreateLocalPlayer(parameters);
 
@@ -185,9 +198,13 @@ namespace Basis.Scripts.Device_Management
             }
             await OnInitializationCompleted?.Invoke();
         }
-        public void LoadAndOrSaveDefaultDeviceConfigs()
+        public static BasisFallBackBoneData FBBD;
+        public void LoadFallbackData()
         {
-            LoadAndOrSaveDefaultDeviceConfigs(Application.persistentDataPath + "/Devices");
+            BasisFallBackBoneDataAsync = Addressables.LoadAssetAsync<BasisFallBackBoneData>(BoneData);
+            LipSyncProfile = Addressables.LoadAssetAsync<uLipSync.Profile>("Packages/com.hecomi.ulipsync/Assets/Profiles/uLipSync-Profile-Sample.asset");
+            FBBD = BasisFallBackBoneDataAsync.WaitForCompletion();
+            LipSyncProfile.WaitForCompletion();
         }
         public async Task RunAfterInitialized()
         {
@@ -287,7 +304,7 @@ namespace Basis.Scripts.Device_Management
         {
             ChecksRequired Required = new ChecksRequired();
             Required.UseContentRemoval = false;
-            (List<GameObject>, Addressable_Driver.AddressableGenericResource) data = await AddressableResourceProcess.LoadAsGameObjectsAsync(playerAddressableID, instantiationParameters, Required);
+            (List<GameObject>, Addressable_Driver.AddressableGenericResource) data = await AddressableResourceProcess.LoadAsGameObjectsAsync(playerAddressableID, instantiationParameters, Required, BundledContentHolder.Selector.System);
             List<GameObject> gameObjects = data.Item1;
 
             if (gameObjects.Count == 0)
@@ -417,7 +434,7 @@ namespace Basis.Scripts.Device_Management
             if (AllInputDevices.Contains(basisXRInput) == false)
             {
                 AllInputDevices.Add(basisXRInput);
-                if (RestoreDevice(basisXRInput.SubSystemIdentifier, basisXRInput.UniqueDeviceIdentifier, out StoredPreviousDevice PreviousDevice))
+                if (RestoreDevice(basisXRInput.SubSystemIdentifier, basisXRInput.UniqueDeviceIdentifier, out BasisStoredPreviousDevice PreviousDevice))
                 {
                     if (CheckBeforeOverride(PreviousDevice))
                     {
@@ -436,7 +453,7 @@ namespace Basis.Scripts.Device_Management
             }
             return false;
         }
-        IEnumerator RestoreInversetOffsets(BasisInput basisXRInput, StoredPreviousDevice PreviousDevice)
+        IEnumerator RestoreInversetOffsets(BasisInput basisXRInput, BasisStoredPreviousDevice PreviousDevice)
         {
             yield return new WaitForEndOfFrame();
             if (basisXRInput != null && basisXRInput.Control != null)
@@ -450,7 +467,7 @@ namespace Basis.Scripts.Device_Management
             }
 
         }
-        public bool CheckBeforeOverride(StoredPreviousDevice Stored)
+        public bool CheckBeforeOverride(BasisStoredPreviousDevice Stored)
         {
             foreach (var device in AllInputDevices)
             {
@@ -491,7 +508,7 @@ namespace Basis.Scripts.Device_Management
         {
             if (DevicesThatsGettingPurged.TryGetRole(out BasisBoneTrackedRole Role) && DevicesThatsGettingPurged.Control != null)
             {
-                StoredPreviousDevice StoredPreviousDevice = new StoredPreviousDevice
+                BasisStoredPreviousDevice StoredPreviousDevice = new BasisStoredPreviousDevice
                 { InverseOffsetFromBone = DevicesThatsGettingPurged.Control.InverseOffsetFromBone }; ;
 
                 StoredPreviousDevice.trackedRole = Role;
@@ -501,9 +518,9 @@ namespace Basis.Scripts.Device_Management
                 PreviouslyConnectedDevices.Add(StoredPreviousDevice);
             }
         }
-        public bool RestoreDevice(string SubSystem, string id, out StoredPreviousDevice StoredPreviousDevice)
+        public bool RestoreDevice(string SubSystem, string id, out BasisStoredPreviousDevice StoredPreviousDevice)
         {
-            foreach (StoredPreviousDevice Device in PreviouslyConnectedDevices)
+            foreach (BasisStoredPreviousDevice Device in PreviouslyConnectedDevices)
             {
                 if (Device.UniqueID == id && Device.SubSystem == SubSystem)
                 {
@@ -515,41 +532,6 @@ namespace Basis.Scripts.Device_Management
             }
             StoredPreviousDevice = null;
             return false;
-        }
-        public void LoadAndOrSaveDefaultDeviceConfigs(string directoryPath)
-        {
-            var builtInDevices = BasisDeviceNameMatcher.BasisDevice;
-            //save to disc any that do not exist
-            BasisDeviceLoaderAndSaver.SaveDevices(directoryPath, builtInDevices);
-            //now lets load them all and override versions that are outdated.
-            List<BasisDeviceMatchSettings> loadedDevices = BasisDeviceLoaderAndSaver.LoadDeviceAsync(directoryPath);
-
-            // Dictionary to store devices by DeviceID for quick lookup
-            var deviceDictionary = builtInDevices.ToDictionary(
-                device => string.IsNullOrEmpty(device.DeviceID) ? InvalidConst : device.DeviceID,
-                device => device
-            );
-
-            foreach (var loadedDevice in loadedDevices)
-            {
-                var loadedDeviceID = string.IsNullOrEmpty(loadedDevice.DeviceID) ? InvalidConst : loadedDevice.DeviceID;
-
-                if (deviceDictionary.TryGetValue(loadedDeviceID, out var existingDevice))
-                {
-                    // Replace the built-in device if the loaded one has a higher version number
-                    if (loadedDevice.VersionNumber > existingDevice.VersionNumber)
-                    {
-                        deviceDictionary[loadedDeviceID] = loadedDevice;
-                    }
-                }
-                else
-                {
-                    // Add the new loaded device
-                    deviceDictionary[loadedDeviceID] = loadedDevice;
-                }
-            }
-
-            UseAbleDeviceConfigs = deviceDictionary.Values.ToList();
         }
         public static void EnqueueOnMainThread(Action action)
         {

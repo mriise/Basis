@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using UnityEngine.Assertions;
 using UnityEngine.Serialization;
-
 namespace JigglePhysics
 {
 
@@ -348,14 +345,12 @@ namespace JigglePhysics
             switch (jiggleUpdateMode)
             {
                 case JiggleUpdateMode.LateUpdate: JiggleRigLateUpdateHandler.RemoveJiggleRigAdvancable(this); break;
-                case JiggleUpdateMode.FixedUpdate: JiggleRigFixedUpdateHandler.RemoveJiggleRigAdvancable(this); break;
                 default: throw new ArgumentOutOfRangeException();
             }
             jiggleUpdateMode = mode;
             switch (jiggleUpdateMode)
             {
                 case JiggleUpdateMode.LateUpdate: JiggleRigLateUpdateHandler.AddJiggleRigAdvancable(this); break;
-                case JiggleUpdateMode.FixedUpdate: JiggleRigFixedUpdateHandler.AddJiggleRigAdvancable(this); break;
                 default: throw new ArgumentOutOfRangeException();
             }
         }
@@ -372,7 +367,6 @@ namespace JigglePhysics
             switch (jiggleUpdateMode)
             {
                 case JiggleUpdateMode.LateUpdate: JiggleRigLateUpdateHandler.AddJiggleRigAdvancable(this); break;
-                case JiggleUpdateMode.FixedUpdate: JiggleRigFixedUpdateHandler.AddJiggleRigAdvancable(this); break;
                 default: throw new ArgumentOutOfRangeException();
             }
 
@@ -386,7 +380,6 @@ namespace JigglePhysics
             switch (jiggleUpdateMode)
             {
                 case JiggleUpdateMode.LateUpdate: JiggleRigLateUpdateHandler.RemoveJiggleRigAdvancable(this); break;
-                case JiggleUpdateMode.FixedUpdate: JiggleRigFixedUpdateHandler.RemoveJiggleRigAdvancable(this); break;
                 default: throw new ArgumentOutOfRangeException();
             }
             PrepareTeleport();

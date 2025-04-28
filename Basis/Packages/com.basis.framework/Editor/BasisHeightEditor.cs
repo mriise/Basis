@@ -19,7 +19,7 @@ public class BasisHeightEditor : Editor
         }
 
         // Call the method from the BasisHeightDriver class
-        BasisHeightDriver.SetPlayersEyeHeight(basisPlayer);
+        BasisHeightDriver.SetPlayersEyeHeight(basisPlayer, BasisLocalHeightInformation.BasisSelectedHeightMode.EyeHeight);
         BasisDebug.Log("Player eye height recalculated successfully.");
     }
 
@@ -54,7 +54,7 @@ public class BasisHeightEditor : Editor
         }
 
         // Save the current player height
-        BasisHeightDriver.SaveHeight(basisPlayer.CurrentHeight.PlayerEyeHeight);
-        BasisDebug.Log($"Player height saved: {basisPlayer.CurrentHeight.PlayerEyeHeight}");
+        BasisHeightDriver.SaveHeight(basisPlayer.CurrentHeight.SelectedPlayerHeight);
+        BasisDebug.Log($"Player height saved: {basisPlayer.CurrentHeight.SelectedPlayerHeight}");
     }
 }

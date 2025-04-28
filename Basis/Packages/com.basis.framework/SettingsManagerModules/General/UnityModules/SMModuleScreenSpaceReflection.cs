@@ -1,11 +1,6 @@
-﻿using BattlePhaze.SettingsManager;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 #if SETTINGS_MANAGER_HD 
 using UnityEngine.Rendering.HighDefinition;
 #endif
-using UnityEngine.Rendering;
 namespace BattlePhaze.SettingsManager.Intergrations
 {
     public class SMModuleScreenSpaceReflection : SettingsManagerOption

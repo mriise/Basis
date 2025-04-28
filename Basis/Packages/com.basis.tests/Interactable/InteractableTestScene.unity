@@ -152,19 +152,46 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 690ab0b52a9b06b4498ad303592416aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  disableInteract: 0
+  Inputs:
+    desktopCenterEye:
+      Source: {fileID: 0}
+      State: 0
+    leftHand:
+      Source: {fileID: 0}
+      State: 0
+    rightHand:
+      Source: {fileID: 0}
+      State: 0
+    extras: []
+  disableInfluence: 0
   InteractRange: 1
-  CanEquip: 0
-  equipPos: {x: 0, y: 0, z: 0}
-  equipRot: {x: 0, y: 0, z: 0, w: 0}
+  Equippable: 0
+  IsPuppeted: 0
   KinematicWhileInteracting: 0
+  CanSelfSteal: 1
   DesktopRotateSpeed: 0.1
   DesktopZoopSpeed: 0.2
   DesktopZoopMinDistance: 0.2
   GenerateColliderMesh: 1
+  minLinearVelocity: 0.1
+  interactEndLinearVelocityMultiplier: 1
+  minAngularVelocity: 0.1
+  interactEndAngularVelocityMultiplier: 1
   ColliderRef: {fileID: 0}
   RigidRef: {fileID: 0}
-  ConstraintRef: {fileID: 0}
+  InputConstraint:
+    rid: 8572486966948397060
+  references:
+    version: 2
+    RefIds:
+    - rid: 8572486966948397060
+      type: {class: BasisParentConstraint, ns: , asm: Basis}
+      data:
+        Enabled: 1
+        GlobalWeight: 1
+        _restPosition: {x: 0, y: 0, z: 0}
+        _restRotation: {x: 0, y: 0, z: 0, w: 0}
+        sources: []
 --- !u!54 &21929890
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -601,19 +628,46 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 690ab0b52a9b06b4498ad303592416aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  disableInteract: 0
+  Inputs:
+    desktopCenterEye:
+      Source: {fileID: 0}
+      State: 0
+    leftHand:
+      Source: {fileID: 0}
+      State: 0
+    rightHand:
+      Source: {fileID: 0}
+      State: 0
+    extras: []
+  disableInfluence: 0
   InteractRange: 1
-  CanEquip: 0
-  equipPos: {x: 0, y: 0, z: 0}
-  equipRot: {x: 0, y: 0, z: 0, w: 0}
+  Equippable: 0
+  IsPuppeted: 0
   KinematicWhileInteracting: 0
+  CanSelfSteal: 1
   DesktopRotateSpeed: 0.1
   DesktopZoopSpeed: 0.2
   DesktopZoopMinDistance: 0.2
   GenerateColliderMesh: 1
+  minLinearVelocity: 0.1
+  interactEndLinearVelocityMultiplier: 1
+  minAngularVelocity: 0.1
+  interactEndAngularVelocityMultiplier: 1
   ColliderRef: {fileID: 0}
   RigidRef: {fileID: 0}
-  ConstraintRef: {fileID: 0}
+  InputConstraint:
+    rid: 8572486966948397059
+  references:
+    version: 2
+    RefIds:
+    - rid: 8572486966948397059
+      type: {class: BasisParentConstraint, ns: , asm: Basis}
+      data:
+        Enabled: 1
+        GlobalWeight: 1
+        _restPosition: {x: 0, y: 0, z: 0}
+        _restRotation: {x: 0, y: 0, z: 0, w: 0}
+        sources: []
 --- !u!54 &462462409
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -763,19 +817,46 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 690ab0b52a9b06b4498ad303592416aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  disableInteract: 0
+  Inputs:
+    desktopCenterEye:
+      Source: {fileID: 0}
+      State: 0
+    leftHand:
+      Source: {fileID: 0}
+      State: 0
+    rightHand:
+      Source: {fileID: 0}
+      State: 0
+    extras: []
+  disableInfluence: 0
   InteractRange: 1
-  CanEquip: 0
-  equipPos: {x: 0, y: 0, z: 0}
-  equipRot: {x: 0, y: 0, z: 0, w: 0}
+  Equippable: 0
+  IsPuppeted: 0
   KinematicWhileInteracting: 0
+  CanSelfSteal: 1
   DesktopRotateSpeed: 0.1
   DesktopZoopSpeed: 0.2
   DesktopZoopMinDistance: 0.2
   GenerateColliderMesh: 1
+  minLinearVelocity: 0.1
+  interactEndLinearVelocityMultiplier: 1
+  minAngularVelocity: 0.1
+  interactEndAngularVelocityMultiplier: 1
   ColliderRef: {fileID: 0}
   RigidRef: {fileID: 0}
-  ConstraintRef: {fileID: 0}
+  InputConstraint:
+    rid: 8572486966948397058
+  references:
+    version: 2
+    RefIds:
+    - rid: 8572486966948397058
+      type: {class: BasisParentConstraint, ns: , asm: Basis}
+      data:
+        Enabled: 1
+        GlobalWeight: 1
+        _restPosition: {x: 0, y: 0, z: 0}
+        _restRotation: {x: 0, y: 0, z: 0, w: 0}
+        sources: []
 --- !u!54 &556741050
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1017,19 +1098,46 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 690ab0b52a9b06b4498ad303592416aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  disableInteract: 0
+  Inputs:
+    desktopCenterEye:
+      Source: {fileID: 0}
+      State: 0
+    leftHand:
+      Source: {fileID: 0}
+      State: 0
+    rightHand:
+      Source: {fileID: 0}
+      State: 0
+    extras: []
+  disableInfluence: 0
   InteractRange: 1
-  CanEquip: 0
-  equipPos: {x: 0, y: 0, z: 0}
-  equipRot: {x: 0, y: 0, z: 0, w: 0}
+  Equippable: 0
+  IsPuppeted: 0
   KinematicWhileInteracting: 1
+  CanSelfSteal: 1
   DesktopRotateSpeed: 0.1
   DesktopZoopSpeed: 0.2
   DesktopZoopMinDistance: 0.2
   GenerateColliderMesh: 0
+  minLinearVelocity: 0.1
+  interactEndLinearVelocityMultiplier: 1
+  minAngularVelocity: 0.1
+  interactEndAngularVelocityMultiplier: 1
   ColliderRef: {fileID: 0}
   RigidRef: {fileID: 0}
-  ConstraintRef: {fileID: 0}
+  InputConstraint:
+    rid: 8572486966948397056
+  references:
+    version: 2
+    RefIds:
+    - rid: 8572486966948397056
+      type: {class: BasisParentConstraint, ns: , asm: Basis}
+      data:
+        Enabled: 1
+        GlobalWeight: 1
+        _restPosition: {x: 0, y: 0, z: 0}
+        _restRotation: {x: 0, y: 0, z: 0, w: 0}
+        sources: []
 --- !u!54 &564221584
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1077,14 +1185,16 @@ MonoBehaviour:
   MessageIndex: 3321
   HasMessageIndexAssigned: 0
   NetworkId: 
-  LerpMultiplier: 3
-  Rigidbody: {fileID: 0}
   TargetFrequency: 10
+  NetworkLerpSpeed: 7
   CurrentOwner: 0
   IsLocalOwner: 0
   HasActiveOwnership: 0
+  LerpMultiplier: 3
   ContentConnector: {fileID: 0}
-  InteractableObjects: []
+  InteractableObjects: {fileID: 0}
+  DeliveryMethod: 1
+  DataFormat: 0
 --- !u!1001 &782519661
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1344,19 +1454,46 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 690ab0b52a9b06b4498ad303592416aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  disableInteract: 1
+  Inputs:
+    desktopCenterEye:
+      Source: {fileID: 0}
+      State: 0
+    leftHand:
+      Source: {fileID: 0}
+      State: 0
+    rightHand:
+      Source: {fileID: 0}
+      State: 0
+    extras: []
+  disableInfluence: 0
   InteractRange: 1
-  CanEquip: 0
-  equipPos: {x: 0, y: 0, z: 0}
-  equipRot: {x: 0, y: 0, z: 0, w: 0}
+  Equippable: 0
+  IsPuppeted: 0
   KinematicWhileInteracting: 1
+  CanSelfSteal: 1
   DesktopRotateSpeed: 0.1
   DesktopZoopSpeed: 0.2
   DesktopZoopMinDistance: 0.2
   GenerateColliderMesh: 0
+  minLinearVelocity: 0.1
+  interactEndLinearVelocityMultiplier: 1
+  minAngularVelocity: 0.1
+  interactEndAngularVelocityMultiplier: 1
   ColliderRef: {fileID: 0}
   RigidRef: {fileID: 0}
-  ConstraintRef: {fileID: 0}
+  InputConstraint:
+    rid: 8572486966948397057
+  references:
+    version: 2
+    RefIds:
+    - rid: 8572486966948397057
+      type: {class: BasisParentConstraint, ns: , asm: Basis}
+      data:
+        Enabled: 1
+        GlobalWeight: 1
+        _restPosition: {x: 0, y: 0, z: 0}
+        _restRotation: {x: 0, y: 0, z: 0, w: 0}
+        sources: []
 --- !u!54 &1232611346
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1429,8 +1566,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   BasisBundleDescription:
-    AssetBundleName: 
-    AssetBundleDescription: 
+    AssetBundleName: tet
+    AssetBundleDescription: test
   SpawnPoint: {fileID: 1262652855}
   RespawnHeight: -100
   RespawnCheckTimer: 0.1
@@ -1588,19 +1725,46 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 690ab0b52a9b06b4498ad303592416aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  disableInteract: 0
+  Inputs:
+    desktopCenterEye:
+      Source: {fileID: 0}
+      State: 0
+    leftHand:
+      Source: {fileID: 0}
+      State: 0
+    rightHand:
+      Source: {fileID: 0}
+      State: 0
+    extras: []
+  disableInfluence: 0
   InteractRange: 1
-  CanEquip: 0
-  equipPos: {x: 0, y: 0, z: 0}
-  equipRot: {x: 0, y: 0, z: 0, w: 0}
+  Equippable: 0
+  IsPuppeted: 0
   KinematicWhileInteracting: 0
+  CanSelfSteal: 1
   DesktopRotateSpeed: 0.1
   DesktopZoopSpeed: 0.2
   DesktopZoopMinDistance: 0.2
   GenerateColliderMesh: 1
+  minLinearVelocity: 0.1
+  interactEndLinearVelocityMultiplier: 1
+  minAngularVelocity: 0.1
+  interactEndAngularVelocityMultiplier: 1
   ColliderRef: {fileID: 0}
   RigidRef: {fileID: 0}
-  ConstraintRef: {fileID: 0}
+  InputConstraint:
+    rid: 8572486966948397061
+  references:
+    version: 2
+    RefIds:
+    - rid: 8572486966948397061
+      type: {class: BasisParentConstraint, ns: , asm: Basis}
+      data:
+        Enabled: 1
+        GlobalWeight: 1
+        _restPosition: {x: 0, y: 0, z: 0}
+        _restRotation: {x: 0, y: 0, z: 0, w: 0}
+        sources: []
 --- !u!1 &1405895927
 GameObject:
   m_ObjectHideFlags: 0
@@ -1873,19 +2037,46 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 690ab0b52a9b06b4498ad303592416aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  disableInteract: 0
+  Inputs:
+    desktopCenterEye:
+      Source: {fileID: 0}
+      State: 0
+    leftHand:
+      Source: {fileID: 0}
+      State: 0
+    rightHand:
+      Source: {fileID: 0}
+      State: 0
+    extras: []
+  disableInfluence: 0
   InteractRange: 1
-  CanEquip: 0
-  equipPos: {x: 0, y: 0, z: 0}
-  equipRot: {x: 0, y: 0, z: 0, w: 0}
+  Equippable: 0
+  IsPuppeted: 0
   KinematicWhileInteracting: 0
+  CanSelfSteal: 0
   DesktopRotateSpeed: 0.1
   DesktopZoopSpeed: 0.2
   DesktopZoopMinDistance: 0.2
   GenerateColliderMesh: 1
+  minLinearVelocity: 0.1
+  interactEndLinearVelocityMultiplier: 1
+  minAngularVelocity: 0.1
+  interactEndAngularVelocityMultiplier: 1
   ColliderRef: {fileID: 0}
   RigidRef: {fileID: 0}
-  ConstraintRef: {fileID: 0}
+  InputConstraint:
+    rid: 8572486966948397065
+  references:
+    version: 2
+    RefIds:
+    - rid: 8572486966948397065
+      type: {class: BasisParentConstraint, ns: , asm: Basis}
+      data:
+        Enabled: 1
+        GlobalWeight: 1
+        _restPosition: {x: 0, y: 0, z: 0}
+        _restRotation: {x: 0, y: 0, z: 0, w: 0}
+        sources: []
 --- !u!1 &1556212794
 GameObject:
   m_ObjectHideFlags: 0
@@ -2056,19 +2247,46 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 690ab0b52a9b06b4498ad303592416aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  disableInteract: 0
+  Inputs:
+    desktopCenterEye:
+      Source: {fileID: 0}
+      State: 0
+    leftHand:
+      Source: {fileID: 0}
+      State: 0
+    rightHand:
+      Source: {fileID: 0}
+      State: 0
+    extras: []
+  disableInfluence: 0
   InteractRange: 1
-  CanEquip: 0
-  equipPos: {x: 0, y: 0, z: 0}
-  equipRot: {x: 0, y: 0, z: 0, w: 0}
+  Equippable: 0
+  IsPuppeted: 0
   KinematicWhileInteracting: 0
+  CanSelfSteal: 1
   DesktopRotateSpeed: 0.1
   DesktopZoopSpeed: 0.2
   DesktopZoopMinDistance: 0.2
   GenerateColliderMesh: 1
+  minLinearVelocity: 0.1
+  interactEndLinearVelocityMultiplier: 1
+  minAngularVelocity: 0.1
+  interactEndAngularVelocityMultiplier: 1
   ColliderRef: {fileID: 0}
   RigidRef: {fileID: 0}
-  ConstraintRef: {fileID: 0}
+  InputConstraint:
+    rid: 8572486966948397063
+  references:
+    version: 2
+    RefIds:
+    - rid: 8572486966948397063
+      type: {class: BasisParentConstraint, ns: , asm: Basis}
+      data:
+        Enabled: 1
+        GlobalWeight: 1
+        _restPosition: {x: 0, y: 0, z: 0}
+        _restRotation: {x: 0, y: 0, z: 0, w: 0}
+        sources: []
 --- !u!54 &1568311659
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -2576,19 +2794,46 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 690ab0b52a9b06b4498ad303592416aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  disableInteract: 0
+  Inputs:
+    desktopCenterEye:
+      Source: {fileID: 0}
+      State: 0
+    leftHand:
+      Source: {fileID: 0}
+      State: 0
+    rightHand:
+      Source: {fileID: 0}
+      State: 0
+    extras: []
+  disableInfluence: 0
   InteractRange: 1
-  CanEquip: 0
-  equipPos: {x: 0, y: 0, z: 0}
-  equipRot: {x: 0, y: 0, z: 0, w: 0}
+  Equippable: 0
+  IsPuppeted: 0
   KinematicWhileInteracting: 0
+  CanSelfSteal: 1
   DesktopRotateSpeed: 0.1
   DesktopZoopSpeed: 0.2
   DesktopZoopMinDistance: 0.2
   GenerateColliderMesh: 1
+  minLinearVelocity: 0.1
+  interactEndLinearVelocityMultiplier: 1
+  minAngularVelocity: 0.1
+  interactEndAngularVelocityMultiplier: 1
   ColliderRef: {fileID: 0}
   RigidRef: {fileID: 0}
-  ConstraintRef: {fileID: 0}
+  InputConstraint:
+    rid: 8572486966948397062
+  references:
+    version: 2
+    RefIds:
+    - rid: 8572486966948397062
+      type: {class: BasisParentConstraint, ns: , asm: Basis}
+      data:
+        Enabled: 1
+        GlobalWeight: 1
+        _restPosition: {x: 0, y: 0, z: 0}
+        _restRotation: {x: 0, y: 0, z: 0, w: 0}
+        sources: []
 --- !u!1 &2063075830
 GameObject:
   m_ObjectHideFlags: 0
@@ -2740,19 +2985,46 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 690ab0b52a9b06b4498ad303592416aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  disableInteract: 0
+  Inputs:
+    desktopCenterEye:
+      Source: {fileID: 0}
+      State: 0
+    leftHand:
+      Source: {fileID: 0}
+      State: 0
+    rightHand:
+      Source: {fileID: 0}
+      State: 0
+    extras: []
+  disableInfluence: 0
   InteractRange: 1
-  CanEquip: 0
-  equipPos: {x: 0, y: 0, z: 0}
-  equipRot: {x: 0, y: 0, z: 0, w: 0}
+  Equippable: 0
+  IsPuppeted: 0
   KinematicWhileInteracting: 0
+  CanSelfSteal: 1
   DesktopRotateSpeed: 0.1
   DesktopZoopSpeed: 0.2
   DesktopZoopMinDistance: 0.2
   GenerateColliderMesh: 1
+  minLinearVelocity: 0.1
+  interactEndLinearVelocityMultiplier: 1
+  minAngularVelocity: 0.1
+  interactEndAngularVelocityMultiplier: 1
   ColliderRef: {fileID: 0}
   RigidRef: {fileID: 0}
-  ConstraintRef: {fileID: 0}
+  InputConstraint:
+    rid: 8572486966948397064
+  references:
+    version: 2
+    RefIds:
+    - rid: 8572486966948397064
+      type: {class: BasisParentConstraint, ns: , asm: Basis}
+      data:
+        Enabled: 1
+        GlobalWeight: 1
+        _restPosition: {x: 0, y: 0, z: 0}
+        _restRotation: {x: 0, y: 0, z: 0, w: 0}
+        sources: []
 --- !u!1001 &6034627799823193631
 PrefabInstance:
   m_ObjectHideFlags: 0

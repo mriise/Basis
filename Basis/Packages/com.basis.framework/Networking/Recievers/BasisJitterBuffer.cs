@@ -4,9 +4,9 @@ using System.Collections.Generic;
 [System.Serializable]
 public class BasisJitterBuffer
 {
-    public ConcurrentDictionary<byte, SequencedVoiceData> voiceData = new ConcurrentDictionary<byte, SequencedVoiceData>();
+    public ConcurrentDictionary<byte, BasisSequencedVoiceData> voiceData = new ConcurrentDictionary<byte, BasisSequencedVoiceData>();
 
-    public void Insert(SequencedVoiceData sequencedVoiceData, byte lastReadIndex)
+    public void Insert(BasisSequencedVoiceData sequencedVoiceData, byte lastReadIndex)
     {
         if (voiceData.Count > 5)
         {
@@ -15,7 +15,7 @@ public class BasisJitterBuffer
         // Insert the new data
         voiceData[sequencedVoiceData.SequenceNumber] = sequencedVoiceData;
     }
-    public bool DumpIndividual(out SequencedVoiceData SequencedVoiceData, byte LastReadIndex)
+    public bool DumpIndividual(out BasisSequencedVoiceData SequencedVoiceData, byte LastReadIndex)
     {
         while (voiceData.Count != 0)
         {
@@ -31,7 +31,7 @@ public class BasisJitterBuffer
                 return true;
             }
         }
-        SequencedVoiceData = new SequencedVoiceData(LastReadIndex, null, 0, true);
+        SequencedVoiceData = new BasisSequencedVoiceData(LastReadIndex, null, 0, true);
         return false;
     }
     public bool IsBufferFull()

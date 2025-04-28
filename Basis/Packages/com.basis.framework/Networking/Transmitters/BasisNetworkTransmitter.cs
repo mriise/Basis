@@ -6,19 +6,16 @@ using LiteNetLib.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using static SerializableBasis;
-
-
 namespace Basis.Scripts.Networking.Transmitters
 {
     [DefaultExecutionOrder(15001)]
     [System.Serializable]
-    public partial class BasisNetworkTransmitter : BasisNetworkPlayer
+    public class BasisNetworkTransmitter : BasisNetworkPlayer
     {
         public bool HasEvents = false;
         public float timer = 0f;
@@ -43,7 +40,7 @@ namespace Basis.Scripts.Networking.Transmitters
         public float DefaultInterval = 0.0333333333333333f;
         public float BaseMultiplier = 1f; // Starting multiplier.
         public float IncreaseRate = 0.005f; // Rate of increase per unit distance.
-        public CombinedDistanceAndClosestTransformJob distanceJob = new CombinedDistanceAndClosestTransformJob();
+        public BasisDistanceJobs distanceJob = new BasisDistanceJobs();
         public JobHandle distanceJobHandle;
         public int IndexLength = -1;
         public float SlowestSendRate = 2.5f;
@@ -55,13 +52,16 @@ namespace Basis.Scripts.Networking.Transmitters
         public bool[] AvatarIndex;
         public ushort[] HearingIndexToId;
 
-        public AdditionalAvatarData[] AdditionalAvatarDatas;
+        public AdditionalAvatarData[] AdditionalAvatarData;
         public Dictionary<byte, AdditionalAvatarData> SendingOutAvatarData = new Dictionary<byte, AdditionalAvatarData>();
+        public float[] CalculatedDistances;
+        public static Action AfterAvatarChanges;
+
         /// <summary>
         /// schedules data going out. replaces existing byte index.
         /// </summary>
         /// <param name="AvatarData"></param>
-        public void AddAdditonal(AdditionalAvatarData AvatarData)
+        public void AddAdditional(AdditionalAvatarData AvatarData)
         {
             SendingOutAvatarData[AvatarData.messageIndex] = AvatarData;
         }
@@ -95,63 +95,67 @@ namespace Basis.Scripts.Networking.Transmitters
         }
         public void HandleResults()
         {
-            if (distanceJob.DistanceResults == null)
+            if (distanceJob.DistanceResults == null ||
+                MicrophoneRangeIndex == null ||
+                MicrophoneRangeIndex.Length != distanceJob.DistanceResults.Length)
             {
                 return;
             }
-            if (MicrophoneRangeIndex == null)
-            {
-                return;
-            }
-            if (MicrophoneRangeIndex.Length != distanceJob.DistanceResults.Length)
-            {
-                return;
-            }
+
             distanceJob.DistanceResults.CopyTo(MicrophoneRangeIndex);
             distanceJob.HearingResults.CopyTo(HearingIndex);
             distanceJob.AvatarResults.CopyTo(AvatarIndex);
+            distanceJob.distances.CopyTo(CalculatedDistances);
 
             MicrophoneOutputCheck();
-            Iteration();
+            IterationOverRemotePlayers();
         }
         /// <summary>
         /// how far we can hear locally
         /// </summary>
-        public void Iteration()
+        public void IterationOverRemotePlayers()
         {
             for (int Index = 0; Index < IndexLength; Index++)
             {
-                Recievers.BasisNetworkReceiver Rec = BasisNetworkManagement.ReceiverArray[Index];
-                if (Rec.AudioReceiverModule.IsPlaying != HearingIndex[Index])
+                try
                 {
-                    if (HearingIndex[Index])
+                    Receivers.BasisNetworkReceiver Rec = BasisNetworkManagement.ReceiverArray[Index];
+                    //first handle avatar itself
+                    if (Rec.RemotePlayer.InAvatarRange != AvatarIndex[Index])
                     {
-                        Rec.AudioReceiverModule.StartAudio();
-                        Rec.RemotePlayer.OutOfRangeFromLocal = false;
+                        Rec.RemotePlayer.InAvatarRange = AvatarIndex[Index];
+                        Rec.RemotePlayer.ReloadAvatar();
                     }
-                    else
+                    //then handle voice
+                    if (Rec.AudioReceiverModule.IsPlaying != HearingIndex[Index])
                     {
-                        Rec.AudioReceiverModule.StopAudio();
-                        Rec.RemotePlayer.OutOfRangeFromLocal = true;
+                        if (HearingIndex[Index])
+                        {
+                            Rec.AudioReceiverModule.StartAudio();
+                            Rec.RemotePlayer.OutOfRangeFromLocal = false;
+                        }
+                        else
+                        {
+                            Rec.AudioReceiverModule.StopAudio();
+                            Rec.RemotePlayer.OutOfRangeFromLocal = true;
+                        }
                     }
+                    //now we process the avatar based stuff in order of risk to break.
+                    if (Rec.RemotePlayer.HasJiggles)
+                    {
+                        if (float.IsNaN(CalculatedDistances[Index]) || CalculatedDistances[Index] == 0)
+                        {
+                            CalculatedDistances[Index] = 0.1f;
+                        }
+                        Rec.RemotePlayer.BasisAvatarStrainJiggleDriver.Simulate(CalculatedDistances[Index]);
+                    }
+                    Rec.RemotePlayer.EyeFollow.Simulate();
+                    Rec.RemotePlayer.FacialBlinkDriver.Simulate();
                 }
-                /*
-                if (Rec.RemotePlayer.IsNotFallBack != AvatarIndex[Index])
+                catch (Exception ex)
                 {
-                    if (AvatarIndex[Index])
-                    {
-                        BasisLoadableBundle BasisLoadableBundle = BasisBundleConversionNetwork.ConvertNetworkBytesToBasisLoadableBundle(Rec.RemotePlayer.CACM.byteArray);
-
-                        Rec.RemotePlayer.CreateAvatar(Rec.RemotePlayer.CACM.loadMode, BasisLoadableBundle);
-                        Rec.RemotePlayer.IsNotFallBack = true;
-                    }
-                    else
-                    {
-                     //   BasisAvatarFactory.LoadLoadingAvatar(Rec.RemotePlayer, BasisAvatarFactory.LoadingAvatar.BasisLocalEncryptedBundle.LocalBundleFile);
-                       // Rec.RemotePlayer.IsNotFallBack = false;
-                    }
+                    BasisDebug.LogError($"{ex} {ex.StackTrace}");
                 }
-                */
             }
         }
         /// <summary>
@@ -159,7 +163,6 @@ namespace Basis.Scripts.Networking.Transmitters
         /// </summary>
         public void MicrophoneOutputCheck()
         {
-
             if (AreBoolArraysEqual(MicrophoneRangeIndex, LastMicrophoneRangeIndex) == false)
             {
                 //BasisDebug.Log("Arrays where not equal!");
@@ -189,7 +192,7 @@ namespace Basis.Scripts.Networking.Transmitters
                 NetDataWriter writer = new NetDataWriter();
                 VRM.Serialize(writer);
                 BasisNetworkManagement.LocalPlayerPeer.Send(writer, BasisNetworkCommons.AudioRecipients, DeliveryMethod.ReliableOrdered);
-                BasisNetworkProfiler.AudioRecipientsMessageCounter.Sample(writer.Length);
+                BasisNetworkProfiler.AddToCounter(BasisNetworkProfilerCounter.AudioRecipients, writer.Length);
             }
         }
         public static bool AreBoolArraysEqual(bool[] array1, bool[] array2)
@@ -259,6 +262,7 @@ namespace Basis.Scripts.Networking.Transmitters
                 MicrophoneRangeIndex = new bool[BasisNetworkManagement.ReceiverCount];
                 HearingIndex = new bool[BasisNetworkManagement.ReceiverCount];
                 AvatarIndex = new bool[BasisNetworkManagement.ReceiverCount];
+                CalculatedDistances = new float[BasisNetworkManagement.ReceiverCount];
 
                 IndexLength = BasisNetworkManagement.ReceiverCount;
                 HearingIndexToId = BasisNetworkManagement.RemotePlayers.Keys.ToArray();
@@ -319,7 +323,6 @@ namespace Basis.Scripts.Networking.Transmitters
 
             distanceJob.smallestDistance = smallestDistance;
         }
-        public static Action AfterAvatarChanges;
         public override void DeInitialize()
         {
             if (Ready)
@@ -363,51 +366,7 @@ namespace Basis.Scripts.Networking.Transmitters
             };
             ClientAvatarChangeMessage.Serialize(Writer);
             BasisNetworkManagement.LocalPlayerPeer.Send(Writer, BasisNetworkCommons.AvatarChangeMessage, DeliveryMethod.ReliableOrdered);
-            BasisNetworkProfiler.AvatarChangeMessageCounter.Sample(Writer.Length);
-        }
-        [BurstCompile]
-        public struct CombinedDistanceAndClosestTransformJob : IJobParallelFor
-        {
-            public float VoiceDistance;
-            public float HearingDistance;
-            public float AvatarDistance;
-            [ReadOnly]
-            public float3 referencePosition;
-            [ReadOnly]
-            public NativeArray<float3> targetPositions;
-
-            [WriteOnly]
-            public NativeArray<float> distances;
-            [WriteOnly]
-            public NativeArray<bool> DistanceResults;
-            [WriteOnly]
-            public NativeArray<bool> HearingResults;
-            [WriteOnly]
-            public NativeArray<bool> AvatarResults;
-
-            // Shared result for the smallest distance
-            [NativeDisableParallelForRestriction]
-            public NativeArray<float> smallestDistance;
-
-            public void Execute(int index)
-            {
-                // Calculate distance
-                Vector3 diff = targetPositions[index] - referencePosition;
-                float sqrDistance = diff.sqrMagnitude;
-                distances[index] = sqrDistance;
-
-                // Determine boolean results
-                DistanceResults[index] = sqrDistance < VoiceDistance;
-                HearingResults[index] = sqrDistance < HearingDistance;
-                AvatarResults[index] = sqrDistance < AvatarDistance;
-
-                // Update the smallest distance (atomic operation to avoid race conditions)
-                float currentSmallest = smallestDistance[0];
-                if (sqrDistance < currentSmallest)
-                {
-                    smallestDistance[0] = sqrDistance;
-                }
-            }
+            BasisNetworkProfiler.AddToCounter(BasisNetworkProfilerCounter.AvatarChange, Writer.Length);
         }
     }
 }

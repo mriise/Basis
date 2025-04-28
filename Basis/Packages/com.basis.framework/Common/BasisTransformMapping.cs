@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Basis.Scripts.Common
@@ -91,9 +91,12 @@ namespace Basis.Scripts.Common
         public Transform[] RightLittle = new Transform[3];
         public bool[] HasRightLittle = new bool[3];
 
-        public static bool AutoDetectReferences(Animator anim, Transform AnimatorRoot, out BasisTransformMapping references)
+        public static bool AutoDetectReferences(Animator anim, Transform AnimatorRoot, ref BasisTransformMapping references)
         {
-            references = new BasisTransformMapping();
+            if (references == null)
+            {
+                references = new BasisTransformMapping();
+            }
             if (!anim.isHuman)
             {
                 BasisDebug.LogError("We need a Humanoid Animator");

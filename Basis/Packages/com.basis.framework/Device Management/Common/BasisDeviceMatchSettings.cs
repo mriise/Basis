@@ -1,9 +1,7 @@
 using Basis.Scripts.TransformBinders.BoneControl;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-
 namespace Basis.Scripts.Device_Management
 {
     [Serializable]
@@ -16,7 +14,6 @@ namespace Basis.Scripts.Device_Management
         [Header("Match with Ids")]
         [SerializeField]
         public string[] matchableDeviceIds = Array.Empty<string>();
-        public ReadOnlySpan<string> MatchableDeviceIds => matchableDeviceIds;
 
         public IEnumerable<string> MatchableDeviceIdsLowered()
         {
@@ -34,15 +31,11 @@ namespace Basis.Scripts.Device_Management
 
         [Header("Raycast Visuals")]
         public bool HasRayCastVisual = false;
-        public bool HasRayCastRedical = false;
+        public bool HasRayCastRadical = false;
 
         [Header("Raycast Offsets")]
         public Vector3 PositionRayCastOffset = Vector3.zero;
         public Vector3 RotationRaycastOffset = Vector3.zero;
-
-        [Header("Avatar Offsets")]
-        public Vector3 AvatarPositionOffset = Vector3.zero;
-        public Vector3 AvatarRotationOffset = Vector3.zero;
 
         [Header("Tracked Role Override")]
         public bool HasTrackedRole = false;
@@ -50,27 +43,5 @@ namespace Basis.Scripts.Device_Management
 
         [Header("Interact Settings")]
         public bool HasInteractVisual = true;
-
-        // Clone method for deep copy
-        public BasisDeviceMatchSettings Clone()
-        {
-            return new BasisDeviceMatchSettings
-            {
-                DeviceID = this.DeviceID,
-                VersionNumber = this.VersionNumber,
-                matchableDeviceIds = (string[])this.matchableDeviceIds.Clone(),
-                HasRayCastSupport = this.HasRayCastSupport,
-                CanDisplayPhysicalTracker = this.CanDisplayPhysicalTracker,
-                HasRayCastVisual = this.HasRayCastVisual,
-                HasRayCastRedical = this.HasRayCastRedical,
-                PositionRayCastOffset = this.PositionRayCastOffset,
-                RotationRaycastOffset = this.RotationRaycastOffset,
-                AvatarPositionOffset = this.AvatarPositionOffset,
-                AvatarRotationOffset = this.AvatarRotationOffset,
-                HasTrackedRole = this.HasTrackedRole,
-                TrackedRole = this.TrackedRole,
-                HasInteractVisual = this.HasInteractVisual,
-            };
-        }
     }
 }

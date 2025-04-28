@@ -21,14 +21,14 @@ public class BasisVirtualSpineDriver
     [SerializeField] public BasisBoneControl RightHand;
     [SerializeField] public BasisBoneControl LeftFoot;
     [SerializeField] public BasisBoneControl RightFoot;
-    public float NeckRotationSpeed = 12;
+    public float NeckRotationSpeed = 40;
     public float ChestRotationSpeed = 25;
     public float SpineRotationSpeed = 30;
     public float HipsRotationSpeed = 40;
-    public float MaxNeckAngle = 0; // Limit the neck's rotation range to avoid extreme twisting
-    public float MaxChestAngle = 0; // Limit the chest's rotation range
-    public float MaxHipsAngle = 0; // Limit the hips' rotation range
-    public float MaxSpineAngle = 0;
+
+    public Vector3 headOffset;          // Eye-to-head in eye local space
+    public Vector3 neckOffset;          // Head-to-neck in head local space
+    public Vector3 neckEyeOffset;
     public void Initialize()
     {
         if (BasisLocalPlayer.Instance.LocalBoneDriver.FindBone(out CenterEye, BasisBoneTrackedRole.CenterEye))
@@ -37,8 +37,6 @@ public class BasisVirtualSpineDriver
         if (BasisLocalPlayer.Instance.LocalBoneDriver.FindBone(out Head, BasisBoneTrackedRole.Head))
         {
             Head.HasVirtualOverride = true;
-            Head.VirtualRun += OnSimulateHead;
-            BasisLocalPlayer.Instance.LocalBoneDriver.ReadyToRead.AddAction(30, Hint);
         }
 
         if (BasisLocalPlayer.Instance.LocalBoneDriver.FindBone(out Neck, BasisBoneTrackedRole.Neck))
@@ -56,8 +54,6 @@ public class BasisVirtualSpineDriver
         if (BasisLocalPlayer.Instance.LocalBoneDriver.FindBone(out Hips, BasisBoneTrackedRole.Hips))
         {
             Hips.HasVirtualOverride = true;
-          //  Hips.HasInverseOffsetOverride = true;
-         //  Hips.VirtualInverseOffsetRun += OnSimulateHipsWithTracker;
         }
         if (BasisLocalPlayer.Instance.LocalBoneDriver.FindBone(out LeftLowerArm, BasisBoneTrackedRole.LeftLowerArm))
         {
@@ -93,38 +89,12 @@ public class BasisVirtualSpineDriver
         {
             //   RightHand.HasVirtualOverride = true;
         }
-    }
-    public void Hint()
-    {
-        /*
-        if (LeftLowerLeg.HasTracked != BasisHasTracked.HasTracker)
-        {
-        //    LeftLowerLeg.BoneTransform.position = GenerateHintPosition();
-       //     Vector3 hintPosition = GenerateHintPosition(root.position, mid.position, target.position);
-        }
-        if (RightLowerLeg.HasTracked != BasisHasTracked.HasTracker)
-        {
-            RightLowerLeg.BoneTransform.position = RightFoot.BoneTransform.position;
-        }
-        if (LeftLowerArm.HasTracked != BasisHasTracked.HasTracker)
-        {
-            LeftLowerArm.BoneTransform.position = LeftHand.BoneTransform.position;
-        }
-        if (LeftLowerArm.HasTracked != BasisHasTracked.HasTracker)
-        {
-            LeftLowerArm.BoneTransform.position = LeftHand.BoneTransform.position;
-        }
-        if (RightLowerArm.HasTracked != BasisHasTracked.HasTracker)
-        {
-            RightLowerArm.BoneTransform.position = RightHand.BoneTransform.position;
-        }
-        */
+        BasisLocalPlayer.Instance.OnPreSimulateBones += OnSimulateHead;//instead of virtual run just run at the start
     }
     public void DeInitialize()
     {
         if (Neck != null)
         {
-            Neck.VirtualRun -= OnSimulateHead;
             Neck.HasVirtualOverride = false;
         }
         if (Chest != null)
@@ -139,34 +109,30 @@ public class BasisVirtualSpineDriver
         {
             Spine.HasVirtualOverride = false;
         }
-     //   Hips.HasInverseOffsetOverride = false;
-     //   Hips.VirtualInverseOffsetRun -= OnSimulateHipsWithTracker;
+        BasisLocalPlayer.Instance.OnPreSimulateBones -= OnSimulateHead;
     }
     public void OnSimulateHead()
     {
-        float time = BasisLocalPlayer.Instance.LocalBoneDriver.DeltaTime;
+        float deltaTime = Time.deltaTime;
 
         Head.OutGoingData.rotation = CenterEye.OutGoingData.rotation;
         Neck.OutGoingData.rotation = Head.OutGoingData.rotation;
 
         // Now, apply the spine curve progressively:
         // The chest should not follow the head directly, it should follow the neck but with reduced influence.
-        Quaternion targetChestRotation = Quaternion.Slerp(Chest.OutGoingData.rotation,Neck.OutGoingData.rotation,time * ChestRotationSpeed);
+        Quaternion targetChestRotation = Quaternion.Slerp(Chest.OutGoingData.rotation, Neck.OutGoingData.rotation, deltaTime * ChestRotationSpeed);
         Vector3 EulerChestRotation = targetChestRotation.eulerAngles;
-        float clampedChestPitch = Mathf.Clamp(EulerChestRotation.x, -MaxChestAngle, MaxChestAngle);
-        Chest.OutGoingData.rotation = Quaternion.Euler(clampedChestPitch, EulerChestRotation.y, 0);
+        Chest.OutGoingData.rotation = Quaternion.Euler(0, EulerChestRotation.y, 0);
 
         // The hips should stay upright, using chest rotation as a reference
-        Quaternion targetSpineRotation = Quaternion.Slerp(Spine.OutGoingData.rotation, Chest.OutGoingData.rotation, time * SpineRotationSpeed);// Lesser influence for hips to remain more upright
+        Quaternion targetSpineRotation = Quaternion.Slerp(Spine.OutGoingData.rotation, Chest.OutGoingData.rotation, deltaTime * SpineRotationSpeed);// Lesser influence for hips to remain more upright
         Vector3 targetSpineRotationEuler = targetSpineRotation.eulerAngles;
-        float clampedSpinePitch = Mathf.Clamp(targetSpineRotationEuler.x, -MaxSpineAngle, MaxSpineAngle);
-        Spine.OutGoingData.rotation = Quaternion.Euler(clampedSpinePitch, targetSpineRotationEuler.y, 0);
+        Spine.OutGoingData.rotation = Quaternion.Euler(0, targetSpineRotationEuler.y, 0);
 
         // The hips should stay upright, using chest rotation as a reference
-        Quaternion targetHipsRotation = Quaternion.Slerp(Hips.OutGoingData.rotation, Spine.OutGoingData.rotation, time * HipsRotationSpeed);// Lesser influence for hips to remain more upright
+        Quaternion targetHipsRotation = Quaternion.Slerp(Hips.OutGoingData.rotation, Spine.OutGoingData.rotation, deltaTime * HipsRotationSpeed);// Lesser influence for hips to remain more upright
         Vector3 targetHipsRotationEuler = targetHipsRotation.eulerAngles;
-        float clampedHipsPitch = Mathf.Clamp(targetHipsRotationEuler.x, -MaxHipsAngle, MaxHipsAngle);
-        Hips.OutGoingData.rotation = Quaternion.Euler(clampedHipsPitch, targetHipsRotationEuler.y, 0);
+        Hips.OutGoingData.rotation = Quaternion.Euler(0, targetHipsRotationEuler.y, 0);
 
         // Handle position control for each segment if targets are set (as before)
         ApplyPositionControl(Head);
@@ -175,21 +141,84 @@ public class BasisVirtualSpineDriver
         ApplyPositionControl(Spine);
         ApplyPositionControl(Hips);
     }
+    /*
+    public void OnSimulateHead()
+    {
+        // Calculate head offset from eyes in eyes' local space
+        headOffset = Quaternion.Inverse(CenterEye.TposeLocal.rotation) * (Head.TposeLocal.position - CenterEye.TposeLocal.position);
+
+        // Calculate neck offset from head in head's local space
+        neckOffset = Quaternion.Inverse(Head.TposeLocal.rotation) * (Neck.TposeLocal.position - Head.TposeLocal.position);
+
+        neckEyeOffset = Quaternion.Inverse(CenterEye.TposeLocal.rotation) * (Neck.TposeLocal.position - CenterEye.TposeLocal.position);
+
+        float deltaTime = Time.deltaTime;
+        Quaternion Rotation = Neck.OutGoingData.rotation;
+        Vector3 Forward = Rotation * Vector3.forward;
+
+        CalculateBones(Forward, CenterEye.OutGoingData.position, CenterEye.OutGoingData.rotation,
+        out Vector3 headWorldPos);
+
+        Head.OutGoingData.position = headWorldPos;
+        Head.OutGoingData.rotation = CenterEye.OutGoingData.rotation; //Quaternion.Slerp(Head.OutGoingData.rotation, CenterEye.OutGoingData.rotation,deltaTime * NeckRotationSpeed);
+
+       // Neck.OutGoingData.position = finalNeckWorldPos;
+       // Neck.OutGoingData.rotation = Quaternion.Slerp(Neck.OutGoingData.rotation, neckYawRot, deltaTime * NeckRotationSpeed);
+
+        // Process rotations with reduced influence (progressive damping)
+        ApplyClampedRotation(Neck, Head, deltaTime * NeckRotationSpeed);
+        ApplyClampedRotation(Chest, Neck, deltaTime * ChestRotationSpeed);
+        ApplyClampedRotation(Spine, Chest, deltaTime * SpineRotationSpeed);
+        ApplyClampedRotation(Hips, Spine, deltaTime * HipsRotationSpeed);
+        // Apply positional constraints (if any)
+        ApplyPositionControl(Neck);
+        ApplyPositionControl(Chest);
+        ApplyPositionControl(Spine);
+        ApplyPositionControl(Hips);
+    }
+    */
+
+    private void ApplyClampedRotation(BasisBoneControl targetBone, BasisBoneControl sourceBone, float lerpFactor)
+    {
+        Vector3 euler = Quaternion.Slerp(targetBone.OutGoingData.rotation, sourceBone.OutGoingData.rotation, lerpFactor).eulerAngles;
+        targetBone.OutGoingData.rotation = Quaternion.Euler(0, euler.y, 0);
+    }
+
     private void ApplyPositionControl(BasisBoneControl boneControl)
     {
-        if (boneControl.HasTarget)
-        {
-            quaternion targetRotation = boneControl.Target.OutGoingData.rotation;
 
-            // Extract only Yaw (Horizontal rotation), ignoring Pitch (Up/Down)
-            float3 forward = math.mul(targetRotation, new float3(0, 0, 1));
-            forward.y = 0; // Flatten to avoid up/down swaying
-            forward = math.normalize(forward);
+        quaternion targetRotation = boneControl.Target.OutGoingData.rotation;
 
-            quaternion correctedRotation = quaternion.LookRotationSafe(forward, new float3(0, 1, 0));
+        // Extract yaw-only forward vector
+        float3 forward = math.mul(targetRotation, new float3(0, 0, 1));
+        forward.y = 0;
+        forward = math.normalize(forward);
 
-            float3 customDirection = math.mul(correctedRotation, boneControl.Offset);
-            boneControl.OutGoingData.position = boneControl.Target.OutGoingData.position + customDirection;
-        }
+        quaternion yawRotation = quaternion.LookRotationSafe(forward, new float3(0, 1, 0));
+        float3 offset = math.mul(yawRotation, boneControl.Offset);
+
+        boneControl.OutGoingData.position = boneControl.Target.OutGoingData.position + offset;
+    }
+    public void CalculateBones(Vector3 Forward, Vector3 eyeWorldPos, Quaternion eyeWorldRot, out Vector3 HeadPosition)
+    {
+        HeadPosition = eyeWorldPos + eyeWorldRot * headOffset;
+        // === NECK FOLLOW (world space, with locked Y) ===
+      //  Vector3 rawNeckWorldPos = HeadPosition + eyeWorldRot * neckOffset;
+
+        //this code is fault in vr
+       // Vector3 rawNeckLocalToRoot = rawNeckWorldPos;
+       // rawNeckLocalToRoot.y = Neck.TposeLocal.position.y;
+       // NeckPosition = rawNeckLocalToRoot;
+        //NeckPosition.y = eyeWorldPos.y + neckEyeOffset.y;
+        //
+
+        // Calculate yaw-only rotation from eye forward
+       // Vector3 flatForward = eyeWorldRot * Vector3.forward;
+        //flatForward.y = 0f;
+       // if (flatForward.sqrMagnitude < 0.001f)
+       // {
+       //     flatForward = Forward;//neckTransform.forward;
+       // }
+       // neckYawRot = Quaternion.LookRotation(flatForward.normalized, Vector3.up);
     }
 }

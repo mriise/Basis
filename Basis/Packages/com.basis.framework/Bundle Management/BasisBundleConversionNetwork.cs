@@ -2,7 +2,7 @@ using Basis.Scripts.BasisSdk.Players;
 public static class BasisBundleConversionNetwork
 {
     // Converts AvatarNetworkLoadInformation to BasisLoadableBundle
-    public static BasisLoadableBundle ConvertFromNetwork(AvatarNetworkLoadInformation AvatarNetworkLoadInformation)
+    public static BasisLoadableBundle ConvertFromNetwork(BasisAvatarNetworkLoad AvatarNetworkLoadInformation)
     {
         BasisLoadableBundle BasisLoadableBundle = new BasisLoadableBundle
         {
@@ -19,9 +19,9 @@ public static class BasisBundleConversionNetwork
     }
 
     // Converts BasisLoadableBundle to AvatarNetworkLoadInformation
-    public static AvatarNetworkLoadInformation ConvertToNetwork(BasisLoadableBundle BasisLoadableBundle)
+    public static BasisAvatarNetworkLoad ConvertToNetwork(BasisLoadableBundle BasisLoadableBundle)
     {
-        AvatarNetworkLoadInformation AvatarNetworkLoadInformation = new AvatarNetworkLoadInformation
+        BasisAvatarNetworkLoad AvatarNetworkLoadInformation = new BasisAvatarNetworkLoad
         {
             URL = BasisLoadableBundle.BasisRemoteBundleEncrypted.CombinedURL,
             UnlockPassword = BasisLoadableBundle.UnlockPassword
@@ -30,20 +30,20 @@ public static class BasisBundleConversionNetwork
     }
 
     // Converts byte array (serialized AvatarNetworkLoadInformation) to AvatarNetworkLoadInformation
-    public static AvatarNetworkLoadInformation ConvertToNetwork(byte[] BasisLoadableBundle)
+    public static BasisAvatarNetworkLoad ConvertToNetwork(byte[] BasisLoadableBundle)
     {
-        return AvatarNetworkLoadInformation.DecodeFromBytes(BasisLoadableBundle);
+        return BasisAvatarNetworkLoad.DecodeFromBytes(BasisLoadableBundle);
     }
 
     // Converts byte array (serialized AvatarNetworkLoadInformation) to BasisLoadableBundle
     public static BasisLoadableBundle ConvertNetworkBytesToBasisLoadableBundle(byte[] BasisLoadableBundle)
     {
-        AvatarNetworkLoadInformation ANLI = AvatarNetworkLoadInformation.DecodeFromBytes(BasisLoadableBundle);
+        BasisAvatarNetworkLoad ANLI = BasisAvatarNetworkLoad.DecodeFromBytes(BasisLoadableBundle);
         return ConvertFromNetwork(ANLI);
     }
 
     // Converts AvatarNetworkLoadInformation to byte array (serialization)
-    public static byte[] ConvertNetworkToByte(AvatarNetworkLoadInformation AvatarNetworkLoadInformation)
+    public static byte[] ConvertNetworkToByte(BasisAvatarNetworkLoad AvatarNetworkLoadInformation)
     {
         return AvatarNetworkLoadInformation.EncodeToBytes();
     }
@@ -51,14 +51,14 @@ public static class BasisBundleConversionNetwork
     // Converts BasisLoadableBundle to byte array (serialization)
     public static byte[] ConvertBasisLoadableBundleToBytes(BasisLoadableBundle BasisLoadableBundle)
     {
-        AvatarNetworkLoadInformation AvatarNetworkLoadInformation = ConvertToNetwork(BasisLoadableBundle);
+        BasisAvatarNetworkLoad AvatarNetworkLoadInformation = ConvertToNetwork(BasisLoadableBundle);
         return AvatarNetworkLoadInformation.EncodeToBytes();
     }
 
     // Converts byte array (serialized BasisLoadableBundle) to BasisLoadableBundle
     public static BasisLoadableBundle ConvertBytesToBasisLoadableBundle(byte[] BasisLoadableBundleBytes)
     {
-        AvatarNetworkLoadInformation ANLI = AvatarNetworkLoadInformation.DecodeFromBytes(BasisLoadableBundleBytes);
+        BasisAvatarNetworkLoad ANLI = BasisAvatarNetworkLoad.DecodeFromBytes(BasisLoadableBundleBytes);
         return ConvertFromNetwork(ANLI);
     }
 }

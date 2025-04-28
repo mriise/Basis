@@ -1,4 +1,5 @@
-using Basis.Scripts.Networking.Recievers;
+using Basis.Scripts.Networking.Receivers;
+using System;
 using UnityEngine;
 
 namespace Basis.Scripts.Drivers
@@ -7,12 +8,14 @@ namespace Basis.Scripts.Drivers
     {
         public BasisAudioAndVisemeDriver BasisAudioAndVisemeDriver;
         public BasisAudioReceiver BasisAudioReceiver;
+        public Action<float[],int> AudioData;
         public void OnAudioFilterRead(float[] data, int channels)
         {
             //2048  BasisDebug.Log("data" + data.Length);
             int length = data.Length;
-            BasisAudioReceiver.OnAudioFilterRead(data, channels,length);
+            BasisAudioReceiver.OnAudioFilterRead(data, channels, length);
             BasisAudioAndVisemeDriver.ProcessAudioSamples(data, channels, length);
+            AudioData?.Invoke(data, channels);
         }
         public void Initalize(BasisAudioAndVisemeDriver basisVisemeDriver)
         {

@@ -44,6 +44,7 @@ namespace Basis.Scripts.TransformBinders.BoneControl
         public static bool CheckIfHintRole(BasisBoneTrackedRole role)
         {
             bool IsHintRole = (role == BasisBoneTrackedRole.LeftLowerArm || role == BasisBoneTrackedRole.RightLowerArm || role == BasisBoneTrackedRole.LeftLowerLeg || role == BasisBoneTrackedRole.RightLowerLeg);
+            BasisDebug.Log($"was hint {IsHintRole} {role.ToString()}", BasisDebug.LogTag.IK);
             return IsHintRole;
         }
         public static bool CheckIfHeadAreaTracker(BasisBoneTrackedRole role)

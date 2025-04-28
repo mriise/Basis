@@ -2,9 +2,9 @@ using Basis.Network.Core;
 using Basis.Scripts.BasisSdk;
 using Basis.Scripts.BasisSdk.Helpers;
 using Basis.Scripts.BasisSdk.Players;
-using Basis.Scripts.Device_Management.Devices.Desktop;
+using Basis.Scripts.Device_Management;
 using Basis.Scripts.Networking.NetworkedAvatar;
-using Basis.Scripts.Networking.Recievers;
+using Basis.Scripts.Networking.Receivers;
 using Basis.Scripts.Networking.Transmitters;
 using Basis.Scripts.Profiler;
 using Basis.Scripts.TransformBinders.BoneControl;
@@ -127,6 +127,10 @@ namespace Basis.Scripts.Networking
                 SetupSceneEvents(BasisScene.Instance);
             }
             BasisScene.Ready += SetupSceneEvents;
+            if (BasisDeviceManagement.Instance != null)
+            {
+                this.transform.parent = BasisDeviceManagement.Instance.transform;
+            }
             this.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
             OnEnableInstanceCreate?.Invoke();
             NetworkRunning = true;
@@ -201,6 +205,7 @@ namespace Basis.Scripts.Networking
                         ReceiverArray[Index].Compute(TimeAsDouble);
                     }
                 }
+                BasisNetworkProfiler.Update();
             }
         }
         public static void SimulateNetworkApply()
@@ -311,7 +316,7 @@ namespace Basis.Scripts.Networking
                         ushort LocalPlayerID = (ushort)peer.RemoteId;
                         // Create the local networked player asynchronously.
                         this.transform.GetPositionAndRotation(out Vector3 Position, out Quaternion Rotation);
-                        BasisNetworkPlayer LocalNetworkedPlayer = new BasisNetworkTransmitter();
+                        LocalNetworkedPlayer = new BasisNetworkTransmitter();
                         BasisDebug.Log("Network Id Updated " + LocalPlayerPeer.RemoteId);
 
                         LocalNetworkedPlayer.ProvideNetworkKey(LocalPlayerID);
@@ -337,15 +342,16 @@ namespace Basis.Scripts.Networking
                 }), null);
             });
         }
+        public static BasisNetworkPlayer LocalNetworkedPlayer;
         public static void LocalInitalize(BasisNetworkPlayer BasisNetworkPlayer, BasisLocalPlayer BasisLocalPlayer)
         {
             BasisNetworkPlayer.Player = BasisLocalPlayer;
-            if (BasisLocalPlayer.AvatarDriver != null)
+            if (BasisLocalPlayer.LocalAvatarDriver != null)
             {
-                if (BasisLocalPlayer.AvatarDriver.HasEvents == false)
+                if (BasisLocalPlayer.LocalAvatarDriver.HasEvents == false)
                 {
-                    BasisLocalPlayer.AvatarDriver.CalibrationComplete += BasisNetworkPlayer.OnAvatarCalibrationLocal;
-                    BasisLocalPlayer.AvatarDriver.HasEvents = true;
+                    BasisLocalPlayer.LocalAvatarDriver.CalibrationComplete += BasisNetworkPlayer.OnAvatarCalibrationLocal;
+                    BasisLocalPlayer.LocalAvatarDriver.HasEvents = true;
                 }
                 BasisLocalPlayer.LocalBoneDriver.FindBone(out BasisNetworkPlayer.MouthBone, BasisBoneTrackedRole.Mouth);
             }
@@ -524,7 +530,7 @@ namespace Basis.Scripts.Networking
                     }
                     BasisNetworkManagement.MainThreadContext.Post(async _ =>
                     {
-                        await BasisNetworkHandleRemote.HandleCreateRemotePlayer(Reader, this.transform);
+                        await BasisRemotePlayerFactory.HandleCreateRemotePlayer(Reader, this.transform);
                         Reader.Recycle();
                     }, null);
                     break;
@@ -538,7 +544,7 @@ namespace Basis.Scripts.Networking
                     BasisNetworkManagement.MainThreadContext.Post(async _ =>
                     {
                         //this one is called first and is also generally where the issues are.
-                        await BasisNetworkHandleRemote.HandleCreateRemotePlayer(Reader, this.transform);
+                        await BasisRemotePlayerFactory.HandleCreateRemotePlayer(Reader, this.transform);
                         Reader.Recycle();
                     }, null);
                     break;
@@ -694,7 +700,7 @@ namespace Basis.Scripts.Networking
             NetDataWriter netDataWriter = new NetDataWriter();
             OwnershipTransferMessage.Serialize(netDataWriter);
             BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter, BasisNetworkCommons.RemoveCurrentOwnerRequest, DeliveryMethod.ReliableSequenced);
-            BasisNetworkProfiler.OwnershipTransferMessageCounter.Sample(netDataWriter.Length);
+            BasisNetworkProfiler.AddToCounter(BasisNetworkProfilerCounter.OwnershipTransfer, netDataWriter.Length);
         }
         public static void TakeOwnership(string UniqueNetworkId, ushort NewOwner)
         {
@@ -709,7 +715,7 @@ namespace Basis.Scripts.Networking
             NetDataWriter netDataWriter = new NetDataWriter();
             OwnershipTransferMessage.Serialize(netDataWriter);
             BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter, BasisNetworkCommons.ChangeCurrentOwnerRequest, DeliveryMethod.ReliableSequenced);
-            BasisNetworkProfiler.OwnershipTransferMessageCounter.Sample(netDataWriter.Length);
+            BasisNetworkProfiler.AddToCounter(BasisNetworkProfilerCounter.OwnershipTransfer, netDataWriter.Length);
         }
         public static void RequestCurrentOwnership(string UniqueNetworkId)
         {
@@ -724,7 +730,7 @@ namespace Basis.Scripts.Networking
             NetDataWriter netDataWriter = new NetDataWriter();
             OwnershipTransferMessage.Serialize(netDataWriter);
             BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter,BasisNetworkCommons.GetCurrentOwnerRequest, DeliveryMethod.ReliableSequenced);
-            BasisNetworkProfiler.RequestOwnershipTransferMessageCounter.Sample(netDataWriter.Length);
+            BasisNetworkProfiler.AddToCounter(BasisNetworkProfilerCounter.RequestOwnershipTransfer, netDataWriter.Length);
         }
 
         public static bool AvatarToPlayer(BasisAvatar Avatar, out BasisPlayer BasisPlayer, out BasisNetworkPlayer NetworkedPlayer)

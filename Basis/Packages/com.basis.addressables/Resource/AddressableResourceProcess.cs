@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.ResourceManagement.ResourceProviders;
+using static BundledContentHolder;
 
 namespace Basis.Scripts.Addressable_Driver.Resource
 {
@@ -20,7 +21,7 @@ public static class AddressableResourceProcess
         }
         return Instantiated;
     }
-    public static async Task<List<GameObject>> LoadAsGameObjectsAsync(AddressableGenericResource loadRequest, InstantiationParameters instantiationParameters, ChecksRequired Required)
+    public static async Task<List<GameObject>> LoadAsGameObjectsAsync(AddressableGenericResource loadRequest, InstantiationParameters instantiationParameters, ChecksRequired Required, Selector Selector)
     {
         List<GameObject> instantiated = new List<GameObject>();
         for (int Index = 0; Index < loadRequest.Handles.Count; Index++)
@@ -29,7 +30,7 @@ public static class AddressableResourceProcess
             object result = await handle.Task;
             if (result is GameObject resource)
             {
-                    GameObject spawned = ContentPoliceControl.ContentControl(resource, Required, instantiationParameters.Position, instantiationParameters.Rotation,false,Vector3.zero, instantiationParameters.Parent);
+                    GameObject spawned = ContentPoliceControl.ContentControl(resource, Required, instantiationParameters.Position, instantiationParameters.Rotation,false,Vector3.zero, Selector, instantiationParameters.Parent);
               //  Debug.Log("Spawned " + spawned.name + " at " + spawned.transform.position + " with rotation " + spawned.transform.rotation);
                 instantiated.Add(spawned);
             }
@@ -41,13 +42,13 @@ public static class AddressableResourceProcess
         return instantiated;
     }
 
-    public static async Task<(List<GameObject>, AddressableGenericResource)> LoadAsGameObjectsAsync(string key, InstantiationParameters instantiationParameters, ChecksRequired Required)
+    public static async Task<(List<GameObject>, AddressableGenericResource)> LoadAsGameObjectsAsync(string key, InstantiationParameters instantiationParameters, ChecksRequired Required, Selector Selector)
     {
         AddressableGenericResource loadRequest = new AddressableGenericResource(key, AddressableExpectedResult.SingleItem);
         bool loaded = await AddressableLoadFactory.LoadAddressableResourceAsync<GameObject>(loadRequest);
         if (loaded)
         {
-            return ( await LoadAsGameObjectsAsync(loadRequest, instantiationParameters,Required),loadRequest);
+            return ( await LoadAsGameObjectsAsync(loadRequest, instantiationParameters,Required, Selector),loadRequest);
         }
         else
         {

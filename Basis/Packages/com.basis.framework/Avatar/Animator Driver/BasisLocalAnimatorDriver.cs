@@ -6,26 +6,24 @@ using Basis.Scripts.TransformBinders.BoneControl;
 using UnityEngine;
 using Unity.Mathematics;
 using Basis.Scripts.Avatar;
+using Basis.Scripts.Drivers;
 namespace Basis.Scripts.Animator_Driver
 {
-    public class BasisLocalAnimatorDriver : MonoBehaviour
+    [System.Serializable]
+    public class BasisLocalAnimatorDriver
     {
         [SerializeField]
         private BasisAnimatorVariableApply basisAnimatorVariableApply = new BasisAnimatorVariableApply();
         [SerializeField]
-        private Animator animator;
+        private Animator Animator;
         public float LargerThenVelocityCheck = 0.01f;
         public float LargerThenVelocityCheckRotation = 0.03f;
-        private BasisLocalPlayer localPlayer;
         public float ScaleMovementBy = 1;
         public float dampeningFactor = 6; // Adjust this value to control the dampening effect
         public float AngularDampingFactor = 30;
         private Vector3 previousRawVelocity = Vector3.zero;
         private Vector3 previousAngularVelocity = Vector3.zero; // New field for previous angular velocity
         private Quaternion previousHipsRotation;
-        public BasisCharacterController.BasisCharacterController Controller;
-        public BasisBoneControl Hips;
-        public BasisBoneControl Head;
         public Vector3 currentVelocity;
         public Vector3 dampenedVelocity;
         public Vector3 angularVelocity;
@@ -38,9 +36,13 @@ namespace Basis.Scripts.Animator_Driver
         // Critically damped spring smoothing
         public float dampingRatio = 30; // Adjust for desired dampening effect
         public float angularFrequency = 0.4f; // Adjust for the speed of dampening
-        void Simulate()
+        public float3 hipsDifference;
+        public Quaternion hipsDifferenceQ = Quaternion.identity;
+        public float smoothFactor = 30f;
+        public Quaternion smoothedRotation;
+        public void SimulateAnimator(float DeltaTime)
         {
-            if (localPlayer.AvatarDriver.CurrentlyTposing || BasisAvatarIKStageCalibration.HasFBIKTrackers)
+            if (BasisLocalPlayer.Instance.LocalAvatarDriver.CurrentlyTposing || BasisAvatarIKStageCalibration.HasFBIKTrackers)
             {
                 if (basisAnimatorVariableApply.IsStopped == false)
                 {
@@ -48,19 +50,23 @@ namespace Basis.Scripts.Animator_Driver
                 }
                 return;
             }
-
-            float DeltaTime = localPlayer.LocalBoneDriver.DeltaTime;
             // Calculate the velocity of the character controller
-            currentVelocity = Quaternion.Inverse(Hips.OutgoingWorldData.rotation)
-                              * (Controller.bottomPointLocalspace - Controller.LastbottomPoint) / DeltaTime;
+            currentVelocity = Quaternion.Inverse(BasisLocalBoneDriver.Hips.OutgoingWorldData.rotation)
+                              * (BasisLocalPlayer.Instance.LocalCharacterDriver.bottomPointLocalspace - BasisLocalPlayer.Instance.LocalCharacterDriver.LastbottomPoint) / DeltaTime;
 
-            // Check if currentVelocity or previousRawVelocity contain NaN values
-            if (float.IsNaN(currentVelocity.x) || float.IsNaN(currentVelocity.y) || float.IsNaN(currentVelocity.z) ||
-                float.IsNaN(previousRawVelocity.x) || float.IsNaN(previousRawVelocity.y) || float.IsNaN(previousRawVelocity.z))
-            {
-                previousRawVelocity = Vector3.zero;  // Reset to a safe default
-                return;
-            }
+            // Sanitize currentVelocity
+            currentVelocity = new Vector3(
+                float.IsNaN(currentVelocity.x) ? 0f : currentVelocity.x,
+                float.IsNaN(currentVelocity.y) ? 0f : currentVelocity.y,
+                float.IsNaN(currentVelocity.z) ? 0f : currentVelocity.z
+            );
+
+            // Sanitize previousRawVelocity
+            previousRawVelocity = new Vector3(
+                float.IsNaN(previousRawVelocity.x) ? 0f : previousRawVelocity.x,
+                float.IsNaN(previousRawVelocity.y) ? 0f : previousRawVelocity.y,
+                float.IsNaN(previousRawVelocity.z) ? 0f : previousRawVelocity.z
+            );
 
             Vector3 velocityDifference = currentVelocity - previousRawVelocity;
 
@@ -92,11 +98,11 @@ namespace Basis.Scripts.Animator_Driver
                 }
             }
 
-            basisAnimatorVariableApply.BasisAnimatorVariables.IsFalling = localPlayer.Move.IsFalling;
+            basisAnimatorVariableApply.BasisAnimatorVariables.IsFalling = BasisLocalPlayer.Instance.LocalCharacterDriver.IsFalling;
             basisAnimatorVariableApply.BasisAnimatorVariables.IsCrouching = BasisLocalInputActions.Crouching;
 
             // Calculate the angular velocity of the hips
-            deltaRotation = Hips.OutgoingWorldData.rotation * Quaternion.Inverse(previousHipsRotation);
+            deltaRotation = BasisLocalBoneDriver.Hips.OutgoingWorldData.rotation * Quaternion.Inverse(previousHipsRotation);
             deltaRotation.ToAngleAxis(out float angle, out Vector3 axis);
 
             angularVelocity = axis * angle / DeltaTime;
@@ -106,13 +112,6 @@ namespace Basis.Scripts.Animator_Driver
 
 
             basisAnimatorVariableApply.BasisAnimatorVariables.AngularVelocity = dampenedAngularVelocity;
-            /*
-            if (basisAnimatorVariableApply.BasisAnimatorVariables.isMoving == false)
-            {
-                basisAnimatorVariableApply.BasisAnimatorVariables.isMoving = angularVelocity.sqrMagnitude > LargerThenVelocityCheckRotation;
-                basisAnimatorVariableApply.BasisAnimatorVariables.Velocity = dampenedAngularVelocity; // Update to use dampened angular velocity
-            }
-            */
 
             basisAnimatorVariableApply.UpdateAnimator(ScaleMovementBy);
 
@@ -123,63 +122,38 @@ namespace Basis.Scripts.Animator_Driver
             // Update the previous velocities and rotations for the next frame
             previousRawVelocity = dampenedVelocity;
             previousAngularVelocity = dampenedAngularVelocity;
-            previousHipsRotation = Hips.OutgoingWorldData.rotation;
+            previousHipsRotation = BasisLocalBoneDriver.Hips.OutgoingWorldData.rotation;
         }
         private void JustJumped()
         {
             basisAnimatorVariableApply.BasisAnimatorVariables.IsJumping = true;
-            basisAnimatorVariableApply.UpdateJumpState();
+            //basisAnimatorVariableApply.UpdateJumpState();
         }
-
         private void JustLanded()
         {
             basisAnimatorVariableApply.UpdateIsLandingState();
         }
-
-        public void Initialize(Animator anim)
+        public void Initialize(Animator animator)
         {
-            FindReferences();
-            this.animator = anim;
-            animator.logWarnings = false;
-            animator.updateMode = AnimatorUpdateMode.Normal;
-            animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+            this.Animator = animator;
+            Animator.logWarnings = false;
+            Animator.updateMode = AnimatorUpdateMode.Normal;
+            Animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
 
-            basisAnimatorVariableApply.LoadCachedAnimatorHashes(animator);
-            Controller = BasisLocalPlayer.Instance.Move;
-            BasisLocalPlayer.Instance.LocalBoneDriver.FindBone(out Hips, BasisBoneTrackedRole.Hips);
-            BasisLocalPlayer.Instance.LocalBoneDriver.FindBone(out Head, BasisBoneTrackedRole.Head);
+            basisAnimatorVariableApply.LoadCachedAnimatorHashes(Animator);
             if (HasEvents == false)
             {
+                BasisLocalPlayer.Instance.LocalCharacterDriver.JustJumped += JustJumped;
+                BasisLocalPlayer.Instance.LocalCharacterDriver.JustLanded += JustLanded;
                 BasisDeviceManagement.Instance.AllInputDevices.OnListChanged += AssignHipsFBTracker;
                 HasEvents = true;
             }
             AssignHipsFBTracker();
         }
-        public float3 hipsDifference;
-        public Quaternion hipsDifferenceQ = Quaternion.identity;
-        public float smoothFactor = 30f;
-        public Quaternion smoothedRotation;
         public void AssignHipsFBTracker()
         {
             basisAnimatorVariableApply.StopAll();
             HasHipsInput = BasisDeviceManagement.Instance.FindDevice(out HipsInput, BasisBoneTrackedRole.Hips);
-        }
-        private void FindReferences()
-        {
-            if (localPlayer == null)
-            {
-                localPlayer = BasisLocalPlayer.Instance;
-                localPlayer.Move.ReadyToRead += Simulate;
-                localPlayer.Move.JustJumped += JustJumped;
-                localPlayer.Move.JustLanded += JustLanded;
-               localPlayer.LocalBoneDriver.ReadyToRead.AddAction(100, RunIKRig);
-            }
-        }
-        public void RunIKRig()
-        {
-            float DeltaTime = Time.deltaTime;
-            localPlayer.AvatarDriver.Builder.SyncLayers();
-            localPlayer.AvatarDriver.PlayableGraph.Evaluate(DeltaTime);
         }
         public void HandleTeleport()
         {
@@ -188,17 +162,12 @@ namespace Basis.Scripts.Animator_Driver
             previousAngularVelocity = Vector3.zero; // Reset angular velocity dampening on teleport
         }
 
-        public void OnDestroy()
+        public void OnDestroy(BasisLocalPlayer localPlayer)
         {
-            if (localPlayer != null)
-            {
-                localPlayer.Move.ReadyToRead -= Simulate;
-                localPlayer.Move.JustJumped -= JustJumped;
-                localPlayer.Move.JustLanded -= JustLanded;
-                localPlayer.LocalBoneDriver.ReadyToRead.RemoveAction(100, RunIKRig);
-            }
             if (HasEvents)
             {
+                localPlayer.LocalCharacterDriver.JustJumped -= JustJumped;
+                localPlayer.LocalCharacterDriver.JustLanded -= JustLanded;
                 BasisDeviceManagement.Instance.AllInputDevices.OnListChanged -= AssignHipsFBTracker;
             }
         }

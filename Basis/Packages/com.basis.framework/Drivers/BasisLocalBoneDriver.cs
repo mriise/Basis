@@ -1,33 +1,49 @@
-using Basis.Scripts.Device_Management;
-using UnityEngine;
+using Basis.Scripts.BasisSdk.Players;
+using Basis.Scripts.TransformBinders.BoneControl;
 
 namespace Basis.Scripts.Drivers
 {
-    public class BasisLocalBoneDriver : BaseBoneDriver
+    [System.Serializable]
+    public class BasisLocalBoneDriver : BasisBaseBoneDriver
     {
-        public void Start()
+        public static BasisBoneControl Head;
+        public static BasisBoneControl Hips;
+        public static BasisBoneControl Eye;
+        public static BasisBoneControl Mouth;
+        public static BasisBoneControl HeadControl;
+        public static BasisBoneControl LeftFootControl;
+        public static BasisBoneControl RightFootControl;
+        public static BasisBoneControl LeftHandControl;
+        public static BasisBoneControl RightHandControl;
+        public static BasisBoneControl ChestControl;
+        public static BasisBoneControl LeftLowerLegControl;
+        public static BasisBoneControl RightLowerLegControl;
+        public static BasisBoneControl LeftLowerArmControl;
+        public static BasisBoneControl RightLowerArmControl;
+        public static bool HasEye;
+        public void InitalizeLocal()
         {
-            BasisDeviceManagement.Instance.OnBootModeChanged += OnBootModeChanged;
-            OnBootModeChanged(BasisDeviceManagement.Instance.CurrentMode);
-        }
+            HasEye = FindBone(out Eye, BasisBoneTrackedRole.CenterEye);
+            FindBone(out Head, BasisBoneTrackedRole.Head);
+            FindBone(out Hips, BasisBoneTrackedRole.Hips);
+            FindBone(out Mouth, BasisBoneTrackedRole.Mouth);
 
-        private void OnBootModeChanged(string mode)
-        {
-        }
-        public float DeltaTime;
-        public void Simulate()
-        {
-            DeltaTime = Time.deltaTime;
-            if (float.IsNaN(DeltaTime))
-            {
-                return;
-            }
+            // --- Bone Lookup ---
+            FindBone(out HeadControl, BasisBoneTrackedRole.Head);
+            FindBone(out LeftFootControl, BasisBoneTrackedRole.LeftFoot);
+            FindBone(out RightFootControl, BasisBoneTrackedRole.RightFoot);
+            FindBone(out LeftHandControl, BasisBoneTrackedRole.LeftHand);
+            FindBone(out RightHandControl, BasisBoneTrackedRole.RightHand);
 
-            SimulateAndApply(DeltaTime);
+            FindBone(out ChestControl, BasisBoneTrackedRole.Chest);
+            FindBone(out LeftLowerLegControl, BasisBoneTrackedRole.LeftLowerLeg);
+            FindBone(out RightLowerLegControl, BasisBoneTrackedRole.RightLowerLeg);
+            FindBone(out LeftLowerArmControl, BasisBoneTrackedRole.LeftLowerArm);
+            FindBone(out RightLowerArmControl, BasisBoneTrackedRole.RightLowerArm);
         }
-        public void OnDestroy()
+        public void PostSimulateBonePositions()
         {
-            BasisDeviceManagement.Instance.OnBootModeChanged -= OnBootModeChanged;
+            SimulateWorldDestinations(BasisLocalPlayer.Instance.transform);
         }
     }
 }

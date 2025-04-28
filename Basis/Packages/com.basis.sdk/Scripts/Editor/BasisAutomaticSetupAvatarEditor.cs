@@ -108,12 +108,11 @@ namespace Basis.Scripts.Editor
             if (BasisHelpers.TryGetVector3Bone(avatar.Animator, HumanBodyBones.LeftEye, out Vector3 LeftEye) && BasisHelpers.TryGetVector3Bone(avatar.Animator, HumanBodyBones.RightEye, out Vector3 RightEye))
             {
                 Vector3 EyePosition = Vector3.Lerp(LeftEye, RightEye, 0.5f);
-                if (BasisHelpers.TryGetFloor(avatar.Animator, out float3 Bottom))
-                {
-                    Vector3 Space = BasisHelpers.ConvertToLocalSpace(EyePosition, Bottom);
-                    avatar.AvatarEyePosition = BasisHelpers.AvatarPositionConversion(Space);
-                    EditorUtility.SetDirty(avatar);
-                }
+
+                float3 Bottom = avatar.Animator.transform.position;
+                Vector3 Space = BasisHelpers.ConvertToLocalSpace(EyePosition, Bottom);
+                avatar.AvatarEyePosition = BasisHelpers.AvatarPositionConversion(Space);
+                EditorUtility.SetDirty(avatar);
             }
         }
         private static void TrySetAvatarMouthPosition(BasisAvatar avatar, Transform Head)

@@ -40,7 +40,7 @@ namespace HVR.Basis.Comms
         // - Becomes non-null after HVRAvatarComms.OnAvatarNetworkReady is successfully invoked
         private FeatureInterpolator _featureInterpolator;
         public BasisRemotePlayer _basisRemotePlayer;
-        public BasisLocalEyeFollowBase _eyeFollowDriverLateInit;
+        public BasisLocalEyeDriver _eyeFollowDriverLateInit;
         #endregion
 
         private void Awake()
@@ -70,7 +70,7 @@ namespace HVR.Basis.Comms
             if (isWearer)
             {
                 acquisition.RegisterAddresses(OurAddresses, OnAddressUpdated);
-                _eyeFollowDriverLateInit = BasisLocalPlayer.Instance.AvatarDriver.BasisLocalEyeFollowDriver;
+                _eyeFollowDriverLateInit = BasisLocalPlayer.Instance.BasisLocalEyeDriver;
             }
         }
 
@@ -152,7 +152,7 @@ namespace HVR.Basis.Comms
         }
         private void SetEyeRotation(float x, float y, EyeSide side)
         {
-            if (_eyeFollowDriverLateInit != null)
+            if (_eyeFollowDriverLateInit != null && _eyeFollowDriverLateInit.IsEnabled)
             {
                 var xDeg = Mathf.Asin(x) * Mathf.Rad2Deg * multiplyX;
                 var yDeg = Mathf.Asin(-y) * Mathf.Rad2Deg * multiplyY;
@@ -197,8 +197,11 @@ namespace HVR.Basis.Comms
         }
         private void SetBuiltInEyeFollowDriverOverriden(bool value)
         {
-            if (!_eyeFollowDriverLateInit) return;
-            BasisLocalEyeFollowBase.Override = value;
+            if (_eyeFollowDriverLateInit == null)
+            {
+                return;
+            }
+            BasisLocalEyeDriver.Override = value;
         }
 
         private enum EyeSide

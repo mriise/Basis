@@ -1,10 +1,9 @@
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Device_Management;
-using Basis.Scripts.Device_Management.Devices.Desktop;
 using Basis.Scripts.Eye_Follow;
 using Basis.Scripts.Networking;
 using Basis.Scripts.Networking.Transmitters;
-using System;
+using Basis.Scripts.UI.NamePlate;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -44,19 +43,25 @@ public class BasisEventDriver : MonoBehaviour
 
     public void LateUpdate()
     {
-        if (BasisLocalEyeFollowBase.RequiresUpdate())
+        if (BasisLocalEyeDriver.RequiresUpdate())
         {
-            BasisLocalEyeFollowBase.Instance.Simulate();
+            BasisLocalEyeDriver.Instance.Simulate();
         }
-        MicrophoneRecorder.MicrophoneUpdate();
+        if (BasisLocalPlayer.PlayerReady)
+        {
+            BasisLocalPlayer.Instance.SimulateOnLateUpdate();
+        }
+        BasisMicrophoneRecorder.MicrophoneUpdate();
+        RemoteNamePlateDriver.SimulateNamePlates();
         BasisNetworkManagement.SimulateNetworkApply();
     }
     private void OnBeforeRender()
     {
         if (BasisLocalPlayer.PlayerReady)
         {
-            BasisLocalPlayer.Instance.LocalBoneDriver.Simulate();
+            BasisLocalPlayer.Instance.SimulateOnRender();
+            //send out avatar
+            BasisNetworkTransmitter.AfterAvatarChanges?.Invoke();
         }
-        BasisNetworkTransmitter.AfterAvatarChanges?.Invoke();
     }
 }

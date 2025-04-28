@@ -6,6 +6,7 @@ using Basis.Scripts.Common;
 using Basis.Scripts.Networking;
 using System.Threading.Tasks;
 using Basis.Scripts.Drivers;
+using Basis.Scripts.Device_Management;
 namespace Basis.Scripts.UI.UI_Panels
 {
     public class BasisSetUserName : MonoBehaviour
@@ -13,7 +14,6 @@ namespace Basis.Scripts.UI.UI_Panels
         public TMP_InputField UserNameTMP_InputField;
         public Button Ready;
         public static string LoadFileName = "CachedUserName.BAS";
-        public bool UseAddressables;
         public Button AdvancedSettings;
         public GameObject AdvancedSettingsPanel;
         [Header("Advanced Settings")]
@@ -32,6 +32,10 @@ namespace Basis.Scripts.UI.UI_Panels
                 UseLocalhost.onClick.AddListener(UseLocalHost);
             }
             BasisNetworkManagement.OnEnableInstanceCreate += LoadCurrentSettings;
+            if (BasisDeviceManagement.Instance != null)
+            {
+                this.transform.parent = BasisDeviceManagement.Instance.transform;
+            }
         }
 
         public void OnDestroy()
@@ -53,6 +57,10 @@ namespace Basis.Scripts.UI.UI_Panels
             Port.text = BasisNetworkManagement.Instance.Port.ToString();
             Password.text = BasisNetworkManagement.Instance.Password;
             HostMode.isOn = BasisNetworkManagement.Instance.IsHostMode;
+            if (BasisDeviceManagement.Instance != null)
+            {
+                this.transform.SetParent(BasisDeviceManagement.Instance.transform);
+            }
         }
         public async void HasUserName()
         {

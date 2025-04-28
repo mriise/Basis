@@ -10,7 +10,7 @@ public class SMModuleRenderResolutionURP : SettingsManagerOption
     List<XRDisplaySubsystem> xrDisplays = new List<XRDisplaySubsystem>();
     public void Start()
     {
-        BasisDeviceManagement.Instance.OnBootModeChanged += OnBootModeChanged;
+        BasisDeviceManagement.OnBootModeChanged += OnBootModeChanged;
     }
 
     private void OnBootModeChanged(string obj)
@@ -20,7 +20,7 @@ public class SMModuleRenderResolutionURP : SettingsManagerOption
 
     public void OnDestroy()
     {
-        BasisDeviceManagement.Instance.OnBootModeChanged -= OnBootModeChanged;
+        BasisDeviceManagement.OnBootModeChanged -= OnBootModeChanged;
     }
     public override void ReceiveOption(SettingsMenuInput Option, SettingsManager Manager)
     {

@@ -93,4 +93,8 @@
 
 	<!-- Preserve the entire AudioLink assembly -->
 	<assembly fullname="AudioLink" preserve="all" />
+	<assembly fullname="FFMpeg.Unity" preserve="all" />
+	<assembly fullname="FFMpeg.AutoGen.Abstractions" preserve="all" />
+	<assembly fullname="FFMpeg.AutoGen.Bindings.DynamicallyLoaded" preserve="all" />
+	<assembly fullname="FFMpeg.AutoGen.Bindings.DynamicallyLinked" preserve="all" />
 </linker>

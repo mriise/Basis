@@ -107,7 +107,7 @@ public class uLipSyncEditor : Editor
 
     void DrawRawVolume()
     {
-        float volume = Mathf.Log10(lipSync.result.rawVolume);
+        float volume = Mathf.Log10(lipSync.rawVolume);
         if (!float.IsNegativeInfinity(volume) && !float.IsPositiveInfinity(volume))
         {
             _smoothVolume += (volume - _smoothVolume) * 0.9f;
@@ -130,7 +130,7 @@ public class uLipSyncEditor : Editor
             rect.height *= 0.4f;
             Handles.DrawSolidRectangleWithOutline(rect, new Color(0f, 0f, 0f, 0.2f), new Color(0f, 0f, 0f, 0.5f));
             rect.width -= 2;
-            rect.width *= Mathf.Clamp(lipSync.result.volume, 0f, 1f);
+            rect.width *= Mathf.Clamp(lipSync.NormalVolume, 0f, 1f);
             rect.height -= 2;
             rect.y += 1;
             rect.x += 1;
@@ -176,13 +176,13 @@ public class uLipSyncEditor : Editor
 
     void DrawRecognition()
     {
-        var phoeneme = lipSync.result.phoneme;
+        var phoeneme = lipSync.mainPhoneme;
         if (Application.isPlaying &&
             !EditorApplication.isPaused &&
             lipSync.isActiveAndEnabled &&
             !string.IsNullOrEmpty(phoeneme))
         {
-            _recognizedPhonemes.Append(lipSync.result.phoneme[0]);
+            _recognizedPhonemes.Append(lipSync.mainPhoneme[0]);
             while (_recognizedPhonemes.Length > 64)
             {
                 _recognizedPhonemes.Remove(0, 1);

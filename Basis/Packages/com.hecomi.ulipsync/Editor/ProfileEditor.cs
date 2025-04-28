@@ -16,14 +16,7 @@ public class ProfileEditor : Editor
     public uLipSync uLipSync { get; set; }
     bool _isCalibrating = false;
     ReorderableList _reorderableList = null;
-    List<BakedData> _bakedDataList = new List<BakedData>();
     Dictionary<MfccData, Texture2D> _texturePool = new Dictionary<MfccData, Texture2D>();
-
-    void OnEnable()
-    {
-        InitBakedData();
-    }
-
     public override void OnInspectorGUI()
     {
         Draw(false);
@@ -293,25 +286,8 @@ public class ProfileEditor : Editor
         EditorGUILayout.EndHorizontal();
     }
 
-    void InitBakedData()
-    {
-        _bakedDataList.Clear();
-        var bakedDataGuids = AssetDatabase.FindAssets("t:BakedData");
-        foreach (var guid in bakedDataGuids)
-        {
-            var path = AssetDatabase.GUIDToAssetPath(guid);
-            var data = AssetDatabase.LoadAssetAtPath<BakedData>(path);
-            if (data && data.profile == profile)
-            {
-                _bakedDataList.Add(data);
-            }
-        }
-    }
-
     void DrawBakedData()
     {
-        EditorGUILayout.LabelField("Asset Count", _bakedDataList.Count.ToString());
-
         EditorGUILayout.BeginHorizontal();
         GUILayout.FlexibleSpace();
         if (GUILayout.Button(" Reconvert "))
@@ -324,15 +300,6 @@ public class ProfileEditor : Editor
     void ReconvertBakedData()
     {
         int i = 0;
-
-        foreach (var data in _bakedDataList)
-        {
-            var editor = (BakedDataEditor)Editor.CreateEditor(data, typeof(BakedDataEditor));
-            var progress = (float)(i++) / _bakedDataList.Count;
-            var msg = $"Baking... {i}/{_bakedDataList.Count}";
-            EditorUtility.DisplayProgressBar("uLipSync", msg, progress);
-        }
-
         EditorUtility.ClearProgressBar();
     }
 

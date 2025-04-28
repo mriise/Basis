@@ -10,9 +10,6 @@ namespace Basis.Scripts.Device_Management
     {
         [SerializeField]
         public List<BasisDeviceMatchSettings> BasisDevice = new List<BasisDeviceMatchSettings>();
-
-        [SerializeField]
-        public List<BasisDeviceMatchSettings> BackedUpDevices = new List<BasisDeviceMatchSettings>();
         public BasisDeviceMatchSettings GetAssociatedDeviceMatchableNames(string nameToMatch, BasisBoneTrackedRole FallBackRole = BasisBoneTrackedRole.CenterEye, bool UseFallbackROle = false)
         {
             foreach (BasisDeviceMatchSettings DeviceEntry in BasisDevice)
@@ -29,7 +26,7 @@ namespace Basis.Scripts.Device_Management
                 DeviceID = nameToMatch,
                 matchableDeviceIds = new string[] { nameToMatch },
                 HasRayCastVisual = true,
-                HasRayCastRedical = true,
+                HasRayCastRadical = true,
                 CanDisplayPhysicalTracker = false,
                 HasRayCastSupport = true,
                 HasTrackedRole = UseFallbackROle,
@@ -37,7 +34,6 @@ namespace Basis.Scripts.Device_Management
             };
             BasisDeviceManagement.Instance.BasisDeviceNameMatcher.BasisDevice.Add(Settings);
             BasisDebug.LogError("Unable to find Configuration for device Generating " + nameToMatch);
-            BasisDeviceManagement.Instance.LoadAndOrSaveDefaultDeviceConfigs();
             return Settings;
         }
         public BasisDeviceMatchSettings GetAssociatedDeviceMatchableNamesNoCreate(string nameToMatch)
@@ -71,35 +67,4 @@ namespace Basis.Scripts.Device_Management
             return null;
         }
     }
-    /*
-    [CustomEditor(typeof(BasisDeviceNameMatcher))]
-    public class BasisDeviceNameMatcherEditor : Editor
-    {
-        public override async void OnInspectorGUI()
-        {
-            DrawDefaultInspector();
-
-            BasisDeviceNameMatcher script = (BasisDeviceNameMatcher)target;
-
-            if (GUILayout.Button("Save Devices"))
-            {
-                string directoryPath = EditorUtility.OpenFolderPanel("Select Directory to Save Devices", "", "");
-                if (!string.IsNullOrEmpty(directoryPath))
-                {
-                    BasisDebug.Log("directoryPath " + directoryPath);
-                    await BasisDeviceLoaderAndSaver.SaveDevices(directoryPath, script.BasisDevice);
-                }
-            }
-            if (GUILayout.Button("Load Devices"))
-            {
-                string directoryPath = EditorUtility.OpenFolderPanel("Select Directory to Save Devices", "", "");
-                if (!string.IsNullOrEmpty(directoryPath))
-                {
-                    BasisDebug.Log("directoryPath " + directoryPath);
-                    script.BasisDevice = await BasisDeviceLoaderAndSaver.LoadDeviceAsync(directoryPath);
-                }
-            }
-        }
-    }
-    */
 }

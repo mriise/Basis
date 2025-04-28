@@ -1,6 +1,7 @@
 using Basis.Scripts.Networking.Compression;
-using Basis.Scripts.Networking.Recievers;
+using Basis.Scripts.Networking.Receivers;
 using Basis.Scripts.Profiler;
+using LiteNetLib.Utils;
 using System;
 using static SerializableBasis;
 using Vector3 = UnityEngine.Vector3;
@@ -19,7 +20,7 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
             }
             int Length = syncMessage.avatarSerialization.array.Length;
             baseReceiver.Offset = 0;
-            AvatarBuffer avatarBuffer = new AvatarBuffer
+            BasisAvatarBuffer avatarBuffer = new BasisAvatarBuffer
             {
                 Position = BasisUnityBitPackerExtensions.ReadVectorFloatFromBytes(ref syncMessage.avatarSerialization.array, ref baseReceiver.Offset),//12
                 rotation = BasisUnityBitPackerExtensions.ReadQuaternionFromBytes(ref syncMessage.avatarSerialization.array, BasisNetworkPlayer.RotationCompression, ref baseReceiver.Offset)//14
@@ -30,7 +31,7 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
                 avatarBuffer.Muscles[Index] = Decompress(baseReceiver.CopyData[Index], BasisNetworkPlayer.MinMuscle[Index], BasisNetworkPlayer.MaxMuscle[Index]);
             }
             avatarBuffer.Scale = Vector3.one;
-            BasisNetworkProfiler.ServerSideSyncPlayerMessageCounter.Sample(Length);
+            BasisNetworkProfiler.AddToCounter(BasisNetworkProfilerCounter.ServerSideSyncPlayer, Length);
             avatarBuffer.SecondsInterval = syncMessage.interval / 1000.0f;
             baseReceiver.EnQueueAvatarBuffer(ref avatarBuffer);
             int Count = syncMessage.avatarSerialization.AdditionalAvatarDataSize;
@@ -58,7 +59,7 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
             }
             int Length = syncMessage.array.Length;
             baseReceiver.Offset = 0;
-            AvatarBuffer avatarBuffer = new AvatarBuffer
+            BasisAvatarBuffer avatarBuffer = new BasisAvatarBuffer
             {
                 Position = BasisUnityBitPackerExtensions.ReadVectorFloatFromBytes(ref syncMessage.array, ref baseReceiver.Offset),//12
                 rotation = BasisUnityBitPackerExtensions.ReadQuaternionFromBytes(ref syncMessage.array, BasisNetworkPlayer.RotationCompression, ref baseReceiver.Offset)//14
@@ -73,7 +74,7 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
                 avatarBuffer.Muscles[Index] = Decompress(baseReceiver.CopyData[Index], BasisNetworkPlayer.MinMuscle[Index], BasisNetworkPlayer.MaxMuscle[Index]);
             }
             avatarBuffer.Scale = Vector3.one;
-            BasisNetworkProfiler.ServerSideSyncPlayerMessageCounter.Sample(Length);
+            BasisNetworkProfiler.AddToCounter(BasisNetworkProfilerCounter.ServerSideSyncPlayer, Length);
             avatarBuffer.SecondsInterval = 0.01f;
             baseReceiver.EnQueueAvatarBuffer(ref avatarBuffer);
             int Count = syncMessage.AdditionalAvatarDataSize;//1

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEditor;
 using UnityEditorInternal;
 using System.Linq;
@@ -87,7 +87,7 @@ public class uLipSyncBlendShapeEditor : Editor
     {
         if (_reorderableList == null)
         {
-            _reorderableList = new ReorderableList(blendShape.blendShapes, typeof(MfccData));
+            _reorderableList = new ReorderableList(blendShape.CachedblendShapes, typeof(MfccData));
             _reorderableList.drawHeaderCallback = rect => 
             {
                 rect.xMin -= EditorGUI.indentLevel * 12f;
@@ -116,7 +116,7 @@ public class uLipSyncBlendShapeEditor : Editor
         rect.y += 2f;
         rect.height = EditorGUIUtility.singleLineHeight;
 
-        var bs = blendShape.blendShapes[index];
+        var bs = blendShape.CachedblendShapes[index];
         float singleLineHeight = 
             EditorGUIUtility.singleLineHeight + 
             EditorGUIUtility.standardVerticalSpacing;
@@ -133,13 +133,6 @@ public class uLipSyncBlendShapeEditor : Editor
         }
 
         rect.y += singleLineHeight;
-
-        float weight = EditorGUI.Slider(rect, "Max Weight", bs.maxWeight, 0f, 1f);
-        if (weight != bs.maxWeight)
-        {
-            Undo.RecordObject(target, "Change Max Weight");
-            bs.maxWeight = weight;
-        }
 
         rect.y += singleLineHeight;
     }

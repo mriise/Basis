@@ -38,7 +38,7 @@ namespace Basis.Scripts.UI.UI_Panels
                     hasGeneratedAction = true;
                 }
             }
-            LocalPlayer.LocalBoneDriver.ReadyToRead.AddAction(105, UpdateUI);
+            LocalPlayer.AfterFinalMove.AddAction(105, UpdateUI);
         }
         private void OnDisable()
         {
@@ -51,7 +51,7 @@ namespace Basis.Scripts.UI.UI_Panels
             BasisLocalPlayer.Instance.OnLocalAvatarChanged -= UpdateDelayedSetUI;
             BasisLocalPlayer.Instance.OnPlayersHeightChanged -= UpdateDelayedSetUI;
 
-            LocalPlayer.LocalBoneDriver.ReadyToRead.RemoveAction(101, UpdateUI);
+            LocalPlayer.AfterFinalMove.RemoveAction(101, UpdateUI);
         }
         #endregion
         #region Player Change Callbacks
@@ -109,7 +109,7 @@ namespace Basis.Scripts.UI.UI_Panels
                     Vector3 projectedPos = Vector3.ProjectOnPlane(newPos, LocalPlayer.transform.up).normalized;
 
                     // Calculate the base new position by considering the player's position, scale, and offset
-                    newPos = LocalPlayer.transform.position + (projectedPos * (0.5f * LocalPlayer.CurrentHeight.EyeRatioPlayerToDefaultScale));
+                    newPos = LocalPlayer.transform.position + (projectedPos * (0.5f * LocalPlayer.CurrentHeight.SelectedPlayerToDefaultScale));
 
                     // Transform the relative offsets by the rotation to apply them correctly in world space
                     Vector3 rotatedOffsets = rotation * menuPosOffset;
@@ -124,11 +124,10 @@ namespace Basis.Scripts.UI.UI_Panels
                     // Check if the user is in desktop mode
                     if (!BasisDeviceManagement.IsUserInDesktop())
                     {
-                        // Get hand bone model's position and rotation
-                        hand.BoneTransform.GetPositionAndRotation(out position, out rotation);
-
+                        position = hand.OutgoingWorldData.position;
+                        rotation = hand.OutgoingWorldData.rotation;
                         // Set new position and rotation
-                        transform.SetPositionAndRotation(position + (menuPosOffset * LocalPlayer.CurrentHeight.EyeRatioPlayerToDefaultScale), rotation * Quaternion.Euler(menuRotOffset));
+                        transform.SetPositionAndRotation(position + (menuPosOffset * LocalPlayer.CurrentHeight.SelectedPlayerToDefaultScale), rotation * Quaternion.Euler(menuRotOffset));
                     }
                     else
                     {

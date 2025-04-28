@@ -89,7 +89,7 @@ namespace Basis.Scripts.Device_Management.Devices.OpenVR
         {
             var gameObject = new GameObject(uniqueID)
             {
-                transform = { parent = BasisLocalPlayer.Instance.LocalBoneDriver.transform }
+                transform = { parent = BasisLocalPlayer.Instance.transform }
             };
             return gameObject;
         }
