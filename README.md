@@ -116,6 +116,6 @@ This project also includes third-party trademarks as described in `Basis/Package
 
 ## Basis Trademark Guidelines
 
-The words Basis, BasisVR, and the Basis Logo are trademarked. Please see
-[TRADEMARK.md](./TRADEMARK.md) for our policy.
-
+"Basis", "BasisVR", "Basis Framework", and the Basis logo are marks representing the
+Basis Project. Please see [TRADEMARK.md](./TRADEMARK.md) for our policies our policies
+on their usage.
