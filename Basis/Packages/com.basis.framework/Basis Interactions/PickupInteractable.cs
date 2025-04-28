@@ -420,24 +420,6 @@ public class PickupInteractable : InteractableObject
         base.OnDestroy();
     }
 
-    // override since we add extra reach on desktop
-    public override bool IsWithinRange(Vector3 source)
-    {
-
-        float extraReach = 0;
-        if (Basis.Scripts.Device_Management.BasisDeviceManagement.IsUserInDesktop())
-        {
-            extraReach = BasisLocalPlayer.Instance.CurrentHeight.ArmRatioPlayerToDefaultScale * BasisLocalPlayer.Instance.CurrentHeight.AvatarArmSpan;
-        }
-        Collider collider = GetCollider();
-        if (collider != null)
-        {
-            return Vector3.Distance(collider.ClosestPoint(source), source) <= InteractRange + extraReach;
-        }
-        // Fall back to object transform distance
-        return Vector3.Distance(transform.position, source) <= InteractRange + extraReach;
-    }
-
 
 #if UNITY_EDITOR
     public void OnValidate()

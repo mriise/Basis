@@ -134,8 +134,7 @@ public abstract partial class InteractableObject : MonoBehaviour
     }
 
     /// <summary>
-    /// Be careful to not write this in a way that will return different values in the same frame. 
-    /// Such as depending on a value that changes OnInteract or OnHover, it will cause PlayerInteract to behave incorrectly.
+    /// Be careful when using a value that changes OnInteract or OnHover when overriding, it may cause odd behavior.
     /// </summary>
     /// <param name="input"></param>
     /// <returns>If the Interactable should change state from Hover to Interacting, e.g. when trigger is down</returns>
