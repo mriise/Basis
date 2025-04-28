@@ -161,7 +161,7 @@ public class PlayerInteract : MonoBehaviour
                     BasisDebug.LogWarning("Player Interact expected a registered hit but found null. This is a bug, please report.");
                 }
             }
-            // hover misssed entirely
+            // hover misssed entirely. test for drop & clear hover
             else
             {
                 if (interactInput.lastTarget != null)
@@ -169,7 +169,7 @@ public class PlayerInteract : MonoBehaviour
                     // seperate if blocks in case implementation allows for hovering and holding of the same object
 
                     // TODO: proximity check so we dont keep interacting with objects out side of player's reach. Needs an impl that wont break under lag though. `|| !interactInput.targetObject.IsWithinRange(interactInput.input.transform)`
-                    // only drop if trigger was released
+                    // Drop logic: only drop when not triggered
                     if (!interactInput.lastTarget.IsInteractTriggered(interactInput.input) && interactInput.lastTarget.IsInteractingWith(interactInput.input))
                     {
                         interactInput.lastTarget.OnInteractEnd(interactInput.input);
