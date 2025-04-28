@@ -366,8 +366,8 @@ public class PickupInteractable : InteractableObject
 
             // drag rotate
             var delta = Mouse.current.delta.ReadValue();
-            Quaternion yRotation = Quaternion.AngleAxis(delta.x * DesktopRotateSpeed, Vector3.up);
-            Quaternion xRotation = Quaternion.AngleAxis(-delta.y * DesktopRotateSpeed, Vector3.right);
+            Quaternion yRotation = Quaternion.AngleAxis(-delta.x * DesktopRotateSpeed, Vector3.up);
+            Quaternion xRotation = Quaternion.AngleAxis(delta.y * DesktopRotateSpeed, Vector3.right);
 
             var rotation = yRotation * xRotation * InputConstraint.sources[0].rotationOffset;
             InputConstraint.sources[0].rotationOffset = rotation;
