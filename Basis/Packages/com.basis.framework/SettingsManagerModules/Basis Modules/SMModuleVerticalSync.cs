@@ -15,13 +15,13 @@ namespace BattlePhaze.SettingsManager.Integrations
         }
         public void Start()
         {
-            BasisDeviceManagement.Instance.OnBootModeChanged += OnBootModeChanged;
+            BasisDeviceManagement.OnBootModeChanged += OnBootModeChanged;
             Application.targetFrameRate = -1;
             QualitySettings.maxQueuedFrames = -1;
         }
         public void OnDestroy()
         {
-            BasisDeviceManagement.Instance.OnBootModeChanged -= OnBootModeChanged;
+            BasisDeviceManagement.OnBootModeChanged -= OnBootModeChanged;
         }
         public void OnBootModeChanged(string booted)
         {

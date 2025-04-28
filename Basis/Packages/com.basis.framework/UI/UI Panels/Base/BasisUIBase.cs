@@ -1,6 +1,7 @@
 using Basis.Scripts.Addressable_Driver;
 using Basis.Scripts.Addressable_Driver.Factory;
 using Basis.Scripts.BasisSdk.Helpers;
+using Basis.Scripts.Device_Management;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -14,7 +15,7 @@ namespace Basis.Scripts.UI.UI_Panels
         public abstract void DestroyEvent();
         public void CloseThisMenu()
         {
-            BasisUIManagement.Instance.RemoveUI(this);
+            BasisUIManagement.RemoveUI(this);
             AddressableLoadFactory.ReleaseResource(LoadedMenu);
             DestroyEvent();
             Destroy(this.gameObject);
@@ -23,18 +24,18 @@ namespace Basis.Scripts.UI.UI_Panels
         {
             await AddressableLoadFactory.LoadAddressableResourceAsync<GameObject>(resource);
             GameObject Result = (GameObject)resource.Handles[0].Result;
-            Result = GameObject.Instantiate(Result, BasisUIManagement.Instance.transform);
+            Result = GameObject.Instantiate(Result, BasisDeviceManagement.Instance.transform);
             BasisUIBase BasisUIBase = BasisHelpers.GetOrAddComponent<BasisUIBase>(Result);
-            BasisUIManagement.Instance.AddUI(BasisUIBase);
+            BasisUIManagement.AddUI(BasisUIBase);
             BasisUIBase.InitalizeEvent();
         }
         public static BasisUIBase OpenMenuNow(AddressableGenericResource AddressableGenericResource)
         {
             UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<GameObject> op = Addressables.LoadAssetAsync<GameObject>(AddressableGenericResource.Key);
             GameObject RAC = op.WaitForCompletion();
-            GameObject Result = GameObject.Instantiate(RAC, BasisUIManagement.Instance.transform);
+            GameObject Result = GameObject.Instantiate(RAC, BasisDeviceManagement.Instance.transform);
             BasisUIBase BasisUIBase = BasisHelpers.GetOrAddComponent<BasisUIBase>(Result);
-            BasisUIManagement.Instance.AddUI(BasisUIBase);
+            BasisUIManagement.AddUI(BasisUIBase);
             BasisUIBase.InitalizeEvent();
             return BasisUIBase;
         }

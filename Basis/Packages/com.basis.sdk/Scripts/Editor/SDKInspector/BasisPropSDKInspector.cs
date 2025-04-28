@@ -31,37 +31,10 @@ public class BasisPropSDKInspector : Editor
         {
             uiElementsRoot = visualTree.CloneTree();
             rootElement.Add(uiElementsRoot);
+            BasisSDKCommonInspector.CreateBuildTargetOptions(uiElementsRoot);
+            BasisSDKCommonInspector.CreateBuildOptionsDropdown(uiElementsRoot);
 
-            // Multi-select dropdown (Foldout with Toggles)
-            Foldout buildTargetFoldout = new Foldout { text = "Select Build Targets", value = false }; // Expanded by default
-            uiElementsRoot.Add(buildTargetFoldout);
-
-            if (assetBundleObject == null)
-            {
-                assetBundleObject = AssetDatabase.LoadAssetAtPath<BasisAssetBundleObject>(BasisAssetBundleObject.AssetBundleObject);
-
-            }
-            foreach (var target in BasisSDKConstants.allowedTargets)
-            {
-                // Check if the target is already selected
-                bool isSelected = assetBundleObject.selectedTargets.Contains(target);
-
-                Toggle toggle = new Toggle(BasisSDKConstants.targetDisplayNames[target])
-                {
-                    value = isSelected // Set the toggle based on whether the target is in the selected list
-                };
-
-                toggle.RegisterValueChangedCallback(evt =>
-                {
-                    if (evt.newValue)
-                        assetBundleObject.selectedTargets.Add(target);
-                    else
-                        assetBundleObject.selectedTargets.Remove(target);
-                });
-
-                buildTargetFoldout.Add(toggle);
-            }
-
+            BasisAssetBundleObject assetBundleObject = AssetDatabase.LoadAssetAtPath<BasisAssetBundleObject>(BasisAssetBundleObject.AssetBundleObject);
             Button BuildButton = BasisHelpersGizmo.Button(uiElementsRoot, BasisSDKConstants.BuildButton);
             BuildButton.clicked += () => Build(BuildButton, assetBundleObject.selectedTargets);
         }
@@ -83,7 +56,7 @@ public class BasisPropSDKInspector : Editor
 
         Debug.Log($"Building Gameobject Bundles for: {string.Join(", ", targets.ConvertAll(t => BasisSDKConstants.targetDisplayNames[t]))}");
         (bool success, string message) = await BasisBundleBuild.GameObjectBundleBuild(BasisProp, targets);
-
+        EditorUtility.ClearProgressBar();
         // Clear any previous result label
         ClearResultLabel();
 

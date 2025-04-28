@@ -115,7 +115,7 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
                 // All checks passed
                 PoseHandler = new HumanPoseHandler(
                     basisAvatar.Animator.avatar,
-                    basisAvatar.transform
+                    Player.BasisAvatarTransform
                 );
                 PoseHandler.GetHumanPose(ref HumanPose);
                 if (!basisAvatar.HasSendEvent)
@@ -153,7 +153,7 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
                     array = buffer,
                     messageIndex = MessageIndex
                 };
-                BasisNetworkManagement.Instance.Transmitter.AddAdditonal(AAD);
+                BasisNetworkManagement.Instance.Transmitter.AddAdditional(AAD);
             }
             else
             {
@@ -182,7 +182,7 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
                 AvatarDataMessage.Serialize(netDataWriter);
                 BasisNetworkManagement.LocalPlayerPeer.Send(netDataWriter, BasisNetworkCommons.AvatarChannel, DeliveryMethod);
             }
-            BasisNetworkProfiler.AvatarDataMessageCounter.Sample(netDataWriter.Length);
+            BasisNetworkProfiler.AddToCounter(BasisNetworkProfilerCounter.AvatarDataMessage, netDataWriter.Length);
         }
         public static void SetupData()
         {

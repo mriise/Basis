@@ -11,27 +11,6 @@ public class BasisIndividualPlayerSettings : BasisUIBase
 {
     public static string Path = "Packages/com.basis.sdk/Prefabs/UI/PlayerSelectionPanel.prefab";
     public static string CursorRequest = "PlayerSelectionPanel";
-
-    public override void DestroyEvent()
-    {
-        BasisCursorManagement.LockCursor(CursorRequest);
-    }
-
-    public override void InitalizeEvent()
-    {
-        BasisCursorManagement.UnlockCursor(CursorRequest);
-    }
-
-    public static async void OpenPlayerSettings(BasisRemotePlayer RemotePlayer)
-    {
-        BasisUIManagement.Instance.CloseAllMenus();
-        AddressableGenericResource resource = new AddressableGenericResource(Path, AddressableExpectedResult.SingleItem);
-        BasisUIBase Base = OpenMenuNow(resource);
-        BasisIndividualPlayerSettings PlayerSettings = (BasisIndividualPlayerSettings)Base;
-        await PlayerSettings.Initalize(RemotePlayer);
-        
-    }
-
     public Slider UserVolumeOverride;
     public Button ToggleAvatar;
 
@@ -44,6 +23,23 @@ public class BasisIndividualPlayerSettings : BasisUIBase
     public BasisUIVolumeSampler BasisUIVolumeSampler;
 
     public Button RequestAvatarClone;
+    public override void DestroyEvent()
+    {
+        BasisCursorManagement.LockCursor(CursorRequest);
+    }
+    public override void InitalizeEvent()
+    {
+        BasisCursorManagement.UnlockCursor(CursorRequest);
+    }
+
+    public static async void OpenPlayerSettings(BasisRemotePlayer RemotePlayer)
+    {
+        BasisUIManagement.CloseAllMenus();
+        AddressableGenericResource resource = new AddressableGenericResource(Path, AddressableExpectedResult.SingleItem);
+        BasisUIBase Base = OpenMenuNow(resource);
+        BasisIndividualPlayerSettings PlayerSettings = (BasisIndividualPlayerSettings)Base;
+        await PlayerSettings.Initalize(RemotePlayer);
+    }
     public async Task Initalize(BasisRemotePlayer remotePlayer)
     {
         RemotePlayer = remotePlayer;
@@ -53,7 +49,7 @@ public class BasisIndividualPlayerSettings : BasisUIBase
         string playerUUID = RemotePlayer.UUID;
         // UI Setup
         UserVolumeOverride.wholeNumbers = false;
-        UserVolumeOverride.maxValue = 1f;
+        UserVolumeOverride.maxValue = 1.5f;
         UserVolumeOverride.minValue = 0f;
 
         BasisPlayerSettingsData settings = await BasisPlayerSettingsManager.RequestPlayerSettings(playerUUID);
@@ -80,7 +76,7 @@ public class BasisIndividualPlayerSettings : BasisUIBase
         AvatarVisibleText.text = settings.AvatarVisible ? "Hide Avatar" : "Show Avatar";
         if (RemotePlayer != null)
         {
-            RemotePlayer.CreateAvatar(RemotePlayer.AlwaysRequestedMode, RemotePlayer.AlwaysRequestedAvatar);
+            RemotePlayer.ReloadAvatar();
         }
     }
     public async void ChangePlayersVolume(string playerUUID, float volume)

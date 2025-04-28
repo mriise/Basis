@@ -1,4 +1,5 @@
 using Basis.Scripts.BasisSdk.Players;
+using Basis.Scripts.Common;
 using Basis.Scripts.Networking.NetworkedAvatar;
 using Basis.Scripts.Profiler;
 using System;
@@ -9,7 +10,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using static SerializableBasis;
 
-namespace Basis.Scripts.Networking.Recievers
+namespace Basis.Scripts.Networking.Receivers
 {
     [DefaultExecutionOrder(15001)]
     [System.Serializable]
@@ -21,27 +22,31 @@ namespace Basis.Scripts.Networking.Recievers
         [Header("Interpolation Settings")]
         public double delayTime = 0.1f; // How far behind real-time we want to stay, hopefully double is good.
         [SerializeField]
-        public Queue<AvatarBuffer> PayloadQueue = new Queue<AvatarBuffer>();
+        public Queue<BasisAvatarBuffer> PayloadQueue = new Queue<BasisAvatarBuffer>();
         public BasisRemotePlayer RemotePlayer;
         public bool HasEvents = false;
-        private NativeArray<float3> OuputVectors;      // Merged positions and scales
+
+        private NativeArray<float3> OutputVectors;      // Merged positions and scales
         private NativeArray<float3> TargetVectors; // Merged target positions and scales
         private NativeArray<float> musclesPreEuro;
         private NativeArray<float> targetMuscles;
         private NativeArray<float> EuroValuesOutput;
+        private NativeArray<float2> positionFilters;
+        private NativeArray<float2> derivativeFilters;
+
         public JobHandle musclesHandle;
         public JobHandle AvatarHandle;
         public UpdateAvatarMusclesJob musclesJob = new UpdateAvatarMusclesJob();
         public UpdateAvatarJob AvatarJob = new UpdateAvatarJob();
         public float[] MuscleFinalStageOutput = new float[LocalAvatarSyncMessage.StoredBones];
         public quaternion OutputRotation;
-        public AvatarBuffer First;
-        public AvatarBuffer Last;
+        public BasisAvatarBuffer First;
+        public BasisAvatarBuffer Last;
         public static int BufferCapacityBeforeCleanup = 3;
         public float interpolationTime;
         public double TimeBeforeCompletion;
         public double TimeInThePast;
-        public bool HasAvatarInitalized;
+        public bool HasAvatarInitialized;
 
         public BasisOneEuroFilterParallelJob oneEuroFilterJob;
         public  float MinCutoff = 0.001f;
@@ -50,7 +55,10 @@ namespace Basis.Scripts.Networking.Recievers
 
         public bool updateFilters;
         public bool enableEuroFilter = true;
-
+        public JobHandle EuroFilterHandle;
+        public Vector3 PositionOffset;
+        public bool LogFirstError = false;
+        public float[] Eyes = new float[4];
         /// <summary>
         /// Perform computations to interpolate and update avatar state.
         /// </summary>
@@ -58,8 +66,14 @@ namespace Basis.Scripts.Networking.Recievers
         {
             if (Ready)
             {
-                if (HasAvatarInitalized)
+                if (HasAvatarInitialized)
                 {
+
+                    // Complete previously scheduled jobs to avoid scheduling over incomplete ones
+                    if (AvatarHandle.IsCompleted) AvatarHandle.Complete();
+                    if (musclesHandle.IsCompleted) musclesHandle.Complete();
+                    if (EuroFilterHandle.IsCompleted) EuroFilterHandle.Complete();
+
                     // Calculate interpolation time
                     interpolationTime = Mathf.Clamp01((float)((TimeAsDouble - TimeInThePast) / TimeBeforeCompletion));
                     if(First == null)
@@ -85,9 +99,9 @@ namespace Basis.Scripts.Networking.Recievers
                     try
                     {
                         TargetVectors[0] = Last.Position; // Target position at index 0
-                        OuputVectors[0] = First.Position; // Position at index 0
+                        OutputVectors[0] = First.Position; // Position at index 0
                         Vector3 Scale = GetScale();
-                        OuputVectors[1] = Scale;    // Scale at index 1
+                        OutputVectors[1] = Scale;    // Scale at index 1
                         TargetVectors[1] = Scale;    // Target scale at index 1
                     }
                     catch (Exception ex)
@@ -106,6 +120,9 @@ namespace Basis.Scripts.Networking.Recievers
                         BasisDebug.LogError($"Error in Muscle Copy: {ex.Message}\nStack Trace:\n{ex.StackTrace}");
                     }
                     AvatarJob.Time = interpolationTime;
+
+
+                    //need to make sure AvatarJob and so on its complete and ready to be rescheduled
 
                     AvatarHandle = AvatarJob.Schedule();
 
@@ -127,7 +144,7 @@ namespace Basis.Scripts.Networking.Recievers
         {
             if (Player != null && Player.BasisAvatar != null)
             {
-                Vector3 Scale = Player.BasisAvatar.transform.localScale;
+                Vector3 Scale = Player.BasisAvatarTransform.localScale;
                 if (Scale != Vector3.zero)
                 {
                     return Scale;
@@ -142,15 +159,13 @@ namespace Basis.Scripts.Networking.Recievers
                 return Vector3.one;
             }
         }
-        public JobHandle EuroFilterHandle;
-        public Vector3 PositionOffset;
         public void Apply(double TimeAsDouble, float DeltaTime)
         {
             if (PoseHandler != null)
             {
                 try
                 {
-                    if (HasAvatarInitalized)
+                    if (HasAvatarInitialized)
                     {
                         OutputRotation = math.slerp(First.rotation, Last.rotation, interpolationTime);
 
@@ -158,18 +173,23 @@ namespace Basis.Scripts.Networking.Recievers
                         EuroFilterHandle.Complete();
 
 
-                        ApplyPoseData(Player.BasisAvatar.Animator, OuputVectors[1], OuputVectors[0], OutputRotation, enableEuroFilter ? EuroValuesOutput : musclesPreEuro);
+                        ApplyPoseData(Player.BasisAvatar.Animator, OutputVectors[1], OutputVectors[0], OutputRotation, enableEuroFilter ? EuroValuesOutput : musclesPreEuro);
                         PoseHandler.SetHumanPose(ref HumanPose);
 
-                        RemotePlayer.RemoteBoneDriver.SimulateAndApply(DeltaTime);
-                     //   RemotePlayer.BasisAvatar.FaceVisemeMesh.transform.position = RemotePlayer.RemoteBoneDriver.Hips.OutgoingWorldData.position;
+                        RemotePlayer.RemoteBoneDriver.SimulateAndApply(RemotePlayer, DeltaTime);
+                        RemotePlayer.RemoteBoneDriver.CalculateHeadBoneData();
+                        BasisCalibratedCoords Coords = RemotePlayer.RemoteBoneDriver.Mouth.OutgoingWorldData;
+                        AudioReceiverModule.AudioSourceTransform.SetPositionAndRotation(Coords.position, Coords.rotation);
                     }
-                    if (interpolationTime >= 1 && PayloadQueue.TryDequeue(out AvatarBuffer result))
+                    if (interpolationTime >= 1 && PayloadQueue.TryDequeue(out BasisAvatarBuffer result))
                     {
                         First = Last;
                         Last = result;
 
-                        TimeBeforeCompletion = Last.SecondsInterval;
+                        if (Last != null)
+                        {
+                            TimeBeforeCompletion = Last.SecondsInterval;
+                        }
                         TimeInThePast = TimeAsDouble;
                     }
                 }
@@ -190,8 +210,7 @@ namespace Basis.Scripts.Networking.Recievers
                 }
             }
         }
-        public bool LogFirstError = false;
-        public void EnQueueAvatarBuffer(ref AvatarBuffer avatarBuffer)
+        public void EnQueueAvatarBuffer(ref BasisAvatarBuffer avatarBuffer)
         {
             if(avatarBuffer == null)
             {
@@ -200,19 +219,19 @@ namespace Basis.Scripts.Networking.Recievers
             }
             if (Ready)
             {
-                if (HasAvatarInitalized)
+                if (HasAvatarInitialized)
                 {
                     PayloadQueue.Enqueue(avatarBuffer);
                     while (PayloadQueue.Count > BufferCapacityBeforeCleanup)
                     {
-                        PayloadQueue.TryDequeue(out AvatarBuffer Buffer);
+                        PayloadQueue.TryDequeue(out BasisAvatarBuffer Buffer);
                     }
                 }
                 else
                 {
                     First = avatarBuffer;
                     Last = avatarBuffer;
-                    HasAvatarInitalized = true;
+                    HasAvatarInitialized = true;
                 }
             }
             else
@@ -252,7 +271,6 @@ namespace Basis.Scripts.Networking.Recievers
             // Adjust the local scale of the animator's transform
             animator.transform.localScale = Scale;  // Directly adjust scale with output scaling
         }
-        public float[] Eyes = new float[4];
         public static Vector3 Divide(Vector3 a, Vector3 b)
         {
             // Define a small epsilon to avoid division by zero, using a flexible value based on magnitude
@@ -268,9 +286,8 @@ namespace Basis.Scripts.Networking.Recievers
         {
             if (Ready)
             {
-                byte SequenceNumber = audioSegment.playerIdMessage.AdditionalData;
-                BasisNetworkProfiler.ServerAudioSegmentMessageCounter.Sample(audioSegment.audioSegmentData.LengthUsed);
-                AudioReceiverModule.OnDecode(SequenceNumber, audioSegment.audioSegmentData.buffer, audioSegment.audioSegmentData.LengthUsed);
+                BasisNetworkProfiler.AddToCounter( BasisNetworkProfilerCounter.ServerAudioSegment,audioSegment.audioSegmentData.LengthUsed);
+                AudioReceiverModule.OnDecode(audioSegment.audioSegmentData.buffer, audioSegment.audioSegmentData.LengthUsed);
                 Player.AudioReceived?.Invoke(true);
             }
         }
@@ -278,26 +295,24 @@ namespace Basis.Scripts.Networking.Recievers
         {
             if (Ready)
             {
-                BasisNetworkProfiler.ServerAudioSegmentMessageCounter.Sample(1);
-                AudioReceiverModule.OnDecodeSilence(audioSilentSegment.playerIdMessage.AdditionalData);
+                BasisNetworkProfiler.AddToCounter(BasisNetworkProfilerCounter.ServerAudioSegment,1);
+                AudioReceiverModule.OnDecodeSilence();
                 Player.AudioReceived?.Invoke(false);
             }
         }
-        public void ReceiveAvatarChangeRequest(ServerAvatarChangeMessage ServerAvatarChangeMessage)
+        public async void ReceiveAvatarChangeRequest(ServerAvatarChangeMessage ServerAvatarChangeMessage)
         {
             RemotePlayer.CACM = ServerAvatarChangeMessage.clientAvatarChangeMessage;
             BasisLoadableBundle BasisLoadableBundle = BasisBundleConversionNetwork.ConvertNetworkBytesToBasisLoadableBundle(ServerAvatarChangeMessage.clientAvatarChangeMessage.byteArray);
 
-            RemotePlayer.CreateAvatar(ServerAvatarChangeMessage.clientAvatarChangeMessage.loadMode, BasisLoadableBundle);
+           await RemotePlayer.CreateAvatar(ServerAvatarChangeMessage.clientAvatarChangeMessage.loadMode, BasisLoadableBundle);
         }
-        private NativeArray<float2> positionFilters;
-        private NativeArray<float2> derivativeFilters;
         public override void Initialize()
         {
             if (!Ready)
             {
                 HumanPose.muscles = new float[95];
-                OuputVectors = new NativeArray<float3>(2, Allocator.Persistent); // Index 0 = position, Index 1 = scale
+                OutputVectors = new NativeArray<float3>(2, Allocator.Persistent); // Index 0 = position, Index 1 = scale
                 TargetVectors = new NativeArray<float3>(2, Allocator.Persistent); // Index 0 = target position, Index 1 = target scale
                 musclesPreEuro = new NativeArray<float>(LocalAvatarSyncMessage.StoredBones, Allocator.Persistent);
                 targetMuscles = new NativeArray<float>(LocalAvatarSyncMessage.StoredBones, Allocator.Persistent);
@@ -310,7 +325,7 @@ namespace Basis.Scripts.Networking.Recievers
                 AvatarJob = new UpdateAvatarJob();
                 musclesJob.Outputmuscles = musclesPreEuro;
                 musclesJob.targetMuscles = targetMuscles;
-                AvatarJob.OutputVector = OuputVectors;
+                AvatarJob.OutputVector = OutputVectors;
                 AvatarJob.TargetVector = TargetVectors;
 
                 ForceUpdateFilters();
@@ -327,10 +342,10 @@ namespace Basis.Scripts.Networking.Recievers
         }
         public void ForceUpdateFilters()
         {
-            for (int i = 0; i < LocalAvatarSyncMessage.StoredBones; i++)
+            for (int Index = 0; Index < LocalAvatarSyncMessage.StoredBones; Index++)
             {
-                positionFilters[i] = new float2(0,0);
-                derivativeFilters[i] = new float2(0,0);
+                positionFilters[Index] = new float2(0,0);
+                derivativeFilters[Index] = new float2(0,0);
             }
 
             oneEuroFilterJob = new BasisOneEuroFilterParallelJob
@@ -352,7 +367,7 @@ namespace Basis.Scripts.Networking.Recievers
         public override void DeInitialize()
         {
             // Dispose vector data if initialized
-            if (OuputVectors != null && OuputVectors.IsCreated) OuputVectors.Dispose();
+            if (OutputVectors != null && OutputVectors.IsCreated) OutputVectors.Dispose();
             if (TargetVectors != null && TargetVectors.IsCreated) TargetVectors.Dispose();
             if (musclesPreEuro != null && musclesPreEuro.IsCreated) musclesPreEuro.Dispose();
             if (targetMuscles != null && targetMuscles.IsCreated) targetMuscles.Dispose();
@@ -361,12 +376,14 @@ namespace Basis.Scripts.Networking.Recievers
             if (derivativeFilters != null && derivativeFilters.IsCreated) derivativeFilters.Dispose();
 
             // Unsubscribe from events if required
-            if (HasEvents && RemotePlayer?.RemoteAvatarDriver != null)
+            if (RemotePlayer != null)
             {
-                RemotePlayer.RemoteAvatarDriver.CalibrationComplete -= OnCalibration;
-                HasEvents = false;
+                if (HasEvents && RemotePlayer.RemoteAvatarDriver != null)
+                {
+                    RemotePlayer.RemoteAvatarDriver.CalibrationComplete -= OnCalibration;
+                    HasEvents = false;
+                }
             }
-
             // Handle audio receiver module cleanup
             AudioReceiverModule?.OnDestroy();
         }

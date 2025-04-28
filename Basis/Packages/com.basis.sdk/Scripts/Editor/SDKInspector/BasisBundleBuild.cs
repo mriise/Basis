@@ -47,73 +47,78 @@ public static class BasisBundleBuild
     }
     public static async Task<(bool, string)> BuildBundle(BasisContentBase basisContentBase, List<BuildTarget> targets, Func<BasisContentBase, BasisAssetBundleObject, string, BuildTarget, Task<(bool, (BasisBundleGenerated, AssetBundleBuilder.InformationHash))>> buildFunction)
     {
-        Debug.Log("Starting BuildBundle...");
-        EditorUtility.DisplayProgressBar("Starting Bundle Build", "Starting Bundle Build", 0);
-        // Store the original active build target
-        BuildTarget originalActiveTarget = EditorUserBuildSettings.activeBuildTarget;
-
-        // Perform error checking
-        if (!ErrorChecking(basisContentBase, out string error))
+        try
         {
-            return (false, error);
-        }
+            Debug.Log("Starting BuildBundle...");
+            EditorUtility.DisplayProgressBar("Starting Bundle Build", "Starting Bundle Build", 0);
 
-        Debug.Log("Passed error checking for BuildBundle...");
+            BuildTarget originalActiveTarget = EditorUserBuildSettings.activeBuildTarget;
 
-        // Ensure active build target is the first in the list
-        AdjustBuildTargetOrder(targets);
-
-        // Load asset bundle object and delete existing directory
-        BasisAssetBundleObject assetBundleObject = AssetDatabase.LoadAssetAtPath<BasisAssetBundleObject>(BasisAssetBundleObject.AssetBundleObject);
-        ClearAssetBundleDirectory(assetBundleObject.AssetBundleDirectory);
-
-        // Generate random bytes for hex string
-        string hexString = GenerateHexString(32);
-
-        BasisBundleGenerated[] bundles = new BasisBundleGenerated[targets.Count];
-        List<string> paths = new List<string>();
-        int cachedcount = targets.Count;
-        for (int i = 0; i < cachedcount; i++)
-        {
-            BuildTarget target = targets[i];
-            var (success, result) = await buildFunction(basisContentBase, assetBundleObject, hexString, target);
-            if (!success)
+            if (!ErrorChecking(basisContentBase, out string error))
             {
-                return (false, $"Failure While Building for {target}");
+                return (false, error);
             }
 
-            bundles[i] = result.Item1;
-            string hashPath = PathConversion(result.Item2.EncyptedPath);
-            paths.Add(hashPath);
+            Debug.Log("Passed error checking for BuildBundle...");
+            AdjustBuildTargetOrder(targets);
 
-            BasisDebug.Log("Adding " + result.Item2.EncyptedPath);
+            BasisAssetBundleObject assetBundleObject = AssetDatabase.LoadAssetAtPath<BasisAssetBundleObject>(BasisAssetBundleObject.AssetBundleObject);
+            ClearAssetBundleDirectory(assetBundleObject.AssetBundleDirectory);
+
+            string hexString = GenerateHexString(32);
+
+            BasisBundleGenerated[] bundles = new BasisBundleGenerated[targets.Count];
+            List<string> paths = new List<string>();
+
+            for (int i = 0; i < targets.Count; i++)
+            {
+                BuildTarget target = targets[i];
+                var (success, result) = await buildFunction(basisContentBase, assetBundleObject, hexString, target);
+                if (!success)
+                {
+                    return (false, $"Failure While Building for {target}");
+                }
+
+                bundles[i] = result.Item1;
+                string hashPath = PathConversion(result.Item2.EncyptedPath);
+                paths.Add(hashPath);
+
+                BasisDebug.Log("Adding " + result.Item2.EncyptedPath);
+            }
+
+            EditorUtility.DisplayProgressBar("Starting Bundle Build", "Starting Bundle Build", 10);
+
+            string generatedID = BasisGenerateUniqueID.GenerateUniqueID();
+            BasisBundleConnector basisBundleConnector = new BasisBundleConnector(generatedID, basisContentBase.BasisBundleDescription, bundles);
+
+            byte[] BasisbundleconnectorUnEncrypted = BasisSerializer.OdinSerializer.SerializationUtility.SerializeValue<BasisBundleConnector>(basisBundleConnector, DataFormat.JSON);
+            var BasisPassword = new BasisEncryptionWrapper.BasisPassword { VP = hexString };
+            string UniqueID = BasisGenerateUniqueID.GenerateUniqueID();
+            BasisProgressReport report = new BasisProgressReport();
+            byte[] EncryptedConnector = await BasisEncryptionWrapper.EncryptDataAsync(UniqueID, BasisbundleconnectorUnEncrypted, BasisPassword, report);
+
+            EditorUtility.DisplayProgressBar("Starting Bundle Combining", "Starting Bundle Combining", 100);
+
+            string FilePath = Path.Combine(assetBundleObject.AssetBundleDirectory, $"{generatedID}{assetBundleObject.BasisEncryptedExtension}");
+            await CombineFiles(FilePath, paths, EncryptedConnector);
+
+            await AssetBundleBuilder.SaveFileAsync(assetBundleObject.AssetBundleDirectory, assetBundleObject.ProtectedPasswordFileName, "txt", hexString);
+
+            DeleteFolders(assetBundleObject.AssetBundleDirectory);
+            OpenRelativePath(assetBundleObject.AssetBundleDirectory);
+
+            RestoreOriginalBuildTarget(originalActiveTarget);
+
+            Debug.Log("Successfully built asset bundle.");
+            EditorUtility.ClearProgressBar();
+            return (true, "Success");
         }
-        EditorUtility.DisplayProgressBar("Starting Bundle Build", "Starting Bundle Build", 10);
-        // Generate a unique ID and prepare for saving
-        string generatedID = BasisGenerateUniqueID.GenerateUniqueID();
-        BasisBundleConnector basisBundleConnector = new BasisBundleConnector(generatedID, basisContentBase.BasisBundleDescription, bundles);
-        byte[] BasisbundleconnectorUnEncrypted = BasisSerializer.OdinSerializer.SerializationUtility.SerializeValue<BasisBundleConnector>(basisBundleConnector, DataFormat.JSON);
-        var BasisPassword = new BasisEncryptionWrapper.BasisPassword
+        catch (Exception ex)
         {
-            VP = hexString
-        };
-        string UniqueID = BasisGenerateUniqueID.GenerateUniqueID();
-        BasisProgressReport report = new BasisProgressReport();
-        byte[] EncryptedConnector = await BasisEncryptionWrapper.EncryptDataAsync(UniqueID, BasisbundleconnectorUnEncrypted, BasisPassword, report);
-        EditorUtility.DisplayProgressBar("Starting Bundle Combining", "Starting Bundle Combining", 100);
-        await CombineFiles(Path.Combine(assetBundleObject.AssetBundleDirectory, $"{generatedID}{assetBundleObject.BasisEncryptedExtension}"), paths, EncryptedConnector);
-        await AssetBundleBuilder.SaveFileAsync(assetBundleObject.AssetBundleDirectory, assetBundleObject.ProtectedPasswordFileName, "txt", hexString);
-
-        // Clean up
-        DeleteFolders(assetBundleObject.AssetBundleDirectory);
-        OpenRelativePath(assetBundleObject.AssetBundleDirectory);
-
-        // Restore the original build target if necessary
-        RestoreOriginalBuildTarget(originalActiveTarget);
-
-        Debug.Log("Successfully built asset bundle.");
-        EditorUtility.ClearProgressBar();
-        return (true, "Success");
+            Debug.LogError($"BuildBundle error: {ex.Message}");
+            EditorUtility.ClearProgressBar();
+            return (false, $"BuildBundle Exception: {ex.Message}");
+        }
     }
 
     private static void AdjustBuildTargetOrder(List<BuildTarget> targets)
@@ -129,7 +134,6 @@ public static class BasisBundleBuild
             targets.Insert(0, activeTarget);
         }
     }
-
     private static void ClearAssetBundleDirectory(string directoryPath)
     {
         if (Directory.Exists(directoryPath))
@@ -137,13 +141,11 @@ public static class BasisBundleBuild
             Directory.Delete(directoryPath, true);
         }
     }
-
     private static string GenerateHexString(int length)
     {
         byte[] randomBytes = GenerateRandomBytes(length);
         return ByteArrayToHexString(randomBytes);
     }
-
     private static void RestoreOriginalBuildTarget(BuildTarget originalTarget)
     {
         if (EditorUserBuildSettings.activeBuildTarget != originalTarget)
@@ -152,7 +154,6 @@ public static class BasisBundleBuild
             Debug.Log($"Switched back to original build target: {originalTarget}");
         }
     }
-
     public static async Task CombineFiles(string outputPath, List<string> bundlePaths, byte[] EncryptedConnector, int bufferSize = 327680)
     {
         BasisDebug.Log("Combining files: " + bundlePaths.Count);
@@ -165,16 +166,13 @@ public static class BasisBundleBuild
                 byte[] buffer = new byte[bufferSize];
                 int totalFiles = bundlePaths.Count;
 
-                // Write header length and EncryptedConnector to the output stream
-                //headerLength is byte[],long Value
-                // Convert the long value to an 8-byte array
                 byte[] headerBytes = BitConverter.GetBytes(headerLength);
 
-                // Ensure the byte array is the correct size
                 if (headerBytes.Length != 8)
                 {
                     throw new Exception($"Header byte conversion failed! {headerBytes.Length} was not 8 bytes!");
                 }
+
                 await outputStream.WriteAsync(headerBytes, 0, 8);
                 await outputStream.WriteAsync(EncryptedConnector, 0, EncryptedConnector.Length);
 
@@ -188,12 +186,10 @@ public static class BasisBundleBuild
                         throw new FileNotFoundException($"ERROR File not found: {path}");
                     }
 
-                    // Update the progress bar
                     float progress = (float)i / totalFiles;
                     EditorUtility.DisplayProgressBar("Combining Files", $"Processing: {Path.GetFileName(path)}", progress);
 
                     BasisDebug.Log("Combining " + path);
-                    // Append file content to output file
                     await AppendFileToOutput(path, buffer, outputStream, bufferSize);
                 }
             }
@@ -204,18 +200,27 @@ public static class BasisBundleBuild
         {
             BasisDebug.LogError($"Error combining files: {ex.Message}");
             EditorUtility.ClearProgressBar();
+            throw; // propagate up so BuildBundle catch block can handle
         }
     }
     private static async Task AppendFileToOutput(string path, byte[] buffer, FileStream outputStream, int bufferSize = 327680)
     {
-        using (FileStream inputStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize,
-            FileOptions.SequentialScan | FileOptions.Asynchronous))
+        try
         {
-            int bytesRead;
-            while ((bytesRead = await inputStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+            using (FileStream inputStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize,
+                FileOptions.SequentialScan | FileOptions.Asynchronous))
             {
-                await outputStream.WriteAsync(buffer, 0, bytesRead);
+                int bytesRead;
+                while ((bytesRead = await inputStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                {
+                    await outputStream.WriteAsync(buffer, 0, bytesRead);
+                }
             }
+        }
+        catch (Exception ex)
+        {
+            BasisDebug.LogError($"Error appending file to output: {ex.Message}");
+            throw;
         }
     }
     public static string PathConversion(string relativePath)
@@ -245,21 +250,6 @@ public static class BasisBundleBuild
         {
             try
             {
-                /*
-                foreach (string file in Directory.GetFiles(subDir))
-                {
-                    string fileName = Path.GetFileName(file);
-                    string destFile = Path.Combine(parentDir, fileName);
-
-                    // Ensure unique filenames
-                    destFile = GetUniqueFileName(destFile);
-
-                    File.Move(file, destFile);
-                    BasisDebug.Log($"Moved: {file} -> {destFile}");
-                }
-                */
-
-                // Delete the empty folder
                 Directory.Delete(subDir, true);
                 BasisDebug.Log($"Deleted folder: {subDir}");
             }
@@ -268,21 +258,6 @@ public static class BasisBundleBuild
                 BasisDebug.LogError($"Error processing {subDir}: {ex.Message}");
             }
         }
-    }
-    static string GetUniqueFileName(string path)
-    {
-        string directory = Path.GetDirectoryName(path);
-        string fileName = Path.GetFileNameWithoutExtension(path);
-        string extension = Path.GetExtension(path);
-        int count = 1;
-
-        while (File.Exists(path))
-        {
-            path = Path.Combine(directory, $"{fileName} ({count}){extension}");
-            count++;
-        }
-
-        return path;
     }
     public static string OpenRelativePath(string relativePath)
     {
@@ -326,12 +301,6 @@ public static class BasisBundleBuild
         if (string.IsNullOrEmpty(BasisContentBase.BasisBundleDescription.AssetBundleName))
         {
             Error = "Name was empty! Please provide a name in the field.";
-            return false;
-        }
-
-        if (string.IsNullOrEmpty(BasisContentBase.BasisBundleDescription.AssetBundleDescription))
-        {
-            Error = "Description was empty! Please provide a description in the field.";
             return false;
         }
 

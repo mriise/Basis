@@ -1,6 +1,5 @@
 using Basis.Scripts.Addressable_Driver;
 using Basis.Scripts.Addressable_Driver.Factory;
-using Basis.Scripts.Avatar;
 using Basis.Scripts.BasisSdk.Helpers;
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.TransformBinders.BoneControl;
@@ -9,8 +8,7 @@ using Basis.Scripts.UI.UI_Panels;
 using System.Linq;
 using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
-using static Basis.Scripts.Drivers.BaseBoneDriver;
+using static Basis.Scripts.BasisSdk.Players.BasisPlayer;
 namespace Basis.Scripts.Device_Management.Devices
 {
     public abstract class BasisInput : MonoBehaviour
@@ -27,8 +25,8 @@ namespace Basis.Scripts.Device_Management.Devices
         public float3 LocalRawPosition;
         public quaternion LocalRawRotation;
         [Header("Final Data normally just modified by EyeHeight/AvatarEyeHeight)")]
-        public float3 FinalPosition;
-        public quaternion FinalRotation;
+        public float3 TransformFinalPosition;
+        public quaternion TransformFinalRotation;
         [Header("Avatar Offset Applied Per Frame")]
         public float3 AvatarPositionOffset = Vector3.zero;
         public float3 AvatarRotationOffset = Vector3.zero;
@@ -87,19 +85,12 @@ namespace Basis.Scripts.Device_Management.Devices
             {
                 if (BasisBoneTrackedRoleCommonCheck.CheckItsFBTracker(trackedRole))//we dont want to offset these ones
                 {
-                    InitalRotation = Quaternion.Inverse(transform.rotation);
-                    InitalBoneRotation = Control.OutgoingWorldData.rotation;
+                    InitialRotation = Quaternion.Inverse(transform.rotation);
+                    InitialBoneRotation = Control.OutgoingWorldData.rotation;
                     Control.InverseOffsetFromBone.position = Quaternion.Inverse(transform.rotation) * ((Vector3)Control.OutgoingWorldData.position - transform.position);
-                    Control.InverseOffsetFromBone.rotation = InitalRotation * InitalBoneRotation;
+                    Control.InverseOffsetFromBone.rotation = InitialRotation * InitialBoneRotation;
                     Control.InverseOffsetFromBone.Use = true;
-                    if (BasisBoneTrackedRoleCommonCheck.CheckIfHintRole(trackedRole))//we dont want to offset these ones
-                    {
-                        Control.IsHintRoleIgnoreRotation = true;
-                    }
-                    else
-                    {
-                        Control.IsHintRoleIgnoreRotation = false;
-                    }
+                    Control.IsHintRoleIgnoreRotation = BasisBoneTrackedRoleCommonCheck.CheckIfHintRole(trackedRole);
                 }
                 SetRealTrackers(BasisHasTracked.HasTracker, BasisHasRigLayer.HasRigLayer);
             }
@@ -108,8 +99,8 @@ namespace Basis.Scripts.Device_Management.Devices
                 BasisDebug.LogError("Attempted to find " + Role + " but it did not exist");
             }
         }
-        public Quaternion InitalRotation;
-        public Quaternion InitalBoneRotation;
+        public Quaternion InitialRotation;
+        public Quaternion InitialBoneRotation;
         public void UnAssignRoleAndTracker()
         {
             if (Control != null)
@@ -171,25 +162,18 @@ namespace Basis.Scripts.Device_Management.Devices
                 BasisDebug.Log("Overriding Tracker " + BasisDeviceMatchSettings.DeviceID, BasisDebug.LogTag.Input);
                 AssignRoleAndTracker(BasisDeviceMatchSettings.TrackedRole);
             }
-            if (hasRoleAssigned)
-            {
-                AvatarRotationOffset = BasisDeviceMatchSettings.AvatarRotationOffset;
-                AvatarPositionOffset = BasisDeviceMatchSettings.AvatarPositionOffset;
-            }
-            else
-            {
-                AvatarPositionOffset =  Vector3.zero;
-                AvatarRotationOffset = Vector3.zero;
-            }
-            if(HasRaycastSupport())
+            //reset the offsets, its up to the higher level to set this now.
+            AvatarPositionOffset = Vector3.zero;
+            AvatarRotationOffset = Vector3.zero;
+            if (HasRaycastSupport())
             {
                 CreateRayCaster(this);
             }
             if (HasEvents == false)
             {
-                BasisLocalPlayer.Instance.LocalBoneDriver.OnSimulate += PollData;
+                BasisLocalPlayer.Instance.OnPreSimulateBones += PollData;
                 BasisLocalPlayer.Instance.OnAvatarSwitched += UnAssignFullBodyTrackers;
-                BasisLocalPlayer.Instance.Move.ReadyToRead += ApplyFinalMovement;
+                BasisLocalPlayer.Instance.AfterFinalMove.AddAction(98, ApplyFinalMovement);
                 HasEvents = true;
             }
             else
@@ -199,7 +183,7 @@ namespace Basis.Scripts.Device_Management.Devices
         }
         public void ApplyFinalMovement()
         {
-            transform.SetLocalPositionAndRotation(FinalPosition, FinalRotation);
+            transform.SetLocalPositionAndRotation(TransformFinalPosition, TransformFinalRotation);
         }
         public void UnAssignFullBodyTrackers()
         {
@@ -230,7 +214,7 @@ namespace Basis.Scripts.Device_Management.Devices
             {
                 if (HasControl)
                 {
-                    BasisDebug.Log("UnAssigning Tracker " + Control.Name, BasisDebug.LogTag.Input);
+                    BasisDebug.Log("UnAssigning Tracker " + Control.name, BasisDebug.LogTag.Input);
                     Control.InverseOffsetFromBone.position = Vector3.zero;
                     Control.InverseOffsetFromBone.rotation = Quaternion.identity;
                     Control.InverseOffsetFromBone.Use = false;
@@ -254,9 +238,9 @@ namespace Basis.Scripts.Device_Management.Devices
             UnAssignRoleAndTracker();
             if (HasEvents)
             {
-                BasisLocalPlayer.Instance.LocalBoneDriver.OnSimulate -= PollData;
+                BasisLocalPlayer.Instance.OnPreSimulateBones -= PollData;
                 BasisLocalPlayer.Instance.OnAvatarSwitched -= UnAssignFullBodyTrackers;
-                BasisLocalPlayer.Instance.Move.ReadyToRead -= ApplyFinalMovement;
+                BasisLocalPlayer.Instance.AfterFinalMove.RemoveAction(98, ApplyFinalMovement);
                 HasEvents = false;
             }
             else
@@ -275,7 +259,7 @@ namespace Basis.Scripts.Device_Management.Devices
                     hasRoleAssigned = false;
                     if (TryGetRole(out BasisBoneTrackedRole Role))
                     {
-                        BasisLocalPlayer.Instance.AvatarDriver.ApplyHint(Role, 0);
+                        BasisLocalPlayer.Instance.LocalAvatarDriver.ApplyHint(Role, false);
                     }
                 }
                 else
@@ -283,10 +267,10 @@ namespace Basis.Scripts.Device_Management.Devices
                     hasRoleAssigned = true;
                     if (TryGetRole(out BasisBoneTrackedRole Role))
                     {
-                        BasisLocalPlayer.Instance.AvatarDriver.ApplyHint(Role, 1);
+                        BasisLocalPlayer.Instance.LocalAvatarDriver.ApplyHint(Role, true);
                     }
                 }
-                BasisDebug.Log("Set Tracker State for tracker " + UniqueDeviceIdentifier + " with bone " + Control.Name + " as " + Control.HasTracked.ToString() + " | " + Control.HasRigLayer.ToString(), BasisDebug.LogTag.Input);
+                BasisDebug.Log("Set Tracker State for tracker " + UniqueDeviceIdentifier + " with bone " + Control.name + " as " + Control.HasTracked.ToString() + " | " + Control.HasRigLayer.ToString(), BasisDebug.LogTag.Input);
             }
             else
             {
@@ -309,8 +293,8 @@ namespace Basis.Scripts.Device_Management.Devices
                         : InputState.Primary2DAxis.y;
                     //0 to 1 largestValue
 
-                    BasisLocalPlayer.Instance.Move.SpeedMultiplyer = largestValue;
-                    BasisLocalPlayer.Instance.Move.MovementVector = InputState.Primary2DAxis;
+                    BasisLocalPlayer.Instance.LocalCharacterDriver.SpeedMultiplier = largestValue;
+                    BasisLocalPlayer.Instance.LocalCharacterDriver.MovementVector = InputState.Primary2DAxis;
                     //only open ui after we have stopped pressing down on the secondary button
                     if (InputState.SecondaryButtonGetState == false && LastState.SecondaryButtonGetState)
                     {
@@ -327,15 +311,15 @@ namespace Basis.Scripts.Device_Management.Devices
                     {
                         if (BasisInputModuleHandler.Instance.HasHoverONInput == false)
                         {
-                            BasisLocalPlayer.Instance.MicrophoneRecorder.ToggleIsPaused();
+                            BasisMicrophoneRecorder.ToggleIsPaused();
                         }
                     }
                     break;
                 case BasisBoneTrackedRole.RightHand:
-                    BasisLocalPlayer.Instance.Move.Rotation = InputState.Primary2DAxis;
+                    BasisLocalPlayer.Instance.LocalCharacterDriver.Rotation = InputState.Primary2DAxis;
                     if (InputState.PrimaryButtonGetState)
                     {
-                        BasisLocalPlayer.Instance.Move.HandleJump();
+                        BasisLocalPlayer.Instance.LocalCharacterDriver.HandleJump();
                     }
                     break;
                 case BasisBoneTrackedRole.CenterEye:
@@ -343,7 +327,7 @@ namespace Basis.Scripts.Device_Management.Devices
                     {
                         if (BasisInputModuleHandler.Instance.HasHoverONInput == false)
                         {
-                            BasisLocalPlayer.Instance.MicrophoneRecorder.ToggleIsPaused();
+                            BasisMicrophoneRecorder.ToggleIsPaused();
                         }
                     }
                     break;

@@ -1,19 +1,9 @@
-using Basis.Scripts.BasisSdk.Helpers;
 using Basis.Scripts.UI.UI_Panels;
 using System.Collections.Generic;
-using UnityEngine;
-public class BasisUIManagement : MonoBehaviour
+public static class BasisUIManagement
 {
-    public List<BasisUIBase> basisUIBases = new List<BasisUIBase>();
-    public static BasisUIManagement Instance;
-    public void Awake()
-    {
-        if (BasisHelpers.CheckInstance(Instance))
-        {
-            Instance = this;
-        }
-    }
-    public void AddUI(BasisUIBase BasisUIBase)
+    public static List<BasisUIBase> basisUIBases = new List<BasisUIBase>();
+    public static void AddUI(BasisUIBase BasisUIBase)
     {
         if (basisUIBases.Contains(BasisUIBase) == false)
         {
@@ -25,7 +15,7 @@ public class BasisUIManagement : MonoBehaviour
             BasisDebug.LogError("Already has " + BasisUIBase.gameObject.name);
         }
     }
-    public bool RemoveUI(BasisUIBase BasisUIBase)
+    public static bool RemoveUI(BasisUIBase BasisUIBase)
     {
         if (BasisUIBase == null)
         {
@@ -43,7 +33,7 @@ public class BasisUIManagement : MonoBehaviour
             return false;
         }
     }
-    public void CloseAllMenus()
+    public static void CloseAllMenus()
     {
         List<BasisUIBase> Copied = new List<BasisUIBase>();
         Copied.AddRange(basisUIBases);

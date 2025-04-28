@@ -1,4 +1,5 @@
 using System.Linq;
+using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Device_Management.Devices;
 using Basis.Scripts.Device_Management.Devices.Desktop;
 using Basis.Scripts.Drivers;
@@ -13,6 +14,8 @@ public class PickupInteractable : InteractableObject
 {
     [Header("Pickup Settings")]
     public bool KinematicWhileInteracting = true;
+    [Tooltip("Enables the ability to self-steal")]
+    public bool CanSelfSteal = true;
     public float DesktopRotateSpeed = 0.1f;
     [Tooltip("Unity units per scroll step")]
     public float DesktopZoopSpeed = 0.2f;
@@ -25,7 +28,6 @@ public class PickupInteractable : InteractableObject
     [Space(5)]
     public float minAngularVelocity = 0.1f;
     public float interactEndAngularVelocityMultiplier = 1;
-
 
     [Header("References")]
     public Collider ColliderRef;
@@ -46,7 +48,7 @@ public class PickupInteractable : InteractableObject
     const float k_DesktopZoopSmoothing = 0.2f;
     const float k_DesktopZoopMaxVelocity = 10f;
 
-    private static string headPauseRequestName; 
+    private static string headPauseRequestName;
 
     public void Start()
     {
@@ -59,7 +61,7 @@ public class PickupInteractable : InteractableObject
             TryGetComponent(out ColliderRef);
         }
         InputConstraint = new BasisParentConstraint();
-        InputConstraint.sources = new BasisParentConstraint.SourceData[]{new() {weight = 1f}};
+        InputConstraint.sources = new BasisParentConstraint.SourceData[] { new() { weight = 1f } };
         InputConstraint.Enabled = false;
 
         headPauseRequestName = $"{nameof(PickupInteractable)}: {gameObject.GetInstanceID()}";
@@ -100,25 +102,27 @@ public class PickupInteractable : InteractableObject
     {
         // BasisDebug.Log($"CanHover {string.Join(", ", Inputs.ToArray().Select(x => x.GetState()))}");
         // BasisDebug.Log($"CanHover {!DisableInteract}, {!Inputs.AnyInteracting()}, {input.TryGetRole(out BasisBoneTrackedRole r)}, {Inputs.TryGetByRole(r, out BasisInputWrapper f)}, {r}, {f.GetState()}");
-        return !DisableInteract &&
+        return !DisableInfluence &&
             !IsPuppeted &&
+            (!Inputs.AnyInteracting() || CanSelfSteal) &&
             Inputs.IsInputAdded(input) &&
             input.TryGetRole(out BasisBoneTrackedRole role) &&
             Inputs.TryGetByRole(role, out BasisInputWrapper found) &&
             found.GetState() == InteractInputState.Ignored &&
-            IsWithinRange(input.transform.position);
+            IsWithinRange(found.BoneControl.OutgoingWorldData.position);
     }
     public override bool CanInteract(BasisInput input)
     {
         // BasisDebug.Log($"CanInteract {!DisableInteract}, {!Inputs.AnyInteracting()}, {input.TryGetRole(out BasisBoneTrackedRole r)}, {Inputs.TryGetByRole(r, out BasisInputWrapper f)}, {r}, {f.GetState()}");
         // currently hovering can interact only, only one interacting at a time
-        return !DisableInteract &&
+        return !DisableInfluence &&
             !IsPuppeted &&
+            (!Inputs.AnyInteracting() || CanSelfSteal) &&
             Inputs.IsInputAdded(input) &&
             input.TryGetRole(out BasisBoneTrackedRole role) &&
             Inputs.TryGetByRole(role, out BasisInputWrapper found) &&
             found.GetState() == InteractInputState.Hovering &&
-            IsWithinRange(input.transform.position);
+            IsWithinRange(found.BoneControl.OutgoingWorldData.position);
     }
 
     public override void OnHoverStart(BasisInput input)
@@ -129,7 +133,7 @@ public class PickupInteractable : InteractableObject
         var added = Inputs.ChangeStateByRole(found.Value.Role, InteractInputState.Hovering);
         if (!added)
             BasisDebug.LogWarning(nameof(PickupInteractable) + " did not find role for input on hover");
-        
+
         OnHoverStartEvent?.Invoke(input);
         HighlightObject(true);
     }
@@ -151,11 +155,18 @@ public class PickupInteractable : InteractableObject
     }
     public override void OnInteractStart(BasisInput input)
     {
-        if(input.TryGetRole(out BasisBoneTrackedRole role) && Inputs.TryGetByRole(role, out BasisInputWrapper wrapper))
+        // clean up interacting ourselves (system wont do this for us)
+        if (CanSelfSteal)
+            Inputs.ForEachWithState(OnInteractEnd, InteractInputState.Interacting);
+
+        if (input.TryGetRole(out BasisBoneTrackedRole role) && Inputs.TryGetByRole(role, out BasisInputWrapper wrapper))
         {
             // same input that was highlighting previously
             if (wrapper.GetState() == InteractInputState.Hovering)
             {
+                Vector3 inPos = wrapper.BoneControl.OutgoingWorldData.position;
+                Quaternion inRot = wrapper.BoneControl.OutgoingWorldData.rotation;
+
                 if (RigidRef != null && KinematicWhileInteracting)
                 {
                     _previousKinematicValue = RigidRef.isKinematic;
@@ -169,10 +180,12 @@ public class PickupInteractable : InteractableObject
 
                 transform.GetPositionAndRotation(out Vector3 restPos, out Quaternion restRot);
                 InputConstraint.SetRestPositionAndRotation(restPos, restRot);
-                var offsetPos = Quaternion.Inverse(input.transform.rotation) * (transform.position - input.transform.position);
-                var offsetRot = Quaternion.Inverse(input.transform.rotation) * transform.rotation;
+
+                var offsetPos = Quaternion.Inverse(inRot) * (transform.position - inPos);
+                var offsetRot = Quaternion.Inverse(inRot) * transform.rotation;
                 InputConstraint.SetOffsetPositionAndRotation(0, offsetPos, offsetRot);
-                // PC.SetOffsetPositionAndRotation(input.transform.InverseTransformPoint(restPos), );
+
+                // Debug.Log($"[OnInteractStart] Frame: {Time.frameCount}, Input Source Rot: {inRot.eulerAngles}, Object Rot: {transform.rotation.eulerAngles}, Calculated Offset: {offsetRot.eulerAngles}");
                 InputConstraint.Enabled = true;
 
                 OnInteractStartEvent?.Invoke(input);
@@ -186,11 +199,14 @@ public class PickupInteractable : InteractableObject
         {
             BasisDebug.LogWarning(nameof(PickupInteractable) + " did not find role for input on Interact start");
         }
+        // cleaup hovers if we arent supposed to be able to self-steal
+        if (!CanSelfSteal)
+            Inputs.ForEachWithState(i => OnHoverEnd(i, false), InteractInputState.Hovering);
     }
 
     public override void OnInteractEnd(BasisInput input)
     {
-        if(input.TryGetRole(out BasisBoneTrackedRole role) && Inputs.TryGetByRole(role, out BasisInputWrapper wrapper))
+        if (input.TryGetRole(out BasisBoneTrackedRole role) && Inputs.TryGetByRole(role, out BasisInputWrapper wrapper))
         {
             if (wrapper.GetState() == InteractInputState.Interacting)
             {
@@ -212,13 +228,17 @@ public class PickupInteractable : InteractableObject
                 }
 
                 InputConstraint.Enabled = false;
+                InputConstraint.sources = new BasisParentConstraint.SourceData[] { new() { weight = 1f } };
 
-                OnDropVelocity();
+                if (!RigidRef.isKinematic)
+                {
+                    OnDropVelocity();
+                }
 
-                // syncNetworking.IsOwner = false;
+
                 OnInteractEndEvent?.Invoke(input);
             }
-        }        
+        }
     }
 
     /// <summary>
@@ -227,7 +247,7 @@ public class PickupInteractable : InteractableObject
     private void OnDropVelocity()
     {
         var linear = RigidRef.linearVelocity;
-        var angular  = RigidRef.angularVelocity;
+        var angular = RigidRef.angularVelocity;
         if (linear.magnitude >= minLinearVelocity)
         {
             linear *= interactEndLinearVelocityMultiplier;
@@ -259,15 +279,17 @@ public class PickupInteractable : InteractableObject
             {
                 // override with current camera position in desktop mode
                 // TODO: this is weird??!? fixes jitter but only on forward rendered shaders
-                inPos = BasisLocalCameraDriver.Instance.Camera.transform.position;
-                inRot = BasisLocalCameraDriver.Instance.Camera.transform.rotation;
-
+                BasisLocalCameraDriver.GetPositionAndRotation(out inPos, out inRot);
                 PollDesktopManipulation(Inputs.desktopCenterEye.Source);
             }
 
+            // Debug.Log($"[InputUpdate] Frame: {Time.frameCount}, Source inRot: {inRot.eulerAngles}, Stored Offset: {InputConstraint.sources[0].rotationOffset.eulerAngles}");
             InputConstraint.UpdateSourcePositionAndRotation(0, inPos, inRot);
             if (InputConstraint.Evaluate(out Vector3 pos, out Quaternion rot))
             {
+                // Debug.Log($"[InputUpdate] Frame: {Time.frameCount}, Evaluated Target Rot: {rot.eulerAngles}");
+                //pretty sure rigidbody is the real issue with the jitter here.
+                //as rigidbody occurs on physics timestamp? -LD
                 RigidRef.Move(pos, rot);
                 // TODO: fix jitter while still using rigidbody movement
                 // transform.SetPositionAndRotation(pos, rot);
@@ -307,7 +329,7 @@ public class PickupInteractable : InteractableObject
             // BasisDebug.Log("Setting initial target to current offset:" + targetOffset + " : " + currentOffset);
             targetOffset = currentOffset;
         }
-        
+
         if (mouseScroll != 0)
         {
             Transform sourceTransform = BasisLocalCameraDriver.Instance.Camera.transform;
@@ -327,16 +349,16 @@ public class PickupInteractable : InteractableObject
             {
                 targetOffset = newTargetOffset;
             }
-        }                
+        }
 
         var dampendOffset = Vector3.SmoothDamp(currentOffset, targetOffset, ref currentZoopVelocity, k_DesktopZoopSmoothing, k_DesktopZoopMaxVelocity);
         InputConstraint.sources[0].positionOffset = dampendOffset;
-        
+
 
 
         if (DesktopEye.InputState.Secondary2DAxisClick)
         {
-            if(!pauseHead)
+            if (!pauseHead)
             {
                 BasisAvatarEyeInput.Instance.PauseHead(headPauseRequestName);
                 pauseHead = true;
@@ -344,8 +366,8 @@ public class PickupInteractable : InteractableObject
 
             // drag rotate
             var delta = Mouse.current.delta.ReadValue();
-            Quaternion yRotation = Quaternion.AngleAxis(delta.x * DesktopRotateSpeed, Vector3.up);
-            Quaternion xRotation = Quaternion.AngleAxis(-delta.y * DesktopRotateSpeed, Vector3.right);
+            Quaternion yRotation = Quaternion.AngleAxis(-delta.x * DesktopRotateSpeed, Vector3.up);
+            Quaternion xRotation = Quaternion.AngleAxis(delta.y * DesktopRotateSpeed, Vector3.right);
 
             var rotation = yRotation * xRotation * InputConstraint.sources[0].rotationOffset;
             InputConstraint.sources[0].rotationOffset = rotation;
@@ -355,14 +377,15 @@ public class PickupInteractable : InteractableObject
         else if (pauseHead)
         {
             pauseHead = false;
-            if(!BasisAvatarEyeInput.Instance.UnPauseHead(headPauseRequestName))
+            if (!BasisAvatarEyeInput.Instance.UnPauseHead(headPauseRequestName))
             {
                 BasisDebug.LogWarning(nameof(PickupInteractable) + " was unable to un-pause head movement, this is a bug!");
             }
         }
     }
 
-    private BasisInputWrapper? GetActiveInteracting() {
+    private BasisInputWrapper? GetActiveInteracting()
+    {
 
         if (Inputs.desktopCenterEye.GetState() == InteractInputState.Interacting)
             return Inputs.desktopCenterEye;
@@ -371,7 +394,7 @@ public class PickupInteractable : InteractableObject
         else if (Inputs.rightHand.GetState() == InteractInputState.Interacting)
             return Inputs.rightHand;
         else
-            return null;   
+            return null;
     }
 
     public override void StartRemoteControl()
@@ -396,6 +419,7 @@ public class PickupInteractable : InteractableObject
         }
         base.OnDestroy();
     }
+
 
 #if UNITY_EDITOR
     public void OnValidate()

@@ -43,8 +43,8 @@ namespace Basis.Scripts.Device_Management.Devices.Unity_Spatial_Tracking
                 {
                     if (Control.HasTracked != BasisHasTracked.HasNoTracker)
                     {
-                        Control.IncomingData.position = FinalPosition - math.mul(FinalRotation, AvatarPositionOffset * BasisLocalPlayer.Instance.CurrentHeight.EyeRatioAvatarToAvatarDefaultScale);
-                        Control.IncomingData.rotation = math.mul(FinalRotation, Quaternion.Euler(AvatarRotationOffset));
+                        Control.IncomingData.position = TransformFinalPosition - math.mul(TransformFinalRotation, AvatarPositionOffset * BasisLocalPlayer.Instance.CurrentHeight.SelectedAvatarToAvatarDefaultScale);
+                        Control.IncomingData.rotation = math.mul(TransformFinalRotation, Quaternion.Euler(AvatarRotationOffset));
                     }
                 }
                 if (TryGetRole(out var CurrentRole))
@@ -55,8 +55,8 @@ namespace Basis.Scripts.Device_Management.Devices.Unity_Spatial_Tracking
                     }
                 }
             }
-            FinalPosition = LocalRawPosition * BasisLocalPlayer.Instance.CurrentHeight.EyeRatioAvatarToAvatarDefaultScale;
-            FinalRotation = LocalRawRotation;
+            TransformFinalPosition = LocalRawPosition * BasisLocalPlayer.Instance.CurrentHeight.SelectedAvatarToAvatarDefaultScale;
+            TransformFinalRotation = LocalRawRotation;
             UpdatePlayerControl();
         }
         public override void ShowTrackedVisual()

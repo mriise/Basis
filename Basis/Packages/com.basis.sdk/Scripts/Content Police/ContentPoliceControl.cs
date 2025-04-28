@@ -21,7 +21,7 @@ public static class ContentPoliceControl
             SearchAndDestroy = GameObject.Instantiate(SearchAndDestroy, Position, Rotation, newGameObject.transform);
             if(ModifyScale)
             {
-                BasisDebug.Log("Overriding Default scale is now " + Scale + " for gameobject " + SearchAndDestroy.name);
+                BasisDebug.Log($"Overriding Default scale is now {Scale} for Game object {SearchAndDestroy.name}");
                 SearchAndDestroy.transform.localScale = Scale;
             }
             // Create a list to hold all components in the original GameObject
@@ -41,8 +41,18 @@ public static class ContentPoliceControl
                             animator.fireEvents = false;
                         }
                     }
-                    // Check if the component is a MonoBehaviour and not in the approved list
-                    if (component is UnityEngine.Component monoBehaviour)
+                    else
+                    {
+                        if (component is Collider collider)
+                        {
+                            if (ChecksRequired.RemoveColliders)
+                            {
+                                GameObject.Destroy(collider);
+                            }
+                        }
+                    }
+                        // Check if the component is a MonoBehaviour and not in the approved list
+                        if (component is UnityEngine.Component monoBehaviour)
                     {
                         string monoTypeName = monoBehaviour.GetType().FullName;
                         if (!PoliceCheck.selectedTypes.Contains(monoTypeName))
@@ -92,4 +102,5 @@ public struct ChecksRequired
 {
     public bool UseContentRemoval;
     public bool DisableAnimatorEvents;
+    public bool RemoveColliders;
 }

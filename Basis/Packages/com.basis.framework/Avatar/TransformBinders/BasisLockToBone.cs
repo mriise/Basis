@@ -5,57 +5,59 @@ using UnityEngine;
 
 namespace Basis.Scripts.TransformBinders
 {
-public class BasisLockToBone : MonoBehaviour
-{
-    public BasisLocalBoneDriver CharacterTransformDriver;
-    public BasisBoneControl BoneControl;
-    public BasisBoneTrackedRole Role = BasisBoneTrackedRole.Head;
-    public bool hasCharacterTransformDriver = false;
-    public bool HasBoneControl = false;
-    public bool HasEvent = false;
-    public void Initialize(BasisLocalPlayer LocalPlayer)
+    public class BasisLockToBone : MonoBehaviour
     {
-        if (LocalPlayer != null)
+        public BasisLocalPlayer BasisLocalPlayer;
+        public BasisLocalBoneDriver CharacterTransformDriver;
+        public BasisBoneControl BoneControl;
+        public BasisBoneTrackedRole Role = BasisBoneTrackedRole.Head;
+        public bool hasCharacterTransformDriver = false;
+        public bool HasBoneControl = false;
+        public bool HasEvent = false;
+        public void Initialize(BasisLocalPlayer LocalPlayer)
         {
-            CharacterTransformDriver = LocalPlayer.LocalBoneDriver;
-            if (CharacterTransformDriver == null)
+            if (LocalPlayer != null)
             {
-                hasCharacterTransformDriver = false;
-                BasisDebug.LogError("Missing CharacterTransformDriver");
+                BasisLocalPlayer = LocalPlayer;
+                CharacterTransformDriver = LocalPlayer.LocalBoneDriver;
+                if (CharacterTransformDriver == null)
+                {
+                    hasCharacterTransformDriver = false;
+                    BasisDebug.LogError("Missing CharacterTransformDriver");
+                }
+                else
+                {
+                    hasCharacterTransformDriver = true;
+                    HasBoneControl = CharacterTransformDriver.FindBone(out BoneControl, Role);
+                }
             }
             else
             {
-                hasCharacterTransformDriver = true;
-                HasBoneControl = CharacterTransformDriver.FindBone(out BoneControl, Role);
+                BasisDebug.LogError("Missing LocalPlayer");
             }
-        }
-        else
-        {
-            BasisDebug.LogError("Missing LocalPlayer");
-        }
-        if (HasEvent == false)
-        {
-            CharacterTransformDriver.ReadyToRead.AddAction(99,Simulation);
-            HasEvent = true;
-        }
-    }
-    public void OnDestroy()
-    {
-        if (CharacterTransformDriver != null)
-        {
-            if (HasEvent)
+            if (HasEvent == false)
             {
-                CharacterTransformDriver.ReadyToRead.RemoveAction(99,Simulation);
-                HasEvent = false;
+                BasisLocalPlayer.AfterFinalMove.AddAction(99, Simulation);
+                HasEvent = true;
+            }
+        }
+        public void OnDestroy()
+        {
+            if (CharacterTransformDriver != null)
+            {
+                if (HasEvent)
+                {
+                    BasisLocalPlayer.AfterFinalMove.RemoveAction(99, Simulation);
+                    HasEvent = false;
+                }
+            }
+        }
+        void Simulation()
+        {
+            if (hasCharacterTransformDriver && HasBoneControl)
+            {
+                transform.SetPositionAndRotation(BoneControl.OutgoingWorldData.position, BoneControl.OutgoingWorldData.rotation);
             }
         }
     }
-    void Simulation()
-    {
-        if (hasCharacterTransformDriver && HasBoneControl)
-        {
-            transform.SetPositionAndRotation(BoneControl.OutgoingWorldData.position, BoneControl.OutgoingWorldData.rotation);
-        }
-    }
-}
 }

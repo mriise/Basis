@@ -1,5 +1,6 @@
 using Basis.Scripts.Device_Management;
 using Basis.Scripts.Drivers;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace Basis.Scripts.UI.NamePlate
@@ -7,8 +8,8 @@ namespace Basis.Scripts.UI.NamePlate
     public class RemoteNamePlateDriver : MonoBehaviour
     {
         // Use an array for better performance
-        private BasisNamePlate[] basisRemotePlayers = new BasisNamePlate[0];
-        private int count = 0; // Track the number of active elements
+        private static BasisRemoteNamePlate[] RemoteNamePlates = new BasisRemoteNamePlate[0];
+        private static int count = 0; // Track the number of active elements
         public static RemoteNamePlateDriver Instance;
         public Color NormalColor;
         public Color IsTalkingColor;
@@ -42,44 +43,51 @@ namespace Basis.Scripts.UI.NamePlate
         /// <summary>
         /// Adds a new BasisNamePlate to the array.
         /// </summary>
-        public void AddNamePlate(BasisNamePlate newNamePlate)
+        public void AddNamePlate(BasisRemoteNamePlate newNamePlate)
         {
-            if (newNamePlate == null) return;
+            if (newNamePlate == null)
+            {
+                return;
+            }
+
 
             // Check if it already exists
             for (int i = 0; i < count; i++)
             {
-                if (basisRemotePlayers[i] == newNamePlate) return;
+                if (RemoteNamePlates[i] == newNamePlate)
+                {
+                    return;
+                }
             }
 
             // Resize if necessary
-            if (count >= basisRemotePlayers.Length)
+            if (count >= RemoteNamePlates.Length)
             {
-                ResizeArray(basisRemotePlayers.Length == 0 ? 4 : basisRemotePlayers.Length * 2);
+                ResizeArray(RemoteNamePlates.Length == 0 ? 4 : RemoteNamePlates.Length * 2);
             }
 
             // Add the new nameplate
-            basisRemotePlayers[count++] = newNamePlate;
+            RemoteNamePlates[count++] = newNamePlate;
         }
 
         /// <summary>
         /// Removes an existing BasisNamePlate from the array.
         /// </summary>
-        public void RemoveNamePlate(BasisNamePlate namePlateToRemove)
+        public void RemoveNamePlate(BasisRemoteNamePlate namePlateToRemove)
         {
             if (namePlateToRemove == null) return;
 
-            for (int i = 0; i < count; i++)
+            for (int RemotePlayerIndex = 0; RemotePlayerIndex < count; RemotePlayerIndex++)
             {
-                if (basisRemotePlayers[i] == namePlateToRemove)
+                if (RemoteNamePlates[RemotePlayerIndex] == namePlateToRemove)
                 {
                     // Shift elements down to remove the nameplate
-                    for (int j = i; j < count - 1; j++)
+                    for (int Index = RemotePlayerIndex; Index < count - 1; Index++)
                     {
-                        basisRemotePlayers[j] = basisRemotePlayers[j + 1];
+                        RemoteNamePlates[Index] = RemoteNamePlates[Index + 1];
                     }
 
-                    basisRemotePlayers[--count] = null; // Clear the last element
+                    RemoteNamePlates[--count] = null; // Clear the last element
                     break;
                 }
             }
@@ -95,10 +103,10 @@ namespace Basis.Scripts.UI.NamePlate
             // Shift elements down to remove the nameplate
             for (int i = index; i < count - 1; i++)
             {
-                basisRemotePlayers[i] = basisRemotePlayers[i + 1];
+                RemoteNamePlates[i] = RemoteNamePlates[i + 1];
             }
 
-            basisRemotePlayers[--count] = null; // Clear the last element
+            RemoteNamePlates[--count] = null; // Clear the last element
         }
 
         /// <summary>
@@ -106,29 +114,29 @@ namespace Basis.Scripts.UI.NamePlate
         /// </summary>
         private void ResizeArray(int newSize)
         {
-            BasisNamePlate[] newArray = new BasisNamePlate[newSize];
-            for (int i = 0; i < count; i++)
+            BasisRemoteNamePlate[] newArray = new BasisRemoteNamePlate[newSize];
+            for (int Index = 0; Index < count; Index++)
             {
-                newArray[i] = basisRemotePlayers[i];
+                newArray[Index] = RemoteNamePlates[Index];
             }
 
-            basisRemotePlayers = newArray;
+            RemoteNamePlates = newArray;
         }
-        public float x;
-        public float z;
-        public void LateUpdate()
+        public static float x;
+        public static float z;
+        public static void SimulateNamePlates()
         {
             Vector3 Position = BasisLocalCameraDriver.Position;
             for (int Index = 0; Index < count; Index++)
             {
-                BasisNamePlate NamePlate = basisRemotePlayers[Index];
+                BasisRemoteNamePlate NamePlate = RemoteNamePlates[Index];
                 if (NamePlate.IsVisible)
                 {
                     cachedDirection = NamePlate.HipTarget.OutgoingWorldData.position;
                     cachedDirection.y += NamePlate.MouthTarget.TposeLocal.position.y / YHeightMultiplier;
                     dirToCamera = Position - cachedDirection;
-                    cachedRotation = Quaternion.Euler(x, Mathf.Atan2(dirToCamera.x, dirToCamera.z) * Mathf.Rad2Deg, z);
-                    NamePlate.transform.SetPositionAndRotation(cachedDirection, cachedRotation);
+                    cachedRotation = Quaternion.Euler(x, math.atan2(dirToCamera.x, dirToCamera.z) * Mathf.Rad2Deg, z);
+                    NamePlate.Self.SetPositionAndRotation(cachedDirection, cachedRotation);
                 }
             }
         }

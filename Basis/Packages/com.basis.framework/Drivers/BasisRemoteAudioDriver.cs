@@ -1,4 +1,4 @@
-using Basis.Scripts.Networking.Recievers;
+using Basis.Scripts.Networking.Receivers;
 using System;
 using UnityEngine;
 

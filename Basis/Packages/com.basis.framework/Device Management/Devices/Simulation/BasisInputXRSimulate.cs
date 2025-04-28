@@ -18,30 +18,29 @@ namespace Basis.Scripts.Device_Management.Devices.Simulation
             {
                 Vector3 randomOffset = new Vector3(UnityEngine.Random.Range(-MinMaxOffset, MinMaxOffset), UnityEngine.Random.Range(-MinMaxOffset, MinMaxOffset), UnityEngine.Random.Range(-MinMaxOffset, MinMaxOffset));
 
-                Quaternion randomRotation = UnityEngine.Random.rotation;
-                Quaternion lerpedRotation = Quaternion.Lerp(FollowMovement.localRotation, randomRotation, LerpAmount * Time.deltaTime);
+                float LerpAmounts = LerpAmount * Time.deltaTime;
+                Quaternion LerpRotation = Quaternion.Lerp(FollowMovement.localRotation, UnityEngine.Random.rotation, LerpAmounts);
+                Vector3 newPosition = Vector3.Lerp(FollowMovement.localPosition, FollowMovement.localPosition + randomOffset, LerpAmounts);
 
-                Vector3 originalPosition = FollowMovement.localPosition;
-                Vector3 newPosition = Vector3.Lerp(originalPosition, originalPosition + randomOffset, LerpAmount * Time.deltaTime);
-
-                FollowMovement.SetLocalPositionAndRotation(newPosition, lerpedRotation);
+                FollowMovement.SetLocalPositionAndRotation(newPosition, LerpRotation);
             }
-            Quaternion QOut;
-            FollowMovement.GetLocalPositionAndRotation(out Vector3 VOut, out QOut);
+            FollowMovement.GetLocalPositionAndRotation(out Vector3 VOut, out Quaternion QOut);
             LocalRawPosition = VOut;
             LocalRawRotation = QOut;
 
-            LocalRawPosition /= BasisLocalPlayer.Instance.CurrentHeight.EyeRatioPlayerToDefaultScale;
+            float SPTDS = BasisLocalPlayer.Instance.CurrentHeight.SelectedPlayerToDefaultScale;
 
-            FinalPosition = LocalRawPosition * BasisLocalPlayer.Instance.CurrentHeight.EyeRatioPlayerToDefaultScale;
-            FinalRotation = LocalRawRotation;
+            LocalRawPosition /= SPTDS;
+
+            TransformFinalPosition = LocalRawPosition * SPTDS;
+            TransformFinalRotation = LocalRawRotation;
             if (hasRoleAssigned)
             {
                 if (Control.HasTracked != BasisHasTracked.HasNoTracker)
                 {
                     // Apply the position offset using math.mul for quaternion-vector multiplication
-                    Control.IncomingData.position = FinalPosition - math.mul(FinalRotation, AvatarPositionOffset * BasisLocalPlayer.Instance.CurrentHeight.EyeRatioAvatarToAvatarDefaultScale);
-                    Control.IncomingData.rotation = math.mul(FinalRotation, Quaternion.Euler(AvatarRotationOffset));
+                    Control.IncomingData.position = TransformFinalPosition - math.mul(TransformFinalRotation, AvatarPositionOffset * BasisLocalPlayer.Instance.CurrentHeight.SelectedAvatarToAvatarDefaultScale);
+                    Control.IncomingData.rotation = math.mul(TransformFinalRotation, Quaternion.Euler(AvatarRotationOffset));
                 }
             }
             UpdatePlayerControl();

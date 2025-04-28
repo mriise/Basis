@@ -31,7 +31,7 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
               // BasisDebug.Log("Sending out AvatarData " + Transmit.SendingOutAvatarData.Count);
             }
             Transmit.LASM.Serialize(Transmit.AvatarSendWriter);
-            BasisNetworkProfiler.LocalAvatarSyncMessageCounter.Sample(Transmit.AvatarSendWriter.Length);
+            BasisNetworkProfiler.AddToCounter(BasisNetworkProfilerCounter.LocalAvatarSync, Transmit.AvatarSendWriter.Length);
             BasisNetworkManagement.LocalPlayerPeer.Send(Transmit.AvatarSendWriter, BasisNetworkCommons.MovementChannel, DeliveryMethod.Sequenced);
             Transmit.AvatarSendWriter.Reset();
             Transmit.ClearAdditional();

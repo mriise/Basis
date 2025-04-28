@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -7,21 +8,32 @@ public static class BasisPlayerSettingsManager
 {
     private static readonly string settingsDirectory = Path.Combine(Application.persistentDataPath, "PlayerSettings");
 
+    private const int CacheSizeLimit = 200;
+
+    // In-memory cache for recently accessed player settings
+    private static readonly Dictionary<string, BasisPlayerSettingsData> settingsCache = new Dictionary<string, BasisPlayerSettingsData>();
+    private static readonly LinkedList<string> cacheOrder = new LinkedList<string>();
+
     static BasisPlayerSettingsManager()
     {
-        // Ensure the directory exists
         if (!Directory.Exists(settingsDirectory))
         {
             Directory.CreateDirectory(settingsDirectory);
         }
     }
 
-    /// <summary>
-    /// Requests player settings from file. If not found or corrupted, creates and returns default settings.
-    /// </summary>
     public static async Task<BasisPlayerSettingsData> RequestPlayerSettings(string uuid)
     {
-        string filePath = GetFilePath(uuid);
+        string sanitizedUuid = SanitizeFileName(uuid);
+
+        // Try to get from cache
+        if (settingsCache.TryGetValue(sanitizedUuid, out var cachedData))
+        {
+            MoveToMostRecent(sanitizedUuid);
+            return cachedData;
+        }
+
+        string filePath = GetFilePath(sanitizedUuid);
 
         if (File.Exists(filePath))
         {
@@ -30,7 +42,9 @@ public static class BasisPlayerSettingsManager
                 string json = await File.ReadAllTextAsync(filePath);
                 if (!string.IsNullOrWhiteSpace(json))
                 {
-                    return JsonUtility.FromJson<BasisPlayerSettingsData>(json);
+                    var data = JsonUtility.FromJson<BasisPlayerSettingsData>(json);
+                    CacheSettings(sanitizedUuid, data);
+                    return data;
                 }
             }
             catch (Exception ex)
@@ -38,40 +52,62 @@ public static class BasisPlayerSettingsManager
                 BasisDebug.LogError($"Failed to load settings for {uuid}: {ex.Message}. Resetting file.");
             }
 
-            // If file is empty, corrupted, or unreadable, delete it and create a new one
             File.Delete(filePath);
         }
 
-        // Create default settings if file does not exist or was deleted
         BasisPlayerSettingsData defaultData = new BasisPlayerSettingsData(uuid, 1.0f, true);
         await SetPlayerSettings(defaultData);
         return defaultData;
     }
 
-    /// <summary>
-    /// Saves player settings to file.
-    /// </summary>
     public static async Task SetPlayerSettings(BasisPlayerSettingsData settings)
     {
-        string filePath = GetFilePath(settings.UUID);
-        string json = JsonUtility.ToJson(settings, false); // Minimized JSON
+        string sanitizedUuid = SanitizeFileName(settings.UUID);
+        string filePath = GetFilePath(sanitizedUuid);
+        string json = JsonUtility.ToJson(settings, false);
+
+        CacheSettings(sanitizedUuid, settings);
         await File.WriteAllTextAsync(filePath, json);
     }
-    private static string GetFilePath(string uuid)
+
+    private static string GetFilePath(string sanitizedUuid)
     {
-        string sanitizedUuid = SanitizeFileName(uuid);
         return Path.Combine(settingsDirectory, $"{sanitizedUuid}.json");
     }
 
-    /// <summary>
-    /// Removes invalid characters from a filename.
-    /// </summary>
     private static string SanitizeFileName(string fileName)
     {
         foreach (char c in Path.GetInvalidFileNameChars())
         {
-            fileName = fileName.Replace(c, '_'); // Replace invalid characters with underscore
+            fileName = fileName.Replace(c, '_');
         }
         return fileName;
+    }
+
+    private static void CacheSettings(string uuid, BasisPlayerSettingsData data)
+    {
+        if (settingsCache.ContainsKey(uuid))
+        {
+            settingsCache[uuid] = data;
+            MoveToMostRecent(uuid);
+        }
+        else
+        {
+            if (settingsCache.Count >= CacheSizeLimit)
+            {
+                string oldestUuid = cacheOrder.Last.Value;
+                cacheOrder.RemoveLast();
+                settingsCache.Remove(oldestUuid);
+            }
+
+            settingsCache[uuid] = data;
+            cacheOrder.AddFirst(uuid);
+        }
+    }
+
+    private static void MoveToMostRecent(string uuid)
+    {
+        cacheOrder.Remove(uuid);
+        cacheOrder.AddFirst(uuid);
     }
 }

@@ -34,7 +34,7 @@ public class PickupJointInteractable : InteractableObject
         {
             TryGetComponent(out JointRef);
         }
-        
+
         JointRef.autoConfigureConnectedAnchor = false;
         JointRef.configuredInWorldSpace = true;
         LockJoint(false);
@@ -44,8 +44,10 @@ public class PickupJointInteractable : InteractableObject
         // syncNetworking = GetComponent<BasisObjectSyncNetworking>();
     }
 
-    public void LockJoint(bool isLocked) {
-        if(isLocked){
+    public void LockJoint(bool isLocked)
+    {
+        if (isLocked)
+        {
             JointRef.xMotion = ConfigurableJointMotion.Locked;
             JointRef.yMotion = ConfigurableJointMotion.Locked;
             JointRef.zMotion = ConfigurableJointMotion.Locked;
@@ -53,7 +55,9 @@ public class PickupJointInteractable : InteractableObject
             JointRef.angularXMotion = ConfigurableJointMotion.Locked;
             JointRef.angularYMotion = ConfigurableJointMotion.Locked;
             JointRef.angularZMotion = ConfigurableJointMotion.Locked;
-        } else {
+        }
+        else
+        {
             JointRef.xMotion = ConfigurableJointMotion.Free;
             JointRef.yMotion = ConfigurableJointMotion.Free;
             JointRef.zMotion = ConfigurableJointMotion.Free;
@@ -64,8 +68,10 @@ public class PickupJointInteractable : InteractableObject
         }
     }
 
-    public void FixedUpdate() {
-        if(isHeld) {
+    public void FixedUpdate()
+    {
+        if (isHeld)
+        {
             // set world position and rotation of the joint
             JointRef.connectedAnchor = anchor.position + anchor.forward * offsetDistance;
             JointRef.targetRotation = Quaternion.Inverse(anchor.rotation) * offsetRot;

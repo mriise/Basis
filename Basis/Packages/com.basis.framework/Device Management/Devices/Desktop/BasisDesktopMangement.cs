@@ -18,7 +18,7 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
                 GameObject gameObject = new GameObject("Desktop Eye");
                 if (BasisLocalPlayer.Instance != null)
                 {
-                    gameObject.transform.parent = BasisLocalPlayer.Instance.LocalBoneDriver.transform;
+                    gameObject.transform.parent = BasisLocalPlayer.Instance.transform;
                 }
                 BasisAvatarEyeInput = gameObject.AddComponent<BasisAvatarEyeInput>();
                 BasisAvatarEyeInput.Initalize("Desktop Eye", nameof(BasisDesktopManagement));

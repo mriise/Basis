@@ -33,7 +33,7 @@ namespace JigglePhysics
             JiggleCount = jiggles.Length;
         }
 
-        private void Update()
+        public void Simulate()
         {
             if (!CheckActive())
             {

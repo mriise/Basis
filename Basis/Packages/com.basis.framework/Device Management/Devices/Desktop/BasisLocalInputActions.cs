@@ -170,29 +170,35 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
         // Input action methods
         private  void OnMoveActionStarted(InputAction.CallbackContext ctx)
         {
-            basisLocalPlayer.Move.MovementVector = ctx.ReadValue<Vector2>();
+            basisLocalPlayer.LocalCharacterDriver.MovementVector = ctx.ReadValue<Vector2>();
         }
 
         private static void OnMoveActionCancelled(InputAction.CallbackContext ctx)
         {
-            BasisLocalInputActions.Instance.basisLocalPlayer.Move.MovementVector = Vector2.zero;
+            BasisLocalInputActions.Instance.basisLocalPlayer.LocalCharacterDriver.MovementVector = Vector2.zero;
         }
 
         private static void OnLookActionStarted(InputAction.CallbackContext ctx)
         {
             LookDirection = ctx.ReadValue<Vector2>();
-            BasisLocalInputActions.CharacterEyeInput?.HandleMouseRotation(LookDirection);
+            if (BasisLocalInputActions.CharacterEyeInput != null)
+            {
+                BasisLocalInputActions.CharacterEyeInput.HandleMouseRotation(LookDirection);
+            }
         }
 
         private static void OnLookActionCancelled(InputAction.CallbackContext ctx)
         {
             LookDirection = Vector2.zero;
-            BasisLocalInputActions.CharacterEyeInput?.HandleMouseRotation(LookDirection);
+            if (BasisLocalInputActions.CharacterEyeInput != null)
+            {
+                BasisLocalInputActions.CharacterEyeInput.HandleMouseRotation(LookDirection);
+            }
         }
 
         private static void OnJumpActionPerformed(InputAction.CallbackContext ctx)
         {
-            BasisLocalInputActions.Instance.basisLocalPlayer.Move.HandleJump();
+            BasisLocalInputActions.Instance.basisLocalPlayer.LocalCharacterDriver.HandleJump();
         }
 
         private static void OnJumpActionCancelled(InputAction.CallbackContext ctx)
@@ -222,18 +228,18 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
                     BasisLocalInputActions.CharacterEyeInput.HandleMouseRotation(LookDirection);
                 }
 
-                BasisLocalInputActions.Instance.basisLocalPlayer.Move.SpeedMultiplyer = Crouching ? 0 : 0.5f;
+                BasisLocalInputActions.Instance.basisLocalPlayer.LocalCharacterDriver.SpeedMultiplier = Crouching ? 0 : 0.5f;
             }
         }
 
         private static void OnRunStarted(InputAction.CallbackContext ctx)
         {
-            BasisLocalInputActions.Instance.basisLocalPlayer.Move.SpeedMultiplyer = Crouching ? 0 : 1;
+            BasisLocalInputActions.Instance.basisLocalPlayer.LocalCharacterDriver.SpeedMultiplier = Crouching ? 0 : 1;
         }
 
         private static void OnRunCancelled(InputAction.CallbackContext ctx)
         {
-            BasisLocalInputActions.Instance.basisLocalPlayer.Move.SpeedMultiplyer = Crouching ? 0 : 0.5f;
+            BasisLocalInputActions.Instance.basisLocalPlayer.LocalCharacterDriver.SpeedMultiplier = Crouching ? 0 : 0.5f;
         }
 
         private static void OnEscapePerformed(InputAction.CallbackContext ctx)

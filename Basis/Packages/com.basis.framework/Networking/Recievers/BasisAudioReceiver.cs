@@ -3,11 +3,12 @@ using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Drivers;
 using Basis.Scripts.Networking.NetworkedAvatar;
 using OpusSharp.Core;
+using OpusSharp.Core.Extensions;
+using SteamAudio;
 using System;
-using System.Threading.Tasks;
 using UnityEngine;
 
-namespace Basis.Scripts.Networking.Recievers
+namespace Basis.Scripts.Networking.Receivers
 {
     [System.Serializable]
     public class BasisAudioReceiver
@@ -17,30 +18,26 @@ namespace Basis.Scripts.Networking.Recievers
         [SerializeField]
         public AudioSource audioSource;
         [SerializeField]
-        public BasisAudioAndVisemeDriver visemeDriver;
+        public BasisAudioAndVisemeDriver visemeDriver = new BasisAudioAndVisemeDriver();
         public BasisVoiceRingBuffer InOrderRead;
+        public SteamAudioSource SteamAudioSource;
         public bool IsPlaying = false;
         public float[] pcmBuffer;
         public int pcmLength;
         public bool IsReady;
         public float[] silentData;
         public byte lastReadIndex = 0;
-        public void OnDecode(byte SequenceNumber, byte[] data, int length)
+        public Transform AudioSourceTransform;
+
+        public float[] resampledSegment;
+        public void OnDecode(byte[] data, int length)
         {
             pcmLength = decoder.Decode(data, length, pcmBuffer, RemoteOpusSettings.NetworkSampleRate, false);
             InOrderRead.Add(pcmBuffer, pcmLength);
         }
-        public void OnDecodeSilence(byte SequenceNumber)
+        public void OnDecodeSilence()
         {
             InOrderRead.Add(silentData, RemoteOpusSettings.FrameSize);
-        }
-        public void ChangeRemotePlayersVolumeSettings(float Volume = 1.0f,float dopplerLevel = 0,float spatialBlend = 1.0f, bool spatialize = true,bool spatializePostEffects = true)
-        {
-            audioSource.spatialize = spatialize;
-            audioSource.spatializePostEffects = spatializePostEffects; //revist later!
-            audioSource.spatialBlend = spatialBlend;
-            audioSource.dopplerLevel = dopplerLevel;
-            audioSource.volume = Volume;
         }
         public async void OnEnable(BasisNetworkPlayer networkedPlayer)
         {
@@ -53,14 +50,13 @@ namespace Basis.Scripts.Networking.Recievers
             if (audioSource == null)
             {
                 BasisRemotePlayer remotePlayer = (BasisRemotePlayer)networkedPlayer.Player;
-                audioSource = BasisHelpers.GetOrAddComponent<AudioSource>(remotePlayer.AudioSourceTransform.gameObject);
+                AudioSourceTransform = remotePlayer.NetworkedVoice;
+                audioSource = BasisHelpers.GetOrAddComponent<AudioSource>(AudioSourceTransform.gameObject);
             }
             audioSource.loop = true;
-            BasisPlayerSettingsData BasisPlayerSettingsData = await BasisPlayerSettingsManager.RequestPlayerSettings(networkedPlayer.Player.UUID);
-            ChangeRemotePlayersVolumeSettings(BasisPlayerSettingsData.VolumeLevel);
             InOrderRead = new BasisVoiceRingBuffer();
             // Create AudioClip
-            audioSource.clip = AudioClip.Create($"player [{networkedPlayer.NetId}]", RemoteOpusSettings.FrameSize *4, RemoteOpusSettings.Channels, RemoteOpusSettings.PlayBackSampleRate, false, (buf) =>
+            audioSource.clip = AudioClip.Create($"player [{networkedPlayer.NetId}]", RemoteOpusSettings.FrameSize * (2 * 2), RemoteOpusSettings.Channels, RemoteOpusSettings.PlayBackSampleRate, false, (buf) =>
             {
                 Array.Fill(buf, 1.0f);
             });
@@ -71,6 +67,9 @@ namespace Basis.Scripts.Networking.Recievers
             StartAudio();
             // Perform calibration
             OnCalibration(networkedPlayer);
+
+            BasisPlayerSettingsData BasisPlayerSettingsData = await BasisPlayerSettingsManager.RequestPlayerSettings(networkedPlayer.Player.UUID);
+            ChangeRemotePlayersVolumeSettings(BasisPlayerSettingsData.VolumeLevel);
             IsReady = true;
         }
         public void OnDestroy()
@@ -81,23 +80,19 @@ namespace Basis.Scripts.Networking.Recievers
                 decoder.Dispose();
                 decoder = null;
             }
+            if(SteamAudioSource != null)
+            {
+                GameObject.Destroy(SteamAudioSource);
+            }
             if (audioSource != null)
             {
                 audioSource.Stop();
                 GameObject.Destroy(audioSource);
             }
-            if (visemeDriver != null)
-            {
-                GameObject.Destroy(visemeDriver);
-            }
         }
         public void OnCalibration(BasisNetworkPlayer networkedPlayer)
         {
             // Ensure viseme driver is initialized for audio processing
-            if (visemeDriver == null)
-            {
-                visemeDriver = BasisHelpers.GetOrAddComponent<BasisAudioAndVisemeDriver>(audioSource.gameObject);
-            }
             visemeDriver.TryInitialize(networkedPlayer.Player);
             if (BasisRemoteVisemeAudioDriver == null)
             {
@@ -116,13 +111,45 @@ namespace Basis.Scripts.Networking.Recievers
             IsPlaying = true;
             audioSource.Play();
         }
+        public void ChangeRemotePlayersVolumeSettings(float Volume = 1.0f, float dopplerLevel = 0, float spatialBlend = 1.0f, bool spatialize = true, bool spatializePostEffects = true)
+        {
+            // Set spatial and doppler settings
+            audioSource.spatialize = spatialize;
+            audioSource.spatializePostEffects = spatializePostEffects;
+            audioSource.spatialBlend = spatialBlend;
+            audioSource.dopplerLevel = dopplerLevel;
+
+            short Gain;
+
+            if (Volume <= 0f)
+            {
+                // Mute audio source and set gain to 0
+                audioSource.volume = 0f;
+                Gain = 256;
+            }
+            else if (Volume <= 1f)
+            {
+                // Set audio volume directly, gain stays at default (1.0 * 1024)
+                audioSource.volume = Volume;
+                Gain = (short)1024; // Normal gain
+            }
+            else
+            {
+                // Max out Unity volume, and use Opus gain for amplification
+                audioSource.volume = 1f;
+                Gain = (short)(Volume * 1024);
+            }
+
+            BasisDebug.Log("Set Gain To " + Gain);
+            OpusDecoderExtensions.SetGain(decoder, Gain);
+        }
         public void OnAudioFilterRead(float[] data, int channels, int length)
         {
             int frames = length / channels; // Number of audio frames
             if (InOrderRead.IsEmpty)
             {
                 // No voice data, fill with silence
-              //  BasisDebug.Log("Missing Audio Data! filling with Silence");
+                //  BasisDebug.Log("Missing Audio Data! filling with Silence");
                 Array.Fill(data, 0);
                 return;
             }
@@ -138,23 +165,6 @@ namespace Basis.Scripts.Networking.Recievers
                 ProcessAudioWithResampling(data, frames, channels, outputSampleRate);
             }
         }
-        private void ProcessAudioWithoutResampling(float[] data, int frames, int channels)
-        {
-            InOrderRead.Remove(frames, out float[] segment);
-
-            for (int i = 0; i < frames; i++)
-            {
-                float sample = segment[i]; // Single-channel sample from the RingBuffer
-                for (int c = 0; c < channels; c++)
-                {
-                    int index = i * channels + c;
-                    data[index] *= sample;
-                    data[index] =  Math.Clamp(data[index], -1, 1);
-                }
-            }
-            InOrderRead.BufferedReturn.Enqueue(segment);
-        }
-
         private void ProcessAudioWithResampling(float[] data, int frames, int channels, int outputSampleRate)
         {
             float resampleRatio = (float)RemoteOpusSettings.NetworkSampleRate / outputSampleRate;
@@ -165,9 +175,9 @@ namespace Basis.Scripts.Networking.Recievers
             float[] resampledSegment = new float[frames];
 
             // Resampling using linear interpolation
-            for (int i = 0; i < frames; i++)
+            for (int FrameIndex = 0; FrameIndex < frames; FrameIndex++)
             {
-                float srcIndex = i * resampleRatio;
+                float srcIndex = FrameIndex * resampleRatio;
                 int indexLow = Mathf.FloorToInt(srcIndex);
                 int indexHigh = Mathf.CeilToInt(srcIndex);
                 float frac = srcIndex - indexLow;
@@ -175,21 +185,38 @@ namespace Basis.Scripts.Networking.Recievers
                 float sampleLow = (indexLow < inputSegment.Length) ? inputSegment[indexLow] : 0;
                 float sampleHigh = (indexHigh < inputSegment.Length) ? inputSegment[indexHigh] : 0;
 
-                resampledSegment[i] = Mathf.Lerp(sampleLow, sampleHigh, frac);
+                resampledSegment[FrameIndex] = Mathf.Lerp(sampleLow, sampleHigh, frac);
             }
 
             // Apply resampled audio to output buffer
-            for (int i = 0; i < frames; i++)
+            for (int FrameIndex = 0; FrameIndex < frames; FrameIndex++)
             {
-                float sample = resampledSegment[i];
+                float sample = resampledSegment[FrameIndex];
                 for (int c = 0; c < channels; c++)
                 {
-                    int index = i * channels + c;
+                    int index = FrameIndex * channels + c;
                     data[index] *= sample;
+                    data[index] = Math.Clamp(data[index], -1, 1);
                 }
             }
 
             InOrderRead.BufferedReturn.Enqueue(inputSegment);
+        }
+        private void ProcessAudioWithoutResampling(float[] data, int frames, int channels)
+        {
+            InOrderRead.Remove(frames, out float[] segment);
+
+            for (int FrameIndex = 0; FrameIndex < frames; FrameIndex++)
+            {
+                float sample = segment[FrameIndex]; // Single-channel sample from the RingBuffer
+                for (int ChannelIndex = 0; ChannelIndex < channels; ChannelIndex++)
+                {
+                    int index = FrameIndex * channels + ChannelIndex;
+                    data[index] *= sample;
+                    data[index] = Math.Clamp(data[index], -1, 1);
+                }
+            }
+            InOrderRead.BufferedReturn.Enqueue(segment);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using Basis.Scripts.BasisSdk.Players;
+using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Device_Management.Devices;
 using Basis.Scripts.TransformBinders.BoneControl;
 using System;
@@ -25,7 +25,7 @@ public static partial class BasisAvatarIKStageCalibration
                 if(AvatarTransform == null)
                 {
                     Debug.LogWarning("Missing Avatar Transform");
-                    CalibrationPoint = Bone.BoneTransform.position;
+                    CalibrationPoint = Bone.OutgoingWorldData.position;
                 }
                 else
                 {

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public static class BasisAvatarBufferPool
 {
     // Internal pool to hold reusable AvatarBuffer objects
-    private static Stack<AvatarBuffer> pool;
+    private static Stack<BasisAvatarBuffer> pool;
     private static readonly object lockObject = new object();
     public static bool Initialized { get; private set; } = false;
 
@@ -17,7 +17,7 @@ public static class BasisAvatarBufferPool
             {
                 if (!Initialized) // Double-check locking for thread safety
                 {
-                    pool = new Stack<AvatarBuffer>(initialCapacity);
+                    pool = new Stack<BasisAvatarBuffer>(initialCapacity);
                     Initialized = true;
                     // Prepopulate the pool with default AvatarBuffer objects
                     for (int i = 0; i < initialCapacity; i++)
@@ -30,7 +30,7 @@ public static class BasisAvatarBufferPool
     }
 
     // Method to fetch an AvatarBuffer from the pool
-    public static AvatarBuffer Rent()
+    public static BasisAvatarBuffer Rent()
     {
         lock (lockObject)
         {
@@ -45,7 +45,7 @@ public static class BasisAvatarBufferPool
     }
 
     // Method to return an AvatarBuffer back to the pool
-    public static void Return(AvatarBuffer avatarBuffer)
+    public static void Return(BasisAvatarBuffer avatarBuffer)
     {
         lock (lockObject)
         {
@@ -54,9 +54,9 @@ public static class BasisAvatarBufferPool
     }
 
     // Helper method to create a default AvatarBuffer
-    private static AvatarBuffer CreateDefaultAvatarBuffer()
+    private static BasisAvatarBuffer CreateDefaultAvatarBuffer()
     {
-        return new AvatarBuffer();
+        return new BasisAvatarBuffer();
     }
 
     // Method to clear the pool if needed

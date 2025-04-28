@@ -4,15 +4,18 @@ using UnityEngine;
 
 namespace Basis.Scripts.Drivers
 {
-    public class BasisRemoteBoneDriver : BaseBoneDriver
+    [System.Serializable]
+    public class BasisRemoteBoneDriver : BasisBaseBoneDriver
     {
         public BasisRemotePlayer RemotePlayer;
         public Transform HeadAvatar;
         public Transform HipsAvatar;
         public BasisBoneControl Head;
         public BasisBoneControl Hips;
-        public bool HasEvent = false;
-        public void Initialize()
+        public BasisBoneControl Mouth;
+        public bool HasHead;
+        public bool HasHips;
+        public void InitializeRemote()
         {
             FindBone(out Head, BasisBoneTrackedRole.Head);
             FindBone(out Hips, BasisBoneTrackedRole.Hips);
@@ -24,38 +27,24 @@ namespace Basis.Scripts.Drivers
             {
                 Hips.HasTracked = BasisHasTracked.HasTracker;
             }
-            if (HasEvent == false)
-            {
-                OnSimulate += CalculateHeadBoneData;
-                HasEvent = true;
-            }
-        }
-        public void OnDestroy()
-        {
-            if (HasEvent)
-            {
-                OnSimulate -= CalculateHeadBoneData;
-                HasEvent = false;
-            }
-            DeInitalzeGizmos();
+            FindBone(out Mouth, BasisBoneTrackedRole.Mouth);
         }
         public void CalculateHeadBoneData()
         {
+            Vector3 RRT = RemotePlayer.transform.position;
             if (Head.HasBone && HasHead)
             {
                 HeadAvatar.GetPositionAndRotation(out Vector3 Position, out Quaternion Rotation);
-                Head.IncomingData.position = Position - RemotePlayer.RemoteBoneDriver.transform.position;
+                Head.IncomingData.position = Position - RRT;
                 Head.IncomingData.rotation = Rotation;
             }
             if (Hips.HasBone && HasHips)
             {
                 HipsAvatar.GetPositionAndRotation(out Vector3 Position, out Quaternion Rotation);
-                Hips.IncomingData.position = Position - RemotePlayer.RemoteBoneDriver.transform.position;
+                Hips.IncomingData.position = Position - RRT;
                 Hips.IncomingData.rotation = Rotation;
             }
         }
-        public bool HasHead;
-        public bool HasHips;
         public void OnCalibration(BasisRemotePlayer remotePlayer)
         {
             HeadAvatar = RemotePlayer.BasisAvatar.Animator.GetBoneTransform(HumanBodyBones.Head);

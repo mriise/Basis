@@ -5,37 +5,36 @@ using UnityEngine;
 
 // Needs Rigidbody for hover sphere `OnTriggerStay`
 [Serializable]
-public abstract partial class InteractableObject: MonoBehaviour 
+public abstract partial class InteractableObject : MonoBehaviour
 {
     public InputSources Inputs = new(0);
 
     [Header("Interactable Settings")]
 
     [SerializeField]
-    private bool disableInteract = false;
+    private bool disableInfluence = false;
     // NOTE: unity editor will not use the set function so setting disabling Interact in play will not cleanup inputs
-    public bool DisableInteract {
-        get => disableInteract;
-        set {
+    public bool DisableInfluence
+    {
+        get => disableInfluence;
+        set
+        {
             // remove hover and interacting on disable
             if (value)
             {
-                Clear();
-                OnInteractDisable?.Invoke();
+                ClearAllInfluencing();
+                OnInfluenceDisable?.Invoke();
             }
             else
             {
-                OnInteractEnable?.Invoke();
+                OnInfluenceEnable?.Invoke();
             }
-            disableInteract = value;
+            disableInfluence = value;
         }
     }
     public float InteractRange = 1.0f;
     [Space(10)]
     public bool Equippable = false;
-    [Tooltip("Provide an offset for interactable to use, e.g holding position")]
-    public Vector3 StrictPosition;
-    public Quaternion StrictRotation;
 
     [NonSerialized]
     public bool RequiresUpdateLoop = false;
@@ -51,8 +50,8 @@ public abstract partial class InteractableObject: MonoBehaviour
     public Action<BasisInput> OnInteractEndEvent;
     public Action<BasisInput> OnHoverStartEvent;
     public Action<BasisInput, bool> OnHoverEndEvent;
-    public Action OnInteractEnable;
-    public Action OnInteractDisable; 
+    public Action OnInfluenceEnable;
+    public Action OnInfluenceDisable;
 
     // Having Start/OnDestroy as virtuals is icky but I cant think of a more elegant way of doing this.
     // We already recommend calling the base method for Interact/Hover Start/End, so hopefully it wont be too big an issue.
@@ -68,7 +67,7 @@ public abstract partial class InteractableObject: MonoBehaviour
     {
         var Devices = Basis.Scripts.Device_Management.BasisDeviceManagement.Instance.AllInputDevices;
         Devices.OnListAdded += OnInputAdded;
-        Devices.OnListItemRemoved += OnInputRemoved;        
+        Devices.OnListItemRemoved += OnInputRemoved;
         foreach (BasisInput device in Devices)
         {
             OnInputAdded(device);
@@ -86,11 +85,11 @@ public abstract partial class InteractableObject: MonoBehaviour
     {
         // dont expect to add non-role inputs
         // NOTE: when extra (non role) inputs are needed we are going to need to rewrite this
-        if(!input.TryGetRole(out Basis.Scripts.TransformBinders.BoneControl.BasisBoneTrackedRole r))
+        if (!input.TryGetRole(out Basis.Scripts.TransformBinders.BoneControl.BasisBoneTrackedRole r))
             return;
 
-        
-        if(!Inputs.SetInputByRole(input, InteractInputState.Ignored))
+
+        if (!Inputs.SetInputByRole(input, InteractInputState.Ignored))
             BasisDebug.LogError("New input added not setup as expected by InteractableObject");
         else
         {
@@ -99,7 +98,7 @@ public abstract partial class InteractableObject: MonoBehaviour
     }
 
     private void OnInputRemoved(BasisInput input)
-    {        
+    {
         if (input.TryGetRole(out Basis.Scripts.TransformBinders.BoneControl.BasisBoneTrackedRole role))
             if (!Inputs.RemoveByRole(role))
                 BasisDebug.LogError("Something went wrong while removing input");
@@ -121,7 +120,7 @@ public abstract partial class InteractableObject: MonoBehaviour
         return Vector3.Distance(transform.position, source) <= InteractRange;
     }
 
-    
+
     /// <summary>
     /// Gets collider on self, override with cached get whenever possible.
     /// </summary>
@@ -132,6 +131,20 @@ public abstract partial class InteractableObject: MonoBehaviour
             return col;
         }
         return null;
+    }
+
+    /// <summary>
+    /// Be careful when using a value that changes OnInteract or OnHover when overriding, it may cause odd behavior.
+    /// </summary>
+    /// <param name="input"></param>
+    /// <returns>If the Interactable should change state from Hover to Interacting, e.g. when trigger is down</returns>
+    public virtual bool IsInteractTriggered(BasisInput input)
+    {
+        return input.InputState.GripButton ||
+            // special case for desktop (left-click)
+            input.TryGetRole(out Basis.Scripts.TransformBinders.BoneControl.BasisBoneTrackedRole role) && 
+            role == Basis.Scripts.TransformBinders.BoneControl.BasisBoneTrackedRole.CenterEye && 
+            input.InputState.Trigger == 1;
     }
 
     public abstract bool CanHover(BasisInput input);
@@ -155,6 +168,8 @@ public abstract partial class InteractableObject: MonoBehaviour
         OnHoverStartEvent?.Invoke(input);
     }
 
+    /// <param name="input"></param>
+    /// <param name="willInteract">Always CanInteract(input) or false</param>
     public virtual void OnHoverEnd(BasisInput input, bool willInteract)
     {
         OnHoverEndEvent?.Invoke(input, willInteract);
@@ -166,7 +181,7 @@ public abstract partial class InteractableObject: MonoBehaviour
     /// clear is the generic,
     /// a ungeneric would be drop
     /// </summary>
-    public virtual void Clear()
+    public virtual void ClearAllInfluencing()
     {
         BasisInputWrapper[] InputArray = Inputs.ToArray();
         int count = InputArray.Length;
@@ -186,6 +201,16 @@ public abstract partial class InteractableObject: MonoBehaviour
             }
         }
     }
+
+    /// <summary>
+    /// If this object is able to be influenced from a source position
+    /// </summary>
+    /// <returns></returns>
+    public virtual bool IsInfluencable(BasisInput input)
+    {
+        return !DisableInfluence && (CanHover(input) || CanInteract(input));
+    }
+
     public virtual void StartRemoteControl()
     {
         IsPuppeted = true;

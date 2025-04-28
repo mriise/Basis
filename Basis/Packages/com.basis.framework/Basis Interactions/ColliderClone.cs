@@ -5,11 +5,12 @@ using UnityEngine.LowLevelPhysics;
 
 public class ColliderClone
 {
-    
+
     private static Quaternion rotCapsuleX = Quaternion.Euler(new Vector3(0, 0, 90));
     private static Quaternion rotCapsuleZ = Quaternion.Euler(new Vector3(90, 0, 0));
 
-    public static GameObject CloneColliderMesh(Collider collider, Transform parent, string cloneName) {
+    public static GameObject CloneColliderMesh(Collider collider, Transform parent, string cloneName)
+    {
         GameObject primitive = null;
         switch (collider.GeometryHolder.Type)
         {
@@ -17,7 +18,7 @@ public class ColliderClone
                 var sphere = (SphereCollider)collider;
                 // TODO: use&cache sphere mesh generated (is lower poly)
                 primitive = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                if(primitive.TryGetComponent(out SphereCollider sCol))
+                if (primitive.TryGetComponent(out SphereCollider sCol))
                 {
                     UnityEngine.Object.Destroy(sCol);
                 }
@@ -43,7 +44,7 @@ public class ColliderClone
                 mFilter.mesh = newMesh;
 
                 primitive.transform.localPosition = capsule.center;
-                
+
                 switch (capsule.direction)
                 {
                     // X, Y (no change), Z
@@ -62,7 +63,7 @@ public class ColliderClone
             case GeometryType.Box:
                 var box = (BoxCollider)collider;
                 primitive = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                if(primitive.TryGetComponent(out BoxCollider boxCol))
+                if (primitive.TryGetComponent(out BoxCollider boxCol))
                 {
                     UnityEngine.Object.Destroy(boxCol);
                 }
@@ -88,7 +89,7 @@ public class ColliderClone
                 Bounds objectBounds = meshFilter.mesh.bounds;
 
                 primitive = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                if(primitive.TryGetComponent(out BoxCollider _col))
+                if (primitive.TryGetComponent(out BoxCollider _col))
                 {
                     UnityEngine.Object.Destroy(_col);
                 }
@@ -111,7 +112,7 @@ public class ColliderClone
                 Debug.LogWarning("Mesh collider clone could not generate clone for invalid collider type: " + collider.GeometryHolder.Type);
                 break;
         }
-        
+
         primitive.SetActive(false);
         return primitive;
     }
@@ -139,7 +140,7 @@ public class ColliderClone
         mesh.vertices = vertices.ToArray();
         mesh.triangles = triangles.ToArray();
         mesh.normals = normals.ToArray();
-        
+
         mesh.RecalculateTangents();
         mesh.Optimize();
 
@@ -168,7 +169,7 @@ public class ColliderClone
 
                 Vector3 vertex = new Vector3(x, y + yOffset, z);
                 vertices.Add(vertex);
-                
+
                 // Calculate proper surface normal
                 Vector3 normal = new Vector3(x, y, z).normalized;
                 normals.Add(normal);
@@ -224,7 +225,7 @@ public class ColliderClone
                 float z = radius * Mathf.Sin(lonAngle);
 
                 vertices.Add(new Vector3(x, y, z));
-                
+
                 // Calculate cylinder surface normal (points outward from central axis)
                 Vector3 normal = new Vector3(x, 0, z).normalized;
                 normals.Add(normal);

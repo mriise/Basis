@@ -6858,8 +6858,6 @@ MonoBehaviour:
   disableInteract: 0
   InteractRange: 0.2
   Equippable: 0
-  StrictPosition: {x: 0, y: 0, z: 0}
-  StrictRotation: {x: 0, y: 0, z: 0, w: 0}
   IsPuppeted: 0
   GenerateColliderMesh: 0
   ColliderRef: {fileID: 0}

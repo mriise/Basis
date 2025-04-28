@@ -7,11 +7,12 @@ using UnityEngine;
 using static JigglePhysics.JiggleRigBuilder;
 namespace Basis.Scripts.Drivers
 {
-    public class BasisAvatarStrainJiggleDriver : MonoBehaviour
+    [System.Serializable]
+    public class BasisAvatarStrainJiggleDriver
     {
-        public BasisPlayer player;
         public JiggleRigBuilder Jiggler;
-        public void OnCalibration()
+        public JiggleRigRendererLOD JiggleRigRendererLOD;
+        public bool Initalize(BasisPlayer player)
         {
             if (Jiggler != null)
             {
@@ -22,20 +23,11 @@ namespace Basis.Scripts.Drivers
                 if (player.BasisAvatar.JiggleStrains != null && player.BasisAvatar.JiggleStrains.Length != 0)
                 {
                     int Count = player.BasisAvatar.JiggleStrains.Length;
-                    JiggleRigRendererLOD JiggleRigRendererLOD = BasisHelpers.GetOrAddComponent<JiggleRigRendererLOD>(player.BasisAvatar.Animator.gameObject);
-                    JiggleRigRendererLOD.currentCamera = BasisLocalCameraDriver.Instance.Camera;
-                    if(player.IsLocal)
-                    {
-                        BasisLocalPlayer Local = (BasisLocalPlayer)player;
-                        JiggleRigRendererLOD.TargetPoint = Local.FaceRenderer.transform;
-                    }
-                    else
-                    {
-                        BasisRemotePlayer Remote = (BasisRemotePlayer)player;
-                        JiggleRigRendererLOD.TargetPoint = Remote.MouthControl.BoneTransform;
-                    }
+                    JiggleRigRendererLOD = BasisHelpers.GetOrAddComponent<JiggleRigRendererLOD>(player.gameObject);
+                    JiggleRigRendererLOD.cameraDistance = 0;
+                    JiggleRigRendererLOD.Simulate();
                     JiggleRigRendererLOD.SetRenderers(player.BasisAvatar.Renders);
-                    Jiggler = player.BasisAvatar.Animator.gameObject.AddComponent<JiggleRigBuilder>();
+                    Jiggler = BasisHelpers.GetOrAddComponent<JiggleRigBuilder>(player.gameObject);
                     List<JiggleRig> Jiggles = new List<JiggleRig>();
                     for (int StrainIndex = 0; StrainIndex < Count; StrainIndex++)
                     {
@@ -52,8 +44,15 @@ namespace Basis.Scripts.Drivers
                     }
                     Jiggler.jiggleRigs = Jiggles;
                     Jiggler.Initialize();
+                    return true;
                 }
             }
+            return false;
+        }
+        public void Simulate(float Distance)
+        {
+            JiggleRigRendererLOD.cameraDistance = Distance;
+            JiggleRigRendererLOD.Simulate();
         }
         public void PrepareTeleport()
         {

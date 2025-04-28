@@ -6,16 +6,19 @@ namespace JigglePhysics
     {
 
         [Tooltip("Distance to disable the jiggle rig.")]
-        [SerializeField] float distance = 20f;
+        [SerializeField] float distance = 40f;
         [Tooltip("Distance past distance from which it blends out rather than instantly disabling.")]
-        [SerializeField] float blend = 5f;
+        [SerializeField] float blend = 10f;
 
-        public static Camera currentCamera;
-        public Transform TargetPoint;
+        public float cameraDistance;
+        float maxBlendDistance;
+        public void Start()
+        {
+            maxBlendDistance = distance + blend;
+        }
         protected override bool CheckActive()
         {
-            var cameraDistance = Vector3.Distance(currentCamera.transform.position, TargetPoint.position);
-            var currentBlend = (cameraDistance - distance + blend) / blend;
+            float currentBlend = (cameraDistance - maxBlendDistance) / blend;
             currentBlend = Mathf.Clamp01(1f - currentBlend);
             for (int Index = 0; Index < JiggleCount; Index++)
             {
