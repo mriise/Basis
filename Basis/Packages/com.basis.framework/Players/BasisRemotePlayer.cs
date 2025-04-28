@@ -42,26 +42,39 @@ namespace Basis.Scripts.BasisSdk.Players
             }
             await BasisRemoteNamePlateFactory.LoadRemoteNamePlate(this);
         }
-        public async Task LoadAvatarFromInitial(ClientAvatarChangeMessage CACM)
+        public void LoadAvatarFromInitial(ClientAvatarChangeMessage CACM)
         {
             if (BasisAvatar == null)
             {
                 this.CACM = CACM;
                 BasisLoadableBundle BasisLoadedBundle = BasisBundleConversionNetwork.ConvertNetworkBytesToBasisLoadableBundle(CACM.byteArray);
-                BasisPlayerSettingsData BasisPlayerSettingsData = await BasisPlayerSettingsManager.RequestPlayerSettings(UUID);
-
-                AlwaysRequestedAvatar = BasisLoadedBundle;
-                AlwaysRequestedMode = CACM.loadMode;
-                ReloadAvatar();
+                if (BasisLoadedBundle != null)
+                {
+                    AlwaysRequestedAvatar = BasisLoadedBundle;
+                    AlwaysRequestedMode = CACM.loadMode;
+                    ReloadAvatar();
+                }
+                else
+                {
+                    BasisDebug.LogError("Invalid Inital Data");
+                }
             }
         }
         public async void ReloadAvatar()
         {
-            await CreateAvatar(AlwaysRequestedMode, AlwaysRequestedAvatar);
+            if (AlwaysRequestedAvatar != null)
+            {
+                await CreateAvatar(AlwaysRequestedMode, AlwaysRequestedAvatar);
+            }
         }
         public async Task CreateAvatar(byte Mode, BasisLoadableBundle BasisLoadableBundle)
         {
-           //BasisDebug.Log("Remote Player Create Avatar Request");
+            if (BasisLoadableBundle == null)
+            {
+                BasisDebug.LogError("trying to create Avatar with empty Bundle");
+                return;
+            }
+            //BasisDebug.Log("Remote Player Create Avatar Request");
             BasisPlayerSettingsData BasisPlayerSettingsData = await BasisPlayerSettingsManager.RequestPlayerSettings(UUID);
 
             AlwaysRequestedAvatar = BasisLoadableBundle;

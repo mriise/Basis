@@ -71,7 +71,8 @@ namespace Basis.Scripts.Avatar
                         ChecksRequired Required = new ChecksRequired
                         {
                             UseContentRemoval = true,
-                            DisableAnimatorEvents = false
+                            DisableAnimatorEvents = false,
+                            RemoveColliders = true,
                         };
                         (List<GameObject> GameObjects, AddressableGenericResource resource) = await AddressableResourceProcess.LoadAsGameObjectsAsync(BasisLoadableBundle.BasisRemoteBundleEncrypted.CombinedURL, Para, Required, BundledContentHolder.Selector.Avatar);
 
@@ -126,6 +127,7 @@ namespace Basis.Scripts.Avatar
                         {
                             UseContentRemoval = false,
                             DisableAnimatorEvents = false,
+                            RemoveColliders = true,
                         };
                         UnityEngine.ResourceManagement.ResourceProviders.InstantiationParameters Para = new UnityEngine.ResourceManagement.ResourceProviders.InstantiationParameters(Player.transform.position, Quaternion.identity, null);
                         (List<GameObject> GameObjects, AddressableGenericResource resource) = await AddressableResourceProcess.LoadAsGameObjectsAsync(BasisLoadableBundle.BasisRemoteBundleEncrypted.CombinedURL, Para, Required, BundledContentHolder.Selector.Avatar);

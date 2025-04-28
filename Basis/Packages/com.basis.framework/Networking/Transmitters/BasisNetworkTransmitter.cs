@@ -10,7 +10,6 @@ using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.UIElements;
 using static SerializableBasis;
 namespace Basis.Scripts.Networking.Transmitters
 {
@@ -96,18 +95,13 @@ namespace Basis.Scripts.Networking.Transmitters
         }
         public void HandleResults()
         {
-            if (distanceJob.DistanceResults == null)
+            if (distanceJob.DistanceResults == null ||
+                MicrophoneRangeIndex == null ||
+                MicrophoneRangeIndex.Length != distanceJob.DistanceResults.Length)
             {
                 return;
             }
-            if (MicrophoneRangeIndex == null)
-            {
-                return;
-            }
-            if (MicrophoneRangeIndex.Length != distanceJob.DistanceResults.Length)
-            {
-                return;
-            }
+
             distanceJob.DistanceResults.CopyTo(MicrophoneRangeIndex);
             distanceJob.HearingResults.CopyTo(HearingIndex);
             distanceJob.AvatarResults.CopyTo(AvatarIndex);
