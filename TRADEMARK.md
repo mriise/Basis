@@ -12,6 +12,6 @@ If there is any confusion about these permissions, please get in touch so we can
 
 TL;DR:
 * MIT covers the code; name/logo remain trademarked.
-* Use “Built with Basis” descriptively—no implied endorsement.
+* Use “Built with Basis” descriptively - no implied endorsement.
 * Don’t name forks using the Basis name i.e. “Basis 2/Pro”, or use the logo without permission.
 * Contact us if unsure.
