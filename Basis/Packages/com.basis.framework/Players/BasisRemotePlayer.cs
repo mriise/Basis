@@ -42,7 +42,7 @@ namespace Basis.Scripts.BasisSdk.Players
             }
             await BasisRemoteNamePlateFactory.LoadRemoteNamePlate(this);
         }
-        public void LoadAvatarFromInitial(ClientAvatarChangeMessage CACM)
+        public async void LoadAvatarFromInitial(ClientAvatarChangeMessage CACM)
         {
             if (BasisAvatar == null)
             {
@@ -50,9 +50,7 @@ namespace Basis.Scripts.BasisSdk.Players
                 BasisLoadableBundle BasisLoadedBundle = BasisBundleConversionNetwork.ConvertNetworkBytesToBasisLoadableBundle(CACM.byteArray);
                 if (BasisLoadedBundle != null)
                 {
-                    AlwaysRequestedAvatar = BasisLoadedBundle;
-                    AlwaysRequestedMode = CACM.loadMode;
-                    ReloadAvatar();
+                    await CreateAvatar(CACM.loadMode, BasisLoadedBundle);
                 }
                 else
                 {
