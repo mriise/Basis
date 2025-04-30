@@ -25,6 +25,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0c9ffb72ecdca914b875fc177d06dd61
+    m_Address: Packages/com.basis.sdk/Prefabs/UI/Player Held Camera.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 18406c2d98a4b874e9ccd06d2741d401
     m_Address: vr_tracker_vive_3_0
     m_ReadOnly: 0
@@ -97,11 +102,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 411cf3d73f4e3dc46a7ae9e13da44f03
     m_Address: oculus_quest_pro_controller_right
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 4140d16c11a966948bcb725891b147c5
-    m_Address: Packages/com.basis.sdk/Prefabs/UI/Player Held Camera.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
