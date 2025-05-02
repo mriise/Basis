@@ -50,58 +50,55 @@ namespace Basis
                     List<NetworkClient> tempClients = new List<NetworkClient>();
                     List<NetPeer> tempPeers = new List<NetPeer>();
 
-                    List<Task> connectTasks = new List<Task>();
-
+                    // Iterate through clients sequentially
                     for (int i = 0; i < clientCount; i++)
                     {
-                        connectTasks.Add(Task.Run(() =>
+                        try
                         {
-                            try
+                            string randomUUID = GenerateFakeUUID();
+                            string randomPlayerName = GenerateRandomPlayerName();
+
+                            ReadyMessage RM = new ReadyMessage
                             {
-                                string randomUUID = GenerateFakeUUID();
-                                string randomPlayerName = GenerateRandomPlayerName();
-
-                                ReadyMessage RM = new ReadyMessage
+                                playerMetaDataMessage = new PlayerMetaDataMessage
                                 {
-                                    playerMetaDataMessage = new PlayerMetaDataMessage
-                                    {
-                                        playerDisplayName = randomPlayerName,
-                                        playerUUID = randomUUID
-                                    },
-                                    clientAvatarChangeMessage = new ClientAvatarChangeMessage
-                                    {
-                                        byteArray = Bytes,
-                                        loadMode = 1
-                                    },
-                                    localAvatarSyncMessage = new LocalAvatarSyncMessage
-                                    {
-                                        array = AvatarMessage,
-                                        AdditionalAvatarDatas = null
-                                    }
-                                };
-
-                                NetworkClient netClient = new NetworkClient();
-                                NetPeer peer = netClient.StartClient(Ip, Port, RM, bytes, true);
-
-                                if (peer != null)
+                                    playerDisplayName = randomPlayerName,
+                                    playerUUID = randomUUID
+                                },
+                                clientAvatarChangeMessage = new ClientAvatarChangeMessage
                                 {
-                                    netClient.listener.NetworkReceiveEvent += NetworkReceiveEvent;
-                                    netClient.listener.PeerDisconnectedEvent += NetworkDisconnectionEvent;
-
-                                    lock (tempClients) tempClients.Add(netClient);
-                                    lock (tempPeers) tempPeers.Add(peer);
-
-                                    BNL.Log($"Connected! Player Name: {randomPlayerName}, UUID: {randomUUID}");
+                                    byteArray = Bytes,
+                                    loadMode = 1
+                                },
+                                localAvatarSyncMessage = new LocalAvatarSyncMessage
+                                {
+                                    array = AvatarMessage,
+                                    AdditionalAvatarDatas = null
                                 }
-                            }
-                            catch (Exception ex)
-                            {
-                                BNL.LogError($"Failed to connect client: {ex.Message}");
-                            }
-                        }));
-                    }
+                            };
 
-                    await Task.WhenAll(connectTasks);
+                            NetworkClient netClient = new NetworkClient();
+                            NetPeer peer = netClient.StartClient(Ip, Port, RM, bytes, true);
+
+                            if (peer != null)
+                            {
+                                netClient.listener.NetworkReceiveEvent += NetworkReceiveEvent;
+                                netClient.listener.PeerDisconnectedEvent += NetworkDisconnectionEvent;
+
+                                lock (tempClients) tempClients.Add(netClient);
+                                lock (tempPeers) tempPeers.Add(peer);
+
+                                BNL.Log($"Connected! Player Name: {randomPlayerName}, UUID: {randomUUID}");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            BNL.LogError($"Failed to connect client: {ex.Message}");
+                        }
+
+                        // Optional: Delay between connections to avoid overwhelming the server.
+                        await Task.Delay(100); // Adjust the delay if necessary
+                    }
 
                     NetClients.AddRange(tempClients);
                     LocalPlayers.AddRange(tempPeers);
@@ -134,6 +131,7 @@ namespace Basis
             // Wait for clients to finish connecting
             clientsTask.Wait();
             PlayersCurrentPosition = new Vector3[clientCount];
+
             // Begin processing connected clients
             while (true)
             {
