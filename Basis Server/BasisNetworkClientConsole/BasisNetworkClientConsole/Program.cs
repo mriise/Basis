@@ -133,7 +133,7 @@ namespace Basis
 
             // Wait for clients to finish connecting
             clientsTask.Wait();
-
+            PlayersCurrentPosition = new Vector3[clientCount];
             // Begin processing connected clients
             while (true)
             {
@@ -143,12 +143,36 @@ namespace Basis
                     peersSnapshot = new List<NetPeer>(LocalPlayers);
                 }
 
-                foreach (var peer in peersSnapshot)
+                for (int Index = 0; Index < peersSnapshot.Count; Index++)
                 {
-                    SendMovement(peer);
+                    NetPeer? peer = peersSnapshot[Index];
+                    SendMovement(peer, Index);
                 }
 
                 Thread.Sleep(33);
+            }
+        }
+        public static Vector3[]? PlayersCurrentPosition;
+        public static void SendMovement(NetPeer LocalPLayer,int Index)
+        {
+            if (LocalPLayer != null)
+            {
+                int Offset = 0;
+                //outputs vector3
+                Vector3 randomOffset = Randomizer.GetRandomOffset(); // Your own method, see below
+                PlayersCurrentPosition[Index] = PlayersCurrentPosition[Index] + randomOffset;
+
+                WriteVectorFloatToBytes(PlayersCurrentPosition[Index], ref AvatarMessage, ref Offset);
+                WriteQuaternionToBytes(Rotation, ref AvatarMessage, ref Offset, RotationCompression);
+                WriteUShortsToBytes(UshortArray, ref AvatarMessage, ref Offset);
+                if (AvatarMessage.Length == 0)
+                {
+                    BNL.LogError("trying to sending a message without a length NetworkReceiveEvent!");
+                }
+                else
+                {
+                    LocalPLayer.Send(AvatarMessage, BasisNetworkCommons.MovementChannel, DeliveryMethod.Sequenced);
+                }
             }
         }
         public class BasisClientLogger : INetLogger
@@ -261,25 +285,6 @@ namespace Basis
                 BNL.LogError($"Stack trace: {exception.StackTrace}");
             }
             e.SetObserved();
-        }
-        public static void SendMovement(NetPeer LocalPLayer)
-        {
-            if (LocalPLayer != null)
-            {
-                int Offset = 0;
-                Position = Randomizer.GetRandomPosition(MinPosition, MaxPosition);
-                WriteVectorFloatToBytes(Position, ref AvatarMessage, ref Offset);
-                WriteQuaternionToBytes(Rotation, ref AvatarMessage, ref Offset, RotationCompression);
-                WriteUShortsToBytes(UshortArray, ref AvatarMessage, ref Offset);
-                if (AvatarMessage.Length == 0)
-                {
-                    BNL.LogError("trying to sending a message without a length NetworkReceiveEvent!");
-                }
-                else
-                {
-                    LocalPLayer.Send(AvatarMessage, BasisNetworkCommons.MovementChannel, DeliveryMethod.Sequenced);
-                }
-            }
         }
         public static bool ValidateSize(NetPacketReader reader, NetPeer peer, byte channel)
         {
@@ -406,7 +411,6 @@ namespace Basis
             offset += 2;
         }
         public static byte[] AvatarMessage = new byte[LocalAvatarSyncMessage.AvatarSyncSize + 1];
-        public static Vector3 Position = new Vector3(0, 0, 0);
         public static Quaternion Rotation = new Quaternion(0, 0, 0, 1);
         public static float[] FloatArray = new float[LocalAvatarSyncMessage.StoredBones];
         public static ushort[] UshortArray = new ushort[LocalAvatarSyncMessage.StoredBones];

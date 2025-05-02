@@ -179,15 +179,15 @@ public partial class BasisServerReductionSystem
                             }
                             //how long does this data need to last for
                             playerData.serverSideSyncPlayerMessage.interval = (byte)adjustedInterval;
-                            playerData.serverSideSyncPlayerMessage.Serialize(playerData.Writer);
                             //getmax size if larger dont send
                            //int PacketSize = playerID.localClient.GetMaxSinglePacketSize(DeliveryMethod.Sequenced);
                             int Size = playerID.localClient.GetPacketsCountInQueue(BasisNetworkCommons.MovementChannel, DeliveryMethod.Sequenced);
                             if (Size < MaxMessages)
                             {
+                                playerData.serverSideSyncPlayerMessage.Serialize(playerData.Writer);
                                 NetworkServer.SendOutValidated(playerID.localClient, playerData.Writer, BasisNetworkCommons.MovementChannel, DeliveryMethod.Sequenced);
+                                playerData.Writer.Reset();
                             }
-                            playerData.Writer.Reset();
                         }
                         catch (Exception e)
                         {
