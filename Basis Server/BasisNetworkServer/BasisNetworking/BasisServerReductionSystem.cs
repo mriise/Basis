@@ -22,11 +22,12 @@ public partial class BasisServerReductionSystem
     public static void AddOrUpdatePlayer(NetPeer playerID, ServerSideSyncPlayerMessage playerToUpdate, NetPeer serverSideSyncPlayer)
     {
         SyncedToPlayerPulse playerData =  PlayerSync.GetPulse(serverSideSyncPlayer.Id);
+        Vector3 Position = BasisNetworkCompressionExtensions.DecompressAndProcessAvatarFaster(playerToUpdate);
         //stage 1 lets update whoever send us this datas last player information
         if (playerData != null)
         {
             playerData.lastPlayerInformation = playerToUpdate;
-            playerData.Position = BasisNetworkCompressionExtensions.DecompressAndProcessAvatarFaster(playerToUpdate);
+            playerData.Position = Position;
         }
         playerData = PlayerSync.GetPulse(playerID.Id);
         //ok now we can try to schedule sending out this data!
@@ -42,7 +43,7 @@ public partial class BasisServerReductionSystem
             {
                 //   playerID = playerID,
                 lastPlayerInformation = playerToUpdate,
-                Position = BasisNetworkCompressionExtensions.DecompressAndProcessAvatarFaster(playerToUpdate),
+                Position = Position,
             };
             PlayerSync.SetPulse(playerID.Id, playerData);
             playerData.SupplyNewData(playerID, playerToUpdate, serverSideSyncPlayer);
