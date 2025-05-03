@@ -26,7 +26,7 @@ public partial class BasisServerReductionSystem
         if (playerData != null)
         {
             playerData.lastPlayerInformation = playerToUpdate;
-            playerData.Position = BasisNetworkCompressionExtensions.DecompressAndProcessAvatar(playerToUpdate);
+            playerData.Position = BasisNetworkCompressionExtensions.DecompressAndProcessAvatarFaster(playerToUpdate);
         }
         playerData = PlayerSync.GetPulse(playerID.Id);
         //ok now we can try to schedule sending out this data!
@@ -42,7 +42,7 @@ public partial class BasisServerReductionSystem
             {
                 //   playerID = playerID,
                 lastPlayerInformation = playerToUpdate,
-                Position = BasisNetworkCompressionExtensions.DecompressAndProcessAvatar(playerToUpdate),
+                Position = BasisNetworkCompressionExtensions.DecompressAndProcessAvatarFaster(playerToUpdate),
             };
             PlayerSync.SetPulse(playerID.Id, playerData);
             playerData.SupplyNewData(playerID, playerToUpdate, serverSideSyncPlayer);
@@ -81,7 +81,7 @@ public partial class BasisServerReductionSystem
     /// <summary>
     /// Structure to synchronize data with a specific player.
     /// </summary>
-    public class SyncedToPlayerPulse
+    public partial class SyncedToPlayerPulse
     {
         // The player ID to which the data is being sent
         // public NetPeer playerID;
@@ -106,7 +106,7 @@ public partial class BasisServerReductionSystem
             {
                 // Update the player's message
                 playerData.serverSideSyncPlayerMessage = serverSideSyncPlayerMessage;
-                playerData.Position = BasisNetworkCompressionExtensions.DecompressAndProcessAvatar(serverSideSyncPlayerMessage);
+                playerData.Position = BasisNetworkCompressionExtensions.DecompressAndProcessAvatarFaster(serverSideSyncPlayerMessage);
                 SyncBoolArray.SetBool(serverSidePlayer.Id, true);
                 ChunkedServerSideReducablePlayerArray.SetPlayer(serverSidePlayer.Id, playerData);
             }
@@ -134,18 +134,13 @@ public partial class BasisServerReductionSystem
             ServerSideReducablePlayer newPlayer = new ServerSideReducablePlayer
             {
                 serverSideSyncPlayerMessage = serverSideSyncPlayerMessage,
-                timer = new ManagedTimer(SendPlayerData, clientPayload, Configuration.BSRSMillisecondDefaultInterval, Configuration.BSRSMillisecondDefaultInterval),
+                timer = new Timer(SendPlayerData, clientPayload, Configuration.BSRSMillisecondDefaultInterval, Configuration.BSRSMillisecondDefaultInterval),
                 Writer = new NetDataWriter(true, 204),
-                Position = BasisNetworkCompressionExtensions.DecompressAndProcessAvatar(serverSideSyncPlayerMessage),
+                Position = BasisNetworkCompressionExtensions.DecompressAndProcessAvatarFaster(serverSideSyncPlayerMessage),
             };
             SendPlayerData(clientPayload);
             SyncBoolArray.SetBool(serverSidePlayer.Id, true);
             ChunkedServerSideReducablePlayerArray.SetPlayer(serverSidePlayer.Id, newPlayer);
-        }
-        public struct ClientPayload
-        {
-            public NetPeer localClient;
-            public int dataCameFromThisUser;
         }
         /// <summary>
         /// Callback function to send player data at regular intervals.
@@ -172,15 +167,14 @@ public partial class BasisServerReductionSystem
                             {
                                 adjustedInterval = byte.MaxValue;
                             }
-                            if (playerData.serverSideSyncPlayerMessage.interval != adjustedInterval)
+                            byte ByteAdjusted = (byte)adjustedInterval;
+                            if (playerData.serverSideSyncPlayerMessage.interval != ByteAdjusted)
                             {
                                 //  Console.WriteLine("Adjusted Interval is" + adjustedInterval);
                                 playerData.timer.Change(adjustedInterval, adjustedInterval);
+                                //how long does this data need to last for
+                                playerData.serverSideSyncPlayerMessage.interval = ByteAdjusted;
                             }
-                            //how long does this data need to last for
-                            playerData.serverSideSyncPlayerMessage.interval = (byte)adjustedInterval;
-                            //getmax size if larger dont send
-                           //int PacketSize = playerID.localClient.GetMaxSinglePacketSize(DeliveryMethod.Sequenced);
                             int Size = playerID.localClient.GetPacketsCountInQueue(BasisNetworkCommons.MovementChannel, DeliveryMethod.Sequenced);
                             if (Size < MaxMessages)
                             {
@@ -209,43 +203,5 @@ public partial class BasisServerReductionSystem
     public static float Distance(Vector3 pointA, Vector3 pointB)
     {
         return (pointB - pointA).SquaredMagnitude(); // Avoid intermediate objects if possible
-    }
-
-    /// <summary>
-    /// Structure representing a player's server-side data that can be reduced.
-    /// </summary>
-    public class ServerSideReducablePlayer
-    {
-        public ManagedTimer timer;//create a new timer
-        public ServerSideSyncPlayerMessage serverSideSyncPlayerMessage;
-        public NetDataWriter Writer;
-        public Vector3 Position;
-    }
-    public class ManagedTimer : IDisposable
-    {
-        private Timer _timer;
-        public bool IsDisposed = false;
-
-        public ManagedTimer(TimerCallback callback, object state, int dueTime, int period)
-        {
-            _timer = new System.Threading.Timer(callback, state, dueTime, period);
-        }
-        public void Dispose()
-        {
-            if (!IsDisposed)
-            {
-                _timer.Dispose();
-                IsDisposed = true;
-            }
-        }
-
-        public bool Change(int dueTime, int period)
-        {
-            if (IsDisposed)
-            {
-                throw new ObjectDisposedException(nameof(ManagedTimer));
-            }
-            return _timer.Change(dueTime, period);
-        }
     }
 }
