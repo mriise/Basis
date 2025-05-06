@@ -64,8 +64,8 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
             // Copy muscles [21..end]
             Array.Copy(PoseHandler.muscles, BasisNetworkPlayer.SecondBuffer, FloatArray, BasisNetworkPlayer.FirstBuffer, BasisNetworkPlayer.SizeAfterGap);
             //we write position first so we can use that on the server
-            BasisUnityBitPackerExtensions.WriteVectorFloatToBytes(Anim.bodyPosition, ref LocalAvatarSyncMessage.array, ref Offset);
-            BasisUnityBitPackerExtensions.WriteQuaternionToBytes(Anim.bodyRotation, ref LocalAvatarSyncMessage.array, ref Offset, BasisNetworkPlayer.RotationCompression);
+            BasisUnityBitPackerExtensionsUnsafe.WriteVectorFloatToBytes(Anim.bodyPosition, ref LocalAvatarSyncMessage.array, ref Offset);
+            BasisUnityBitPackerExtensionsUnsafe.WriteQuaternionToBytes(Anim.bodyRotation, ref LocalAvatarSyncMessage.array, ref Offset, BasisNetworkPlayer.RotationCompression);
 
             if(NetworkSend == null)
             {
@@ -105,7 +105,7 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
             rangeMuscleNative.Dispose();
             networkSendNative.Dispose();
 
-            BasisUnityBitPackerExtensions.WriteUShortsToBytes(NetworkOutData, ref LocalAvatarSyncMessage.array, ref Offset);
+            BasisUnityBitPackerExtensionsUnsafe.WriteUShortsToBytes(NetworkOutData, ref LocalAvatarSyncMessage.array, ref Offset);
         }
         [BurstCompile]
         public struct CompressMusclesJob : IJobParallelFor

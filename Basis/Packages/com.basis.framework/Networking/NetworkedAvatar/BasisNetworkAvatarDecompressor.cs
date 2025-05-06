@@ -22,10 +22,10 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
             baseReceiver.Offset = 0;
             BasisAvatarBuffer avatarBuffer = new BasisAvatarBuffer
             {
-                Position = BasisUnityBitPackerExtensions.ReadVectorFloatFromBytes(ref syncMessage.avatarSerialization.array, ref baseReceiver.Offset),//12
-                rotation = BasisUnityBitPackerExtensions.ReadQuaternionFromBytes(ref syncMessage.avatarSerialization.array, BasisNetworkPlayer.RotationCompression, ref baseReceiver.Offset)//14
+                Position = BasisUnityBitPackerExtensionsUnsafe.ReadVectorFloatFromBytes(ref syncMessage.avatarSerialization.array, ref baseReceiver.Offset),//12
+                rotation = BasisUnityBitPackerExtensionsUnsafe.ReadQuaternionFromBytes(ref syncMessage.avatarSerialization.array, BasisNetworkPlayer.RotationCompression, ref baseReceiver.Offset)//14
             };
-            BasisUnityBitPackerExtensions.ReadMusclesFromBytes(ref syncMessage.avatarSerialization.array, ref baseReceiver.CopyData, ref baseReceiver.Offset);
+            BasisUnityBitPackerExtensionsUnsafe.ReadMusclesFromBytes(ref syncMessage.avatarSerialization.array, ref baseReceiver.CopyData, ref baseReceiver.Offset);
             for (int Index = 0; Index < LocalAvatarSyncMessage.StoredBones; Index++)
             {
                 avatarBuffer.Muscles[Index] = Decompress(baseReceiver.CopyData[Index], BasisNetworkPlayer.MinMuscle[Index], BasisNetworkPlayer.MaxMuscle[Index]);
@@ -61,8 +61,8 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
             baseReceiver.Offset = 0;
             BasisAvatarBuffer avatarBuffer = new BasisAvatarBuffer
             {
-                Position = BasisUnityBitPackerExtensions.ReadVectorFloatFromBytes(ref syncMessage.array, ref baseReceiver.Offset),//12
-                rotation = BasisUnityBitPackerExtensions.ReadQuaternionFromBytes(ref syncMessage.array, BasisNetworkPlayer.RotationCompression, ref baseReceiver.Offset)//14
+                Position = BasisUnityBitPackerExtensionsUnsafe.ReadVectorFloatFromBytes(ref syncMessage.array, ref baseReceiver.Offset),//12
+                rotation = BasisUnityBitPackerExtensionsUnsafe.ReadQuaternionFromBytes(ref syncMessage.array, BasisNetworkPlayer.RotationCompression, ref baseReceiver.Offset)//14
             };
             BasisUnityBitPackerExtensions.ReadMusclesFromBytesAsUShort(ref syncMessage.array, ref baseReceiver.CopyData, ref baseReceiver.Offset);
             if (avatarBuffer.Muscles == null)

@@ -18,7 +18,6 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
     [System.Serializable]
     public abstract class BasisNetworkPlayer
     {
-        public bool Ready;
         private readonly object _lock = new object(); // Lock object for thread-safety
         private bool _hasReasonToSendAudio;
         public int Offset = 0;

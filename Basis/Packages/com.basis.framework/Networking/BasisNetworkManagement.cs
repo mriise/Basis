@@ -373,12 +373,9 @@ namespace Basis.Scripts.Networking
                 {
                     BasisNetworkManagement.MainThreadContext.Post(async _ =>
                     {
-                        if (LocalPlayerPeer != null)
+                        if (LocalPlayerPeer != null && BasisNetworkManagement.Players.TryGetValue((ushort)LocalPlayerPeer.RemoteId, out BasisNetworkPlayer NetworkedPlayer))
                         {
-                            if (BasisNetworkManagement.Players.TryGetValue((ushort)LocalPlayerPeer.RemoteId, out BasisNetworkPlayer NetworkedPlayer))
-                            {
-                                BasisNetworkManagement.OnLocalPlayerLeft?.Invoke(NetworkedPlayer, (Basis.Scripts.BasisSdk.Players.BasisLocalPlayer)NetworkedPlayer.Player);
-                            }
+                            BasisNetworkManagement.OnLocalPlayerLeft?.Invoke(NetworkedPlayer, (Basis.Scripts.BasisSdk.Players.BasisLocalPlayer)NetworkedPlayer.Player);
                         }
                         if (BasisNetworkServerRunner != null)
                         {
@@ -417,12 +414,9 @@ namespace Basis.Scripts.Networking
                 {
                     BasisNetworkManagement.MainThreadContext.Post(async _ =>
                     {
-                        if (LocalPlayerPeer != null)
+                        if (LocalPlayerPeer != null && BasisNetworkManagement.Players.TryGetValue((ushort)LocalPlayerPeer.RemoteId, out BasisNetworkPlayer NetworkedPlayer))
                         {
-                            if (BasisNetworkManagement.Players.TryGetValue((ushort)LocalPlayerPeer.RemoteId, out BasisNetworkPlayer NetworkedPlayer))
-                            {
-                                BasisNetworkManagement.OnLocalPlayerLeft?.Invoke(NetworkedPlayer, (Basis.Scripts.BasisSdk.Players.BasisLocalPlayer)NetworkedPlayer.Player);
-                            }
+                            BasisNetworkManagement.OnLocalPlayerLeft?.Invoke(NetworkedPlayer, (BasisLocalPlayer)NetworkedPlayer.Player);
                         }
                         if (BasisNetworkServerRunner != null)
                         {
