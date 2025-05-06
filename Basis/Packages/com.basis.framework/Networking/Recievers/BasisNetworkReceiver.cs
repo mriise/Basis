@@ -348,13 +348,10 @@ namespace Basis.Scripts.Networking.Receivers
             if (derivativeFilters != null && derivativeFilters.IsCreated) derivativeFilters.Dispose();
 
             // Unsubscribe from events if required
-            if (RemotePlayer != null)
+            if (RemotePlayer != null && HasEvents && RemotePlayer.RemoteAvatarDriver != null)
             {
-                if (HasEvents && RemotePlayer.RemoteAvatarDriver != null)
-                {
-                    RemotePlayer.RemoteAvatarDriver.CalibrationComplete -= OnCalibration;
-                    HasEvents = false;
-                }
+                RemotePlayer.RemoteAvatarDriver.CalibrationComplete -= OnCalibration;
+                HasEvents = false;
             }
             // Handle audio receiver module cleanup
             AudioReceiverModule?.OnDestroy();
