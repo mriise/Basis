@@ -100,21 +100,13 @@ namespace Basis.Scripts.Networking.Receivers
                     Vector3 Scale = GetScale();
                     OutputVectors[1] = Scale;    // Scale at index 1
                     TargetVectors[1] = Scale;    // Target scale at index 1
-                }
-                catch (Exception ex)
-                {
-                    // Log the full exception details, including stack trace
-                    BasisDebug.LogError($"Error in Vector Set: {ex.Message}\nStack Trace:\n{ex.StackTrace}");
-                }
-                try
-                {
                     musclesPreEuro.CopyFrom(First.Muscles);
                     targetMuscles.CopyFrom(Last.Muscles);
                 }
                 catch (Exception ex)
                 {
                     // Log the full exception details, including stack trace
-                    BasisDebug.LogError($"Error in Muscle Copy: {ex.Message}\nStack Trace:\n{ex.StackTrace}");
+                    BasisDebug.LogError($"Error in Vector Set Or Muscle Set: {ex.Message}\nStack Trace:\n{ex.StackTrace}");
                 }
                 AvatarJob.Time = interpolationTime;
 
@@ -220,11 +212,6 @@ namespace Basis.Scripts.Networking.Receivers
         }
         public bool ApplyPoseData(Animator animator, float3 Scale, float3 Position, Quaternion Rotation, NativeArray<float> Muscles)
         {
-            if(animator == null)
-            {
-                BasisDebug.LogError("Missing Animator!", BasisDebug.LogTag.Networking);
-                return false;
-            }
             // Directly adjust scaling by applying the inverse of the AvatarHumanScale
             Vector3 Scaling = Vector3.one / animator.humanScale;  // Initial scaling with human scale inverse
 
@@ -233,20 +220,6 @@ namespace Basis.Scripts.Networking.Receivers
 
             // Apply scaling to position
             Vector3 ScaledPosition = Vector3.Scale(Position, Scaling);  // Apply the scaling
-
-            // BasisDebug.Log("ScaledPosition " + ScaledPosition);
-            // Apply pose data
-            if(ScaledPosition == null)
-            {
-                BasisDebug.LogError("Missing ScaledPosition!", BasisDebug.LogTag.Networking);
-                return false;
-            }
-            if (Rotation == null)
-            {
-                BasisDebug.LogError("Missing Rotation!", BasisDebug.LogTag.Networking);
-                return false;
-            }
-
             HumanPose.bodyPosition = ScaledPosition;
             HumanPose.bodyRotation = Rotation;
 
@@ -257,13 +230,6 @@ namespace Basis.Scripts.Networking.Receivers
             // Then, copy the remaining elements from index 15 onwards into the pose.muscles array, starting from index 21
             Array.Copy(MuscleFinalStageOutput, FirstBuffer, HumanPose.muscles, SecondBuffer, SizeAfterGap);
             Array.Copy(Eyes, 0, HumanPose.muscles, FirstBuffer, 4);
-
-            if (HumanPose.muscles == null)
-            {
-                BasisDebug.LogError("Missing muscles!", BasisDebug.LogTag.Networking);
-                return false;
-            }
-
             // Adjust the local scale of the animator's transform
             animator.transform.localScale = Scale;  // Directly adjust scale with output scaling
             return true;
