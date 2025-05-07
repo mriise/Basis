@@ -6,7 +6,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEditor;
-using UnityEditor.Build;
 using UnityEngine;
 
 public static class BasisBundleBuild
@@ -54,15 +53,17 @@ public static class BasisBundleBuild
             // Invoke pre build event and wait for all subscribers to complete
             if (PreBuildBundleEvents != null)
             {
-                var eventTasks = new List<Task>();
-                var events = PreBuildBundleEvents.GetInvocationList();
-                for (int ctr = 0; ctr < events.Length; ctr++) {
-                    var handler = (Func<BasisContentBase, List<BuildTarget>, Task>)events[ctr];
+                List<Task> eventTasks = new List<Task>();
+                Delegate[] events = PreBuildBundleEvents.GetInvocationList();
+                int Length = events.Length;
+                for (int ctr = 0; ctr < Length; ctr++)
+                {
+                    Func<BasisContentBase, List<BuildTarget>, Task> handler = (Func<BasisContentBase, List<BuildTarget>, Task>)events[ctr];
                     eventTasks.Add(handler(basisContentBase, targets));
                 }
 
                 await Task.WhenAll(eventTasks);
-                Debug.Log($"{events.Length} Pre BuildBundle Event(s)...");
+                Debug.Log($"{Length} Pre BuildBundle Event(s)...");
             }
             
             Debug.Log("Starting BuildBundle...");
