@@ -119,7 +119,7 @@ namespace Basis.Scripts.Networking
             {
                 Instance = this;
             }
-            BasisNetworkPlayer.SetupData();
+            BasisAvatarMuscleRange.Initalize();
             MainThreadContext = SynchronizationContext.Current;
             // Initialize AvatarBuffer
             BasisAvatarBufferPool.AvatarBufferPool(30);

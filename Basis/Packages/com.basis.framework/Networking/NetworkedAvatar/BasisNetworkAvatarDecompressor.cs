@@ -1,7 +1,6 @@
 using Basis.Scripts.Networking.Compression;
 using Basis.Scripts.Networking.Receivers;
 using Basis.Scripts.Profiler;
-using LiteNetLib.Utils;
 using System;
 using static SerializableBasis;
 using Vector3 = UnityEngine.Vector3;
@@ -28,7 +27,7 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
             BasisUnityBitPackerExtensionsUnsafe.ReadMusclesFromBytes(ref syncMessage.avatarSerialization.array, ref baseReceiver.CopyData, ref Offset);
             for (int Index = 0; Index < LocalAvatarSyncMessage.StoredBones; Index++)
             {
-                avatarBuffer.Muscles[Index] = Decompress(baseReceiver.CopyData[Index], BasisNetworkPlayer.MinMuscle[Index], BasisNetworkPlayer.MaxMuscle[Index]);
+                avatarBuffer.Muscles[Index] = Decompress(baseReceiver.CopyData[Index], BasisAvatarMuscleRange.MinMuscle[Index], BasisAvatarMuscleRange.MaxMuscle[Index]);
             }
             avatarBuffer.Scale = Vector3.one;
             BasisNetworkProfiler.AddToCounter(BasisNetworkProfilerCounter.ServerSideSyncPlayer, Length);
@@ -71,7 +70,7 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
             }
             for (int Index = 0; Index < LocalAvatarSyncMessage.StoredBones; Index++)//89 * 2 = 178
             {
-                avatarBuffer.Muscles[Index] = Decompress(baseReceiver.CopyData[Index], BasisNetworkPlayer.MinMuscle[Index], BasisNetworkPlayer.MaxMuscle[Index]);
+                avatarBuffer.Muscles[Index] = Decompress(baseReceiver.CopyData[Index], BasisAvatarMuscleRange.MinMuscle[Index], BasisAvatarMuscleRange.MaxMuscle[Index]);
             }
             avatarBuffer.Scale = Vector3.one;
             BasisNetworkProfiler.AddToCounter(BasisNetworkProfilerCounter.ServerSideSyncPlayer, Length);
