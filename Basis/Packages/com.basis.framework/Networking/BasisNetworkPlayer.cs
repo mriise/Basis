@@ -20,7 +20,6 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
     {
         private readonly object _lock = new object(); // Lock object for thread-safety
         private bool _hasReasonToSendAudio;
-        public int Offset = 0;
         public static BasisRangedUshortFloatData RotationCompression = new BasisRangedUshortFloatData(-1f, 1f, 0.001f);
         [SerializeField]
         public HumanPose HumanPose = new HumanPose();

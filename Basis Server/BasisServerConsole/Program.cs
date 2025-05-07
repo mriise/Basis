@@ -53,7 +53,7 @@ namespace Basis
                 BasisConsoleCommands.RegisterCommand("/help", BasisConsoleCommands.HandleHelp);
                 BasisConsoleCommands.RegisterConfigurationCommands(config);
 
-                Task.Run(() => BasisConsoleCommands.ProcessConsoleCommands());
+                BasisConsoleCommands.StartConsoleListener();
             }
             // Wait for shutdown signal
             shutdownEvent.Wait();

@@ -19,7 +19,8 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
     {
         public static void Compress(BasisNetworkTransmitter Transmit, Animator Anim)
         {
-            CompressAvatarData(ref Transmit.Offset, ref Transmit.FloatArray,ref Transmit.UshortArray, ref Transmit.LASM,Transmit.PoseHandler, Transmit.HumanPose, Anim);
+            int offset = 0;
+            CompressAvatarData(ref offset, ref Transmit.FloatArray,ref Transmit.UshortArray, ref Transmit.LASM,Transmit.PoseHandler, Transmit.HumanPose, Anim);
 
             if (Transmit.SendingOutAvatarData.Count == 0)
             {
@@ -62,7 +63,7 @@ namespace Basis.Scripts.Networking.NetworkedAvatar
             Array.Copy(PoseHandler.muscles, 0, FloatArray, 0, BasisNetworkPlayer.FirstBuffer);
 
             // Copy muscles [21..end]
-            Array.Copy(PoseHandler.muscles, BasisNetworkPlayer.SecondBuffer, FloatArray, BasisNetworkPlayer.FirstBuffer, BasisNetworkPlayer.SizeAfterGap);
+            Array.Copy(PoseHandler.muscles,BasisNetworkPlayer.SecondBuffer, FloatArray, BasisNetworkPlayer.FirstBuffer, BasisNetworkPlayer.SizeAfterGap);
             //we write position first so we can use that on the server
             BasisUnityBitPackerExtensionsUnsafe.WriteVectorFloatToBytes(Anim.bodyPosition, ref LocalAvatarSyncMessage.array, ref Offset);
             BasisUnityBitPackerExtensionsUnsafe.WriteQuaternionToBytes(Anim.bodyRotation, ref LocalAvatarSyncMessage.array, ref Offset, BasisNetworkPlayer.RotationCompression);
