@@ -37,7 +37,7 @@ namespace Basis.Scripts.Networking
         /// fire when ownership is changed for a unique string
         /// </summary>
         public static OnNetworkMessageReceiveOwnershipTransfer OnOwnershipTransfer;
-        public static OnNetworkMessageReceiveOwnershipRemoved OwnershipReleased;
+        public static OnNetworkMessageReceiveOwnershipRemoved OnOwnershipReleased;
         public static ConcurrentDictionary<ushort, BasisNetworkPlayer> Players = new ConcurrentDictionary<ushort, BasisNetworkPlayer>();
         public static ConcurrentDictionary<ushort, BasisNetworkReceiver> RemotePlayers = new ConcurrentDictionary<ushort, BasisNetworkReceiver>();
         public static HashSet<ushort> JoiningPlayers = new HashSet<ushort>();
