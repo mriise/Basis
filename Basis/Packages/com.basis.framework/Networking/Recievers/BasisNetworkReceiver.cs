@@ -49,14 +49,11 @@ namespace Basis.Scripts.Networking.Receivers
         public bool HasAvatarQueue;
 
         public BasisOneEuroFilterParallelJob oneEuroFilterJob;
-        public  float MinCutoff = 0.001f;
-        public  float Beta = 5f;
-        public float DerivativeCutoff = 1.0f;
-
-        public bool updateFilters;
+        public static float MinCutoff = 0.001f;
+        public static float Beta = 5f;
+        public static float DerivativeCutoff = 1.0f;
         public bool enableEuroFilter = true;
         public JobHandle EuroFilterHandle;
-        public Vector3 PositionOffset;
         public bool LogFirstError = false;
         public float[] Eyes = new float[4];
         /// <summary>
@@ -118,11 +115,6 @@ namespace Basis.Scripts.Networking.Receivers
                 // Muscle interpolation job
                 musclesJob.Time = interpolationTime;
                 musclesHandle = musclesJob.Schedule(LocalAvatarSyncMessage.StoredBones, 64, AvatarHandle);
-
-                if (updateFilters)
-                {
-                    ForceUpdateFilters();
-                }
 
                 oneEuroFilterJob.DeltaTime = interpolationTime;
                 EuroFilterHandle = oneEuroFilterJob.Schedule(LocalAvatarSyncMessage.StoredBones, 64, musclesHandle);
