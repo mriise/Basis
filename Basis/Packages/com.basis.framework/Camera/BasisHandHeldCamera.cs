@@ -35,6 +35,12 @@ public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
 
     public bool enableRecordingView;
 
+    public GameObject ResolutionOptions;
+    public GameObject FormatOptions;
+    public GameObject ApertureOptions;
+    public GameObject ShutterOptions;
+    public GameObject ISOOptions;
+
     [SerializeField]
     public BasisHandHeldCameraUI HandHeld = new BasisHandHeldCameraUI();
     public BasisHandHeldCameraMetaData MetaData = new BasisHandHeldCameraMetaData();
@@ -154,6 +160,47 @@ public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
         enableRecordingView = !enableRecordingView;
         OverrideDesktopOutput();
     }
+
+    public void ResolutionButton()
+    {
+        ResolutionOptions.SetActive(true);
+        FormatOptions.SetActive(false);
+        ApertureOptions.SetActive(false);
+        ShutterOptions.SetActive(false);
+        ISOOptions.SetActive(false);
+    }
+    public void FormatButton()
+    {
+        ResolutionOptions.SetActive(false);
+        FormatOptions.SetActive(true);
+        ApertureOptions.SetActive(false);
+        ShutterOptions.SetActive(false);
+        ISOOptions.SetActive(false);
+    }
+    public void ApertureButton()
+    {
+        ResolutionOptions.SetActive(false);
+        FormatOptions.SetActive(false);
+        ApertureOptions.SetActive(true);
+        ShutterOptions.SetActive(false);
+        ISOOptions.SetActive(false);
+    }
+    public void ShutterButton()
+    {
+        ResolutionOptions.SetActive(false);
+        FormatOptions.SetActive(false);
+        ApertureOptions.SetActive(false);
+        ShutterOptions.SetActive(true);
+        ISOOptions.SetActive(false);
+    }
+    public void ISOButton()
+    {
+        ResolutionOptions.SetActive(false);
+        FormatOptions.SetActive(false);
+        ApertureOptions.SetActive(false);
+        ShutterOptions.SetActive(false);
+        ISOOptions.SetActive(true);
+    }
     void FillRenderTextureWithColor(RenderTexture rt, Color color)
     {
         // Save current active RenderTexture
@@ -205,8 +252,6 @@ public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
         {
             Format = TextureFormat.RGBAFloat;
             RenderFormat = RenderTextureFormat.ARGBFloat;
-
-
         }
         else
         {
