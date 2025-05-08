@@ -54,8 +54,6 @@ namespace Basis.Scripts.UI.NamePlate
             Self = this.transform;
             RemoteNamePlateDriver.Instance.AddNamePlate(this);
             LoadingText.enableVertexGradient = false;
-            // Text.enableCulling = true;
-            // Text.enableAutoSizing = false;
             GenerateText();
             GameObject.Destroy(Text.gameObject);
         }
