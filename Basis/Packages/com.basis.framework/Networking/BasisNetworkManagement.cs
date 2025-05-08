@@ -53,7 +53,7 @@ namespace Basis.Scripts.Networking
         /// this occurs after the localplayer has been approved by the network and setup
         /// </summary>
         public static Action<BasisNetworkPlayer, BasisLocalPlayer> OnLocalPlayerJoined;
-        public static bool HasSentOnLocalPlayerJoin = false;
+        public static bool LocalPlayerIsConnected { get; private set; }
         /// <summary>
         /// this occurs after a remote user has been authenticated and joined & spawned
         /// </summary>
@@ -174,7 +174,7 @@ namespace Basis.Scripts.Networking
             LocalPlayerPeer = null;
             Transmitter = null;
             OnLocalPlayerJoined = null;
-            HasSentOnLocalPlayerJoin = false;
+            LocalPlayerIsConnected = false;
             OnRemotePlayerJoined = null;
             OnLocalPlayerLeft = null;
             OnRemotePlayerLeft = null;
@@ -335,7 +335,7 @@ namespace Basis.Scripts.Networking
                         LocalNetworkedPlayer.Initialize();
                         // Notify listeners about the local player joining.
                         OnLocalPlayerJoined?.Invoke(LocalNetworkedPlayer, BasisLocalPlayer.Instance);
-                        HasSentOnLocalPlayerJoin = true;
+                        LocalPlayerIsConnected = true;
                     }
                     catch (Exception ex)
                     {
