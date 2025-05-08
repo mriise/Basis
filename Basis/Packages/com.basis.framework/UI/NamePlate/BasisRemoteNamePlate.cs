@@ -34,12 +34,6 @@ namespace Basis.Scripts.UI.NamePlate
         /// <param name="basisRemotePlayer"></param>
         public void Initalize(BasisBoneControl hipTarget, BasisRemotePlayer basisRemotePlayer)
         {
-            if (BasisDeviceManagement.IsMobile())
-            {
-                Color Color = Renderer.sharedMaterials[0].color;
-                Color.a = 1;
-                Renderer.sharedMaterials[0].color = Color;
-            }
             cachedReturnDelay = new WaitForSeconds(RemoteNamePlateDriver.returnDelay);
             cachedEndOfFrame = new WaitForEndOfFrame();
             BasisRemotePlayer = basisRemotePlayer;
@@ -128,22 +122,19 @@ namespace Basis.Scripts.UI.NamePlate
             {
                 elapsedTime += Time.deltaTime;
                 float lerpProgress = Mathf.Clamp01(elapsedTime / RemoteNamePlateDriver.transitionDuration);
-                Renderer.sharedMaterials[0].color = Color.Lerp(CurrentColor, targetColor, lerpProgress);
+                Renderer.materials[0].color = Color.Lerp(CurrentColor, targetColor, lerpProgress);
                 yield return cachedEndOfFrame;
             }
 
-            Renderer.sharedMaterials[0].color = targetColor;
+            Renderer.materials[0].color = targetColor;
             CurrentColor = targetColor;
             colorTransitionCoroutine = null;
 
-            if (targetColor == RemoteNamePlateDriver.StaticIsTalkingColor)
+            if (returnToNormalCoroutine != null)
             {
-                if (returnToNormalCoroutine != null)
-                {
-                    StopCoroutine(returnToNormalCoroutine);
-                }
-                returnToNormalCoroutine = StartCoroutine(DelayedReturnToNormal());
+                StopCoroutine(returnToNormalCoroutine);
             }
+            returnToNormalCoroutine = StartCoroutine(DelayedReturnToNormal());
         }
 
         private IEnumerator DelayedReturnToNormal()
