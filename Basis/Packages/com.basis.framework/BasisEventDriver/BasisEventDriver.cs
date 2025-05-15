@@ -6,7 +6,6 @@ using Basis.Scripts.Networking.Transmitters;
 using Basis.Scripts.UI.NamePlate;
 using UnityEngine;
 using UnityEngine.InputSystem;
-
 public class BasisEventDriver : MonoBehaviour
 {
     public float updateInterval = 0.1f; // 100 milliseconds
