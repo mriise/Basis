@@ -12,6 +12,7 @@ public class BasisEventDriver : MonoBehaviour
     public float timeSinceLastUpdate = 0f;
     public void OnEnable()
     {
+        BasisSceneFactory.Initalize();
         Application.onBeforeRender += OnBeforeRender;
     }
     public void OnDisable()
@@ -39,7 +40,10 @@ public class BasisEventDriver : MonoBehaviour
         // Reset flag once all actions are executed
         BasisDeviceManagement.hasPendingActions = !BasisDeviceManagement.mainThreadActions.IsEmpty;
     }
-
+    public void FixedUpdate()
+    {
+        BasisSceneFactory.Simulate();
+    }
     public void LateUpdate()
     {
         if (BasisLocalEyeDriver.RequiresUpdate())
