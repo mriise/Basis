@@ -81,7 +81,7 @@ public static class BasisAssetBundlePipeline
             if (isScene)
             {
                 OnBeforeBuildScene?.Invoke(scene, settings);
-                assetPath = TemporaryStorageHandler.SaveSceneToTemporaryStorage(scene, settings, out uniqueID);
+                assetPath = TemporaryStorageHandler.SaveScene(scene, settings, out uniqueID);
             }
             else
             {

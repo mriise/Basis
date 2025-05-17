@@ -83,20 +83,20 @@ public static class BasisBundleBuild
             ClearAssetBundleDirectory(assetBundleObject.AssetBundleDirectory);
 
             string hexString = GenerateHexString(32);
-
-            BasisBundleGenerated[] bundles = new BasisBundleGenerated[targets.Count];
+            int targetsLength = targets.Count;
+            BasisBundleGenerated[] bundles = new BasisBundleGenerated[targetsLength];
             List<string> paths = new List<string>();
 
-            for (int i = 0; i < targets.Count; i++)
+            for (int Index = 0; Index < targetsLength; Index++)
             {
-                BuildTarget target = targets[i];
+                BuildTarget target = targets[Index];
                 var (success, result) = await buildFunction(basisContentBase, assetBundleObject, hexString, target);
                 if (!success)
                 {
                     return (false, $"Failure While Building for {target}");
                 }
 
-                bundles[i] = result.Item1;
+                bundles[Index] = result.Item1;
                 string hashPath = PathConversion(result.Item2.EncyptedPath);
                 paths.Add(hashPath);
 
