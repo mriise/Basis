@@ -21,22 +21,36 @@ namespace Basis.Scripts.UI.UI_Panels
         public Button Respawn;
         public Button Camera;
         public Button PersonalMirror;
+        public Image PersonalMirrorIcon;
         public static string MainMenuAddressableID = "MainMenu";
         public static BasisHamburgerMenu Instance;
         internal static GameObject activeCameraInstance;
-        internal static GameObject personalMirrorInstance;
+        internal static BasisPersonalMirror personalMirrorInstance;
         public bool OverrideForceCalibration;
+        public static bool HasMirror;
         public override void InitalizeEvent()
         {
             Instance = this;
+            UpdateMirrorState();
             Settings.onClick.AddListener(SettingsPanel);
             AvatarButton.onClick.AddListener(AvatarButtonPanel);
             FullBody.onClick.AddListener(PutIntoCalibrationMode);
             Respawn.onClick.AddListener(RespawnLocalPlayer);
             Camera.onClick.AddListener(() => OpenCamera(this));
-            PersonalMirror.onClick.AddListener(() => OpenPersonalMirror(this));
+            PersonalMirror.onClick.AddListener(() => OpenOrClosePersonalMirror(this));
             BasisCursorManagement.UnlockCursor(nameof(BasisHamburgerMenu));
             BasisUINeedsVisibleTrackers.Instance.Add(this);
+        }
+        public void UpdateMirrorState()
+        {
+            if (HasMirror)
+            {
+                PersonalMirrorIcon.color = Color.red;
+            }
+            else
+            {
+                PersonalMirrorIcon.color = Color.white;
+            }
         }
         private Dictionary<BasisInput, Action> TriggerDelegates = new Dictionary<BasisInput, Action>();
         public void RespawnLocalPlayer()
@@ -121,24 +135,29 @@ namespace Basis.Scripts.UI.UI_Panels
             BasisHandHeldCamera cameraComponent = await BasisHandHeldCameraFactory.CreateCamera(parameters);
             activeCameraInstance = cameraComponent.gameObject;
         }
-        public static async void OpenPersonalMirror(BasisHamburgerMenu menu)
+        public static async void OpenOrClosePersonalMirror(BasisHamburgerMenu menu)
         {
-            if (personalMirrorInstance != null)
+            if (HasMirror)
             {
-                GameObject.Destroy(personalMirrorInstance);
-                BasisDebug.Log("[OpenPersonalMirror] Destroyed previous mirror instance.");
+                HasMirror = false;
+                if (personalMirrorInstance != null)
+                {
+                    GameObject.Destroy(personalMirrorInstance.gameObject);
+                }
                 personalMirrorInstance = null;
+                menu.UpdateMirrorState();
             }
             else
             {
-                BasisDebug.LogWarning("[OpenPersonalMirror] Tried to destroy mirror, but none existed.");
+                if (HasMirror == false)
+                {
+                    HasMirror = true;
+                    menu.UpdateMirrorState();
+                    menu.transform.GetPositionAndRotation(out Vector3 position, out Quaternion rotation);
+                    InstantiationParameters parameters = new InstantiationParameters(position, rotation, null);
+                    personalMirrorInstance = await BasisPersonalMirrorFactory.CreateMirror(parameters);
+                }
             }
-            menu.transform.GetPositionAndRotation(out Vector3 position, out Quaternion rotation);
-            BasisUIManagement.CloseAllMenus();
-
-            InstantiationParameters parameters = new InstantiationParameters(position, rotation, null);
-            BasisPersonalMirror mirrorComponent = await BasisPersonalMirrorFactory.CreateMirror(parameters);
-            personalMirrorInstance = mirrorComponent.gameObject;
         }
         public override void DestroyEvent()
         {
