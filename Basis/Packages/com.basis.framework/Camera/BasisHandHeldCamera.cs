@@ -9,7 +9,6 @@ using UnityEngine.Rendering;
 using TMPro;
 using UnityEngine.XR;
 using Basis.Scripts.Device_Management;
-
 public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
 {
     public UniversalAdditionalCameraData CameraData;
@@ -18,12 +17,12 @@ public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
     public TextMeshProUGUI countdownText;
     public int captureWidth = 3840;
     public int captureHeight = 2160;
-
+    [Space(10)]
     public int PreviewCaptureWidth = 1920;
     public int PreviewCaptureHeight = 1080;
-
+    [Space(10)]
     private bool showUI = false;
-
+    [Space(10)]
     public BasisMeshRendererCheck BasisMeshRendererCheck;
     public MeshRenderer Renderer;
     public Material Material;
@@ -32,23 +31,22 @@ public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
     public string picturesFolder;
     public int InstanceID;
     public int depth = 24;
-
+    [Space(10)]
     public bool enableRecordingView;
-
-    public GameObject ResolutionOptions;
-    public GameObject FormatOptions;
-    public GameObject ApertureOptions;
-    public GameObject ShutterOptions;
-    public GameObject ISOOptions;
-
-    private GameObject[] allOptionPanels;
+    [Space(10)]
     private int uiLayerMask;
     private static Material clearMaterial;
+    private const string CLEAR_SHADER_PATH = "Unlit/Color";
+    private const float RaycastMaxDistance = 1000f;
     private Texture2D pooledScreenshot;
-
+    [Space(10)]
     [SerializeField]
     public BasisHandHeldCameraUI HandHeld = new BasisHandHeldCameraUI();
     public BasisHandHeldCameraMetaData MetaData = new BasisHandHeldCameraMetaData();
+    [Space(10)]
+    private float previewUpdateInterval = 1f / 30f; // Target 30 FPS
+    private Coroutine previewRoutine;
+
     public new async void Awake()
     {
         captureCamera.forceIntoRenderTexture = true;
@@ -69,14 +67,14 @@ public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
             }
         }
 
-        await HandHeld.Initalize(this);
+        await HandHeld.Initialize(this);
 
         if (MetaData.Profile.TryGet(out MetaData.tonemapping))
         {
             ToggleToneMapping(TonemappingMode.Neutral);
         }
 
-        SetResolution(PreviewCaptureWidth, PreviewCaptureHeight, AntialiasingQuality.Low);
+        SetResolution(captureWidth, captureHeight, AntialiasingQuality.Low);
         CameraData.allowHDROutput = true;
         CameraData.antialiasing = AntialiasingMode.SubpixelMorphologicalAntiAliasing;
         CameraData.antialiasingQuality = AntialiasingQuality.High;
@@ -90,21 +88,13 @@ public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
         await HandHeld.SaveSettings();
         base.Awake();
         captureCamera.gameObject.SetActive(true);
+        StartPreviewLoop();
         BasisDeviceManagement.OnBootModeChanged += OnBootModeChanged;
-
-        allOptionPanels = new GameObject[]
-        {
-            ResolutionOptions,
-            FormatOptions,
-            ApertureOptions,
-            ShutterOptions,
-            ISOOptions
-        };
 
         int uiLayer = LayerMask.NameToLayer("UI");
         if (uiLayer < 0)
         {
-            Debug.LogWarning("UI Layer not found.");
+            BasisDebug.LogWarning("UI Layer not found.");
         }
         else
         {
@@ -113,13 +103,14 @@ public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
 
         if (clearMaterial == null)
         {
-            Shader shader = Shader.Find("Unlit/Color");
+            Shader shader = Shader.Find(CLEAR_SHADER_PATH);
             if (shader != null)
             {
                 clearMaterial = new Material(shader);
             }
         }
     }
+
     public void SetResolution(int width, int height, AntialiasingQuality AQ, RenderTextureFormat RenderTextureFormat = RenderTextureFormat.ARGBFloat)
     {
         if (renderTexture == null || renderTexture.width != width || renderTexture.height != height || renderTexture.format != RenderTextureFormat)
@@ -147,7 +138,6 @@ public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
         actualMaterial.mainTexture = renderTexture;
         Renderer.sharedMaterial = actualMaterial;
     }
-
     private void EnsureTexturePool(int width, int height, TextureFormat format)
     {
         if (pooledScreenshot == null || pooledScreenshot.width != width || pooledScreenshot.height != height || pooledScreenshot.format != format)
@@ -185,26 +175,50 @@ public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
             SaveScreenshotAsync(pooledScreenshot);
         });
     }
-    private void ToggleOnlyThisPanel(GameObject panelToShow)
+    private IEnumerator PreviewRenderLoop()
     {
-        for (int i = 0; i < allOptionPanels.Length; i++)
+        while (true)
         {
-            allOptionPanels[i].SetActive(allOptionPanels[i] == panelToShow);
+            if (captureCamera != null && captureCamera.targetTexture != null && captureCamera.enabled)
+            {
+                captureCamera.Render();
+            }
+            yield return new WaitForSecondsRealtime(previewUpdateInterval);
         }
     }
-    public void ResolutionButton() => ToggleOnlyThisPanel(ResolutionOptions);
-    public void FormatButton() => ToggleOnlyThisPanel(FormatOptions);
-    public void ApertureButton() => ToggleOnlyThisPanel(ApertureOptions);
-    public void ShutterButton() => ToggleOnlyThisPanel(ShutterOptions);
-    public void ISOButton() => ToggleOnlyThisPanel(ISOOptions);
+
+    private void StartPreviewLoop()
+    {
+        float currentFPS = 1f / Mathf.Max(Time.unscaledDeltaTime, 0.001f);
+        float halvedFPS = currentFPS * 0.5f;
+        float roundedFPS = Mathf.Clamp(Mathf.Round(halvedFPS / 5f) * 5f, 5f, 60f);
+
+        previewUpdateInterval = 1f / roundedFPS;
+        BasisDebug.Log($"Camera Preview FPS: {roundedFPS}");
+        
+        if (previewRoutine == null)
+        {
+            previewRoutine = StartCoroutine(PreviewRenderLoop());
+        }
+    }
+
+    private void StopPreviewLoop()
+    {
+        if (previewRoutine != null)
+        {
+            StopCoroutine(previewRoutine);
+            previewRoutine = null;
+        }
+    }
 
     private void OnBootModeChanged(string obj)
     {
         OverrideDesktopOutput();
     }
 
-    public new void OnDestroy()
+    public new async void OnDestroy()
     {
+        StopPreviewLoop();
         if (BasisMeshRendererCheck != null)
         {
             BasisMeshRendererCheck.Check -= VisibilityFlag;
@@ -212,6 +226,10 @@ public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
         if (renderTexture != null)
         {
             renderTexture.Release();
+        }
+        if (HandHeld != null)
+        {
+            await HandHeld.SaveSettings();
         }
         BasisDeviceManagement.OnBootModeChanged -= OnBootModeChanged;
         base.OnDestroy();
@@ -277,7 +295,7 @@ public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
     {
         if (clearMaterial == null)
         {
-            Debug.LogWarning("Clear material not initialized");
+            BasisDebug.LogWarning("Clear material not initialized");
             return;
         }
 
@@ -288,7 +306,7 @@ public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
     {
         if (uiLayerMask == 0)
         {
-            Debug.LogWarning("UI Layer Mask was not initialized properly.");
+            BasisDebug.LogWarning("UI Layer Mask was not initialized properly.");
             return;
         }
 
@@ -303,6 +321,39 @@ public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
             captureCamera.cullingMask &= ~uiLayerMask; // Disable UI layer
         }
     }
+    public void SetFocusFromRay(Ray ray)
+    {
+        if (captureCamera == null || MetaData.depthOfField == null)
+        {
+            BasisDebug.LogWarning("Cannot set DOF: Camera or DOF is missing.");
+            return;
+        }
+
+        if (Physics.Raycast(ray, out RaycastHit hit, RaycastMaxDistance))
+        {
+            if (hit.collider != null && hit.collider.transform.IsChildOf(transform))
+            {
+                BasisDebug.Log("[DOF] Raycast hit self — skipping.");
+                return;
+            }
+
+            float distance = Vector3.Distance(ray.origin, hit.point);
+            MetaData.depthOfField.focusDistance.value = distance;
+
+            if (HandHeld != null)
+            {
+                HandHeld.DepthFocusDistanceSlider.SetValueWithoutNotify(distance);
+                HandHeld.DOFFocusOutput.text = distance.ToString("F2");
+            }
+
+            BasisDebug.Log($"[DOF] Focus distance set to {distance:F2} units (hit {hit.collider.name})");
+        }
+        else
+        {
+            BasisDebug.Log("[DOF] Raycast did not hit anything.");
+        }
+    }
+
     public void CapturePhoto()
     {
         TextureFormat Format;

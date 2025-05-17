@@ -20,8 +20,11 @@ namespace Basis.Scripts.UI.UI_Panels
         public Button FullBody;
         public Button Respawn;
         public Button Camera;
+        public Button PersonalMirror;
         public static string MainMenuAddressableID = "MainMenu";
         public static BasisHamburgerMenu Instance;
+        internal static GameObject activeCameraInstance;
+        internal static GameObject personalMirrorInstance;
         public bool OverrideForceCalibration;
         public override void InitalizeEvent()
         {
@@ -31,6 +34,7 @@ namespace Basis.Scripts.UI.UI_Panels
             FullBody.onClick.AddListener(PutIntoCalibrationMode);
             Respawn.onClick.AddListener(RespawnLocalPlayer);
             Camera.onClick.AddListener(() => OpenCamera(this));
+            PersonalMirror.onClick.AddListener(() => OpenPersonalMirror(this));
             BasisCursorManagement.UnlockCursor(nameof(BasisHamburgerMenu));
             BasisUINeedsVisibleTrackers.Instance.Add(this);
         }
@@ -97,14 +101,45 @@ namespace Basis.Scripts.UI.UI_Panels
             AddressableGenericResource resource = new AddressableGenericResource(MainMenuAddressableID, AddressableExpectedResult.SingleItem);
             OpenMenuNow(resource);
         }
-        public static async void OpenCamera(BasisHamburgerMenu BasisHamburgerMenu)
+        public static async void OpenCamera(BasisHamburgerMenu menu)
         {
-            BasisHamburgerMenu.transform.GetPositionAndRotation(out Vector3 Position, out Quaternion Rotation);
-            BasisUIManagement.CloseAllMenus();
-            InstantiationParameters Pars = new InstantiationParameters(Position, Rotation, null);
-            await BasisHandHeldCameraFactory.CreateCamera(Pars);
-        }
+            if (activeCameraInstance != null)
+            {
+                GameObject.Destroy(activeCameraInstance);
+                BasisDebug.Log("[OpenCamera] Destroyed previous camera instance.");
+                activeCameraInstance = null;
+            }
+            else
+            {
+                BasisDebug.LogWarning("[OpenCamera] Tried to destroy camera, but none existed.");
+            }
 
+            menu.transform.GetPositionAndRotation(out Vector3 position, out Quaternion rotation);
+            BasisUIManagement.CloseAllMenus();
+
+            InstantiationParameters parameters = new InstantiationParameters(position, rotation, null);
+            BasisHandHeldCamera cameraComponent = await BasisHandHeldCameraFactory.CreateCamera(parameters);
+            activeCameraInstance = cameraComponent.gameObject;
+        }
+        public static async void OpenPersonalMirror(BasisHamburgerMenu menu)
+        {
+            if (personalMirrorInstance != null)
+            {
+                GameObject.Destroy(personalMirrorInstance);
+                BasisDebug.Log("[OpenPersonalMirror] Destroyed previous mirror instance.");
+                personalMirrorInstance = null;
+            }
+            else
+            {
+                BasisDebug.LogWarning("[OpenPersonalMirror] Tried to destroy mirror, but none existed.");
+            }
+            menu.transform.GetPositionAndRotation(out Vector3 position, out Quaternion rotation);
+            BasisUIManagement.CloseAllMenus();
+
+            InstantiationParameters parameters = new InstantiationParameters(position, rotation, null);
+            BasisPersonalMirror mirrorComponent = await BasisPersonalMirrorFactory.CreateMirror(parameters);
+            personalMirrorInstance = mirrorComponent.gameObject;
+        }
         public override void DestroyEvent()
         {
             BasisCursorManagement.LockCursor(nameof(BasisHamburgerMenu));

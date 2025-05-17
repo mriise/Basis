@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Basis.Scripts.UI.UI_Panels;
+
 [System.Serializable]
 public class BasisHandHeldCameraUI
 {
@@ -14,50 +16,26 @@ public class BasisHandHeldCameraUI
     public Button Timer;
     public Button Nameplates;
     public Button OverrideDesktopOutput;
-
-    public Button ResolutionButton;
-    public Button FormatButton;
-    public Button ApertureButton;
-    public Button ShutterButton;
-    public Button ISOButton;
-
-    public Button RES_OPTION_720p;
-    public Button RES_OPTION_1080p;
-    public Button RES_OPTION_4K;
-    public Button RES_OPTION_8K;
-    public int RES_OPTION = 0;
-
-    public Button FORMAT_OPTION_PNG;
-    public Button FORMAT_OPTION_EXR;
-    public int FORMAT_OPTION = 0;
-
-    public Button APERTURE_OPTION_14;
-    public Button APERTURE_OPTION_28;
-    public Button APERTURE_OPTION_40;
-    public Button APERTURE_OPTION_56;
-    public Button APERTURE_OPTION_80;
-    public Button APERTURE_OPTION_11;
-    public Button APERTURE_OPTION_16;
-    public int APERTURE_OPTION = 0;
-
-    public Button SHUTTER_OPTION_1000;
-    public Button SHUTTER_OPTION_0500;
-    public Button SHUTTER_OPTION_0250;
-    public Button SHUTTER_OPTION_0125;
-    public Button SHUTTER_OPTION_0060;
-    public Button SHUTTER_OPTION_0030;
-    public Button SHUTTER_OPTION_0015;
-    public int SHUTTER_OPTION = 0;
-
-    public Button ISO_OPTION_0100;
-    public Button ISO_OPTION_0200;
-    public Button ISO_OPTION_0400;
-    public Button ISO_OPTION_0800;
-    public Button ISO_OPTION_1600;
-    public Button ISO_OPTION_3200;
-    public Button ISO_OPTION_6400;
-    public int ISO_OPTION = 0;
-
+    [Space(10)]
+    public GameObject focusCursor;
+    public Button DepthModeAutoButton;
+    public Button DepthModeManualButton;
+    public enum DepthMode { Auto, Manual }
+    private DepthMode currentDepthMode = DepthMode.Auto;
+    [Space(10)]
+    public Toggle Resolution;
+    public GameObject[] ResolutionSprites; // 4 resolution sprites
+    private int currentResolutionIndex = 0;
+    public Toggle Format;
+    public bool useEXR => Format != null && Format.isOn;
+    private const int FORMAT_PNG = 0;
+    private const int FORMAT_EXR = 1;
+    public GameObject PngSprite; // Sprite 1
+    public GameObject ExrSprite; // Sprite 2
+    [Space(10)]
+    public Slider ExposureSlider;
+    private float[] exposureStops = new float[] { -3f, -2.5f, -2f, -1.5f, -1f, -0.5f, 0f, 0.5f, 1f, 1.5f, 2f, 2.5f, 3f };
+    [Space(10)]
     public TextMeshProUGUI DOFFocusOutput;
     public TextMeshProUGUI DepthApertureOutput;
     public TextMeshProUGUI BloomIntensityOutput;
@@ -65,126 +43,71 @@ public class BasisHandHeldCameraUI
     public TextMeshProUGUI ContrastOutput;
     public TextMeshProUGUI SaturationOutput;
     public TextMeshProUGUI FOVOutput;
-    public TextMeshProUGUI SSXOutput;
-    public TextMeshProUGUI SSYOutput;
-
+    [Space(10)]
     public Slider FOVSlider;
     public Slider DepthFocusDistanceSlider;
     public Slider DepthApertureSlider;
-
-    public Slider SensorSizeXSlider;
-    public Slider SensorSizeYSlider;
     public Slider BloomIntensitySlider;
     public Slider BloomThresholdSlider;
     public Slider ContrastSlider;
     public Slider SaturationSlider;
-
-    public Button CameraSettingsSlidersPanelButton;
-    public Button CameraSettingsButtonPanelButton;
-
+    [Space(10)]
     public Toggle depthIsActiveButton;
-
-    public GameObject[] CameraSettingsSlidersPanel;
-    public GameObject[] CameraSettingsButtonPanel;
-
+    [Space(10)]
     public BasisHandHeldCamera HHC;
-    public async Task Initalize(BasisHandHeldCamera hhc)
+    public async Task Initialize(BasisHandHeldCamera hhc)
     {
         HHC = hhc;
-
+        CachePostProcessingReferences();
         await LoadSettings();
+        BindUIEvents();
+        SetupSliderRanges();
+        InitializeFormatUI();
+        SetInitialSliderValues();
+    }
 
-        ResolutionButton.onClick.AddListener(HHC.ResolutionButton);
-        FormatButton.onClick.AddListener(HHC.FormatButton);
-        ApertureButton.onClick.AddListener(HHC.ApertureButton);
-        ShutterButton.onClick.AddListener(HHC.ShutterButton);
-        ISOButton.onClick.AddListener(HHC.ISOButton);
+    private void CachePostProcessingReferences()
+    {
+        HHC.MetaData.Profile.TryGet(out HHC.MetaData.depthOfField);
+        HHC.MetaData.Profile.TryGet(out HHC.MetaData.bloom);
+        HHC.MetaData.Profile.TryGet(out HHC.MetaData.colorAdjustments);
+        if (HHC.MetaData.colorAdjustments != null)
+            HHC.MetaData.colorAdjustments.active = true;
+    }
 
+    private void BindUIEvents()
+    {
+        TakePhotoButton?.onClick.AddListener(HHC.CapturePhoto);
+        ResetButton?.onClick.AddListener(ResetSettings);
+        Timer?.onClick.AddListener(HHC.Timer);
+        Nameplates?.onClick.AddListener(HHC.Nameplates);
+        OverrideDesktopOutput?.onClick.AddListener(HHC.OnOverrideDesktopOutputButtonPress);
+        CloseButton?.onClick.AddListener(CloseUI);
 
+        Resolution?.onValueChanged.AddListener(OnResolutionToggleChanged);
+        Format?.onValueChanged.AddListener(OnFormatToggleChanged);
+        depthIsActiveButton?.onValueChanged.AddListener(ChangeDepthActiveState);
 
-        DepthApertureSlider.onValueChanged.AddListener(ChangeAperture);
-        TakePhotoButton.onClick.AddListener(HHC.CapturePhoto);
-        ResetButton.onClick.AddListener(ResetSettings);
-        Timer.onClick.AddListener(HHC.Timer);
-        Nameplates.onClick.AddListener(HHC.Nameplates);
-        OverrideDesktopOutput.onClick.AddListener(HHC.OnOverrideDesktopOutputButtonPress);
+        FOVSlider?.onValueChanged.AddListener(ChangeFOV);
+        ExposureSlider?.onValueChanged.AddListener(ChangeExposureCompensation);
+        DepthApertureSlider?.onValueChanged.AddListener(ChangeAperture);
+        DepthFocusDistanceSlider?.onValueChanged.AddListener(DepthChangeFocusDistance);
 
-        FOVSlider.onValueChanged.AddListener(ChangeFOV);
-        SensorSizeXSlider.onValueChanged.AddListener(ChangeSensorSizeX);
-        SensorSizeYSlider.onValueChanged.AddListener(ChangeSensorSizeY);
-        CloseButton.onClick.AddListener(CloseUI);
+        BloomIntensitySlider?.onValueChanged.AddListener(ChangeBloomIntensity);
+        BloomThresholdSlider?.onValueChanged.AddListener(ChangeBloomThreshold);
+        ContrastSlider?.onValueChanged.AddListener(ChangeContrast);
+        SaturationSlider?.onValueChanged.AddListener(ChangeSaturation);
 
-        //Depth Is Active
-        depthIsActiveButton.onValueChanged.AddListener(ChangeDepthActiveState);
+        DepthModeAutoButton?.onClick.AddListener(() => SetDepthMode(DepthMode.Auto));
+        DepthModeManualButton?.onClick.AddListener(() => SetDepthMode(DepthMode.Manual));
+    }
 
-        //Camera Setting Panels
-        CameraSettingsSlidersPanelButton.onClick.AddListener(() => CameraSettingsButtons(0));
-        CameraSettingsButtonPanelButton.onClick.AddListener(() => CameraSettingsButtons(1));
-
-        // Resolution Options
-        RES_OPTION_720p.onClick.AddListener(() => SetResolutionOption(0));
-        RES_OPTION_1080p.onClick.AddListener(() => SetResolutionOption(1));
-        RES_OPTION_4K.onClick.AddListener(() => SetResolutionOption(2));
-        RES_OPTION_8K.onClick.AddListener(() => SetResolutionOption(3));
-
-        // Format Options
-        FORMAT_OPTION_PNG.onClick.AddListener(() => SetFormatOption(0));
-        FORMAT_OPTION_EXR.onClick.AddListener(() => SetFormatOption(1));
-
-        // Aperture Options
-        APERTURE_OPTION_14.onClick.AddListener(() => SetApertureOption(0));
-        APERTURE_OPTION_28.onClick.AddListener(() => SetApertureOption(1));
-        APERTURE_OPTION_40.onClick.AddListener(() => SetApertureOption(2));
-        APERTURE_OPTION_56.onClick.AddListener(() => SetApertureOption(3));
-        APERTURE_OPTION_80.onClick.AddListener(() => SetApertureOption(4));
-        APERTURE_OPTION_11.onClick.AddListener(() => SetApertureOption(5));
-        APERTURE_OPTION_16.onClick.AddListener(() => SetApertureOption(6));
-
-        // Shutter Options
-        SHUTTER_OPTION_1000.onClick.AddListener(() => SetShutterOption(0));
-        SHUTTER_OPTION_0500.onClick.AddListener(() => SetShutterOption(1));
-        SHUTTER_OPTION_0250.onClick.AddListener(() => SetShutterOption(2));
-        SHUTTER_OPTION_0125.onClick.AddListener(() => SetShutterOption(3));
-        SHUTTER_OPTION_0060.onClick.AddListener(() => SetShutterOption(4));
-        SHUTTER_OPTION_0030.onClick.AddListener(() => SetShutterOption(5));
-        SHUTTER_OPTION_0015.onClick.AddListener(() => SetShutterOption(6));
-
-        // ISO Options
-        ISO_OPTION_0100.onClick.AddListener(() => SetISOOption(0));
-        ISO_OPTION_0200.onClick.AddListener(() => SetISOOption(1));
-        ISO_OPTION_0400.onClick.AddListener(() => SetISOOption(2));
-        ISO_OPTION_0800.onClick.AddListener(() => SetISOOption(3));
-        ISO_OPTION_1600.onClick.AddListener(() => SetISOOption(4));
-        ISO_OPTION_3200.onClick.AddListener(() => SetISOOption(5));
-        ISO_OPTION_6400.onClick.AddListener(() => SetISOOption(6));
-
-        if (HHC.MetaData.Profile.TryGet(out HHC.MetaData.depthOfField))
-        {
-            DepthFocusDistanceSlider.onValueChanged.AddListener(DepthChangeFocusDistance);
-        }
-
-        if (HHC.MetaData.Profile.TryGet(out HHC.MetaData.bloom))
-        {
-            BloomIntensitySlider.onValueChanged.AddListener(ChangeBloomIntensity);
-            BloomThresholdSlider.onValueChanged.AddListener(ChangeBloomThreshold);
-        }
-
-        if (HHC.MetaData.Profile.TryGet(out HHC.MetaData.colorAdjustments))
-        {
-            ContrastSlider.onValueChanged.AddListener(ChangeContrast);
-            SaturationSlider.onValueChanged.AddListener(ChangeSaturation);
-            // HueShiftSlider.onValueChanged.AddListener(ChangeHueShift);
-        }
+    private void SetupSliderRanges()
+    {
         DepthApertureSlider.minValue = 0;
         DepthApertureSlider.maxValue = 32;
         FOVSlider.minValue = 20;
         FOVSlider.maxValue = 120;
-        //FocusDistanceSlider.minValue = 0.1f;
-        //FocusDistanceSlider.maxValue = 100f;
-        SensorSizeXSlider.minValue = 10;
-        SensorSizeXSlider.maxValue = 50;
-        SensorSizeYSlider.minValue = 10;
-        SensorSizeYSlider.maxValue = 50;
         DepthFocusDistanceSlider.minValue = 0.1f;
         DepthFocusDistanceSlider.maxValue = 100f;
         BloomIntensitySlider.minValue = 0;
@@ -195,177 +118,162 @@ public class BasisHandHeldCameraUI
         ContrastSlider.maxValue = 100;
         SaturationSlider.minValue = -100;
         SaturationSlider.maxValue = 100;
-        // HueShiftSlider.minValue = -180;
-        //  HueShiftSlider.maxValue = 180;
-
         FOVSlider.value = HHC.captureCamera.fieldOfView;
-        //FocusDistanceSlider.value = HHC.captureCamera.focalLength;
-        SensorSizeXSlider.value = HHC.captureCamera.sensorSize.x;
-        SensorSizeYSlider.value = HHC.captureCamera.sensorSize.y;
     }
+
+    private void InitializeFormatUI()
+    {
+        OnFormatToggleChanged(Format.isOn);
+    }
+
+    private void SetInitialSliderValues()
+    {
+        FOVSlider.value = HHC.captureCamera.fieldOfView;
+    }
+
     private void ChangeDepthActiveState(bool state)
     {
         if (HHC.MetaData.depthOfField != null)
         {
             HHC.MetaData.depthOfField.active = state;
         }
-    }
-    private void CameraSettingsButtons(int mode)
-    {
-        bool showSliders = (mode == 0);
 
-        for (int i = 0; i < CameraSettingsSlidersPanel.Length; i++)
+        DepthModeAutoButton.gameObject.SetActive(state);
+        DepthModeManualButton.gameObject.SetActive(state);
+
+        if (!state)
         {
-            if (CameraSettingsSlidersPanel[i] != null)
-                CameraSettingsSlidersPanel[i].SetActive(showSliders);
+            focusCursor?.gameObject.SetActive(false);
+            DepthApertureSlider.gameObject.SetActive(false);
+            DepthFocusDistanceSlider.gameObject.SetActive(false);
+        }
+        else
+        {
+            SetDepthMode(currentDepthMode); // Restore correct mode
+        }
+    }
+    private void SetDepthMode(DepthMode mode)
+    {
+        currentDepthMode = mode;
+
+        bool isActive = depthIsActiveButton.isOn;
+        if (!isActive) return;
+
+        bool useAuto = (mode == DepthMode.Auto);
+
+        focusCursor?.gameObject.SetActive(true);
+        DepthApertureSlider.gameObject.SetActive(true);
+        DepthFocusDistanceSlider.gameObject.SetActive(!useAuto);
+
+        BasisDebug.Log($"[DepthMode] Switched to {(useAuto ? "Auto" : "Manual")}");
+    }
+
+    public void ChangeExposureCompensation(float index)
+    {
+        if (HHC.MetaData.colorAdjustments != null)
+        {
+            int i = Mathf.Clamp((int)index, 0, exposureStops.Length - 1);
+            float exposureValue = exposureStops[i];
+
+            HHC.MetaData.colorAdjustments.postExposure.value = exposureValue;
+        }
+    }
+
+    private void OnFormatToggleChanged(bool state)
+    {
+        BasisDebug.Log($"[Format] Changed to {(state ? "EXR" : "PNG")}");
+        HHC.captureFormat = state ? "EXR" : "PNG";
+        if (PngSprite != null) PngSprite.SetActive(!state);
+        if (ExrSprite != null) ExrSprite.SetActive(state);
+    }
+    private void OnResolutionToggleChanged(bool state)
+    {
+        currentResolutionIndex = (currentResolutionIndex + 1) % 4;
+        HHC.ChangeResolution(currentResolutionIndex);
+        UpdateResolutionSprites();
+        BasisDebug.Log($"[Resolution] Changed to index {currentResolutionIndex}");
+    }
+    private void UpdateResolutionSprites()
+    {
+        int resolutionCount = ResolutionSprites.Length;
+
+        // Ensure index is in bounds before the loop
+        if (currentResolutionIndex < 0 || currentResolutionIndex >= resolutionCount)
+        {
+            BasisDebug.LogWarning($"[UpdateResolutionSprites] Invalid currentResolutionIndex: {currentResolutionIndex}, ResolutionSprites.Length: {resolutionCount}");
+            return;
         }
 
-        for (int i = 0; i < CameraSettingsButtonPanel.Length; i++)
+        for (int i = 0; i < resolutionCount; i++)
         {
-            if (CameraSettingsButtonPanel[i] != null)
-                CameraSettingsButtonPanel[i].SetActive(!showSliders);
+            if (ResolutionSprites[i] != null)
+                ResolutionSprites[i].SetActive(i == currentResolutionIndex);
         }
-
-        // Hide all button subpanels when switching modes
-        if (HHC != null)
-        {
-            if (HHC.ResolutionOptions != null) HHC.ResolutionOptions.SetActive(false);
-            if (HHC.FormatOptions != null) HHC.FormatOptions.SetActive(false);
-            if (HHC.ApertureOptions != null) HHC.ApertureOptions.SetActive(false);
-            if (HHC.ShutterOptions != null) HHC.ShutterOptions.SetActive(false);
-            if (HHC.ISOOptions != null) HHC.ISOOptions.SetActive(false);
-
-            if (!showSliders)
-            {
-                FOVSlider.gameObject.SetActive(false);
-                DepthFocusDistanceSlider.gameObject.SetActive(false);
-                DepthApertureSlider.gameObject.SetActive(false);
-                SensorSizeXSlider.gameObject.SetActive(false);
-                SensorSizeYSlider.gameObject.SetActive(false);
-                BloomIntensitySlider.gameObject.SetActive(false);
-                BloomThresholdSlider.gameObject.SetActive(false);
-                ContrastSlider.gameObject.SetActive(false);
-                SaturationSlider.gameObject.SetActive(false);
-            }
-            else
-            {
-                FOVSlider.gameObject.SetActive(true);
-                DepthFocusDistanceSlider.gameObject.SetActive(true);
-                DepthApertureSlider.gameObject.SetActive(true);
-                SensorSizeXSlider.gameObject.SetActive(true);
-                SensorSizeYSlider.gameObject.SetActive(true);
-                BloomIntensitySlider.gameObject.SetActive(true);
-                BloomThresholdSlider.gameObject.SetActive(true);
-                ContrastSlider.gameObject.SetActive(true);
-                SaturationSlider.gameObject.SetActive(true);
-            }
-        }
-
-        BasisDebug.Log($"Camera Settings toggled to {(showSliders ? "Sliders" : "Buttons")}");
     }
 
-    private void SetResolutionOption(int index)
+    public int GetFormatIndex()
     {
-        RES_OPTION = index;
-        HHC.ChangeResolution(index);
-        BasisDebug.Log($"Resolution changed to index {index} ({HHC.MetaData.resolutions[index].width}x{HHC.MetaData.resolutions[index].height})");
-    }
-
-    private void SetFormatOption(int index)
-    {
-        FORMAT_OPTION = index;
-        HHC.ChangeFormat(index);
-        BasisDebug.Log($"Format changed to index {index} ({HHC.MetaData.formats[index]})");
-    }
-
-    private void SetApertureOption(int index)
-    {
-        APERTURE_OPTION = index;
-        ChangeAperture(index);
-        BasisDebug.Log($"Aperture changed to index {index} ({HHC.MetaData.apertures[index]})");
-    }
-
-    private void SetShutterOption(int index)
-    {
-        SHUTTER_OPTION = index;
-        ChangeShutterSpeed(index);
-        BasisDebug.Log($"Shutter speed changed to index {index} ({HHC.MetaData.shutterSpeeds[index]})");
-    }
-
-    private void SetISOOption(int index)
-    {
-        ISO_OPTION = index;
-        ChangeISO(index);
-        BasisDebug.Log($"ISO changed to index {index} ({HHC.MetaData.isoValues[index]})");
+        return Format != null && Format.isOn ? FORMAT_EXR : FORMAT_PNG;
     }
     public void CloseUI()
     {
+        if (BasisHamburgerMenu.activeCameraInstance == this.HHC.gameObject)
+        {
+            BasisHamburgerMenu.activeCameraInstance = null;
+        }
+
         GameObject.Destroy(HHC.gameObject);
     }
+
     public const string CameraSettingsJson = "CameraSettings.json";
     public async Task SaveSettings()
     {
+        CameraSettings settingsToSave = CreateCurrentCameraSettings();
+
         try
         {
-            CameraSettings settings = new CameraSettings()
-            {
-                resolutionIndex = RES_OPTION,
-                formatIndex = FORMAT_OPTION,
-                apertureIndex = APERTURE_OPTION,
-                shutterSpeedIndex = SHUTTER_OPTION,
-                isoIndex = ISO_OPTION,
-                fov = FOVSlider.value,
-                sensorSizeX = SensorSizeXSlider.value,
-                sensorSizeY = SensorSizeYSlider.value,
-                bloomIntensity = BloomIntensitySlider.value,
-                bloomThreshold = BloomThresholdSlider.value,
-                contrast = ContrastSlider.value,
-                saturation = SaturationSlider.value,
-                depthAperture = DepthApertureSlider.value,
-                depthFocusDistance = DepthFocusDistanceSlider.value,
-                depthIsActive = depthIsActiveButton.isOn
-            };
-
-            string json = JsonUtility.ToJson(settings, true);
+            string json = JsonUtility.ToJson(settingsToSave, true);
             string settingsFilePath = Path.Combine(Application.persistentDataPath, CameraSettingsJson);
             await File.WriteAllTextAsync(settingsFilePath, json);
         }
         catch (Exception ex)
         {
-            BasisDebug.LogError($"Error saving settings: {ex.Message}");
+            BasisDebug.LogError($"[SaveSettings] Failed: {ex.Message}");
+            await SaveDefaultSettings();
+        }
+    }
 
-            // Attempt to resave settings
-            try
-            {
-                CameraSettings defaultSettings = new CameraSettings()
-                {
-                    resolutionIndex = 0,
-                    formatIndex = 0,
-                    apertureIndex = 0,
-                    shutterSpeedIndex = 0,
-                    isoIndex = 0,
-                    fov = 60f,
-                    focusDistance = 10f,
-                    sensorSizeX = 36f,
-                    sensorSizeY = 24f,
-                    bloomIntensity = 0.5f,
-                    bloomThreshold = 0.5f,
-                    contrast = 1f,
-                    saturation = 1f,
-                    depthAperture = 1f,
-                    depthIsActive = true,
-                    depthFocusDistance = 10f
-                };
+    private CameraSettings CreateCurrentCameraSettings()
+    {
+        return new CameraSettings
+        {
+            resolutionIndex = currentResolutionIndex,
+            formatIndex = GetFormatIndex(),
+            fov = FOVSlider?.value ?? 60f,
+            bloomIntensity = BloomIntensitySlider?.value ?? 0.5f,
+            bloomThreshold = BloomThresholdSlider?.value ?? 0.5f,
+            contrast = ContrastSlider?.value ?? 1f,
+            saturation = SaturationSlider?.value ?? 1f,
+            depthAperture = DepthApertureSlider?.value ?? 1f,
+            depthFocusDistance = DepthFocusDistanceSlider?.value ?? 10f,
+            exposureIndex = Mathf.Clamp((int)(ExposureSlider?.value ?? 6), 0, exposureStops.Length - 1),
+            depthIsActive = depthIsActiveButton?.isOn ?? true
+        };
+    }
 
-                string defaultJson = JsonUtility.ToJson(defaultSettings, true);
-                string settingsFilePath = Path.Combine(Application.persistentDataPath, CameraSettingsJson);
-                await File.WriteAllTextAsync(settingsFilePath, defaultJson);
-                BasisDebug.Log("Settings have been reset to default values.");
-            }
-            catch (Exception resaveEx)
-            {
-                BasisDebug.LogError($"Error resaving settings: {resaveEx.Message}");
-            }
+    private async Task SaveDefaultSettings()
+    {
+        try
+        {
+            CameraSettings defaultSettings = new CameraSettings();
+            string json = JsonUtility.ToJson(defaultSettings, true);
+            string settingsFilePath = Path.Combine(Application.persistentDataPath, CameraSettingsJson);
+            await File.WriteAllTextAsync(settingsFilePath, json);
+            BasisDebug.Log("Default camera settings saved.");
+        }
+        catch (Exception ex)
+        {
+            BasisDebug.LogError($"[SaveDefaultSettings] Failed: {ex.Message}");
         }
     }
 
@@ -381,28 +289,26 @@ public class BasisHandHeldCameraUI
             BasisDebug.LogError($"Error resetting settings: {ex.Message}");
         }
     }
-
     public async Task LoadSettings()
     {
+        string settingsFilePath = Path.Combine(Application.persistentDataPath, CameraSettingsJson);
+
+        if (!File.Exists(settingsFilePath))
+        {
+            BasisDebug.Log("[LoadSettings] Settings file not found. Applying default values.");
+            ApplySettings(new CameraSettings());
+            return;
+        }
+
         try
         {
-            string settingsFilePath = Path.Combine(Application.persistentDataPath, CameraSettingsJson);
-            if (File.Exists(settingsFilePath))
-            {
-                string json = await File.ReadAllTextAsync(settingsFilePath);
-                CameraSettings settings = JsonUtility.FromJson<CameraSettings>(json);
-                ApplySettings(settings);
-            }
-            else
-            {
-                BasisDebug.Log("Settings file not found, applying default settings.");
-                ApplySettings(new CameraSettings()); // Apply default settings if file doesn't exist
-            }
+            string json = await File.ReadAllTextAsync(settingsFilePath);
+            CameraSettings loadedSettings = JsonUtility.FromJson<CameraSettings>(json);
+            ApplySettings(loadedSettings);
         }
         catch (Exception ex)
         {
-            BasisDebug.LogError($"Error loading settings: {ex.Message}");
-            // Optionally apply default settings if loading fails
+            BasisDebug.LogError($"[LoadSettings] Failed to load settings: {ex.Message}");
             ApplySettings(new CameraSettings());
         }
     }
@@ -411,51 +317,122 @@ public class BasisHandHeldCameraUI
     {
         try
         {
-            // Set UI values without triggering event listeners
-            FOVSlider.SetValueWithoutNotify(settings.fov);
-            SensorSizeXSlider.SetValueWithoutNotify(settings.sensorSizeX);
-            SensorSizeYSlider.SetValueWithoutNotify(settings.sensorSizeY);
-            BloomIntensitySlider.SetValueWithoutNotify(settings.bloomIntensity);
-            BloomThresholdSlider.SetValueWithoutNotify(settings.bloomThreshold);
-            ContrastSlider.SetValueWithoutNotify(settings.contrast);
-            SaturationSlider.SetValueWithoutNotify(settings.saturation);
-            DepthApertureSlider.SetValueWithoutNotify(settings.depthAperture);
-            DepthFocusDistanceSlider.SetValueWithoutNotify(settings.depthFocusDistance);
+            // Update resolution UI
+            currentResolutionIndex = settings.resolutionIndex;
+            HHC.ChangeResolution(currentResolutionIndex);
+            UpdateResolutionSprites();
 
-            HHC.captureFormat = HHC.MetaData.formats[settings.resolutionIndex];
+            // Optionally also force the Resolution toggle ON
+            if (Resolution != null)
+                Resolution.isOn = true;
 
-            // Apply values to HHC after setting UI
+            // Sync UI sliders (null safe)
+            SetSliderValue(FOVSlider, settings.fov);
+            SetSliderValue(BloomIntensitySlider, settings.bloomIntensity);
+            SetSliderValue(BloomThresholdSlider, settings.bloomThreshold);
+            SetSliderValue(ContrastSlider, settings.contrast);
+            SetSliderValue(SaturationSlider, settings.saturation);
+            SetSliderValue(DepthApertureSlider, settings.depthAperture);
+            SetSliderValue(DepthFocusDistanceSlider, settings.depthFocusDistance);
+            SetSliderValue(ExposureSlider, settings.exposureIndex);
+
+            if (Format != null)
+                Format.isOn = settings.formatIndex == FORMAT_EXR;
+
+            if (depthIsActiveButton != null)
+                depthIsActiveButton.isOn = settings.depthIsActive;
+
+            // Camera setup — safe index access
+            if (settings.resolutionIndex >= 0 && settings.resolutionIndex < HHC.MetaData.formats.Length)
+            {
+                HHC.captureFormat = HHC.MetaData.formats[settings.resolutionIndex];
+            }
+            else
+            {
+                BasisDebug.LogWarning($"[ApplySettings] Invalid resolutionIndex: {settings.resolutionIndex}, formats count: {HHC.MetaData.formats.Length}");
+                HHC.captureFormat = HHC.MetaData.formats[0];
+            }
+
             HHC.captureCamera.fieldOfView = settings.fov;
             HHC.captureCamera.focalLength = settings.focusDistance;
             HHC.captureCamera.sensorSize = new Vector2(settings.sensorSizeX, settings.sensorSizeY);
-            HHC.captureCamera.aperture = float.Parse(HHC.MetaData.apertures[settings.apertureIndex].TrimStart('f', '/'));
-            HHC.captureCamera.shutterSpeed = 1 / float.Parse(HHC.MetaData.shutterSpeeds[settings.shutterSpeedIndex].Split('/')[1]);
-            HHC.captureCamera.iso = int.Parse(HHC.MetaData.isoValues[settings.isoIndex]);
 
-            if (HHC.MetaData.depthOfField != null)
+            if (settings.apertureIndex >= 0 && settings.apertureIndex < HHC.MetaData.apertures.Length)
             {
-                HHC.MetaData.depthOfField.aperture.value = settings.depthAperture;
-                HHC.MetaData.depthOfField.active = settings.depthIsActive;
-                HHC.MetaData.depthOfField.focusDistance.value = settings.depthFocusDistance;
+                HHC.captureCamera.aperture = float.Parse(HHC.MetaData.apertures[settings.apertureIndex].TrimStart('f', '/'));
             }
-            if (HHC.MetaData.bloom != null)
+            else
             {
-                HHC.MetaData.bloom.intensity.value = settings.bloomIntensity;
-                HHC.MetaData.bloom.threshold.value = settings.bloomThreshold;
-            }
-            if (HHC.MetaData.colorAdjustments != null)
-            {
-                HHC.MetaData.colorAdjustments.contrast.value = settings.contrast;
-                HHC.MetaData.colorAdjustments.saturation.value = settings.saturation;
+                BasisDebug.LogWarning($"[ApplySettings] Invalid apertureIndex: {settings.apertureIndex}, count: {HHC.MetaData.apertures.Length}");
             }
 
-            BasisDebug.Log("Settings applied successfully.");
+            if (settings.shutterSpeedIndex >= 0 && settings.shutterSpeedIndex < HHC.MetaData.shutterSpeeds.Length)
+            {
+                string[] parts = HHC.MetaData.shutterSpeeds[settings.shutterSpeedIndex].Split('/');
+                if (parts.Length == 2 && float.TryParse(parts[1], out float denominator))
+                {
+                    HHC.captureCamera.shutterSpeed = 1f / denominator;
+                }
+                else
+                {
+                    BasisDebug.LogWarning($"[ApplySettings] Invalid shutter speed format: {HHC.MetaData.shutterSpeeds[settings.shutterSpeedIndex]}");
+                }
+            }
+            else
+            {
+                BasisDebug.LogWarning($"[ApplySettings] Invalid shutterSpeedIndex: {settings.shutterSpeedIndex}, count: {HHC.MetaData.shutterSpeeds.Length}");
+            }
+
+            if (settings.isoIndex >= 0 && settings.isoIndex < HHC.MetaData.isoValues.Length)
+            {
+                HHC.captureCamera.iso = int.Parse(HHC.MetaData.isoValues[settings.isoIndex]);
+            }
+            else
+            {
+                BasisDebug.LogWarning($"[ApplySettings] Invalid isoIndex: {settings.isoIndex}, count: {HHC.MetaData.isoValues.Length}");
+            }
+
+            ApplyPostProcessingSettings(settings);
+
+            BasisDebug.Log("[ApplySettings] Camera settings applied successfully.");
         }
         catch (Exception ex)
         {
-            BasisDebug.LogError($"Error applying settings: {ex.Message}");
+            BasisDebug.LogError($"[ApplySettings] Failed: {ex.Message}");
         }
     }
+
+    private void SetSliderValue(Slider slider, float value)
+    {
+        if (slider != null)
+            slider.SetValueWithoutNotify(value);
+    }
+
+    private void ApplyPostProcessingSettings(CameraSettings settings)
+    {
+        int clampedExposure = Mathf.Clamp(settings.exposureIndex, 0, exposureStops.Length - 1);
+
+        if (HHC.MetaData.colorAdjustments != null)
+        {
+            HHC.MetaData.colorAdjustments.postExposure.value = exposureStops[clampedExposure];
+            HHC.MetaData.colorAdjustments.contrast.value = settings.contrast;
+            HHC.MetaData.colorAdjustments.saturation.value = settings.saturation;
+        }
+
+        if (HHC.MetaData.depthOfField != null)
+        {
+            HHC.MetaData.depthOfField.aperture.value = settings.depthAperture;
+            HHC.MetaData.depthOfField.focusDistance.value = settings.depthFocusDistance;
+            HHC.MetaData.depthOfField.active = settings.depthIsActive;
+        }
+
+        if (HHC.MetaData.bloom != null)
+        {
+            HHC.MetaData.bloom.intensity.value = settings.bloomIntensity;
+            HHC.MetaData.bloom.threshold.value = settings.bloomThreshold;
+        }
+    }
+
     public void DepthChangeFocusDistance(float value)
     {
         if (HHC.MetaData.depthOfField != null)
@@ -517,16 +494,8 @@ public class BasisHandHeldCameraUI
             HHC.MetaData.colorAdjustments.hueShift.value = value;
         }
     }
-    public void ChangeSensorSizeX(float value)
-    {
-        HHC.captureCamera.sensorSize = new Vector2(value, HHC.captureCamera.sensorSize.y);
-        SSXOutput.text = value.ToString();
-    }
-    public void ChangeSensorSizeY(float value)
-    {
-        HHC.captureCamera.sensorSize = new Vector2(HHC.captureCamera.sensorSize.x, value);
-        SSYOutput.text = value.ToString();
-    }
+    //public void ChangeSensorSizeX(float value) { HHC.captureCamera.sensorSize = new Vector2(value, HHC.captureCamera.sensorSize.y); }
+    //public void ChangeSensorSizeY(float value) { HHC.captureCamera.sensorSize = new Vector2(HHC.captureCamera.sensorSize.x, value); }
     public void ChangeFOV(float value)
     {
         HHC.captureCamera.fieldOfView = value;
@@ -550,11 +519,7 @@ public class BasisHandHeldCameraUI
     {
         HHC.captureCamera.iso = int.Parse(HHC.MetaData.isoValues[index]);
     }
-    private void PopulateDropdown(TMP_Dropdown dropdown, string[] options)
-    {
-        dropdown.ClearOptions();
-        dropdown.AddOptions(options.ToList());
-    }
+
     [System.Serializable]
     public class CameraSettings
     {
@@ -577,11 +542,12 @@ public class BasisHandHeldCameraUI
             depthFocusDistance = 10;
             depthIsActive = true;
         }
-        public int resolutionIndex = 2;
-        public int formatIndex = 1;
+        public int resolutionIndex = 0;
+        public int formatIndex = 0;
         public int apertureIndex;
         public int shutterSpeedIndex;
         public int isoIndex;
+        public int exposureIndex = 6;
         public float fov;
         public float focusDistance;
         public float sensorSizeX;
@@ -594,5 +560,6 @@ public class BasisHandHeldCameraUI
         public float depthAperture;
         public float depthFocusDistance;
         public bool depthIsActive;
+        public bool useManualFocus = true; // true = Manual, false = Auto
     }
 }
