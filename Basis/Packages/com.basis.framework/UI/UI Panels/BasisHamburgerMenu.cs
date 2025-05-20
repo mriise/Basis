@@ -22,6 +22,7 @@ namespace Basis.Scripts.UI.UI_Panels
         public Button Camera;
         public Button PersonalMirror;
         public Image PersonalMirrorIcon;
+        public GameObject FullBodyParent;
         public static string MainMenuAddressableID = "MainMenu";
         public static BasisHamburgerMenu Instance;
         internal static GameObject activeCameraInstance;
@@ -32,25 +33,42 @@ namespace Basis.Scripts.UI.UI_Panels
         {
             Instance = this;
             UpdateMirrorState();
+
             Settings.onClick.AddListener(SettingsPanel);
             AvatarButton.onClick.AddListener(AvatarButtonPanel);
             FullBody.onClick.AddListener(PutIntoCalibrationMode);
             Respawn.onClick.AddListener(RespawnLocalPlayer);
             Camera.onClick.AddListener(() => OpenCamera(this));
             PersonalMirror.onClick.AddListener(() => OpenOrClosePersonalMirror(this));
+
             BasisCursorManagement.UnlockCursor(nameof(BasisHamburgerMenu));
             BasisUINeedsVisibleTrackers.Instance.Add(this);
+            BasisDeviceManagement.OnBootModeChanged += OnBootModeChanged;
+            FullBodyParent.SetActive(!BasisDeviceManagement.IsUserInDesktop());
         }
+
+        public override void DestroyEvent()
+        {
+            // Remove listeners
+            Settings.onClick.RemoveListener(SettingsPanel);
+            AvatarButton.onClick.RemoveListener(AvatarButtonPanel);
+            FullBody.onClick.RemoveListener(PutIntoCalibrationMode);
+            Respawn.onClick.RemoveListener(RespawnLocalPlayer);
+            Camera.onClick.RemoveAllListeners(); // Used lambda, must remove all
+            PersonalMirror.onClick.RemoveAllListeners(); // Used lambda, must remove all
+
+            BasisCursorManagement.LockCursor(nameof(BasisHamburgerMenu));
+            BasisUINeedsVisibleTrackers.Instance.Remove(this);
+            BasisDeviceManagement.OnBootModeChanged -= OnBootModeChanged;
+        }
+        private void OnBootModeChanged(string obj)
+        {
+            FullBodyParent.SetActive(!BasisDeviceManagement.IsUserInDesktop());
+        }
+
         public void UpdateMirrorState()
         {
-            if (HasMirror)
-            {
-                PersonalMirrorIcon.color = Color.red;
-            }
-            else
-            {
-                PersonalMirrorIcon.color = Color.white;
-            }
+            PersonalMirrorIcon.color = HasMirror ? Color.red : Color.white;
         }
         private Dictionary<BasisInput, Action> TriggerDelegates = new Dictionary<BasisInput, Action>();
         public void RespawnLocalPlayer()
@@ -158,11 +176,6 @@ namespace Basis.Scripts.UI.UI_Panels
                     personalMirrorInstance = await BasisPersonalMirrorFactory.CreateMirror(parameters);
                 }
             }
-        }
-        public override void DestroyEvent()
-        {
-            BasisCursorManagement.LockCursor(nameof(BasisHamburgerMenu));
-            BasisUINeedsVisibleTrackers.Instance.Remove(this);
         }
     }
 }
