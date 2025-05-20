@@ -20,11 +20,11 @@ namespace Basis.Scripts.Networking.Transmitters
 
         [WriteOnly]
         public NativeArray<float> distances;
-        [WriteOnly]
+        //HysteresisDistance stops this from working  [WriteOnly]
         public NativeArray<bool> DistanceResults;
-        [WriteOnly]
+        //HysteresisDistance stops this from working [WriteOnly]
         public NativeArray<bool> HearingResults;
-        [WriteOnly]
+        //HysteresisDistance stops this from working [WriteOnly]
         public NativeArray<bool> AvatarResults;
 
         // Shared result for the smallest distance
