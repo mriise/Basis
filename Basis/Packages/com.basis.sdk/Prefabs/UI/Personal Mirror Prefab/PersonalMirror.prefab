@@ -205,7 +205,7 @@ MonoBehaviour:
       State: 0
     extras: []
   disableInfluence: 0
-  InteractRange: 1
+  InteractRange: 0.2
   Equippable: 0
   IsPuppeted: 0
   KinematicWhileInteracting: 0
