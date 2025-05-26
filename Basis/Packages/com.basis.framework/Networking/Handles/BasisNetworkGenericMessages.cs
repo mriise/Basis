@@ -78,13 +78,19 @@ public static class BasisNetworkGenericMessages
             if (player.Player.BasisAvatar != null)
             {
                 RemoteAvatarDataMessage output = serverAvatarDataMessage.avatarDataMessage;
+                /*
                 if (player.Player.BasisAvatar.OnNetworkMessageReceived == null)
                 {
                     Debug.LogWarning(player.Player.DisplayName + " Message was Queued But nothing was there to Rec it " + output.messageIndex);
                 }
                 else
                 {
-                    player.Player.BasisAvatar.OnNetworkMessageReceived?.Invoke(serverAvatarDataMessage.playerIdMessage.playerID, output.messageIndex, output.payload, Method);
+                   // player.Player.BasisAvatar.OnNetworkMessageReceived?.Invoke(serverAvatarDataMessage.playerIdMessage.playerID, output.messageIndex, output.payload, Method);
+                }
+                */
+                if (player.Player.BasisAvatar.Behaviours.Length >= output.messageIndex)
+                {
+                    player.Player.BasisAvatar.Behaviours[output.messageIndex].OnNetworkMessageReceived(serverAvatarDataMessage.playerIdMessage.playerID, output.payload, Method);
                 }
             }
             else

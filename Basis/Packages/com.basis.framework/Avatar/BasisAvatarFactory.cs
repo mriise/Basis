@@ -3,6 +3,7 @@ using Basis.Scripts.Addressable_Driver.Factory;
 using Basis.Scripts.Addressable_Driver.Resource;
 using Basis.Scripts.BasisSdk;
 using Basis.Scripts.BasisSdk.Players;
+using Basis.Scripts.Behaviour;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -190,6 +191,17 @@ namespace Basis.Scripts.Avatar
                             Avatar.OnAvatarReady?.Invoke(false);
                             break;
                         }
+                }
+                Avatar.Behaviours = Output.GetComponentsInChildren<BasisAvatarMonoBehaviour>();
+                int length = Avatar.Behaviours.Length;
+                if (length > 256)
+                {
+                    BasisDebug.LogError("To Many Mono Behaviours on this Avatar!");
+                    return;
+                }
+                for (byte Index = 0; Index < length; Index++)
+                {
+                    Avatar.Behaviours[Index].OnNetworkAssign(Index);
                 }
             }
         }

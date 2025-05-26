@@ -1,14 +1,14 @@
 using Basis.Scripts.BasisSdk;
 using Basis.Scripts.BasisSdk.Players;
+using Basis.Scripts.Behaviour;
 using Basis.Scripts.Networking;
 using Basis.Scripts.Networking.NetworkedAvatar;
 using LiteNetLib;
 using UnityEngine;
-public class BasisTestNetworkAvatar : MonoBehaviour
+public class BasisTestNetworkAvatar : BasisAvatarMonoBehaviour
 {
     [Header("Assign Ahead Of Time")]
     public BasisAvatar avatar;
-    public byte MessageIndexTest;
     public byte[] SubmittingData;
     public ushort[] Recipients = null;
     public BasisPlayer BasisPlayer;
@@ -27,8 +27,6 @@ public class BasisTestNetworkAvatar : MonoBehaviour
         {
             SetupIfLocal();
         }
-        //recieve messages
-        avatar.OnNetworkMessageReceived += OnNetworkMessageReceived;
     }
     private void OnLocalPlayerJoined(BasisNetworkPlayer player1, BasisLocalPlayer player2)
     {
@@ -51,11 +49,21 @@ public class BasisTestNetworkAvatar : MonoBehaviour
     public void LoopSend()
     {
         Debug.Log("Sening Loop Data");
-        avatar.NetworkMessageSend(MessageIndexTest, SubmittingData, DeliveryMethod.Unreliable, Recipients);
+        NetworkMessageSend(SubmittingData, DeliveryMethod.Unreliable, Recipients);
     }
 
-    private void OnNetworkMessageReceived(ushort PlayerID, byte MessageIndex, byte[] buffer, DeliveryMethod Method = DeliveryMethod.ReliableSequenced)
+    public override void OnNetworkChange(byte messageIndex)
     {
-        //  Debug.Log("OnNetworkMessageReceived from player " + PlayerID + " with message Index " + MessageIndex + " | " + buffer.Length);
+        throw new System.NotImplementedException();
+    }
+
+    public override void OnNetworkMessageReceived(ushort RemoteUser, byte[] buffer, DeliveryMethod DeliveryMethod)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public override void OnNetworkMessageServerReductionSystem(byte[] buffer)
+    {
+        throw new System.NotImplementedException();
     }
 }
