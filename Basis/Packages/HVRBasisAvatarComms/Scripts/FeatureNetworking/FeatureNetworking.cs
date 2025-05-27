@@ -191,17 +191,14 @@ namespace HVR.Basis.Comms
 
         public override void OnNetworkChange(byte messageIndex)
         {
-            throw new NotImplementedException();
         }
 
         public override void OnNetworkMessageReceived(ushort RemoteUser, byte[] buffer, DeliveryMethod DeliveryMethod)
         {
-            throw new NotImplementedException();
         }
 
         public override void OnNetworkMessageServerReductionSystem(byte[] buffer)
         {
-            throw new NotImplementedException();
         }
     }
 

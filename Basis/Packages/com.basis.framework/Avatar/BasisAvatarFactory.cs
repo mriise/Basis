@@ -76,7 +76,6 @@ namespace Basis.Scripts.Avatar
                             RemoveColliders = true,
                         };
                         (List<GameObject> GameObjects, AddressableGenericResource resource) = await AddressableResourceProcess.LoadAsGameObjectsAsync(BasisLoadableBundle.BasisRemoteBundleEncrypted.CombinedURL, Para, Required, BundledContentHolder.Selector.Avatar);
-
                         if (GameObjects.Count > 0)
                         {
                             BasisDebug.Log("Found Avatar for " + BasisLoadableBundle.BasisRemoteBundleEncrypted.CombinedURL, BasisDebug.LogTag.Avatar);
@@ -86,6 +85,10 @@ namespace Basis.Scripts.Avatar
                         {
                             BasisDebug.LogError("Cant Find Local Avatar for " + BasisLoadableBundle.BasisRemoteBundleEncrypted.CombinedURL, BasisDebug.LogTag.Avatar);
                         }
+                        break;
+                    case 2:
+                        Output = BasisLoadableBundle.LoadableGameobject.InSceneItem;
+                        Output.transform.SetPositionAndRotation(Player.transform.position, Quaternion.identity);
                         break;
                     default:
                         BasisDebug.Log("Using Default, this means index was out of acceptable range! " + BasisLoadableBundle.BasisRemoteBundleEncrypted.CombinedURL, BasisDebug.LogTag.Avatar);
@@ -142,6 +145,10 @@ namespace Basis.Scripts.Avatar
                         {
                             BasisDebug.LogError("Cant Find Local Avatar for " + BasisLoadableBundle.BasisRemoteBundleEncrypted.CombinedURL, BasisDebug.LogTag.Avatar);
                         }
+                        break;
+                    case 2:
+                        Output = BasisLoadableBundle.LoadableGameobject.InSceneItem;
+                        Output.transform.SetPositionAndRotation(Player.transform.position, Quaternion.identity);
                         break;
                     default:
                         Output = await DownloadAndLoadAvatar(BasisLoadableBundle, Player);
@@ -287,15 +294,22 @@ namespace Basis.Scripts.Avatar
                 else
                 {
                     GameObject.Destroy(Player.BasisAvatar.gameObject);
-                 //   BasisDebug.Log("Unloading Last Avatar for Player " + Player.DisplayName);
-                    await BasisLoadHandler.RequestDeIncrementOfBundle(Player.AvatarMetaData);
+                    if (Player.AvatarLoadMode == 1 || Player.AvatarLoadMode == 0)
+                    {
+                        //   BasisDebug.Log("Unloading Last Avatar for Player " + Player.DisplayName);
+                        await BasisLoadHandler.RequestDeIncrementOfBundle(Player.AvatarMetaData);
+                    }
+                    else
+                    {
+                        BasisDebug.Log("Skipping remove DeInCrement was load mode " + Player.AvatarLoadMode);
+                    }
                 }
             }
             else
             {
                 //if the avatar has been nuked lets assume its been responsibly deIncremented.
                 //its worse to nuke content instead of keeping it around in memory from a bad Act.
-               // BasisDebug.LogError("trying to remove Deleted Avatar");
+                // BasisDebug.LogError("trying to remove Deleted Avatar");
 
             }
         }

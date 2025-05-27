@@ -176,10 +176,10 @@ namespace Basis.Scripts.BasisSdk.Players
                 BasisSceneFactory.SpawnPlayer(this);
             }
         }
-        public async Task CreateAvatar(byte mode, BasisLoadableBundle BasisLoadableBundle)
+        public async Task CreateAvatar(byte LoadMode, BasisLoadableBundle BasisLoadableBundle)
         {
-            await BasisAvatarFactory.LoadAvatarLocal(this, mode, BasisLoadableBundle);
-            BasisDataStore.SaveAvatar(BasisLoadableBundle.BasisRemoteBundleEncrypted.CombinedURL, mode, LoadFileNameAndExtension);
+            await BasisAvatarFactory.LoadAvatarLocal(this, LoadMode, BasisLoadableBundle);
+            BasisDataStore.SaveAvatar(BasisLoadableBundle.BasisRemoteBundleEncrypted.CombinedURL, LoadMode, LoadFileNameAndExtension);
             OnLocalAvatarChanged?.Invoke();
         }
         public void OnCalibration()

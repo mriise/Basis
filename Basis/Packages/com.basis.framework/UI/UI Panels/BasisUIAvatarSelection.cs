@@ -104,43 +104,46 @@ namespace Basis.Scripts.UI.UI_Panels
             int AKcount = activeKeys.Count;
             for (int Index = 0; Index < AKcount; Index++)
             {
-                if (!BasisLoadHandler.IsMetaDataOnDisc(activeKeys[Index].Url, out var info))
+                if (activeKeys.Count >= Index)
                 {
-                    if (activeKeys[Index].Url == BasisLocalPlayer.DefaultAvatar)
+                    if (!BasisLoadHandler.IsMetaDataOnDisc(activeKeys[Index].Url, out var info))
                     {
-
-                    }
-                    else
-                    {
-                        if (string.IsNullOrEmpty(activeKeys[Index].Url))
+                        if (activeKeys[Index].Url == BasisLocalPlayer.DefaultAvatar)
                         {
-                            BasisDebug.LogError("Supplied URL was null or empty!");
+
                         }
                         else
                         {
-                            BasisDebug.LogError("Missing File on Disc For " + activeKeys[Index].Url);
+                            if (string.IsNullOrEmpty(activeKeys[Index].Url))
+                            {
+                                BasisDebug.LogError("Supplied URL was null or empty!");
+                            }
+                            else
+                            {
+                                BasisDebug.LogError("Missing File on Disc For " + activeKeys[Index].Url);
+                            }
                         }
+                        await BasisDataStoreAvatarKeys.RemoveKey(activeKeys[Index]);
+                        continue;
                     }
-                    await BasisDataStoreAvatarKeys.RemoveKey(activeKeys[Index]);
-                    continue;
-                }
 
-                // Prevent duplicates in avatarUrlsRuntime
-                if (!avatarUrlsRuntime.Exists(b => b.BasisRemoteBundleEncrypted.CombinedURL == activeKeys[Index].Url))
-                {
-                    BasisLoadableBundle bundle = new BasisLoadableBundle
+                    // Prevent duplicates in avatarUrlsRuntime
+                    if (!avatarUrlsRuntime.Exists(b => b.BasisRemoteBundleEncrypted.CombinedURL == activeKeys[Index].Url))
                     {
-                        BasisRemoteBundleEncrypted = info.StoredRemote,
-                        BasisBundleConnector = new BasisBundleConnector
+                        BasisLoadableBundle bundle = new BasisLoadableBundle
                         {
-                            BasisBundleDescription = new BasisBundleDescription(),
-                            BasisBundleGenerated = new BasisBundleGenerated[] { new BasisBundleGenerated() },
-                            UniqueVersion = ""
-                        },
-                        BasisLocalEncryptedBundle = info.StoredLocal,
-                        UnlockPassword = activeKeys[Index].Pass
-                    };
-                    avatarUrlsRuntime.Add(bundle);
+                            BasisRemoteBundleEncrypted = info.StoredRemote,
+                            BasisBundleConnector = new BasisBundleConnector
+                            {
+                                BasisBundleDescription = new BasisBundleDescription(),
+                                BasisBundleGenerated = new BasisBundleGenerated[] { new BasisBundleGenerated() },
+                                UniqueVersion = ""
+                            },
+                            BasisLocalEncryptedBundle = info.StoredLocal,
+                            UnlockPassword = activeKeys[Index].Pass
+                        };
+                        avatarUrlsRuntime.Add(bundle);
+                    }
                 }
             }
 

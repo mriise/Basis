@@ -216,7 +216,6 @@ namespace HVR.Basis.Comms
 
         public override void OnNetworkChange(byte messageIndex)
         {
-            throw new NotImplementedException();
         }
         public override void OnNetworkMessageServerReductionSystem(byte[] unsafeBuffer)
         {
