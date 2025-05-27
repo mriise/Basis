@@ -5,12 +5,16 @@ namespace Basis.Scripts.Behaviour
 {
     public abstract class BasisAvatarMonoBehaviour : MonoBehaviour
     {
+        [HideInInspector]
         public bool IsInitalized = false;
+        [HideInInspector]
         public byte MessageIndex;
+        [HideInInspector]
         public BasisAvatar Avatar;
-        public void OnNetworkAssign(byte messageIndex)
+        public void OnNetworkAssign(byte messageIndex,BasisAvatar avatar)
         {
             MessageIndex = messageIndex;
+            Avatar = avatar;
             IsInitalized = true;
             OnNetworkChange(messageIndex);
         }

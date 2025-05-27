@@ -201,7 +201,7 @@ namespace Basis.Scripts.Avatar
                 }
                 for (byte Index = 0; Index < length; Index++)
                 {
-                    Avatar.Behaviours[Index].OnNetworkAssign(Index);
+                    Avatar.Behaviours[Index].OnNetworkAssign(Index, Avatar);
                 }
             }
         }
