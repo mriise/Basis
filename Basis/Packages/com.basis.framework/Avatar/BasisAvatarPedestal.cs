@@ -63,32 +63,48 @@ public class BasisAvatarPedestal : InteractableObject
         BasisDebug.Log($"CapsuleCollider added: Height={Height}, Center={capsule.center}");
         UniqueID = BasisGenerateUniqueID.GenerateUniqueID();
     }
-    public async void WasPressed()
+    public void WasPressed()
     {
         if (Avatar != null && WasJustPressed == false && UniqueID != BasisLocalPlayer.Instance.AvatarMetaData.BasisRemoteBundleEncrypted.RemoteBeeFileLocation)
         {
             WasJustPressed = true;
-            switch (LoadMode)
+
+
+
+            BasisUIAcceptDenyPanel.OpenAcceptDenyPanel("Do You Want To Swap Into This Avatar?", (bool accepted) =>
             {
-                case BasisLoadMode.ByGameobjectReference:
-                    LoadableBundle = new BasisLoadableBundle
+                if (accepted)
+                {
+                    switch (LoadMode)
                     {
-                        LoadableGameobject = new BasisLoadableGameobject()
-                    };
-                    RuntimeAnimatorController copy = Avatar.Animator.runtimeAnimatorController;
-                    Avatar.Animator.runtimeAnimatorController = null;
-                    LoadableBundle.LoadableGameobject.InSceneItem = GameObject.Instantiate(Avatar.gameObject);
-                    LoadableBundle.LoadableGameobject.InSceneItem.transform.parent = null;
-                    LoadableBundle.BasisRemoteBundleEncrypted = new BasisRemoteEncyptedBundle
-                    {
-                        RemoteBeeFileLocation = UniqueID
-                    };
-                    Avatar.Animator.runtimeAnimatorController = copy;
-                    break;
-            }
-            await BasisLocalPlayer.Instance.CreateAvatarFromMode(LoadMode, LoadableBundle);
-            WasJustPressed = false;
+                        case BasisLoadMode.ByGameobjectReference:
+                            RuntimeAnimatorController copy = Avatar.Animator.runtimeAnimatorController;
+                            Avatar.Animator.runtimeAnimatorController = null;
+                            LoadableBundle = new BasisLoadableBundle
+                            {
+                                LoadableGameobject = new BasisLoadableGameobject() { InSceneItem = GameObject.Instantiate(Avatar.gameObject) }
+                            };
+                            LoadableBundle.LoadableGameobject.InSceneItem.transform.parent = null;
+                            LoadableBundle.BasisRemoteBundleEncrypted = new BasisRemoteEncyptedBundle
+                            {
+                                RemoteBeeFileLocation = UniqueID
+                            };
+                            Avatar.Animator.runtimeAnimatorController = copy;
+                            break;
+                    }
+                    LocalAvatarLoad();
+                }
+                else
+                {
+                    WasJustPressed = false;
+                }
+            });
         }
+    }
+    public async void LocalAvatarLoad()
+    {
+        await BasisLocalPlayer.Instance.CreateAvatarFromMode(LoadMode, LoadableBundle);
+        WasJustPressed = false;
     }
     public override bool CanHover(BasisInput input)
     {
