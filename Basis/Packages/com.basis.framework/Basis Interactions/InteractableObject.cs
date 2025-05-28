@@ -5,7 +5,7 @@ using UnityEngine;
 
 // Needs Rigidbody for hover sphere `OnTriggerStay`
 [Serializable]
-public abstract partial class InteractableObject : MonoBehaviour
+public abstract class InteractableObject : MonoBehaviour
 {
     public InputSources Inputs = new(0);
 
@@ -32,7 +32,6 @@ public abstract partial class InteractableObject : MonoBehaviour
             disableInfluence = value;
         }
     }
-    public float InteractRange = 1.0f;
     [Space(10)]
     public bool Equippable = false;
 
@@ -109,7 +108,7 @@ public abstract partial class InteractableObject : MonoBehaviour
     /// </summary>
     /// <param name="source"></param>
     /// <returns></returns>
-    public virtual bool IsWithinRange(Vector3 source)
+    public virtual bool IsWithinRange(Vector3 source, float InteractRange)
     {
         Collider collider = GetCollider();
         if (collider != null)

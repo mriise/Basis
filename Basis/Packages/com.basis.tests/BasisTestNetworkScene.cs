@@ -46,20 +46,17 @@ public class BasisTestNetworkScene : MonoBehaviour
         if (SceneLoadTest)
         {
             BasisNetworkSpawnItem.RequestSceneLoad(ScenePassword,
-               SceneMetaUrl,
-               false, IsPersistent, out Scene);
+               SceneMetaUrl,IsPersistent, out Scene);
         }
         if (GameobjectLoadTest)
         {
             BasisNetworkSpawnItem.RequestGameObjectLoad(GameobjectPassword,
-                 GameobjectMetaUrl,
-                 false, Position, Quaternion.identity, Vector3.one, IsPersistent, ModifyScale, out Gameobject);
+                 GameobjectMetaUrl, Position, Quaternion.identity, Vector3.one, IsPersistent, ModifyScale, out Gameobject);
         }
         if (PropLoadTest)
         {
             BasisNetworkSpawnItem.RequestGameObjectLoad(PropPassword,
-                 PropMetaUrl,
-                 false, Position, Quaternion.identity, Vector3.one, IsPersistent, ModifyScale, out Gameobject);
+                 PropMetaUrl, Position, Quaternion.identity, Vector3.one, IsPersistent, ModifyScale, out Gameobject);
         }
     }
     public void OnDisable()

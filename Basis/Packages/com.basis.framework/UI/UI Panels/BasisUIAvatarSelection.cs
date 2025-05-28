@@ -54,7 +54,7 @@ namespace Basis.Scripts.UI.UI_Panels
             BasisDataStoreAvatarKeys.AvatarKey Key = new BasisDataStoreAvatarKeys.AvatarKey()
             {
                 Pass = SelectedBundle.UnlockPassword,
-                Url = SelectedBundle.BasisRemoteBundleEncrypted.CombinedURL
+                Url = SelectedBundle.BasisRemoteBundleEncrypted.RemoteBeeFileLocation
             };
             await BasisDataStoreAvatarKeys.RemoveKey(Key);
             CloseThisMenu();
@@ -90,7 +90,7 @@ namespace Basis.Scripts.UI.UI_Panels
                 BasisDataStoreAvatarKeys.AvatarKey Key = new BasisDataStoreAvatarKeys.AvatarKey()
                 {
                     Pass = loadableBundle.UnlockPassword,
-                    Url = loadableBundle.BasisRemoteBundleEncrypted.CombinedURL
+                    Url = loadableBundle.BasisRemoteBundleEncrypted.RemoteBeeFileLocation
                 };
 
                 // Prevent duplicate keys in the store
@@ -128,7 +128,7 @@ namespace Basis.Scripts.UI.UI_Panels
                     }
 
                     // Prevent duplicates in avatarUrlsRuntime
-                    if (!avatarUrlsRuntime.Exists(b => b.BasisRemoteBundleEncrypted.CombinedURL == activeKeys[Index].Url))
+                    if (!avatarUrlsRuntime.Exists(b => b.BasisRemoteBundleEncrypted.RemoteBeeFileLocation == activeKeys[Index].Url))
                     {
                         BasisLoadableBundle bundle = new BasisLoadableBundle
                         {
@@ -157,13 +157,13 @@ namespace Basis.Scripts.UI.UI_Panels
                 {
                     continue;
                 }
-                if (createdCopies.Exists(copy => copy != null && copy.name == bundle.BasisRemoteBundleEncrypted.CombinedURL))
+                if (createdCopies.Exists(copy => copy != null && copy.name == bundle.BasisRemoteBundleEncrypted.RemoteBeeFileLocation))
                 {
-                    Debug.LogWarning("Button for this avatar already exists: " + bundle.BasisRemoteBundleEncrypted.CombinedURL);
+                    Debug.LogWarning("Button for this avatar already exists: " + bundle.BasisRemoteBundleEncrypted.RemoteBeeFileLocation);
                     continue;
                 }
                 GameObject buttonObject = Instantiate(ButtonPrefab, ParentedAvatarButtons);
-                buttonObject.name = bundle.BasisRemoteBundleEncrypted.CombinedURL;
+                buttonObject.name = bundle.BasisRemoteBundleEncrypted.RemoteBeeFileLocation;
                 buttonObject.SetActive(true);
                 if (buttonObject.TryGetComponent<BasisUIAvatarSelectionButton>(out var SelectionButton))
                 {
@@ -187,7 +187,7 @@ namespace Basis.Scripts.UI.UI_Panels
                     catch (Exception E)
                     {
                         BasisDebug.LogError(E);
-                        BasisLoadHandler.RemoveDiscInfo(bundle.BasisRemoteBundleEncrypted.CombinedURL);
+                        BasisLoadHandler.RemoveDiscInfo(bundle.BasisRemoteBundleEncrypted.RemoteBeeFileLocation);
                         continue;
                     }
                 }

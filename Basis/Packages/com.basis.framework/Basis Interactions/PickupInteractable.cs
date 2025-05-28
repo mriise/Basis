@@ -49,7 +49,7 @@ public class PickupInteractable : InteractableObject
     const float k_DesktopZoopMaxVelocity = 10f;
 
     private static string headPauseRequestName;
-
+    public float InteractRange = 1f;
     public void Start()
     {
         if (RigidRef == null)
@@ -109,7 +109,7 @@ public class PickupInteractable : InteractableObject
             input.TryGetRole(out BasisBoneTrackedRole role) &&
             Inputs.TryGetByRole(role, out BasisInputWrapper found) &&
             found.GetState() == InteractInputState.Ignored &&
-            IsWithinRange(found.BoneControl.OutgoingWorldData.position);
+            IsWithinRange(found.BoneControl.OutgoingWorldData.position, InteractRange);
     }
     public override bool CanInteract(BasisInput input)
     {
@@ -122,7 +122,7 @@ public class PickupInteractable : InteractableObject
             input.TryGetRole(out BasisBoneTrackedRole role) &&
             Inputs.TryGetByRole(role, out BasisInputWrapper found) &&
             found.GetState() == InteractInputState.Hovering &&
-            IsWithinRange(found.BoneControl.OutgoingWorldData.position);
+            IsWithinRange(found.BoneControl.OutgoingWorldData.position, InteractRange);
     }
 
     public override void OnHoverStart(BasisInput input)

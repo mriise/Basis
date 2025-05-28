@@ -1,38 +1,34 @@
+using Basis.Scripts.BasisSdk;
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Device_Management.Devices;
 using Basis.Scripts.TransformBinders.BoneControl;
 using System.Threading;
-using System.Threading.Tasks;
 using UnityEngine;
-
 public class BasisAvatarPedestal : InteractableObject
 {
     public BasisLoadMode LoadMode;
-    public Transform Avatar;
+    public BasisAvatar Avatar;
+    [HideInInspector]
     public string UniqueID;
-    public bool ShowAvatarOnPedestal;
+    public bool ShowAvatarOnPedestal = true;
     [HideInInspector]
     public bool WasJustPressed = false;
+    public float InteractRange = 1f;
     public BasisLoadableBundle LoadableBundle;
     public BasisProgressReport BasisProgressReport;
     public CancellationToken cancellationToken;
+    public RuntimeAnimatorController PedestalAnimatorController;
     public void Start()
     {
-       Initalize();
+        Initalize();
     }
     public async void Initalize()
     {
         switch (LoadMode)
         {
-            case BasisLoadMode.InScene:
-                if (ShowAvatarOnPedestal)
-                {
-                    Avatar.gameObject.SetActive(true);
-                }
-                else
-                {
-                    Avatar.gameObject.SetActive(false);
-                }
+            case BasisLoadMode.ByGameobjectReference:
+                Avatar.gameObject.SetActive(ShowAvatarOnPedestal);
+                Avatar.Animator.runtimeAnimatorController = PedestalAnimatorController;
                 break;
             default:
                 {
@@ -40,36 +36,16 @@ public class BasisAvatarPedestal : InteractableObject
                     {
                         transform.GetPositionAndRotation(out Vector3 Position, out Quaternion Rotation);
                         await BasisLoadHandler.LoadGameObjectBundle(LoadableBundle, true, BasisProgressReport, cancellationToken, Position, Rotation, Vector3.one, false, BundledContentHolder.Selector.Prop, transform);
+                        Avatar.Animator.runtimeAnimatorController = PedestalAnimatorController;
                     }
 
                     break;
                 }
         }
-        if (Avatar == null)
-        {
-            BasisDebug.LogError("Avatar is not assigned.");
-            return;
-        }
-
-        Renderer[] renderers = Avatar.GetComponentsInChildren<Renderer>();
-
-        if (renderers.Length == 0)
-        {
-            BasisDebug.LogWarning("No renderers found on Avatar.");
-            return;
-        }
-
-        // Calculate total bounds
-        Bounds bounds = renderers[0].bounds;
-        foreach (Renderer r in renderers)
-        {
-            bounds.Encapsulate(r.bounds);
-        }
-
-        // Height is the y size of the bounding box
-        float height = bounds.size.y;
-        float radius = Mathf.Max(bounds.size.x, bounds.size.z) * 0.5f;
-
+        CreateCollider( 1.5f);
+    }
+    public void CreateCollider(float Height = 1.6f)//bounds.center
+    {
         // Add or get a CapsuleCollider
         if (TryGetComponent<CapsuleCollider>(out CapsuleCollider capsule))
         {
@@ -79,41 +55,38 @@ public class BasisAvatarPedestal : InteractableObject
             capsule = gameObject.AddComponent<CapsuleCollider>();
         }
 
-        capsule.center = Avatar.InverseTransformPoint(bounds.center);
-        capsule.height = height;
-        capsule.radius = radius;
+        capsule.center = new Vector3(0,1f,0);
+        capsule.height = Height;
+        capsule.radius = 0.25f;
         capsule.direction = 1; // Y axis
 
-        BasisDebug.Log($"CapsuleCollider added: Height={height}, Radius={radius}, Center={capsule.center}");
-        UniqueID =  BasisGenerateUniqueID.GenerateUniqueID();
+        BasisDebug.Log($"CapsuleCollider added: Height={Height}, Center={capsule.center}");
+        UniqueID = BasisGenerateUniqueID.GenerateUniqueID();
     }
     public async void WasPressed()
     {
-        if (Avatar != null && WasJustPressed == false && UniqueID != BasisLocalPlayer.Instance.AvatarMetaData.BasisRemoteBundleEncrypted.CombinedURL)
+        if (Avatar != null && WasJustPressed == false && UniqueID != BasisLocalPlayer.Instance.AvatarMetaData.BasisRemoteBundleEncrypted.RemoteBeeFileLocation)
         {
             WasJustPressed = true;
             switch (LoadMode)
             {
-                case BasisLoadMode.InScene:
+                case BasisLoadMode.ByGameobjectReference:
                     LoadableBundle = new BasisLoadableBundle
                     {
-                        LoadableGameobject = new BasisLoadableBundle.BasisLoadableGameobject()
+                        LoadableGameobject = new BasisLoadableGameobject()
                     };
-                    GameObject AvatarCopy = GameObject.Instantiate(Avatar.gameObject);
-                    AvatarCopy.transform.parent = null;
-                    LoadableBundle.LoadableGameobject.InSceneItem = AvatarCopy;
+                    RuntimeAnimatorController copy = Avatar.Animator.runtimeAnimatorController;
+                    Avatar.Animator.runtimeAnimatorController = null;
+                    LoadableBundle.LoadableGameobject.InSceneItem = GameObject.Instantiate(Avatar.gameObject);
+                    LoadableBundle.LoadableGameobject.InSceneItem.transform.parent = null;
                     LoadableBundle.BasisRemoteBundleEncrypted = new BasisRemoteEncyptedBundle
                     {
-                        CombinedURL = UniqueID
+                        RemoteBeeFileLocation = UniqueID
                     };
-                    await BasisLocalPlayer.Instance.CreateAvatarFromMode(LoadMode, LoadableBundle);
+                    Avatar.Animator.runtimeAnimatorController = copy;
                     break;
-                default:
-                    {
-                        await BasisLocalPlayer.Instance.CreateAvatarFromMode(LoadMode, LoadableBundle);
-                        break;
-                    }
             }
+            await BasisLocalPlayer.Instance.CreateAvatarFromMode(LoadMode, LoadableBundle);
             WasJustPressed = false;
         }
     }
@@ -125,7 +98,7 @@ public class BasisAvatarPedestal : InteractableObject
             input.TryGetRole(out BasisBoneTrackedRole role) &&
             Inputs.TryGetByRole(role, out BasisInputWrapper found) &&
             found.GetState() == InteractInputState.Ignored &&
-            IsWithinRange(found.BoneControl.OutgoingWorldData.position);
+            IsWithinRange(found.BoneControl.OutgoingWorldData.position, InteractRange);
     }
     public override bool CanInteract(BasisInput input)
     {
@@ -135,9 +108,8 @@ public class BasisAvatarPedestal : InteractableObject
             input.TryGetRole(out BasisBoneTrackedRole role) &&
             Inputs.TryGetByRole(role, out BasisInputWrapper found) &&
             found.GetState() == InteractInputState.Hovering &&
-            IsWithinRange(found.BoneControl.OutgoingWorldData.position);
+            IsWithinRange(found.BoneControl.OutgoingWorldData.position, InteractRange);
     }
-
     public override void OnHoverStart(BasisInput input)
     {
         var found = Inputs.FindExcludeExtras(input);
@@ -150,7 +122,6 @@ public class BasisAvatarPedestal : InteractableObject
         OnHoverStartEvent?.Invoke(input);
         HighlightObject(true);
     }
-
     public override void OnHoverEnd(BasisInput input, bool willInteract)
     {
         if (input.TryGetRole(out BasisBoneTrackedRole role) && Inputs.TryGetByRole(role, out _))
@@ -186,7 +157,6 @@ public class BasisAvatarPedestal : InteractableObject
             BasisDebug.LogWarning(nameof(PickupInteractable) + " did not find role for input on Interact start");
         }
     }
-
     public override void OnInteractEnd(BasisInput input)
     {
         if (input.TryGetRole(out BasisBoneTrackedRole role) && Inputs.TryGetByRole(role, out BasisInputWrapper wrapper))
@@ -209,17 +179,14 @@ public class BasisAvatarPedestal : InteractableObject
         var found = Inputs.FindExcludeExtras(input);
         return found.HasValue && found.Value.GetState() == InteractInputState.Interacting;
     }
-
     public override bool IsHoveredBy(BasisInput input)
     {
         var found = Inputs.FindExcludeExtras(input);
         return found.HasValue && found.Value.GetState() == InteractInputState.Hovering;
     }
-
     public override void InputUpdate()
     {
     }
-
     public override bool IsInteractTriggered(BasisInput input)
     {
         // click or mostly triggered

@@ -3,8 +3,6 @@ using Basis.Scripts.Device_Management.Devices;
 using Basis.Scripts.Drivers;
 using Basis.Scripts.TransformBinders.BoneControl;
 using UnityEngine;
-using static InteractableObject;
-using UnityEngine.Windows;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.AddressableAssets;
 
@@ -29,6 +27,7 @@ public abstract class BasisHandHeldCameraInteractable : InteractableObject
     const string k_CloneName = "HighlightClone";
 
     private static string headPauseRequestName;
+    public float InteractRange = 1f;
     public void Start()
     {
         if (ColliderRef == null)
@@ -78,7 +77,7 @@ public abstract class BasisHandHeldCameraInteractable : InteractableObject
             input.TryGetRole(out BasisBoneTrackedRole role) &&
             Inputs.TryGetByRole(role, out BasisInputWrapper found) &&
             found.GetState() == InteractInputState.Ignored &&
-            IsWithinRange(found.BoneControl.OutgoingWorldData.position);
+            IsWithinRange(found.BoneControl.OutgoingWorldData.position, InteractRange);
     }
     public override bool CanInteract(BasisInput input)
     {
@@ -88,7 +87,7 @@ public abstract class BasisHandHeldCameraInteractable : InteractableObject
             input.TryGetRole(out BasisBoneTrackedRole role) &&
             Inputs.TryGetByRole(role, out BasisInputWrapper found) &&
             found.GetState() == InteractInputState.Hovering &&
-            IsWithinRange(found.BoneControl.OutgoingWorldData.position);
+            IsWithinRange(found.BoneControl.OutgoingWorldData.position, InteractRange);
     }
 
     public override void OnHoverStart(BasisInput input)

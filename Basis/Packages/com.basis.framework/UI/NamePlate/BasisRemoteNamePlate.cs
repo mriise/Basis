@@ -27,6 +27,7 @@ namespace Basis.Scripts.UI.NamePlate
         private WaitForEndOfFrame cachedEndOfFrame;
         public Color CurrentColor;
         public Transform Self;
+        public float InteractRange = 2f;
         /// <summary>
         /// can only be called once after that the text is nuked and a mesh render is just used with a filter
         /// </summary>
@@ -204,7 +205,7 @@ namespace Basis.Scripts.UI.NamePlate
                 input.TryGetRole(out BasisBoneTrackedRole role) &&
                 Inputs.TryGetByRole(role, out BasisInputWrapper found) &&
                 found.GetState() == InteractInputState.Ignored &&
-                IsWithinRange(found.BoneControl.OutgoingWorldData.position);
+                IsWithinRange(found.BoneControl.OutgoingWorldData.position, InteractRange);
         }
         public override bool CanInteract(BasisInput input)
         {
@@ -214,7 +215,7 @@ namespace Basis.Scripts.UI.NamePlate
                 input.TryGetRole(out BasisBoneTrackedRole role) &&
                 Inputs.TryGetByRole(role, out BasisInputWrapper found) &&
                 found.GetState() == InteractInputState.Hovering &&
-                IsWithinRange(found.BoneControl.OutgoingWorldData.position);
+                IsWithinRange(found.BoneControl.OutgoingWorldData.position, InteractRange);
         }
 
         public override void OnHoverStart(BasisInput input)
