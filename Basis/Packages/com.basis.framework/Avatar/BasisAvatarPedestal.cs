@@ -1,18 +1,50 @@
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Device_Management.Devices;
 using Basis.Scripts.TransformBinders.BoneControl;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class BasisAvatarPedestal : InteractableObject
 {
+    public BasisLoadMode LoadMode;
     public Transform Avatar;
     public string UniqueID;
+    public bool ShowAvatarOnPedestal;
+    [HideInInspector]
+    public bool WasJustPressed = false;
+    public BasisLoadableBundle LoadableBundle;
+    public BasisProgressReport BasisProgressReport;
+    public CancellationToken cancellationToken;
     public void Start()
     {
-        Initalize();
+       Initalize();
     }
-    public void Initalize()
+    public async void Initalize()
     {
+        switch (LoadMode)
+        {
+            case BasisLoadMode.InScene:
+                if (ShowAvatarOnPedestal)
+                {
+                    Avatar.gameObject.SetActive(true);
+                }
+                else
+                {
+                    Avatar.gameObject.SetActive(false);
+                }
+                break;
+            default:
+                {
+                    if (ShowAvatarOnPedestal)
+                    {
+                        transform.GetPositionAndRotation(out Vector3 Position, out Quaternion Rotation);
+                        await BasisLoadHandler.LoadGameObjectBundle(LoadableBundle, true, BasisProgressReport, cancellationToken, Position, Rotation, Vector3.one, false, BundledContentHolder.Selector.Prop, transform);
+                    }
+
+                    break;
+                }
+        }
         if (Avatar == null)
         {
             BasisDebug.LogError("Avatar is not assigned.");
@@ -55,7 +87,36 @@ public class BasisAvatarPedestal : InteractableObject
         BasisDebug.Log($"CapsuleCollider added: Height={height}, Radius={radius}, Center={capsule.center}");
         UniqueID =  BasisGenerateUniqueID.GenerateUniqueID();
     }
-
+    public async void WasPressed()
+    {
+        if (Avatar != null && WasJustPressed == false && UniqueID != BasisLocalPlayer.Instance.AvatarMetaData.BasisRemoteBundleEncrypted.CombinedURL)
+        {
+            WasJustPressed = true;
+            switch (LoadMode)
+            {
+                case BasisLoadMode.InScene:
+                    LoadableBundle = new BasisLoadableBundle
+                    {
+                        LoadableGameobject = new BasisLoadableBundle.BasisLoadableGameobject()
+                    };
+                    GameObject AvatarCopy = GameObject.Instantiate(Avatar.gameObject);
+                    AvatarCopy.transform.parent = null;
+                    LoadableBundle.LoadableGameobject.InSceneItem = AvatarCopy;
+                    LoadableBundle.BasisRemoteBundleEncrypted = new BasisRemoteEncyptedBundle
+                    {
+                        CombinedURL = UniqueID
+                    };
+                    await BasisLocalPlayer.Instance.CreateAvatarFromMode(LoadMode, LoadableBundle);
+                    break;
+                default:
+                    {
+                        await BasisLocalPlayer.Instance.CreateAvatarFromMode(LoadMode, LoadableBundle);
+                        break;
+                    }
+            }
+            WasJustPressed = false;
+        }
+    }
     public override bool CanHover(BasisInput input)
     {
         return !DisableInfluence &&
@@ -142,27 +203,6 @@ public class BasisAvatarPedestal : InteractableObject
     public void HighlightObject(bool IsHighlighted)
     {
 
-    }
-    public bool WasJustPressed = false;
-    public async void WasPressed()
-    {
-        if (Avatar != null && WasJustPressed == false && UniqueID != BasisLocalPlayer.Instance.AvatarMetaData.BasisRemoteBundleEncrypted.CombinedURL)
-        {
-            WasJustPressed = true;
-            BasisLoadableBundle Bundle = new BasisLoadableBundle
-            {
-                LoadableGameobject = new BasisLoadableBundle.BasisLoadableGameobject()
-            };
-            Avatar.parent = null;
-            GameObject AvatarCopy = GameObject.Instantiate(Avatar.gameObject);
-            Bundle.LoadableGameobject.InSceneItem = AvatarCopy;
-            Bundle.BasisRemoteBundleEncrypted = new BasisRemoteEncyptedBundle
-            {
-                CombinedURL = UniqueID
-            };
-            await BasisLocalPlayer.Instance.CreateAvatar(2, Bundle);
-            WasJustPressed = false;
-        }
     }
     public override bool IsInteractingWith(BasisInput input)
     {

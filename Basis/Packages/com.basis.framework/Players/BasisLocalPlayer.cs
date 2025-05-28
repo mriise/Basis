@@ -182,6 +182,11 @@ namespace Basis.Scripts.BasisSdk.Players
             BasisDataStore.SaveAvatar(BasisLoadableBundle.BasisRemoteBundleEncrypted.CombinedURL, LoadMode, LoadFileNameAndExtension);
             OnLocalAvatarChanged?.Invoke();
         }
+        public async Task CreateAvatarFromMode(BasisLoadMode LoadMode, BasisLoadableBundle BasisLoadableBundle)
+        {
+            byte LoadByte = (byte)LoadMode;
+            await CreateAvatar(LoadByte, BasisLoadableBundle);
+        }
         public void OnCalibration()
         {
             LocalVisemeDriver.TryInitialize(this);
