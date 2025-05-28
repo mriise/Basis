@@ -20,6 +20,7 @@ public class BasisAvatarPedestal : InteractableObject
     public RuntimeAnimatorController PedestalAnimatorController;
     public void Start()
     {
+        BasisProgressReport = new BasisProgressReport();
         Initalize();
     }
     public async void Initalize()
@@ -35,10 +36,12 @@ public class BasisAvatarPedestal : InteractableObject
                     if (ShowAvatarOnPedestal)
                     {
                         transform.GetPositionAndRotation(out Vector3 Position, out Quaternion Rotation);
-                        await BasisLoadHandler.LoadGameObjectBundle(LoadableBundle, true, BasisProgressReport, cancellationToken, Position, Rotation, Vector3.one, false, BundledContentHolder.Selector.Prop, transform);
-                        Avatar.Animator.runtimeAnimatorController = PedestalAnimatorController;
+                        GameObject CreatedCopy = await BasisLoadHandler.LoadGameObjectBundle(LoadableBundle, true, BasisProgressReport, cancellationToken, Position, Rotation, Vector3.one, false, BundledContentHolder.Selector.Prop, transform);
+                        if (CreatedCopy.TryGetComponent(out Avatar))
+                        {
+                            Avatar.Animator.runtimeAnimatorController = PedestalAnimatorController;
+                        }
                     }
-
                     break;
                 }
         }
