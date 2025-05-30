@@ -189,7 +189,7 @@ namespace HVR.Basis.Comms
             }
         }
 
-        public override void OnNetworkChange(byte messageIndex)
+        public override void OnNetworkChange(byte messageIndex, bool IsLocallyOwned)
         {
         }
 

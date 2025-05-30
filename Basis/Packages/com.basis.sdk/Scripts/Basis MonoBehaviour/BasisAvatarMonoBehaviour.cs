@@ -11,14 +11,16 @@ namespace Basis.Scripts.Behaviour
         public byte MessageIndex;
         [HideInInspector]
         public BasisAvatar Avatar;
-        public void OnNetworkAssign(byte messageIndex,BasisAvatar avatar)
+        public bool IsLocallyOwned;
+        public void OnNetworkAssign(byte messageIndex,BasisAvatar avatar,bool IsLocal)
         {
             MessageIndex = messageIndex;
             Avatar = avatar;
             IsInitalized = true;
-            OnNetworkChange(messageIndex);
+            IsLocallyOwned = IsLocal;
+            OnNetworkChange(messageIndex, IsLocal);
         }
-        public abstract void OnNetworkChange(byte messageIndex);
+        public abstract void OnNetworkChange(byte messageIndex, bool IsLocallyOwned);
         public abstract void OnNetworkMessageReceived(ushort RemoteUser, byte[] buffer, DeliveryMethod DeliveryMethod);
         public abstract void OnNetworkMessageServerReductionSystem(byte[] buffer);
         /// <summary>

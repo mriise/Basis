@@ -214,7 +214,7 @@ namespace HVR.Basis.Comms
             Debug.LogError(message);
         }
 
-        public override void OnNetworkChange(byte messageIndex)
+        public override void OnNetworkChange(byte messageIndex, bool IsLocallyOwned)
         {
         }
         public override void OnNetworkMessageServerReductionSystem(byte[] unsafeBuffer)

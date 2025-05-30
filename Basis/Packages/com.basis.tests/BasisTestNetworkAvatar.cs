@@ -52,18 +52,15 @@ public class BasisTestNetworkAvatar : BasisAvatarMonoBehaviour
         NetworkMessageSend(SubmittingData, DeliveryMethod.Unreliable, Recipients);
     }
 
-    public override void OnNetworkChange(byte messageIndex)
+    public override void OnNetworkChange(byte messageIndex, bool IsLocallyOwned)
     {
-        throw new System.NotImplementedException();
     }
 
     public override void OnNetworkMessageReceived(ushort RemoteUser, byte[] buffer, DeliveryMethod DeliveryMethod)
     {
-        throw new System.NotImplementedException();
     }
 
     public override void OnNetworkMessageServerReductionSystem(byte[] buffer)
     {
-        throw new System.NotImplementedException();
     }
 }
