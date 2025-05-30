@@ -4,7 +4,6 @@ using LiteNetLib;
 using UnityEngine;
 public class BasisTestNetwork : BasisAvatarMonoBehaviour
 {
-    public BasisAvatar avatar;
     public bool Send = false;
     public ushort[] Players;
     public byte[] SendingOutBytes = new byte[3];

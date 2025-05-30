@@ -7,7 +7,6 @@ using UnityEngine.XR;
 
 public class BasisTestRoundTrip : BasisAvatarMonoBehaviour
 {
-    public BasisAvatar Avatar;
     public LiteNetLib.DeliveryMethod DeliveryMethod;
     void Awake()
     {

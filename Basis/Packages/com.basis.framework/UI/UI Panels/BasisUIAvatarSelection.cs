@@ -83,73 +83,82 @@ namespace Basis.Scripts.UI.UI_Panels
             avatarUrlsRuntime.Clear();
             avatarUrlsRuntime.AddRange(preLoadedBundles);
             await BasisDataStoreAvatarKeys.LoadKeys();
-            int PreloadedCount = preLoadedBundles.Count;
-            for (int Index = 0; Index < PreloadedCount; Index++)
+
+            int preloadedCount = preLoadedBundles.Count;
+            for (int i = 0; i < preloadedCount; i++)
             {
-                BasisLoadableBundle loadableBundle = preLoadedBundles[Index];
-                BasisDataStoreAvatarKeys.AvatarKey Key = new BasisDataStoreAvatarKeys.AvatarKey()
+                BasisLoadableBundle loadableBundle = preLoadedBundles[i];
+                var key = new BasisDataStoreAvatarKeys.AvatarKey
                 {
                     Pass = loadableBundle.UnlockPassword,
                     Url = loadableBundle.BasisRemoteBundleEncrypted.RemoteBeeFileLocation
                 };
 
-                // Prevent duplicate keys in the store
-                if (!BasisDataStoreAvatarKeys.DisplayKeys().Exists(k => k.Url == Key.Url && k.Pass == Key.Pass))
+                if (!BasisDataStoreAvatarKeys.DisplayKeys().Exists(k => k.Url == key.Url && k.Pass == key.Pass))
                 {
-                    await BasisDataStoreAvatarKeys.AddNewKey(Key);
+                    await BasisDataStoreAvatarKeys.AddNewKey(key);
                 }
             }
 
-            List<BasisDataStoreAvatarKeys.AvatarKey> activeKeys = BasisDataStoreAvatarKeys.DisplayKeys();
-            int AKcount = activeKeys.Count;
-            for (int Index = 0; Index < AKcount; Index++)
-            {
-                if (activeKeys.Count >= Index)
-                {
-                    if (!BasisLoadHandler.IsMetaDataOnDisc(activeKeys[Index].Url, out var info))
-                    {
-                        if (activeKeys[Index].Url == BasisLocalPlayer.DefaultAvatar)
-                        {
+            // Work on a copy to prevent modification issues
+            var activeKeys = new List<BasisDataStoreAvatarKeys.AvatarKey>(BasisDataStoreAvatarKeys.DisplayKeys());
+            var validKeys = new List<BasisDataStoreAvatarKeys.AvatarKey>();
+            var keysToRemove = new List<BasisDataStoreAvatarKeys.AvatarKey>();
 
-                        }
-                        else
-                        {
-                            if (string.IsNullOrEmpty(activeKeys[Index].Url))
+            foreach (var key in activeKeys)
+            {
+                if (!BasisLoadHandler.IsMetaDataOnDisc(key.Url, out var info))
+                {
+                    switch (key.Url)
+                    {
+                        case BasisLocalPlayer.DefaultAvatar:
+                            break;
+                        default:
+                            if (string.IsNullOrEmpty(key.Url))
                             {
                                 BasisDebug.LogError("Supplied URL was null or empty!");
                             }
                             else
                             {
-                                BasisDebug.LogError("Missing File on Disc For " + activeKeys[Index].Url);
+                                BasisDebug.LogError("Missing File on Disc For " + key.Url);
                             }
-                        }
-                        await BasisDataStoreAvatarKeys.RemoveKey(activeKeys[Index]);
-                        continue;
+                            break;
                     }
 
-                    // Prevent duplicates in avatarUrlsRuntime
-                    if (!avatarUrlsRuntime.Exists(b => b.BasisRemoteBundleEncrypted.RemoteBeeFileLocation == activeKeys[Index].Url))
+                    keysToRemove.Add(key);
+                    continue;
+                }
+
+                validKeys.Add(key);
+
+                // Prevent duplicates in avatarUrlsRuntime
+                if (!avatarUrlsRuntime.Exists(b => b.BasisRemoteBundleEncrypted.RemoteBeeFileLocation == key.Url))
+                {
+                    var bundle = new BasisLoadableBundle
                     {
-                        BasisLoadableBundle bundle = new BasisLoadableBundle
+                        BasisRemoteBundleEncrypted = info.StoredRemote,
+                        BasisBundleConnector = new BasisBundleConnector
                         {
-                            BasisRemoteBundleEncrypted = info.StoredRemote,
-                            BasisBundleConnector = new BasisBundleConnector
-                            {
-                                BasisBundleDescription = new BasisBundleDescription(),
-                                BasisBundleGenerated = new BasisBundleGenerated[] { new BasisBundleGenerated() },
-                                UniqueVersion = ""
-                            },
-                            BasisLocalEncryptedBundle = info.StoredLocal,
-                            UnlockPassword = activeKeys[Index].Pass
-                        };
-                        avatarUrlsRuntime.Add(bundle);
-                    }
+                            BasisBundleDescription = new BasisBundleDescription(),
+                            BasisBundleGenerated = new BasisBundleGenerated[] { new BasisBundleGenerated() },
+                            UniqueVersion = ""
+                        },
+                        BasisLocalEncryptedBundle = info.StoredLocal,
+                        UnlockPassword = key.Pass
+                    };
+                    avatarUrlsRuntime.Add(bundle);
                 }
             }
 
-            await CreateAvatarButtons(activeKeys);
+            // Now remove all invalid keys
+            foreach (var key in keysToRemove)
+            {
+                await BasisDataStoreAvatarKeys.RemoveKey(key);
+            }
+
+            await CreateAvatarButtons();
         }
-        private async Task CreateAvatarButtons(List<BasisDataStoreAvatarKeys.AvatarKey> activeKeys)
+        private async Task CreateAvatarButtons()
         {
             foreach (BasisLoadableBundle bundle in avatarUrlsRuntime)
             {
@@ -165,7 +174,7 @@ namespace Basis.Scripts.UI.UI_Panels
                 GameObject buttonObject = Instantiate(ButtonPrefab, ParentedAvatarButtons);
                 buttonObject.name = bundle.BasisRemoteBundleEncrypted.RemoteBeeFileLocation;
                 buttonObject.SetActive(true);
-                if (buttonObject.TryGetComponent<BasisUIAvatarSelectionButton>(out var SelectionButton))
+                if (buttonObject.TryGetComponent<BasisUIAvatarSelectionButton>(out BasisUIAvatarSelectionButton SelectionButton))
                 {
                     SelectionButton.Button.onClick.AddListener(() => ShowInformation(bundle));
                     BasisTrackedBundleWrapper wrapper = new BasisTrackedBundleWrapper

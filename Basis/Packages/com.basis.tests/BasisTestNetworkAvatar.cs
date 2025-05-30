@@ -7,14 +7,12 @@ using LiteNetLib;
 using UnityEngine;
 public class BasisTestNetworkAvatar : BasisAvatarMonoBehaviour
 {
-    [Header("Assign Ahead Of Time")]
-    public BasisAvatar avatar;
     public byte[] SubmittingData;
     public ushort[] Recipients = null;
     public BasisPlayer BasisPlayer;
     public void Awake()
     {
-        avatar.OnAvatarReady += OnAvatarReady;
+        Avatar.OnAvatarReady += OnAvatarReady;
     }
     private void OnAvatarReady(bool IsOwner)
     {
@@ -38,7 +36,7 @@ public class BasisTestNetworkAvatar : BasisAvatarMonoBehaviour
     }
     private void SetupIfLocal()
     {
-        if (BasisNetworkManagement.AvatarToPlayer(avatar, out BasisPlayer))
+        if (BasisNetworkManagement.AvatarToPlayer(Avatar, out BasisPlayer))
         {
             if (BasisPlayer.IsLocal)
             {

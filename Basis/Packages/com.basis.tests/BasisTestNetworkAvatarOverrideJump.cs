@@ -7,8 +7,6 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 public class BasisTestNetworkAvatarOverrideJump : BasisAvatarMonoBehaviour
 {
-    [Header("Assign Ahead Of Time")]
-    public BasisAvatar avatar;
     public ushort[] Recipients = null;
     public BasisPlayer BasisPlayer;
     public bool Isready;
@@ -16,18 +14,18 @@ public class BasisTestNetworkAvatarOverrideJump : BasisAvatarMonoBehaviour
     public DeliveryMethod Method = DeliveryMethod.Unreliable;
     public void Awake()
     {
-        avatar.OnAvatarReady += OnAvatarReady;
+        Avatar.OnAvatarReady += OnAvatarReady;
     }
     public void OnDestroy()
     {
-        avatar.OnAvatarReady -= OnAvatarReady;
+        Avatar.OnAvatarReady -= OnAvatarReady;
     }
     private void OnAvatarReady(bool IsOwner)
     {
         Debug.Log("OnAvatarReady");
         if (IsOwner)
         {
-            if (BasisNetworkManagement.AvatarToPlayer(avatar, out BasisPlayer))
+            if (BasisNetworkManagement.AvatarToPlayer(Avatar, out BasisPlayer))
             {
                 Isready = true;
                 Debug.Log("Actually ran!");
