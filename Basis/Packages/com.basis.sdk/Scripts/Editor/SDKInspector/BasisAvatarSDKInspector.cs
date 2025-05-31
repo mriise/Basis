@@ -7,6 +7,10 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Basis.Scripts.BasisSdk.Players;
+using System.Xml;
+using System.Threading.Tasks;
+using UnityEngine.TestTools;
 [CustomEditor(typeof(BasisAvatar))]
 public partial class BasisAvatarSDKInspector : Editor
 {
@@ -185,6 +189,7 @@ public partial class BasisAvatarSDKInspector : Editor
         Button avatarBundleButton = BasisHelpersGizmo.Button(uiElementsRoot, BasisSDKConstants.AvatarBundleButton);
         Button avatarAutomaticVisemeDetectionClick = BasisHelpersGizmo.Button(uiElementsRoot, BasisSDKConstants.AvatarAutomaticVisemeDetection);
         Button avatarAutomaticBlinkDetectionClick = BasisHelpersGizmo.Button(uiElementsRoot, BasisSDKConstants.AvatarAutomaticBlinkDetection);
+        Button AvatarTestInEditorClick = BasisHelpersGizmo.Button(uiElementsRoot,BasisSDKConstants.AvatarTestInEditor);
 
         // Initialize Event Callbacks for Vector2 fields (for Avatar Eye and Mouth Position)
         BasisHelpersGizmo.CallBackVector2Field(uiElementsRoot, BasisSDKConstants.avatarEyePositionField, Avatar.AvatarEyePosition, OnEyeHeightValueChanged);
@@ -225,6 +230,7 @@ public partial class BasisAvatarSDKInspector : Editor
         avatarMouthPositionClick.clicked += () => ClickedAvatarMouthPositionButton(avatarMouthPositionClick);
         avatarAutomaticVisemeDetectionClick.clicked += AutomaticallyFindVisemes;
         avatarAutomaticBlinkDetectionClick.clicked += AutomaticallyFindBlinking;
+        AvatarTestInEditorClick.clicked += AvatarTestInEditorClickFunction;// unity editor window button
 
         BasisSDKCommonInspector.CreateBuildTargetOptions(uiElementsRoot);
         BasisSDKCommonInspector.CreateBuildOptionsDropdown(uiElementsRoot);
@@ -288,6 +294,65 @@ public partial class BasisAvatarSDKInspector : Editor
                 Application.OpenURL(BasisSDKConstants.AvatarDocumentationURL);
             }
         }
+    }
+    public void AvatarTestInEditorClickFunction()
+    {
+        if (!Application.isPlaying)
+        {
+            int result = EditorUtility.DisplayDialogComplex("Confirmation","this feature requires the editor to be in playmode. do you want to enter play mode now?", "Yes","No",""
+        );
+
+            switch (result)
+            {
+                case 0: // Yes
+                    EditorApplication.EnterPlaymode();
+                    break;
+                case 1: // No
+                    break;
+                default:
+                    break;
+            }
+        }
+        else
+        {
+            RequestAvatarLoad();
+        }
+    }
+    public void RequestAvatarLoad()
+    {
+        if (BasisLocalPlayer.PlayerReady)
+        {
+            BasisDebug.Log("Player Ready Loading", BasisDebug.LogTag.Editor);
+            LoadAvatar();
+        }
+        else
+        {
+            ScheduleCallback = true;
+            BasisDebug.Log("Scheduling Load Avatar", BasisDebug.LogTag.Editor);
+            BasisLocalPlayer.OnLocalPlayerCreatedAndReady += LoadAvatar;
+        }
+    }
+    public bool ScheduleCallback = false;
+    public async void LoadAvatar()
+    {
+        if (ScheduleCallback)
+        {
+            BasisLocalPlayer.OnLocalPlayerCreatedAndReady -= LoadAvatar;
+            ScheduleCallback = false;
+        }
+        BasisDebug.Log("LoadAvatar Called", BasisDebug.LogTag.Editor);
+        BasisLoadableBundle LoadableBundle = new BasisLoadableBundle
+        {
+            LoadableGameobject = new BasisLoadableGameobject() { InSceneItem = GameObject.Instantiate(Avatar.gameObject) }
+        };
+        LoadableBundle.LoadableGameobject.InSceneItem.transform.parent = null;
+        LoadableBundle.BasisRemoteBundleEncrypted = new BasisRemoteEncyptedBundle
+        {
+            RemoteBeeFileLocation = BasisGenerateUniqueID.GenerateUniqueID()
+        };
+        BasisDebug.Log("Requesting Avatar Load", BasisDebug.LogTag.Editor);
+        await BasisLocalPlayer.Instance.CreateAvatarFromMode(BasisLoadMode.ByGameobjectReference, LoadableBundle);
+        BasisDebug.Log("Avatar Load Complete", BasisDebug.LogTag.Editor);
     }
     private void ClearResultLabel()
     {
