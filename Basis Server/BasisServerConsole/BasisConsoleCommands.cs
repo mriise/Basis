@@ -195,6 +195,10 @@ namespace BasisNetworkConsole
                 BNL.Log($"{command.Name} - {command.Description}");
             }
         }
+        public static void HandleClear(string[] args)
+        {
+            BNL.ClearConsole();
+        }
         // Command class to store command info
         public class Command
         {
