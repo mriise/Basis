@@ -34,7 +34,7 @@ namespace Basis.Scripts.UI.UI_Panels
             BasisNetworkManagement.OnEnableInstanceCreate += LoadCurrentSettings;
             if (BasisDeviceManagement.Instance != null)
             {
-                this.transform.parent = BasisDeviceManagement.Instance.transform;
+                this.transform.SetParent(BasisDeviceManagement.Instance.transform,true);
             }
         }
 
