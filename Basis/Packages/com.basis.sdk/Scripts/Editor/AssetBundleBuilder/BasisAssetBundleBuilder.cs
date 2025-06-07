@@ -16,11 +16,15 @@ public static class AssetBundleBuilder
         BasisBundleGenerated BasisBundleGenerated = new BasisBundleGenerated();
         EnsureDirectoryExists(targetDirectory);
         EditorUtility.DisplayProgressBar("Building Asset Bundles", "Initializing...", 0f);
+
+      ///do it this way instead to allow us to force not include some assets
+      ///AssetBundleBuild[] Builds = new AssetBundleBuild[1] { new AssetBundleBuild() { } };
+
         AssetBundleManifest manifest = BuildPipeline.BuildAssetBundles(targetDirectory, settings.BuildAssetBundleOptions, buildTarget);
         if (manifest != null)
         {
             Hash = await ProcessAssetBundles(targetDirectory, settings, manifest, password, isEncrypted);
-            BasisBundleGenerated = new BasisBundleGenerated(Hash.bundleHash.ToString(), mode, assetBundleName, Hash.CRC, true, password, buildTarget.ToString(),Hash.Length);
+            BasisBundleGenerated = new BasisBundleGenerated(Hash.bundleHash.ToString(), mode, assetBundleName, Hash.CRC, true, password, buildTarget.ToString(), Hash.Length);
             DeleteManifestFiles(targetDirectory, buildTarget.ToString());
 
 
@@ -30,20 +34,12 @@ public static class AssetBundleBuilder
             BasisDebug.LogError("AssetBundle build failed.");
         }
         EditorUtility.ClearProgressBar();
-        return new (BasisBundleGenerated, Hash);
-    }
-    public static void DoBundleReport()
-    {
-        BuildReportViewerWindow wnd = EditorWindow.GetWindow<BuildReportViewerWindow>("Basis Bundle Report");
-        wnd.titleContent = new GUIContent("Basis Build Report Viewer");
-        wnd.minSize = new Vector2(600, 400);
-        wnd.GenerateReportUI();
+        return new(BasisBundleGenerated, Hash);
     }
     private static async Task<InformationHash> ProcessAssetBundles(string targetDirectory,BasisAssetBundleObject settings,AssetBundleManifest manifest,string password,bool isEncrypted)
     {
         string[] files = manifest.GetAllAssetBundles();
         int totalFiles = files.Length;
-        DoBundleReport();
         List<InformationHash> InformationHashes = new List<InformationHash>();
         for (int index = 0; index < totalFiles; index++)
         {

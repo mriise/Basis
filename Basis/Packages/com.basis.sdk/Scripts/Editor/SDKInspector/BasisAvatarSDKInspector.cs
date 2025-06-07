@@ -282,6 +282,7 @@ public partial class BasisAvatarSDKInspector : Editor
 
             // Add the result label to the UI
             uiElementsRoot.Add(resultLabel);
+            BuildReportViewerWindow.ShowWindow();
         }
         else
         {

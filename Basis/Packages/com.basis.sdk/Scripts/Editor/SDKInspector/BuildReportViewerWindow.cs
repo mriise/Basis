@@ -6,6 +6,21 @@ using UnityEditor.Build.Reporting;
 using UnityEditor.UIElements;
 public class BuildReportViewerWindow : EditorWindow
 {
+    [MenuItem("Basis/Build Report Viewer")]
+    public static void ShowWindow()
+    {
+        BuildReportViewerWindow wnd = EditorWindow.GetWindow<BuildReportViewerWindow>("Basis Bundle Report");
+        wnd.titleContent = new GUIContent("Basis Build Report Viewer");
+        wnd.minSize = new Vector2(600, 400);
+        wnd.GenerateReportUI();
+    }
+    public void OnEnable()
+    {
+        BuildReportViewerWindow wnd = EditorWindow.GetWindow<BuildReportViewerWindow>("Basis Bundle Report");
+        wnd.titleContent = new GUIContent("Basis Build Report Viewer");
+        wnd.minSize = new Vector2(600, 400);
+        wnd.GenerateReportUI();
+    }
     public void GenerateReportUI()
     {
         rootVisualElement.Clear();
@@ -69,12 +84,13 @@ public class BuildReportViewerWindow : EditorWindow
                 line.style.color = color.Value;
             summaryBox.Add(line);
         }
-
         AddLine("Result", report.summary.result.ToString(), statusColor);
         AddLine("Total Size", FormatSize(report.summary.totalSize));
         AddLine("Total Time", report.summary.totalTime.ToString("g"));
         AddLine("Total Errors", report.summary.totalErrors.ToString());
         AddLine("Total Warnings", report.summary.totalWarnings.ToString());
+        AddLine("Platform", report.summary.platform.ToString());
+        AddLine("platformGroup", report.summary.platformGroup.ToString());
 
         // Display summarized errors if any
         var errorText = report.SummarizeErrors();
