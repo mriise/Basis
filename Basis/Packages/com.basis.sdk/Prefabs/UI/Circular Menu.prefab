@@ -165,6 +165,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8205525697200454205}
+  - {fileID: 536005857688037319}
   - {fileID: 7718816735063211320}
   m_Father: {fileID: 6635985011358551626}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -294,11 +295,14 @@ MonoBehaviour:
   startAngle: 45
   DefaultIcon: {fileID: 229149206, guid: 6d4ae93b5ed14fc4eb7034506d197544, type: 3}
   Items: []
-  CopyFrom: {fileID: 6268469307923718310}
-  YPointDistance: 21
-  XPointDistance: 21
-  CreateCount: 4
+  BackGrounds: []
+  MenuItem: {fileID: 745700969777734356}
+  BackGround: {fileID: 1899619796721311258}
+  YPointDistance: 22
+  XPointDistance: 22
+  CreateCount: 2
   TotalDegrees: 360
+  radius: 0
 --- !u!1 &7541634289799444490
 GameObject:
   m_ObjectHideFlags: 0
@@ -310,7 +314,7 @@ GameObject:
   - component: {fileID: 7718816735063211320}
   - component: {fileID: 675766444995547598}
   - component: {fileID: 5179612218385775015}
-  - component: {fileID: 6268469307923718310}
+  - component: {fileID: 1899619796721311258}
   m_Layer: 5
   m_Name: Copy this
   m_TagString: Untagged
@@ -329,8 +333,7 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 536005857688037319}
+  m_Children: []
   m_Father: {fileID: 8084037158714515667}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -376,7 +379,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &6268469307923718310
+--- !u!114 &1899619796721311258
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -385,17 +388,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 7541634289799444490}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ab3d5e3efc78c6a41b562428993a56aa, type: 3}
+  m_Script: {fileID: 11500000, guid: 1fcd70c778f2d694b8a21a42ae1ae75a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Parent: {fileID: 7718816735063211320}
-  Icon: {fileID: 5020615810842080279}
-  Text: {fileID: 8089281175293605226}
   Background: {fileID: 5179612218385775015}
-  Point: {fileID: 536005857688037319}
-  Description:
-    MenuName: 
-    Sprite: {fileID: 0}
+  ConnectedItem: {fileID: 0}
 --- !u!1 &8449727247004338906
 GameObject:
   m_ObjectHideFlags: 0
@@ -555,13 +552,14 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 536005857688037319}
+  - component: {fileID: 745700969777734356}
   m_Layer: 5
   m_Name: Point
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &536005857688037319
 RectTransform:
   m_ObjectHideFlags: 0
@@ -569,17 +567,36 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9072330966830010679}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8085763529931687911}
   - {fileID: 1331049652328369103}
-  m_Father: {fileID: 7718816735063211320}
+  m_Father: {fileID: 8084037158714515667}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &745700969777734356
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9072330966830010679}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab3d5e3efc78c6a41b562428993a56aa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Icon: {fileID: 5020615810842080279}
+  Text: {fileID: 8089281175293605226}
+  Point: {fileID: 536005857688037319}
+  Parent: {fileID: 536005857688037319}
+  Description:
+    MenuName: 
+    Sprite: {fileID: 0}

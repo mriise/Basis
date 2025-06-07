@@ -1,7 +1,11 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using UnityEditor;
+using UnityEditor.Build.Reporting;
+using UnityEditor.PackageManager.UI;
 using UnityEngine;
 using static BasisEncryptionWrapper;
 public static class AssetBundleBuilder
@@ -28,10 +32,18 @@ public static class AssetBundleBuilder
         EditorUtility.ClearProgressBar();
         return new (BasisBundleGenerated, Hash);
     }
+    public static void DoBundleReport()
+    {
+        BuildReportViewerWindow wnd = EditorWindow.GetWindow<BuildReportViewerWindow>("Basis Bundle Report");
+        wnd.titleContent = new GUIContent("Basis Build Report Viewer");
+        wnd.minSize = new Vector2(600, 400);
+        wnd.GenerateReportUI();
+    }
     private static async Task<InformationHash> ProcessAssetBundles(string targetDirectory,BasisAssetBundleObject settings,AssetBundleManifest manifest,string password,bool isEncrypted)
     {
         string[] files = manifest.GetAllAssetBundles();
         int totalFiles = files.Length;
+        DoBundleReport();
         List<InformationHash> InformationHashes = new List<InformationHash>();
         for (int index = 0; index < totalFiles; index++)
         {
@@ -72,7 +84,6 @@ public static class AssetBundleBuilder
             }
         }
     }
-
     private static async Task<string> HandleEncryption(string filePath,string password,BasisAssetBundleObject settings,AssetBundleManifest manifest, bool isEncrypted)
     {
         if (isEncrypted)
