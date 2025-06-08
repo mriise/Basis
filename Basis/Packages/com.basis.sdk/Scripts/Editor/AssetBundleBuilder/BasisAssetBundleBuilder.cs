@@ -1,26 +1,27 @@
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using UnityEditor;
-using UnityEditor.Build.Reporting;
-using UnityEditor.PackageManager.UI;
 using UnityEngine;
 using static BasisEncryptionWrapper;
 public static class AssetBundleBuilder
 {
-    public static async Task<(BasisBundleGenerated, InformationHash)> BuildAssetBundle(string targetDirectory, BasisAssetBundleObject settings, string assetBundleName, string mode, string password, BuildTarget buildTarget, bool isEncrypted = true)
+    public static async Task<(BasisBundleGenerated, InformationHash)> BuildAssetBundle(AssetBundleBuild[] BundledData,string targetDirectory, BasisAssetBundleObject settings, string assetBundleName, string mode, string password, BuildTarget buildTarget, bool isEncrypted = true)
     {
         InformationHash Hash = new InformationHash();
         BasisBundleGenerated BasisBundleGenerated = new BasisBundleGenerated();
         EnsureDirectoryExists(targetDirectory);
         EditorUtility.DisplayProgressBar("Building Asset Bundles", "Initializing...", 0f);
 
-      ///do it this way instead to allow us to force not include some assets
-      ///AssetBundleBuild[] Builds = new AssetBundleBuild[1] { new AssetBundleBuild() { } };
-
-        AssetBundleManifest manifest = BuildPipeline.BuildAssetBundles(targetDirectory, settings.BuildAssetBundleOptions, buildTarget);
+        BuildAssetBundlesParameters buildAssetBundlesParameters = new BuildAssetBundlesParameters
+        {
+            outputPath = targetDirectory,
+            bundleDefinitions = BundledData,
+            targetPlatform = buildTarget,
+            extraScriptingDefines = null,
+            options = settings.BuildAssetBundleOptions,
+        };
+        AssetBundleManifest manifest = BuildPipeline.BuildAssetBundles(buildAssetBundlesParameters);
         if (manifest != null)
         {
             Hash = await ProcessAssetBundles(targetDirectory, settings, manifest, password, isEncrypted);
@@ -187,33 +188,6 @@ public static class AssetBundleBuilder
         encryptionTimer.Stop();
         BasisDebug.Log("Encryption took " + encryptionTimer.ElapsedMilliseconds + " ms for " + EncryptedPath);
         return EncryptedPath;
-    }
-
-    public static string SetAssetBundleName(string assetPath, string uniqueID, BasisAssetBundleObject settings)
-    {
-        AssetImporter assetImporter = AssetImporter.GetAtPath(assetPath);
-        string assetBundleName = $"{uniqueID}";
-
-        if (assetImporter != null)
-        {
-            assetImporter.assetBundleName = assetBundleName;
-            return assetBundleName;
-        }
-        else
-        {
-            BasisDebug.LogError("Missing Asset Import for path " + assetPath);
-        }
-
-        return null;
-    }
-
-    public static void ResetAssetBundleName(string assetPath)
-    {
-        AssetImporter assetImporter = AssetImporter.GetAtPath(assetPath);
-        if (assetImporter != null && !string.IsNullOrEmpty(assetImporter.assetBundleName))
-        {
-            assetImporter.assetBundleName = null;
-        }
     }
     private static void EnsureDirectoryExists(string targetDirectory)
     {

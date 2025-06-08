@@ -8,9 +8,6 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Basis.Scripts.BasisSdk.Players;
-using System.Xml;
-using System.Threading.Tasks;
-using UnityEngine.TestTools;
 [CustomEditor(typeof(BasisAvatar))]
 public partial class BasisAvatarSDKInspector : Editor
 {
@@ -257,6 +254,18 @@ public partial class BasisAvatarSDKInspector : Editor
         }
         if (BasisAvatarValidator.ValidateAvatar(out List<string> Errors, out List<string> Warnings, out List<string> Passes))
         {
+            if (Avatar.Animator.runtimeAnimatorController != null)
+            {
+                string path = AssetDatabase.GetAssetPath(Avatar.Animator.runtimeAnimatorController);
+                if (path == BasisSDKConstants.AvatarAnimatorControllerPath)
+                {
+                    Debug.Log("Animator Controller Used was the default! UnAssigning");
+                    Avatar.Animator.runtimeAnimatorController = null;
+                    EditorUtility.SetDirty(Avatar.Animator);
+                    AssetDatabase.SaveAssetIfDirty(Avatar);
+                }
+            }
+
             Debug.Log($"Building Gameobject Bundles for: {string.Join(", ", targets.ConvertAll(t => BasisSDKConstants.targetDisplayNames[t]))}");
             (bool success, string message) = await BasisBundleBuild.GameObjectBundleBuild(Avatar, targets);
             EditorUtility.ClearProgressBar();

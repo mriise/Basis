@@ -9,12 +9,13 @@ public class BuildReportViewerWindow : EditorWindow
     [MenuItem("Basis/Build Report Viewer")]
     public static void ShowWindow()
     {
-        BuildReportViewerWindow wnd = EditorWindow.GetWindow<BuildReportViewerWindow>("Basis Bundle Report");
-        wnd.titleContent = new GUIContent("Basis Build Report Viewer");
-        wnd.minSize = new Vector2(600, 400);
-        wnd.GenerateReportUI();
+        GenerateWindow();
     }
     public void OnEnable()
+    {
+        GenerateWindow();
+    }
+    public static void GenerateWindow()
     {
         BuildReportViewerWindow wnd = EditorWindow.GetWindow<BuildReportViewerWindow>("Basis Bundle Report");
         wnd.titleContent = new GUIContent("Basis Build Report Viewer");
