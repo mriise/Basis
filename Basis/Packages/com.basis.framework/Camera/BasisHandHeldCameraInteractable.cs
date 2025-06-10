@@ -34,7 +34,7 @@ public abstract class BasisHandHeldCameraInteractable : PickupInteractable
     public bool useAdaptiveSmoothing = true;
 
     [Header("Capture Camera Reference")]
-    public Camera captureCamera;
+    [SerializeField] internal Camera captureCamera;
 
     // internal values
     private string pauseRequestName;
@@ -45,7 +45,6 @@ public abstract class BasisHandHeldCameraInteractable : PickupInteractable
     private BasisParentConstraint cameraPinConstraint;
     [SerializeReference]
     private BasisFlyCamera flyCamera;
-
 
     /// <summary>
     /// Space the camera is pinned to
@@ -73,8 +72,10 @@ public abstract class BasisHandHeldCameraInteractable : PickupInteractable
         CanSelfSteal = false;
         CanNetworkSteal = false; // not networked anyway
 
-        // TODO: lift this out of BasisHandheldCamera into this class so there arent multiple references when we dont need it
-        captureCamera = gameObject.GetComponentInChildren<Camera>(true);
+        if (captureCamera == null)
+        {
+            captureCamera = gameObject.GetComponentInChildren<Camera>(true);
+        }
         if (captureCamera == null)
         {
             BasisDebug.LogError($"Camera not found in children of {nameof(BasisHandHeldCamera)}, camera pinning will be broken");
@@ -94,7 +95,8 @@ public abstract class BasisHandHeldCameraInteractable : PickupInteractable
         cameraPinConstraint.Enabled = false;
 
         flyCamera = new BasisFlyCamera();
-        }
+    }
+
 
     private void OnInteractCameraTweak(BasisInput _input)
     {
@@ -114,13 +116,15 @@ public abstract class BasisHandHeldCameraInteractable : PickupInteractable
 
         if (inDesktop)
         {
+            if (Inputs.desktopCenterEye.Source == null) return;
+            
             Vector3 inPos;
             Quaternion inRot;
 
             inPos = Inputs.desktopCenterEye.BoneControl.OutgoingWorldData.position;
             inRot = Inputs.desktopCenterEye.BoneControl.OutgoingWorldData.rotation;
 
-            if (BasisLocalCameraDriver.Instance != null && BasisLocalCameraDriver.Instance.Camera != null && Inputs.desktopCenterEye.Source != null)
+            if (BasisLocalCameraDriver.Instance != null && BasisLocalCameraDriver.Instance.Camera != null)
             {
                 PollDesktopControl(Inputs.desktopCenterEye.Source);
 
@@ -141,7 +145,7 @@ public abstract class BasisHandHeldCameraInteractable : PickupInteractable
                 }
             }
             else return;
-            
+
             InputConstraint.UpdateSourcePositionAndRotation(0, inPos, inRot);
 
             if (InputConstraint.Evaluate(out Vector3 pos, out Quaternion rot))

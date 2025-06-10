@@ -561,14 +561,20 @@ public class PickupInteractable : InteractableObject
     {
         IsPuppeted = true;
         ClearAllInfluencing();
-        _remotePrevKinematic = RigidRef.isKinematic;
-        RigidRef.isKinematic = true;
+        if (RigidRef != null)
+        {
+            _remotePrevKinematic = RigidRef.isKinematic;
+            RigidRef.isKinematic = true;
+        }
         // TODO: _previousKinematic state should be synced so late joiners have pickups behave properly
     }
     public override void StopRemoteControl()
     {
         IsPuppeted = false;
-        RigidRef.isKinematic = _remotePrevKinematic;
+        if (RigidRef != null)
+        {
+            RigidRef.isKinematic = _remotePrevKinematic;
+        }    
     }
     public override void OnDestroy()
     {
@@ -583,7 +589,7 @@ public class PickupInteractable : InteractableObject
 =======
 
     // override since we add extra reach on desktop
-    public override bool IsWithinRange(Vector3 source)
+    public override bool IsWithinRange(Vector3 source, float _interactRange)
     {
 
         float extraReach = 0;
@@ -595,10 +601,10 @@ public class PickupInteractable : InteractableObject
         Collider collider = GetCollider();
         if (collider != null)
         {
-            return Vector3.Distance(collider.ClosestPoint(source), source) <= InteractRange + extraReach;
+            return Vector3.Distance(collider.ClosestPoint(source), source) <= _interactRange + extraReach;
         }
         // Fall back to object transform distance
-        return Vector3.Distance(transform.position, source) <= InteractRange + extraReach;
+        return Vector3.Distance(transform.position, source) <= _interactRange + extraReach;
     }
 
 >>>>>>> 2a96163a (Pickups and Fly Camera (this should've been multiple commits))
