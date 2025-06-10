@@ -185,15 +185,15 @@ namespace Basis.Scripts.BasisCharacterController
                 totalMoveDirection = Vector3.zero;
 
             // Handle jumping and falling
-                if (groundedPlayer && HasJumpAction)
-                {
-                    currentVerticalSpeed = Mathf.Sqrt(jumpHeight * -2f * gravityValue);
-                    JustJumped?.Invoke();
-                }
-                else
-                {
-                    currentVerticalSpeed += gravityValue * DeltaTime;
-                }
+            if (groundedPlayer && HasJumpAction)
+            {
+                currentVerticalSpeed = Mathf.Sqrt(jumpHeight * -2f * gravityValue);
+                JustJumped?.Invoke();
+            }
+            else
+            {
+                currentVerticalSpeed += gravityValue * DeltaTime;
+            }
 
             // Ensure we don't exceed maximum gravity value speed
             currentVerticalSpeed = Mathf.Max(currentVerticalSpeed, -Mathf.Abs(gravityValue));

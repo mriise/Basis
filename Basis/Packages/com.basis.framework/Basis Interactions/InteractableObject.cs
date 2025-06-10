@@ -216,7 +216,6 @@ public abstract class InteractableObject : MonoBehaviour
 
     public virtual void StartRemoteControl()
     {
-        ClearAllInfluencing();
         IsPuppeted = true;
     }
     public virtual void StopRemoteControl()
