@@ -23,11 +23,13 @@ public abstract class InteractableObject : MonoBehaviour
             if (value)
             {
                 ClearAllInfluencing();
-                OnInfluenceDisable?.Invoke();
+                if (!disableInfluence)
+                    OnInfluenceDisable?.Invoke();
             }
             else
             {
-                OnInfluenceEnable?.Invoke();
+                if (disableInfluence)
+                    OnInfluenceEnable?.Invoke();
             }
             disableInfluence = value;
         }
@@ -36,13 +38,12 @@ public abstract class InteractableObject : MonoBehaviour
     public bool Equippable = false;
 
     [NonSerialized]
-    public bool RequiresUpdateLoop = false;
+    internal bool RequiresUpdateLoop = false;
+
     /// <summary>
-    /// 1. to block interaction when puppeted.
-    /// 2. (example) iskinematic set
-    /// depending on puppeted state.
+    /// Whether this object is controlled elsewhere.
+    /// This is used to block interaction, set iskinematic, ect.
     /// </summary>
-    // [HideInInspector]
     public bool IsPuppeted = false;
     // Delegates for interaction events
     public Action<BasisInput> OnInteractStartEvent;
@@ -174,6 +175,9 @@ public abstract class InteractableObject : MonoBehaviour
         OnHoverEndEvent?.Invoke(input, willInteract);
     }
 
+    /// <summary>
+    /// Interactable event loop, called every frame on AfterFinalMove when an input has it as a target and RequiresUpdateLoop is true.
+    /// </summary>
     public abstract void InputUpdate();
 
     /// <summary>
@@ -212,6 +216,7 @@ public abstract class InteractableObject : MonoBehaviour
 
     public virtual void StartRemoteControl()
     {
+        ClearAllInfluencing();
         IsPuppeted = true;
     }
     public virtual void StopRemoteControl()

@@ -3,6 +3,7 @@ using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Drivers;
 using Basis.Scripts.UI.UI_Panels;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -35,10 +36,12 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
         public BasisLocalPlayer basisLocalPlayer;
         public PlayerInput Input;
         public static string InputActions = "InputActions";
-        public static bool IgnoreCrouchToggle = false;
         public static Action AfterAvatarChanges;
         [SerializeField]
         public BasisInputState InputState = new BasisInputState();
+        
+        private static List<string> movePauseRequests = new();
+        private static List<string> crouchPauseRequests = new();
 
         public void OnEnable()
         {
@@ -167,8 +170,32 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
             RunButton.action.canceled -= OnRunCancelled;
             LookAction.action.canceled -= OnLookActionCancelled;
         }
+        public static void PauseMovement(string requestName)
+        {
+            movePauseRequests.Add(requestName);
+        }
+        public static bool UnPauseMovement(string requestName)
+        {
+            return movePauseRequests.Remove(requestName);
+        }
+        public static void PauseCrouch(string requestName)
+        {
+            crouchPauseRequests.Add(requestName);
+        }
+        public static bool UnPauseCrouch(string requestName)
+        {
+            return crouchPauseRequests.Remove(requestName);
+        }
+        public static bool IsMovementPaused()
+        {
+            return movePauseRequests.Count > 0;
+        }
+        public static bool IsCrouchPaused()
+        {
+            return crouchPauseRequests.Count > 0;
+        }
         // Input action methods
-        private  void OnMoveActionStarted(InputAction.CallbackContext ctx)
+        private void OnMoveActionStarted(InputAction.CallbackContext ctx)
         {
             basisLocalPlayer.LocalCharacterDriver.MovementVector = ctx.ReadValue<Vector2>();
         }
@@ -220,7 +247,7 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
         {
             if (context.phase == InputActionPhase.Performed)
             {
-                if (!IgnoreCrouchToggle)
+                if (crouchPauseRequests.Count != 0)
                     Crouching = !Crouching;
 
                 if (BasisLocalInputActions.CharacterEyeInput != null)

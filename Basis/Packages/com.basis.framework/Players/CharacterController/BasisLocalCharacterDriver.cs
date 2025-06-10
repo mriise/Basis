@@ -1,6 +1,6 @@
 using Basis.Scripts.BasisSdk.Players;
+using Basis.Scripts.Device_Management.Devices.Desktop;
 using Basis.Scripts.Drivers;
-using Basis.Scripts.TransformBinders.BoneControl;
 using Unity.Mathematics;
 using UnityEngine;
 using static Basis.Scripts.BasisSdk.Players.BasisPlayer;
@@ -24,7 +24,6 @@ namespace Basis.Scripts.BasisCharacterController
         public SimulationHandler JustJumped;
         public SimulationHandler JustLanded;
         public bool LastWasGrounded = true;
-        public bool BlockMovement = false;
         public bool IsFalling;
         public bool HasJumpAction = false;
         public float jumpHeight = 1.0f; // Jump height set to 1 meter
@@ -160,10 +159,10 @@ namespace Basis.Scripts.BasisCharacterController
 
         public void HandleMovement(float DeltaTime,Transform PlayersTransform)
         {
-            if (BlockMovement)
+            bool IsMovementPaused = BasisLocalInputActions.IsMovementPaused();
+            if (IsMovementPaused)
             {
                 HasJumpAction = false;
-                return;
             }
 
             // Cache current rotation and zero out x and z components
@@ -182,17 +181,19 @@ namespace Basis.Scripts.BasisCharacterController
             CurrentSpeed = math.clamp(CurrentSpeed, 0, FastestRunSpeed);
 
             Vector3 totalMoveDirection = flattenedRotation * horizontalMoveDirection * CurrentSpeed * DeltaTime;
+            if (IsMovementPaused)
+                totalMoveDirection = Vector3.zero;
 
             // Handle jumping and falling
-            if (groundedPlayer && HasJumpAction)
-            {
-                currentVerticalSpeed = Mathf.Sqrt(jumpHeight * -2f * gravityValue);
-                JustJumped?.Invoke();
-            }
-            else
-            {
-                currentVerticalSpeed += gravityValue * DeltaTime;
-            }
+                if (groundedPlayer && HasJumpAction)
+                {
+                    currentVerticalSpeed = Mathf.Sqrt(jumpHeight * -2f * gravityValue);
+                    JustJumped?.Invoke();
+                }
+                else
+                {
+                    currentVerticalSpeed += gravityValue * DeltaTime;
+                }
 
             // Ensure we don't exceed maximum gravity value speed
             currentVerticalSpeed = Mathf.Max(currentVerticalSpeed, -Mathf.Abs(gravityValue));

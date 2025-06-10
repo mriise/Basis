@@ -110,6 +110,9 @@ namespace Basis.Scripts.UI
         public override void Process()
         {
             basisUIRaycastProcess.Simulate();
+
+            string pauseRequestName = nameof(BasisInputModuleHandler) + "-Keyboard";
+
             // Process your input events here
             if (EventSystem.currentSelectedGameObject != null)
             {
@@ -122,11 +125,9 @@ namespace Basis.Scripts.UI
                         // Subscribe to the device change event
                         //  Keyboard.current.onTextInput += OnTextInput;
                         HasHoverONInput = true;
-                        if (BasisLocalPlayer.Instance != null && BasisLocalPlayer.Instance.LocalCharacterDriver != null)
-                        {
-                            BasisLocalPlayer.Instance.LocalCharacterDriver.BlockMovement = true;
-                        }
-                        BasisLocalInputActions.IgnoreCrouchToggle = true;
+
+                        BasisLocalInputActions.PauseMovement(pauseRequestName);
+                        BasisLocalInputActions.PauseCrouch(pauseRequestName);
                         if (BasisDeviceManagement.CurrentMode == "OpenVRLoader" || BasisDeviceManagement.CurrentMode == "OpenXRLoader" || ForceKeyboard)
                         {
                             if (BasisVirtualKeyboard.HasInstance == false)
@@ -145,11 +146,9 @@ namespace Basis.Scripts.UI
                             // Subscribe to the device change event
                             //  Keyboard.current.onTextInput += OnTextInput;
                             HasHoverONInput = true;
-                            if (BasisLocalPlayer.Instance != null && BasisLocalPlayer.Instance.LocalCharacterDriver != null)
-                            {
-                                BasisLocalPlayer.Instance.LocalCharacterDriver.BlockMovement = true;
-                            }
-                            BasisLocalInputActions.IgnoreCrouchToggle = true;
+
+                            BasisLocalInputActions.PauseMovement(pauseRequestName);
+                            BasisLocalInputActions.PauseCrouch(pauseRequestName);
                             if (BasisDeviceManagement.CurrentMode == "OpenVRLoader" || BasisDeviceManagement.CurrentMode == "OpenXRLoader" || ForceKeyboard)
                             {
                                 if (BasisVirtualKeyboard.HasInstance == false)
@@ -170,11 +169,8 @@ namespace Basis.Scripts.UI
                     HasHoverONInput = false;
                     CurrentSelectedTMP_InputField = null;
                     CurrentSelectedInputField = null;
-                    if (BasisLocalPlayer.Instance != null && BasisLocalPlayer.Instance.LocalCharacterDriver != null)
-                    {
-                        BasisLocalPlayer.Instance.LocalCharacterDriver.BlockMovement = false;
-                    }
-                    BasisLocalInputActions.IgnoreCrouchToggle = false;
+                    BasisLocalInputActions.UnPauseMovement(pauseRequestName);
+                    BasisLocalInputActions.UnPauseCrouch(pauseRequestName);
                     var data = GetBaseEventData();
                     ExecuteEvents.Execute(EventSystem.currentSelectedGameObject, data, ExecuteEvents.submitHandler);
                 }

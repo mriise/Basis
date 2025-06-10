@@ -12,8 +12,8 @@ using Basis.Scripts.Device_Management;
 using Basis.Scripts.BasisSdk.Helpers;
 public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
 {
+    [Header("Camera")]
     public UniversalAdditionalCameraData CameraData;
-    public Camera captureCamera;
     public RenderTexture renderTexture;
     public TextMeshProUGUI countdownText;
     public int captureWidth = 3840;
@@ -214,10 +214,11 @@ public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
         }
     }
 
-    private void OnBootModeChanged(string obj)
-    {
-        OverrideDesktopOutput();
-    }
+    // TODO parent class destroys self on boot mode swap
+    // private void OnBootModeChanged(string obj)
+    // {
+    //     OverrideDesktopOutput();
+    // }
 
     public new async void OnDestroy()
     {

@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+=======
+using System;
+using System.Linq;
+>>>>>>> 2a96163a (Pickups and Fly Camera (this should've been multiple commits))
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Device_Management.Devices;
 using Basis.Scripts.Device_Management.Devices.Desktop;
@@ -16,41 +21,51 @@ public class PickupInteractable : InteractableObject
     public bool KinematicWhileInteracting = true;
     [Tooltip("Enables the ability to self-steal")]
     public bool CanSelfSteal = true;
+<<<<<<< HEAD
 
+=======
+    [Tooltip("Enables the ability to steal over the network")]
+    public bool CanNetworkSteal = true;
+>>>>>>> 2a96163a (Pickups and Fly Camera (this should've been multiple commits))
     public float DesktopRotateSpeed = 0.1f;
 
     [Tooltip("Unity units per scroll step")]
     public float DesktopZoopSpeed = 0.2f;
 
     public float DesktopZoopMinDistance = 0.2f;
+<<<<<<< HEAD
+=======
+    public float DesktopZoopMaxDistance = 2.0f;
+>>>>>>> 2a96163a (Pickups and Fly Camera (this should've been multiple commits))
 
     [Tooltip("Generate a mesh on start to approximate the referenced collider")]
     public bool GenerateColliderMesh = true;
     [Space(10)]
-    public float minLinearVelocity = 0.1f;
-    public float interactEndLinearVelocityMultiplier = 1;
+    public float minLinearVelocity = 0.5f;
+    public float interactEndLinearVelocityMultiplier = 1.0f;
     [Space(5)]
-    public float minAngularVelocity = 0.1f;
-    public float interactEndAngularVelocityMultiplier = 1;
+    public float minAngularVelocity = 0.5f;
+    public float interactEndAngularVelocityMultiplier = 1.0f;
 
     [Header("References")]
     public Collider ColliderRef;
     public Rigidbody RigidRef;
 
     [SerializeReference]
-    private BasisParentConstraint InputConstraint;
+    internal BasisParentConstraint InputConstraint;
 
     // internal values
-    private GameObject HighlightClone;
-    private AsyncOperationHandle<Material> asyncOperationHighlightMat;
-    private Material ColliderHighlightMat;
-    private bool _previousKinematicValue = true;
+    internal GameObject HighlightClone;
+    internal AsyncOperationHandle<Material> asyncOperationHighlightMat;
+    internal Material ColliderHighlightMat;
+    internal bool _previousKinematicValue = true;
+    internal bool _previousGravityValue = true;
 
     // constants
-    const string k_LoadMaterialAddress = "Interactable/InteractHighlightMat.mat";
-    const string k_CloneName = "HighlightClone";
-    const float k_DesktopZoopSmoothing = 0.2f;
-    const float k_DesktopZoopMaxVelocity = 10f;
+    public const string k_LoadMaterialAddress = "Interactable/InteractHighlightMat.mat";
+    public const string k_CloneName = "HighlightClone";
+    public const float k_DesktopZoopSmoothing = 0.2f;
+    public const float k_DesktopZoopMaxVelocity = 10f;
 
     private static string headPauseRequestName;
     public float InteractRange = 1f;
@@ -82,7 +97,7 @@ public class PickupInteractable : InteractableObject
         InputConstraint.sources = new BasisParentConstraint.SourceData[] { new() { weight = 1f } };
         InputConstraint.Enabled = false;
 
-        headPauseRequestName = $"{nameof(PickupInteractable)}: {gameObject.GetInstanceID()}";
+        headPauseRequestName = $"{nameof(PickupInteractable)}-{gameObject.GetInstanceID()}";
 
         AsyncOperationHandle<Material> op = Addressables.LoadAssetAsync<Material>(k_LoadMaterialAddress);
         ColliderHighlightMat = op.WaitForCompletion();
@@ -119,6 +134,7 @@ public class PickupInteractable : InteractableObject
     {
         // BasisDebug.Log($"CanHover {string.Join(", ", Inputs.ToArray().Select(x => x.GetState()))}");
         // BasisDebug.Log($"CanHover {!DisableInteract}, {!Inputs.AnyInteracting()}, {input.TryGetRole(out BasisBoneTrackedRole r)}, {Inputs.TryGetByRole(r, out BasisInputWrapper f)}, {r}, {f.GetState()}");
+<<<<<<< HEAD
         return !pickupable &&
             !IsPuppeted &&
             (!Inputs.AnyInteracting() || CanSelfSteal) &&
@@ -127,11 +143,23 @@ public class PickupInteractable : InteractableObject
             Inputs.TryGetByRole(role, out BasisInputWrapper found) &&
             found.GetState() == InteractInputState.Ignored &&
             IsWithinRange(found.BoneControl.OutgoingWorldData.position, InteractRange);
+=======
+        return !DisableInfluence &&
+            (!IsPuppeted || CanNetworkSteal) &&                         // net control
+            (!Inputs.AnyInteracting() || CanSelfSteal) &&               // self-steal
+            !input.BasisUIRaycast.HadRaycastUITarget &&                 // didn't hit UI target this frame
+            Inputs.IsInputAdded(input) &&                               // input exists
+            input.TryGetRole(out BasisBoneTrackedRole role) &&          // has role
+            Inputs.TryGetByRole(role, out BasisInputWrapper found) &&   // input exists within PlayerInteract system 
+            found.GetState() == InteractInputState.Ignored &&           // in the correct state for hover
+            IsWithinRange(found.BoneControl.OutgoingWorldData.position);// within range
+>>>>>>> 2a96163a (Pickups and Fly Camera (this should've been multiple commits))
     }
     public override bool CanInteract(BasisInput input)
     {
         // BasisDebug.Log($"CanInteract {!DisableInteract}, {!Inputs.AnyInteracting()}, {input.TryGetRole(out BasisBoneTrackedRole r)}, {Inputs.TryGetByRole(r, out BasisInputWrapper f)}, {r}, {f.GetState()}");
         // currently hovering can interact only, only one interacting at a time
+<<<<<<< HEAD
         return !pickupable &&
             !IsPuppeted &&
             (!Inputs.AnyInteracting() || CanSelfSteal) &&
@@ -140,6 +168,17 @@ public class PickupInteractable : InteractableObject
             Inputs.TryGetByRole(role, out BasisInputWrapper found) &&
             found.GetState() == InteractInputState.Hovering &&
             IsWithinRange(found.BoneControl.OutgoingWorldData.position, InteractRange);
+=======
+        return !DisableInfluence &&
+            (!IsPuppeted || CanNetworkSteal) &&                         // net control
+            (!Inputs.AnyInteracting() || CanSelfSteal) &&               // self-steal
+            !input.BasisUIRaycast.HadRaycastUITarget &&                 // didn't hit UI target this frame
+            Inputs.IsInputAdded(input) &&                               // input exists
+            input.TryGetRole(out BasisBoneTrackedRole role) &&          // has role
+            Inputs.TryGetByRole(role, out BasisInputWrapper found) &&   // input exists within PlayerInteract system 
+            found.GetState() == InteractInputState.Hovering &&          // in the correct state for hover
+            IsWithinRange(found.BoneControl.OutgoingWorldData.position);// within range
+>>>>>>> 2a96163a (Pickups and Fly Camera (this should've been multiple commits))
     }
     public override void OnHoverStart(BasisInput input)
     {
@@ -182,10 +221,18 @@ public class PickupInteractable : InteractableObject
                 Vector3 inPos = wrapper.BoneControl.OutgoingWorldData.position;
                 Quaternion inRot = wrapper.BoneControl.OutgoingWorldData.rotation;
 
-                if (RigidRef != null && KinematicWhileInteracting)
+                if (RigidRef != null)
                 {
-                    _previousKinematicValue = RigidRef.isKinematic;
-                    RigidRef.isKinematic = true;
+                    if (KinematicWhileInteracting)
+                    {
+                        _previousKinematicValue = RigidRef.isKinematic;
+                        RigidRef.isKinematic = true;
+                    }
+                    else
+                    {
+                        _previousGravityValue = RigidRef.useGravity;
+                        RigidRef.useGravity = false;
+                    }
                 }
 
                 // Set ownership to the local player
@@ -226,11 +273,6 @@ public class PickupInteractable : InteractableObject
             {
                 Inputs.ChangeStateByRole(wrapper.Role, InteractInputState.Ignored);
 
-                if (KinematicWhileInteracting && RigidRef != null)
-                {
-                    RigidRef.isKinematic = _previousKinematicValue;
-                }
-
                 RequiresUpdateLoop = false;
                 // cleanup Desktop Manipulation since InputUpdate isnt run again till next pickup
                 targetOffset = Vector3.zero;
@@ -244,11 +286,23 @@ public class PickupInteractable : InteractableObject
                 InputConstraint.Enabled = false;
                 InputConstraint.sources = new BasisParentConstraint.SourceData[] { new() { weight = 1f } };
 
-                if (!RigidRef.isKinematic)
+                if (RigidRef != null)
                 {
-                    OnDropVelocity();
-                }
 
+                    if (KinematicWhileInteracting)
+                    {
+                        RigidRef.isKinematic = _previousKinematicValue;
+                    }
+                    else
+                    {
+                        RigidRef.useGravity = _previousGravityValue;
+                    }
+
+                    if (!RigidRef.isKinematic)
+                    {
+                        OnDropVelocity();
+                    }
+                }
 
                 OnInteractEndEvent?.Invoke(input);
             }
@@ -259,8 +313,11 @@ public class PickupInteractable : InteractableObject
     /// </summary>
     private void OnDropVelocity()
     {
-        var linear = RigidRef.linearVelocity;
-        var angular = RigidRef.angularVelocity;
+        Vector3 linear = linearVelocity;
+        Vector3 angular = angularVelocity;
+
+        // Debug.Log($"Pickup OnDrop velocity. Linear: {linear}, Angular: {angular}");
+
         if (linear.magnitude >= minLinearVelocity)
         {
             linear *= interactEndLinearVelocityMultiplier;
@@ -275,12 +332,37 @@ public class PickupInteractable : InteractableObject
         else
             angular = Vector3.zero;
 
+        // Debug.Log($"Setting Pickup OnDrop velocity. Linear: {linear}, Angular: {angular}");
+        
         RigidRef.linearVelocity = linear;
         RigidRef.angularVelocity = angular;
     }
 
+    private Vector3 linearVelocity;
+    private Vector3 angularVelocity;
+    
+    private Vector3 _previousPosition;
+    private Quaternion _previousRotation;
+
+    private void CalculateVelocity(Vector3 pos, Quaternion rot)
+    {
+        // Instant linear velocity
+        linearVelocity = (pos - _previousPosition) / Time.deltaTime;
+        
+        // Instant angular velocity
+        Quaternion deltaRotation = rot * Quaternion.Inverse(_previousRotation);
+        deltaRotation.ToAngleAxis(out float angle, out Vector3 axis);
+        if (angle > 180f) angle -= 360f;
+        
+        angularVelocity = axis * (angle * Mathf.Deg2Rad) / Time.deltaTime;
+        
+        _previousPosition = pos;
+        _previousRotation = rot;
+    }
+
     public override void InputUpdate()
     {
+<<<<<<< HEAD
         if (GetActiveInteracting(out BasisInputWrapper interactingInput))
         {
             Vector3 inPos = interactingInput.BoneControl.OutgoingWorldData.position;
@@ -288,12 +370,38 @@ public class PickupInteractable : InteractableObject
             // Optionally, match the rotation.
             //  transform.rotation = target.rotation;
             if (Basis.Scripts.Device_Management.BasisDeviceManagement.IsUserInDesktop())
+=======
+        var interactingInput = GetActiveInteracting();
+        if (interactingInput == null) return;
+
+        Vector3 inPos = interactingInput.Value.BoneControl.OutgoingWorldData.position;
+        Quaternion inRot = interactingInput.Value.BoneControl.OutgoingWorldData.rotation;
+
+
+        if (Basis.Scripts.Device_Management.BasisDeviceManagement.IsUserInDesktop())
+        {
+            PollDesktopControl(Inputs.desktopCenterEye.Source);
+        }
+
+        InputConstraint.UpdateSourcePositionAndRotation(0, inPos, inRot);
+
+        if (InputConstraint.Evaluate(out Vector3 pos, out Quaternion rot))
+        {
+            // TODO: fix jitter while still using rigidbody movement
+            //  Update 6/10/25: this seems to be a unity bug! - mriise
+
+            //pretty sure rigidbody is the real issue with the jitter here.
+            //as rigidbody occurs on physics timestamp? -LD
+            if (RigidRef != null && !RigidRef.isKinematic)
+>>>>>>> 2a96163a (Pickups and Fly Camera (this should've been multiple commits))
             {
-                // override with current camera position in desktop mode
-                // TODO: this is weird??!? fixes jitter but only on forward rendered shaders
-                BasisLocalCameraDriver.GetPositionAndRotation(out inPos, out inRot);
-                PollDesktopManipulation(Inputs.desktopCenterEye.Source);
+                RigidRef.Move(pos, rot);
             }
+            else
+            {
+                transform.SetPositionAndRotation(pos, rot);
+            }
+<<<<<<< HEAD
             bool State = interactingInput.Source.CurrentInputState.PrimaryButtonGetState;
             bool LastState = interactingInput.Source.LastInputState.PrimaryButtonGetState;
             if (State && LastState == false)
@@ -325,7 +433,12 @@ public class PickupInteractable : InteractableObject
                 // TODO: fix jitter while still using rigidbody movement
                 // transform.SetPositionAndRotation(pos, rot);
             }
+=======
+
+            CalculateVelocity(pos, rot);
+>>>>>>> 2a96163a (Pickups and Fly Camera (this should've been multiple commits))
         }
+
     }
     public override bool IsInteractingWith(BasisInput input)
     {
@@ -342,7 +455,15 @@ public class PickupInteractable : InteractableObject
     {
         return ColliderRef;
     }
+<<<<<<< HEAD
     private void PollDesktopManipulation(BasisInput DesktopEye)
+=======
+
+    private bool pauseHead = false;
+    private Vector3 targetOffset = Vector3.zero;
+    private Vector3 currentZoopVelocity = Vector3.zero;
+    private void PollDesktopControl(BasisInput DesktopEye)
+>>>>>>> 2a96163a (Pickups and Fly Camera (this should've been multiple commits))
     {
         // scroll zoop
         float mouseScroll = DesktopEye.CurrentInputState.Secondary2DAxis.y; // only ever 1, 0, -1
@@ -361,19 +482,17 @@ public class PickupInteractable : InteractableObject
             Vector3 movement = DesktopZoopSpeed * mouseScroll * BasisLocalCameraDriver.Forward();
             Vector3 newTargetOffset = targetOffset + sourceTransform.InverseTransformVector(movement);
 
-            // moving towards camera, ignore moving closer if less than min distance
+            // moving towards camera, ignore moving closer if less than min/max distance
             // NOTE: this is cheating a bit since its assuming desktop camera is the constraint source, but its a lot faster than doing a bunch of world/local space transforms.
             //      This also does not set offset to min distance to avoid calculating min offset position, meaning this is effectively (distance > minDistance + ZoopSpeed).
-            if (mouseScroll < 0 && newTargetOffset.z > DesktopZoopMinDistance)
-            {
-                targetOffset = newTargetOffset;
-            }
-            // moving away from camera
-            else if (mouseScroll > 0)
+            float maxDistance = DesktopZoopMaxDistance + BasisLocalPlayer.Instance.CurrentHeight.SelectedPlayerHeight / 2;
+
+            if (mouseScroll != 0 && newTargetOffset.z > DesktopZoopMinDistance && newTargetOffset.z < maxDistance)
             {
                 targetOffset = newTargetOffset;
             }
         }
+        
 
         var dampendOffset = Vector3.SmoothDamp(currentOffset, targetOffset, ref currentZoopVelocity, k_DesktopZoopSmoothing, k_DesktopZoopMaxVelocity);
         InputConstraint.sources[0].positionOffset = dampendOffset;
@@ -433,17 +552,23 @@ public class PickupInteractable : InteractableObject
                 }
         }
     }
+<<<<<<< HEAD
+=======
+
+    bool _remotePrevKinematic = true; 
+>>>>>>> 2a96163a (Pickups and Fly Camera (this should've been multiple commits))
     public override void StartRemoteControl()
     {
         IsPuppeted = true;
-        // _previousKinematicValue = RigidRef.isKinematic;
-        // RigidRef.isKinematic = true;
+        ClearAllInfluencing();
+        _remotePrevKinematic = RigidRef.isKinematic;
+        RigidRef.isKinematic = true;
         // TODO: _previousKinematic state should be synced so late joiners have pickups behave properly
     }
     public override void StopRemoteControl()
     {
         IsPuppeted = false;
-        // RigidRef.isKinematic = _previousKinematicValue;
+        RigidRef.isKinematic = _remotePrevKinematic;
     }
     public override void OnDestroy()
     {
@@ -454,13 +579,36 @@ public class PickupInteractable : InteractableObject
         }
         base.OnDestroy();
     }
+<<<<<<< HEAD
+=======
+
+    // override since we add extra reach on desktop
+    public override bool IsWithinRange(Vector3 source)
+    {
+
+        float extraReach = 0;
+        if (Basis.Scripts.Device_Management.BasisDeviceManagement.IsUserInDesktop())
+        {
+
+            extraReach = BasisLocalPlayer.Instance.CurrentHeight.SelectedPlayerHeight / 2;
+        }
+        Collider collider = GetCollider();
+        if (collider != null)
+        {
+            return Vector3.Distance(collider.ClosestPoint(source), source) <= InteractRange + extraReach;
+        }
+        // Fall back to object transform distance
+        return Vector3.Distance(transform.position, source) <= InteractRange + extraReach;
+    }
+
+>>>>>>> 2a96163a (Pickups and Fly Camera (this should've been multiple commits))
 #if UNITY_EDITOR
     public void OnValidate()
     {
-        string errPrefix = "ReparentInteractable needs component defined on self or given a reference for ";
+        string errPrefix = "Pickup Interactable needs component defined on self or given a reference for ";
         if (RigidRef == null && !TryGetComponent(out Rigidbody _))
         {
-            Debug.LogWarning(errPrefix + "Rigidbody", gameObject);
+            Debug.LogWarning(errPrefix + "Rigidbody, ignore if not using rigidbodies and expecing raw transforms", gameObject);
         }
         if (ColliderRef == null && !TryGetComponent(out Collider _))
         {
