@@ -1,3 +1,4 @@
+using Basis.Scripts.Common;
 using Basis.Scripts.Device_Management.Devices.Desktop;
 using Basis.Scripts.Device_Management.Devices;
 using Basis.Scripts.Drivers;
@@ -25,6 +26,8 @@ public abstract class BasisHandHeldCameraInteractable : InteractableObject
     // constants
     const string k_LoadMaterialAddress = "Interactable/InteractHighlightMat.mat";
     const string k_CloneName = "HighlightClone";
+
+    private readonly BasisLocks.LockContext HeadLock = BasisLocks.GetContext(BasisLocks.LookRotation);
 
     private static string headPauseRequestName;
     public float InteractRange = 1f;
@@ -161,7 +164,7 @@ public abstract class BasisHandHeldCameraInteractable : InteractableObject
                 // cleanup Desktop Manipulation since InputUpdate isnt run again till next pickup
                 if (pauseHead)
                 {
-                    BasisAvatarEyeInput.Instance.UnPauseHead(headPauseRequestName);
+                    HeadLock.Remove(headPauseRequestName);
                     pauseHead = false;
                 }
 
@@ -278,7 +281,7 @@ public abstract class BasisHandHeldCameraInteractable : InteractableObject
         if (pauseHead)
         {
             pauseHead = false;
-            if (!BasisAvatarEyeInput.Instance.UnPauseHead(headPauseRequestName))
+            if (!HeadLock.Remove(headPauseRequestName))
             {
                 BasisDebug.LogWarning(nameof(PickupInteractable) + " was unable to un-pause head movement, this is a bug!");
             }

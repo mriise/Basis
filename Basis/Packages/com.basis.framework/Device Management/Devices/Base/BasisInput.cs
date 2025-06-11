@@ -183,7 +183,7 @@ namespace Basis.Scripts.Device_Management.Devices
         }
         public void ApplyFinalMovement()
         {
-            transform.SetLocalPositionAndRotation(TransformFinalPosition, TransformFinalRotation);
+            this.transform.SetLocalPositionAndRotation(TransformFinalPosition, TransformFinalRotation);
         }
         public void UnAssignFullBodyTrackers()
         {
@@ -293,8 +293,10 @@ namespace Basis.Scripts.Device_Management.Devices
                         : CurrentInputState.Primary2DAxis.y;
                     //0 to 1 largestValue
 
-                    BasisLocalPlayer.Instance.LocalCharacterDriver.SpeedMultiplier = largestValue;
-                    BasisLocalPlayer.Instance.LocalCharacterDriver.MovementVector = CurrentInputState.Primary2DAxis;
+                    BasisLocalPlayer.Instance.LocalCharacterDriver.SetMovementSpeedMultiplier(largestValue);
+                    BasisLocalPlayer.Instance.LocalCharacterDriver.SetMovementVector(CurrentInputState.Primary2DAxis);
+                    // todo: consider hoisting variable to be toggled by another user input (eg: thumbstick click)
+                    BasisLocalPlayer.Instance.LocalCharacterDriver.UpdateMovementSpeed(true);
                     //only open ui after we have stopped pressing down on the secondary button
                     if (CurrentInputState.SecondaryButtonGetState == false && LastInputState.SecondaryButtonGetState)
                     {
