@@ -54,7 +54,7 @@ public class BasisDepthOfFieldInteractorVR : MonoBehaviour
             if (input == null) continue;
             if (IsDesktopCenterEye(input)) continue;
 
-            if (input.InputState.Trigger < interactThreshold)
+            if (input.CurrentInputState.Trigger < interactThreshold)
                 continue;
 
             Vector3 worldPos = input.transform.position;
