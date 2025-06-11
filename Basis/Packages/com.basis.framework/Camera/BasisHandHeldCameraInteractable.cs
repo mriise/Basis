@@ -71,7 +71,7 @@ public abstract class BasisHandHeldCameraInteractable : InteractableObject
 
     public override bool CanHover(BasisInput input)
     {
-        return !DisableInfluence &&
+        return !pickupable &&
             !IsPuppeted &&
             Inputs.IsInputAdded(input) &&
             input.TryGetRole(out BasisBoneTrackedRole role) &&
@@ -81,7 +81,7 @@ public abstract class BasisHandHeldCameraInteractable : InteractableObject
     }
     public override bool CanInteract(BasisInput input)
     {
-        return !DisableInfluence &&
+        return !pickupable &&
             !IsPuppeted &&
             Inputs.IsInputAdded(input) &&
             input.TryGetRole(out BasisBoneTrackedRole role) &&

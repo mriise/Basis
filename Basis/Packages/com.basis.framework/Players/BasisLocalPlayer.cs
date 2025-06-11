@@ -51,6 +51,8 @@ namespace Basis.Scripts.BasisSdk.Players
 
         public BasisLocalHeightInformation CurrentHeight = new BasisLocalHeightInformation();
         public BasisLocalHeightInformation LastHeight= new BasisLocalHeightInformation();
+        [Header("Camera Driver")]
+        [SerializeField]
         public BasisLocalCameraDriver CameraDriver;
         //bones that we use to map between avatar and trackers
         [Header("Bone Driver")]

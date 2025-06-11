@@ -19,7 +19,7 @@ public class BasisTestNetworkAvatar : BasisAvatarMonoBehaviour
         Debug.Log("was called!");
         if (BasisNetworkManagement.LocalPlayerIsConnected == false)
         {
-            BasisNetworkManagement.OnLocalPlayerJoined += OnLocalPlayerJoined;
+            BasisNetworkPlayer.OnLocalPlayerJoined += OnLocalPlayerJoined;
         }
         else
         {
@@ -32,7 +32,7 @@ public class BasisTestNetworkAvatar : BasisAvatarMonoBehaviour
     }
     public void OnDestroy()
     {
-        BasisNetworkManagement.OnLocalPlayerJoined -= OnLocalPlayerJoined;
+        BasisNetworkPlayer.OnLocalPlayerJoined -= OnLocalPlayerJoined;
     }
     private void SetupIfLocal()
     {

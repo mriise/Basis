@@ -127,7 +127,7 @@ namespace Basis.Scripts.UI
                             BasisLocalPlayer.Instance.LocalCharacterDriver.BlockMovement = true;
                         }
                         BasisLocalInputActions.IgnoreCrouchToggle = true;
-                        if (BasisDeviceManagement.Instance.CurrentMode == "OpenVRLoader" || BasisDeviceManagement.Instance.CurrentMode == "OpenXRLoader" || ForceKeyboard)
+                        if (BasisDeviceManagement.CurrentMode == "OpenVRLoader" || BasisDeviceManagement.CurrentMode == "OpenXRLoader" || ForceKeyboard)
                         {
                             if (BasisVirtualKeyboard.HasInstance == false)
                             {
@@ -150,7 +150,7 @@ namespace Basis.Scripts.UI
                                 BasisLocalPlayer.Instance.LocalCharacterDriver.BlockMovement = true;
                             }
                             BasisLocalInputActions.IgnoreCrouchToggle = true;
-                            if (BasisDeviceManagement.Instance.CurrentMode == "OpenVRLoader" || BasisDeviceManagement.Instance.CurrentMode == "OpenXRLoader" || ForceKeyboard)
+                            if (BasisDeviceManagement.CurrentMode == "OpenVRLoader" || BasisDeviceManagement.CurrentMode == "OpenXRLoader" || ForceKeyboard)
                             {
                                 if (BasisVirtualKeyboard.HasInstance == false)
                                 {

@@ -1,12 +1,12 @@
-using System.Linq;
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Device_Management.Devices;
 using Basis.Scripts.Device_Management.Devices.Desktop;
 using Basis.Scripts.Drivers;
 using Basis.Scripts.TransformBinders.BoneControl;
+using System;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
-using UnityEngine.Animations;
 using UnityEngine.InputSystem;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
@@ -16,10 +16,14 @@ public class PickupInteractable : InteractableObject
     public bool KinematicWhileInteracting = true;
     [Tooltip("Enables the ability to self-steal")]
     public bool CanSelfSteal = true;
+
     public float DesktopRotateSpeed = 0.1f;
+
     [Tooltip("Unity units per scroll step")]
     public float DesktopZoopSpeed = 0.2f;
+
     public float DesktopZoopMinDistance = 0.2f;
+
     [Tooltip("Generate a mesh on start to approximate the referenced collider")]
     public bool GenerateColliderMesh = true;
     [Space(10)]
@@ -50,6 +54,20 @@ public class PickupInteractable : InteractableObject
 
     private static string headPauseRequestName;
     public float InteractRange = 1f;
+
+    private bool pauseHead = false;
+    private Vector3 targetOffset = Vector3.zero;
+    private Vector3 currentZoopVelocity = Vector3.zero;
+
+    public Action<PickUpUseMode> OnPickupUse;
+    public BasisPlayer currentPlayer;
+
+    public enum PickUpUseMode
+    {
+        OnPickUpUseUp,
+        OnPickUpUseDown,
+        OnPickUpStillDown
+    }
     public void Start()
     {
         if (RigidRef == null)
@@ -97,12 +115,11 @@ public class PickupInteractable : InteractableObject
             HighlightClone.SetActive(highlight);
         }
     }
-
     public override bool CanHover(BasisInput input)
     {
         // BasisDebug.Log($"CanHover {string.Join(", ", Inputs.ToArray().Select(x => x.GetState()))}");
         // BasisDebug.Log($"CanHover {!DisableInteract}, {!Inputs.AnyInteracting()}, {input.TryGetRole(out BasisBoneTrackedRole r)}, {Inputs.TryGetByRole(r, out BasisInputWrapper f)}, {r}, {f.GetState()}");
-        return !DisableInfluence &&
+        return !pickupable &&
             !IsPuppeted &&
             (!Inputs.AnyInteracting() || CanSelfSteal) &&
             Inputs.IsInputAdded(input) &&
@@ -115,7 +132,7 @@ public class PickupInteractable : InteractableObject
     {
         // BasisDebug.Log($"CanInteract {!DisableInteract}, {!Inputs.AnyInteracting()}, {input.TryGetRole(out BasisBoneTrackedRole r)}, {Inputs.TryGetByRole(r, out BasisInputWrapper f)}, {r}, {f.GetState()}");
         // currently hovering can interact only, only one interacting at a time
-        return !DisableInfluence &&
+        return !pickupable &&
             !IsPuppeted &&
             (!Inputs.AnyInteracting() || CanSelfSteal) &&
             Inputs.IsInputAdded(input) &&
@@ -124,7 +141,6 @@ public class PickupInteractable : InteractableObject
             found.GetState() == InteractInputState.Hovering &&
             IsWithinRange(found.BoneControl.OutgoingWorldData.position, InteractRange);
     }
-
     public override void OnHoverStart(BasisInput input)
     {
         var found = Inputs.FindExcludeExtras(input);
@@ -137,7 +153,6 @@ public class PickupInteractable : InteractableObject
         OnHoverStartEvent?.Invoke(input);
         HighlightObject(true);
     }
-
     public override void OnHoverEnd(BasisInput input, bool willInteract)
     {
         if (input.TryGetRole(out BasisBoneTrackedRole role) && Inputs.TryGetByRole(role, out _))
@@ -203,7 +218,6 @@ public class PickupInteractable : InteractableObject
         if (!CanSelfSteal)
             Inputs.ForEachWithState(i => OnHoverEnd(i, false), InteractInputState.Hovering);
     }
-
     public override void OnInteractEnd(BasisInput input)
     {
         if (input.TryGetRole(out BasisBoneTrackedRole role) && Inputs.TryGetByRole(role, out BasisInputWrapper wrapper))
@@ -240,7 +254,6 @@ public class PickupInteractable : InteractableObject
             }
         }
     }
-
     /// <summary>
     /// set linear/angular velocity to multiplier or 0 if below min velocity
     /// </summary>
@@ -268,11 +281,10 @@ public class PickupInteractable : InteractableObject
 
     public override void InputUpdate()
     {
-        var interactingInput = GetActiveInteracting();
-        if (interactingInput != null)
+        if (GetActiveInteracting(out BasisInputWrapper interactingInput))
         {
-            Vector3 inPos = interactingInput.Value.BoneControl.OutgoingWorldData.position;
-            Quaternion inRot = interactingInput.Value.BoneControl.OutgoingWorldData.rotation;
+            Vector3 inPos = interactingInput.BoneControl.OutgoingWorldData.position;
+            Quaternion inRot = interactingInput.BoneControl.OutgoingWorldData.rotation;
             // Optionally, match the rotation.
             //  transform.rotation = target.rotation;
             if (Basis.Scripts.Device_Management.BasisDeviceManagement.IsUserInDesktop())
@@ -282,7 +294,26 @@ public class PickupInteractable : InteractableObject
                 BasisLocalCameraDriver.GetPositionAndRotation(out inPos, out inRot);
                 PollDesktopManipulation(Inputs.desktopCenterEye.Source);
             }
-
+            bool State = interactingInput.Source.CurrentInputState.PrimaryButtonGetState;
+            bool LastState = interactingInput.Source.LastInputState.PrimaryButtonGetState;
+            if (State && LastState == false)
+            {
+                OnPickupUse.Invoke(PickUpUseMode.OnPickUpUseDown);
+            }
+            else
+            {
+                if (State == false && LastState)
+                {
+                    OnPickupUse.Invoke(PickUpUseMode.OnPickUpUseUp);
+                }
+                else
+                {
+                    if (State)
+                    {
+                        OnPickupUse.Invoke(PickUpUseMode.OnPickUpStillDown);
+                    }
+                }
+            }
             // Debug.Log($"[InputUpdate] Frame: {Time.frameCount}, Source inRot: {inRot.eulerAngles}, Stored Offset: {InputConstraint.sources[0].rotationOffset.eulerAngles}");
             InputConstraint.UpdateSourcePositionAndRotation(0, inPos, inRot);
             if (InputConstraint.Evaluate(out Vector3 pos, out Quaternion rot))
@@ -296,32 +327,25 @@ public class PickupInteractable : InteractableObject
             }
         }
     }
-
     public override bool IsInteractingWith(BasisInput input)
     {
         var found = Inputs.FindExcludeExtras(input);
         return found.HasValue && found.Value.GetState() == InteractInputState.Interacting;
     }
-
     public override bool IsHoveredBy(BasisInput input)
     {
         var found = Inputs.FindExcludeExtras(input);
         return found.HasValue && found.Value.GetState() == InteractInputState.Hovering;
     }
-
     // this is cached, use it
     public override Collider GetCollider()
     {
         return ColliderRef;
     }
-
-    private bool pauseHead = false;
-    private Vector3 targetOffset = Vector3.zero;
-    private Vector3 currentZoopVelocity = Vector3.zero;
     private void PollDesktopManipulation(BasisInput DesktopEye)
     {
         // scroll zoop
-        float mouseScroll = DesktopEye.InputState.Secondary2DAxis.y; // only ever 1, 0, -1
+        float mouseScroll = DesktopEye.CurrentInputState.Secondary2DAxis.y; // only ever 1, 0, -1
 
         Vector3 currentOffset = InputConstraint.sources[0].positionOffset;
         if (targetOffset == Vector3.zero)
@@ -356,7 +380,7 @@ public class PickupInteractable : InteractableObject
 
 
 
-        if (DesktopEye.InputState.Secondary2DAxisClick)
+        if (DesktopEye.CurrentInputState.Secondary2DAxisClick)
         {
             if (!pauseHead)
             {
@@ -383,20 +407,32 @@ public class PickupInteractable : InteractableObject
             }
         }
     }
-
-    private BasisInputWrapper? GetActiveInteracting()
+    private bool GetActiveInteracting(out BasisInputWrapper BasisInputWrapper)
     {
 
-        if (Inputs.desktopCenterEye.GetState() == InteractInputState.Interacting)
-            return Inputs.desktopCenterEye;
-        else if (Inputs.leftHand.GetState() == InteractInputState.Interacting)
-            return Inputs.leftHand;
-        else if (Inputs.rightHand.GetState() == InteractInputState.Interacting)
-            return Inputs.rightHand;
-        else
-            return null;
+        switch (Inputs.desktopCenterEye.GetState())
+        {
+            case InteractInputState.Interacting:
+                BasisInputWrapper = Inputs.desktopCenterEye;
+                return true;
+            default:
+                if (Inputs.leftHand.GetState() == InteractInputState.Interacting)
+                {
+                    BasisInputWrapper = Inputs.leftHand;
+                    return true;
+                }
+                else if (Inputs.rightHand.GetState() == InteractInputState.Interacting)
+                {
+                    BasisInputWrapper = Inputs.rightHand;
+                    return true;
+                }
+                else
+                {
+                    BasisInputWrapper = new BasisInputWrapper();
+                    return false;
+                }
+        }
     }
-
     public override void StartRemoteControl()
     {
         IsPuppeted = true;
@@ -409,7 +445,6 @@ public class PickupInteractable : InteractableObject
         IsPuppeted = false;
         // RigidRef.isKinematic = _previousKinematicValue;
     }
-
     public override void OnDestroy()
     {
         Destroy(HighlightClone);
@@ -419,8 +454,6 @@ public class PickupInteractable : InteractableObject
         }
         base.OnDestroy();
     }
-
-
 #if UNITY_EDITOR
     public void OnValidate()
     {
@@ -439,4 +472,5 @@ public class PickupInteractable : InteractableObject
         }
     }
 #endif
+
 }

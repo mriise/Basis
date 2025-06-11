@@ -3,7 +3,6 @@ using Basis.Scripts.BasisSdk.Helpers;
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Drivers;
 using Basis.Scripts.TransformBinders.BoneControl;
-using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.InputSystem;
@@ -135,7 +134,7 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
             {
                 if (BasisLocalInputActions.Instance != null)
                 {
-                    BasisLocalInputActions.Instance.InputState.CopyTo(InputState);
+                    BasisLocalInputActions.Instance.InputState.CopyTo(CurrentInputState);
                 }
                 // InputState.CopyTo(characterInputActions.InputState);
                 // Apply modulo operation to keep rotation within 0 to 360 range
@@ -190,6 +189,11 @@ namespace Basis.Scripts.Device_Management.Devices.Desktop
                     }
                 }
             }
+        }
+
+        public override void PlayHaptic(float duration = 0.25F, float amplitude = 0.5F, float frequency = 0.5F)
+        {
+            BasisDebug.LogError("Eye Does not Support haptics!");
         }
 
         public BasisVirtualSpineDriver BasisVirtualSpine = new BasisVirtualSpineDriver();
