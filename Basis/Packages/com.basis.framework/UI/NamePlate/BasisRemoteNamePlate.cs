@@ -199,7 +199,7 @@ namespace Basis.Scripts.UI.NamePlate
         }
         public override bool CanHover(BasisInput input)
         {
-            return !DisableInfluence &&
+            return !pickupable &&
                 !IsPuppeted &&
                 Inputs.IsInputAdded(input) &&
                 input.TryGetRole(out BasisBoneTrackedRole role) &&
@@ -209,7 +209,7 @@ namespace Basis.Scripts.UI.NamePlate
         }
         public override bool CanInteract(BasisInput input)
         {
-            return !DisableInfluence &&
+            return !pickupable &&
                 !IsPuppeted &&
                 Inputs.IsInputAdded(input) &&
                 input.TryGetRole(out BasisBoneTrackedRole role) &&
@@ -310,7 +310,7 @@ namespace Basis.Scripts.UI.NamePlate
         public override bool IsInteractTriggered(BasisInput input)
         {
             // click or mostly triggered
-            return input.InputState.Trigger >= 0.9;
+            return input.CurrentInputState.Trigger >= 0.9;
         }
     }
 }

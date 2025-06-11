@@ -30,8 +30,8 @@ public class BasisTestNetworkScene : MonoBehaviour
     public bool ModifyScale = false;
     public void Awake()
     {
-        BasisNetworkManagement.OnLocalPlayerJoined += OnLocalPlayerJoined;
-        BasisNetworkManagement.OnRemotePlayerJoined += OnRemotePlayerJoined;
+        BasisNetworkPlayer.OnLocalPlayerJoined += OnLocalPlayerJoined;
+        BasisNetworkPlayer.OnRemotePlayerJoined += OnRemotePlayerJoined;
     }
     public void OnEnable()
     {
