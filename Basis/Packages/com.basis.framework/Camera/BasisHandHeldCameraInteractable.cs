@@ -1,3 +1,4 @@
+using Basis.Scripts.Common;
 using Basis.Scripts.Device_Management.Devices.Desktop;
 using Basis.Scripts.Device_Management.Devices;
 using Basis.Scripts.Drivers;
@@ -142,13 +143,47 @@ public abstract class BasisHandHeldCameraInteractable : PickupInteractable
                     InputConstraint.Enabled = true;
 
                     desktopSetup = true;
+                    HeadLock.Remove(headPauseRequestName);
+                    pauseHead = false;
                 }
             }
             else return;
 
             InputConstraint.UpdateSourcePositionAndRotation(0, inPos, inRot);
 
-            if (InputConstraint.Evaluate(out Vector3 pos, out Quaternion rot))
+        InputConstraint.UpdateSourcePositionAndRotation(0, inPos, inRot);
+
+        if (InputConstraint.Evaluate(out Vector3 pos, out Quaternion rot))
+        {
+            transform.SetPositionAndRotation(pos, rot);
+        }
+    }
+
+    public override bool IsInteractingWith(BasisInput input)
+    {
+        var found = Inputs.FindExcludeExtras(input);
+        return found.HasValue && found.Value.GetState() == InteractInputState.Interacting;
+    }
+
+    public override bool IsHoveredBy(BasisInput input)
+    {
+        var found = Inputs.FindExcludeExtras(input);
+        return found.HasValue && found.Value.GetState() == InteractInputState.Hovering;
+    }
+
+    // this is cached, use it
+    public override Collider GetCollider()
+    {
+        return ColliderRef;
+    }
+
+    private bool pauseHead = false;
+    private void PollDesktopManipulation(BasisInput DesktopEye)
+    {
+        if (pauseHead)
+        {
+            pauseHead = false;
+            if (!HeadLock.Remove(headPauseRequestName))
             {
                 transform.SetPositionAndRotation(pos, rot);
             }

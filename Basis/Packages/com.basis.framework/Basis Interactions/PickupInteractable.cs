@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 >>>>>>> 2a96163a (Pickups and Fly Camera (this should've been multiple commits))
 using Basis.Scripts.BasisSdk.Players;
+using Basis.Scripts.Common;
 using Basis.Scripts.Device_Management.Devices;
 using Basis.Scripts.Device_Management.Devices.Desktop;
 using Basis.Scripts.Drivers;
@@ -67,6 +68,8 @@ public class PickupInteractable : InteractableObject
     public const float k_DesktopZoopSmoothing = 0.2f;
     public const float k_DesktopZoopMaxVelocity = 10f;
 
+    private readonly BasisLocks.LockContext HeadLock = BasisLocks.GetContext(BasisLocks.LookRotation);
+
     private static string headPauseRequestName;
     public float InteractRange = 1f;
 
@@ -75,7 +78,6 @@ public class PickupInteractable : InteractableObject
     private Vector3 currentZoopVelocity = Vector3.zero;
 
     public Action<PickUpUseMode> OnPickupUse;
-    public BasisPlayer currentPlayer;
 
     public enum PickUpUseMode
     {
@@ -105,7 +107,7 @@ public class PickupInteractable : InteractableObject
 
         if (GenerateColliderMesh)
         {
-            // NOTE: Collider mesh highlight position and size is only updated on Start(). 
+            // NOTE: Collider mesh highlight position and size is only updated on Start().
             //      If you wish to have the highlight update at runtime do that elsewhere or make a different InteractableObject Script
             HighlightClone = ColliderClone.CloneColliderMesh(ColliderRef, gameObject.transform, k_CloneName);
 
@@ -278,7 +280,7 @@ public class PickupInteractable : InteractableObject
                 targetOffset = Vector3.zero;
                 if (pauseHead)
                 {
-                    BasisAvatarEyeInput.Instance.UnPauseHead(headPauseRequestName);
+                    HeadLock.Remove(headPauseRequestName);
                     currentZoopVelocity = Vector3.zero;
                     pauseHead = false;
                 }
@@ -503,7 +505,7 @@ public class PickupInteractable : InteractableObject
         {
             if (!pauseHead)
             {
-                BasisAvatarEyeInput.Instance.PauseHead(headPauseRequestName);
+                HeadLock.Add(headPauseRequestName);
                 pauseHead = true;
             }
 
@@ -515,12 +517,12 @@ public class PickupInteractable : InteractableObject
             var rotation = yRotation * xRotation * InputConstraint.sources[0].rotationOffset;
             InputConstraint.sources[0].rotationOffset = rotation;
 
-            // BasisDebug.Log("Destop manipulate Pickup zoop: " + dampendOffset + " rotate: " + delta);                
+            // BasisDebug.Log("Destop manipulate Pickup zoop: " + dampendOffset + " rotate: " + delta);
         }
         else if (pauseHead)
         {
             pauseHead = false;
-            if (!BasisAvatarEyeInput.Instance.UnPauseHead(headPauseRequestName))
+            if (!HeadLock.Remove(headPauseRequestName))
             {
                 BasisDebug.LogWarning(nameof(PickupInteractable) + " was unable to un-pause head movement, this is a bug!");
             }
