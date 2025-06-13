@@ -260,9 +260,6 @@ public abstract class BasisHandHeldCameraInteractable : PickupInteractable
 
     public void OnBootModeChanged(string mode)
     {
-
-        // TODO: this doesnt actually kill the camera somehow.
-
         // To not manage things across boot mode changes (inputs actions, ect) destroy self.
         // User can respawn camera if they want it
         Destroy(gameObject);

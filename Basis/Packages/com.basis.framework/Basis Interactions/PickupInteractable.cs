@@ -350,7 +350,6 @@ public class PickupInteractable : InteractableObject
         // this needs to be verified as expected behavior with more controllers...
         bool State = interactingInput.Source.CurrentInputState.Trigger == 1;
         bool LastState = interactingInput.Source.LastInputState.Trigger == 1;
-        Debug.Log($"{State}, prev {LastState}");
         if (State && LastState == false)
         {
             OnPickupUse?.Invoke(PickUpUseMode.OnPickUpUseDown);

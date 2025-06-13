@@ -115,7 +115,6 @@ namespace Basis.Scripts.UI
             var localPlayer = BasisLocalPlayer.Instance;
             var characterDriver = localPlayer == null ? null : localPlayer.LocalCharacterDriver;
             basisUIRaycastProcess.Simulate();
-
             // Process your input events here
             if (EventSystem.currentSelectedGameObject != null)
             {
