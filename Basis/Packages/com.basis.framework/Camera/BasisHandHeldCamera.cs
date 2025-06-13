@@ -114,6 +114,21 @@ public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
         }
     }
 
+    public new void Start()
+    {
+        base.Start();
+
+        OnPickupUse += OnPickupUseCapture;
+    }
+
+    public void OnPickupUseCapture(PickUpUseMode mode)
+    {
+        if (mode == PickUpUseMode.OnPickUpUseDown)
+        {
+            CapturePhoto();
+        }
+    }
+
     public void SetResolution(int width, int height, AntialiasingQuality AQ, RenderTextureFormat RenderTextureFormat = RenderTextureFormat.ARGBFloat)
     {
         if (renderTexture == null || renderTexture.width != width || renderTexture.height != height || renderTexture.format != RenderTextureFormat)
@@ -236,6 +251,8 @@ public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
             await HandHeld.SaveSettings();
         }
         BasisDeviceManagement.OnBootModeChanged -= OnBootModeChanged;
+        OnPickupUse -= OnPickupUseCapture;
+
         base.OnDestroy();
     }
     public void Timer()

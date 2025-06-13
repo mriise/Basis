@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-=======
-using System;
-using System.Linq;
->>>>>>> 2a96163a (Pickups and Fly Camera (this should've been multiple commits))
 using Basis.Scripts.BasisSdk.Players;
 using Basis.Scripts.Common;
 using Basis.Scripts.Device_Management.Devices;
@@ -22,22 +17,13 @@ public class PickupInteractable : InteractableObject
     public bool KinematicWhileInteracting = true;
     [Tooltip("Enables the ability to self-steal")]
     public bool CanSelfSteal = true;
-<<<<<<< HEAD
-
-=======
-    [Tooltip("Enables the ability to steal over the network")]
-    public bool CanNetworkSteal = true;
->>>>>>> 2a96163a (Pickups and Fly Camera (this should've been multiple commits))
     public float DesktopRotateSpeed = 0.1f;
 
     [Tooltip("Unity units per scroll step")]
     public float DesktopZoopSpeed = 0.2f;
 
     public float DesktopZoopMinDistance = 0.2f;
-<<<<<<< HEAD
-=======
     public float DesktopZoopMaxDistance = 2.0f;
->>>>>>> 2a96163a (Pickups and Fly Camera (this should've been multiple commits))
 
     [Tooltip("Generate a mesh on start to approximate the referenced collider")]
     public bool GenerateColliderMesh = true;
@@ -51,6 +37,10 @@ public class PickupInteractable : InteractableObject
     [Header("References")]
     public Collider ColliderRef;
     public Rigidbody RigidRef;
+
+    // [Header("Pickup Networking")]
+    // [Tooltip("Enables the ability to steal over the network")]
+    // public bool CanNetworkSteal = true;
 
     [SerializeReference]
     internal BasisParentConstraint InputConstraint;
@@ -134,53 +124,32 @@ public class PickupInteractable : InteractableObject
     }
     public override bool CanHover(BasisInput input)
     {
+        // bool netPickup = (!IsPuppeted || ); 
         // BasisDebug.Log($"CanHover {string.Join(", ", Inputs.ToArray().Select(x => x.GetState()))}");
         // BasisDebug.Log($"CanHover {!DisableInteract}, {!Inputs.AnyInteracting()}, {input.TryGetRole(out BasisBoneTrackedRole r)}, {Inputs.TryGetByRole(r, out BasisInputWrapper f)}, {r}, {f.GetState()}");
-<<<<<<< HEAD
-        return !pickupable &&
-            !IsPuppeted &&
-            (!Inputs.AnyInteracting() || CanSelfSteal) &&
-            Inputs.IsInputAdded(input) &&
-            input.TryGetRole(out BasisBoneTrackedRole role) &&
-            Inputs.TryGetByRole(role, out BasisInputWrapper found) &&
-            found.GetState() == InteractInputState.Ignored &&
-            IsWithinRange(found.BoneControl.OutgoingWorldData.position, InteractRange);
-=======
-        return !DisableInfluence &&
-            (!IsPuppeted || CanNetworkSteal) &&                         // net control
+        return InteractableEnabled &&
+            (!IsPuppeted) &&  // || CanNetworkSteal                        // net control
             (!Inputs.AnyInteracting() || CanSelfSteal) &&               // self-steal
             !input.BasisUIRaycast.HadRaycastUITarget &&                 // didn't hit UI target this frame
             Inputs.IsInputAdded(input) &&                               // input exists
             input.TryGetRole(out BasisBoneTrackedRole role) &&          // has role
             Inputs.TryGetByRole(role, out BasisInputWrapper found) &&   // input exists within PlayerInteract system 
             found.GetState() == InteractInputState.Ignored &&           // in the correct state for hover
-            IsWithinRange(found.BoneControl.OutgoingWorldData.position);// within range
->>>>>>> 2a96163a (Pickups and Fly Camera (this should've been multiple commits))
+            IsWithinRange(found.BoneControl.OutgoingWorldData.position, InteractRange);// within range
     }
     public override bool CanInteract(BasisInput input)
     {
         // BasisDebug.Log($"CanInteract {!DisableInteract}, {!Inputs.AnyInteracting()}, {input.TryGetRole(out BasisBoneTrackedRole r)}, {Inputs.TryGetByRole(r, out BasisInputWrapper f)}, {r}, {f.GetState()}");
         // currently hovering can interact only, only one interacting at a time
-<<<<<<< HEAD
-        return !pickupable &&
-            !IsPuppeted &&
-            (!Inputs.AnyInteracting() || CanSelfSteal) &&
-            Inputs.IsInputAdded(input) &&
-            input.TryGetRole(out BasisBoneTrackedRole role) &&
-            Inputs.TryGetByRole(role, out BasisInputWrapper found) &&
-            found.GetState() == InteractInputState.Hovering &&
-            IsWithinRange(found.BoneControl.OutgoingWorldData.position, InteractRange);
-=======
-        return !DisableInfluence &&
-            (!IsPuppeted || CanNetworkSteal) &&                         // net control
+        return InteractableEnabled &&
+            (!IsPuppeted) &&  // || CanNetworkSteal                        // net control
             (!Inputs.AnyInteracting() || CanSelfSteal) &&               // self-steal
             !input.BasisUIRaycast.HadRaycastUITarget &&                 // didn't hit UI target this frame
             Inputs.IsInputAdded(input) &&                               // input exists
             input.TryGetRole(out BasisBoneTrackedRole role) &&          // has role
             Inputs.TryGetByRole(role, out BasisInputWrapper found) &&   // input exists within PlayerInteract system 
             found.GetState() == InteractInputState.Hovering &&          // in the correct state for hover
-            IsWithinRange(found.BoneControl.OutgoingWorldData.position);// within range
->>>>>>> 2a96163a (Pickups and Fly Camera (this should've been multiple commits))
+            IsWithinRange(found.BoneControl.OutgoingWorldData.position, InteractRange);// within range
     }
     public override void OnHoverStart(BasisInput input)
     {
@@ -211,6 +180,8 @@ public class PickupInteractable : InteractableObject
     }
     public override void OnInteractStart(BasisInput input)
     {
+        // TODO: request net ownership
+
         // clean up interacting ourselves (system wont do this for us)
         if (CanSelfSteal)
             Inputs.ForEachWithState(OnInteractEnd, InteractInputState.Interacting);
@@ -364,25 +335,39 @@ public class PickupInteractable : InteractableObject
 
     public override void InputUpdate()
     {
-<<<<<<< HEAD
-        if (GetActiveInteracting(out BasisInputWrapper interactingInput))
-        {
-            Vector3 inPos = interactingInput.BoneControl.OutgoingWorldData.position;
-            Quaternion inRot = interactingInput.BoneControl.OutgoingWorldData.rotation;
-            // Optionally, match the rotation.
-            //  transform.rotation = target.rotation;
-            if (Basis.Scripts.Device_Management.BasisDeviceManagement.IsUserInDesktop())
-=======
-        var interactingInput = GetActiveInteracting();
-        if (interactingInput == null) return;
+        if (!GetActiveInteracting(out BasisInputWrapper interactingInput)) return;
 
-        Vector3 inPos = interactingInput.Value.BoneControl.OutgoingWorldData.position;
-        Quaternion inRot = interactingInput.Value.BoneControl.OutgoingWorldData.rotation;
+        Vector3 inPos = interactingInput.BoneControl.OutgoingWorldData.position;
+        Quaternion inRot = interactingInput.BoneControl.OutgoingWorldData.rotation;
 
 
         if (Basis.Scripts.Device_Management.BasisDeviceManagement.IsUserInDesktop())
         {
             PollDesktopControl(Inputs.desktopCenterEye.Source);
+        }
+
+        // TODO: for index primary button is the A button, trigger should be the right one?
+        // this needs to be verified as expected behavior with more controllers...
+        bool State = interactingInput.Source.CurrentInputState.Trigger == 1;
+        bool LastState = interactingInput.Source.LastInputState.Trigger == 1;
+        Debug.Log($"{State}, prev {LastState}");
+        if (State && LastState == false)
+        {
+            OnPickupUse?.Invoke(PickUpUseMode.OnPickUpUseDown);
+        }
+        else
+        {
+            if (State == false && LastState)
+            {
+                OnPickupUse?.Invoke(PickUpUseMode.OnPickUpUseUp);
+            }
+            else
+            {
+                if (State)
+                {
+                    OnPickupUse?.Invoke(PickUpUseMode.OnPickUpStillDown);
+                }
+            }
         }
 
         InputConstraint.UpdateSourcePositionAndRotation(0, inPos, inRot);
@@ -395,7 +380,6 @@ public class PickupInteractable : InteractableObject
             //pretty sure rigidbody is the real issue with the jitter here.
             //as rigidbody occurs on physics timestamp? -LD
             if (RigidRef != null && !RigidRef.isKinematic)
->>>>>>> 2a96163a (Pickups and Fly Camera (this should've been multiple commits))
             {
                 RigidRef.Move(pos, rot);
             }
@@ -403,44 +387,8 @@ public class PickupInteractable : InteractableObject
             {
                 transform.SetPositionAndRotation(pos, rot);
             }
-<<<<<<< HEAD
-            bool State = interactingInput.Source.CurrentInputState.PrimaryButtonGetState;
-            bool LastState = interactingInput.Source.LastInputState.PrimaryButtonGetState;
-            if (State && LastState == false)
-            {
-                OnPickupUse.Invoke(PickUpUseMode.OnPickUpUseDown);
-            }
-            else
-            {
-                if (State == false && LastState)
-                {
-                    OnPickupUse.Invoke(PickUpUseMode.OnPickUpUseUp);
-                }
-                else
-                {
-                    if (State)
-                    {
-                        OnPickupUse.Invoke(PickUpUseMode.OnPickUpStillDown);
-                    }
-                }
-            }
-            // Debug.Log($"[InputUpdate] Frame: {Time.frameCount}, Source inRot: {inRot.eulerAngles}, Stored Offset: {InputConstraint.sources[0].rotationOffset.eulerAngles}");
-            InputConstraint.UpdateSourcePositionAndRotation(0, inPos, inRot);
-            if (InputConstraint.Evaluate(out Vector3 pos, out Quaternion rot))
-            {
-                // Debug.Log($"[InputUpdate] Frame: {Time.frameCount}, Evaluated Target Rot: {rot.eulerAngles}");
-                //pretty sure rigidbody is the real issue with the jitter here.
-                //as rigidbody occurs on physics timestamp? -LD
-                RigidRef.Move(pos, rot);
-                // TODO: fix jitter while still using rigidbody movement
-                // transform.SetPositionAndRotation(pos, rot);
-            }
-=======
-
             CalculateVelocity(pos, rot);
->>>>>>> 2a96163a (Pickups and Fly Camera (this should've been multiple commits))
         }
-
     }
     public override bool IsInteractingWith(BasisInput input)
     {
@@ -457,15 +405,8 @@ public class PickupInteractable : InteractableObject
     {
         return ColliderRef;
     }
-<<<<<<< HEAD
-    private void PollDesktopManipulation(BasisInput DesktopEye)
-=======
 
-    private bool pauseHead = false;
-    private Vector3 targetOffset = Vector3.zero;
-    private Vector3 currentZoopVelocity = Vector3.zero;
     private void PollDesktopControl(BasisInput DesktopEye)
->>>>>>> 2a96163a (Pickups and Fly Camera (this should've been multiple commits))
     {
         // scroll zoop
         float mouseScroll = DesktopEye.CurrentInputState.Secondary2DAxis.y; // only ever 1, 0, -1
@@ -494,7 +435,7 @@ public class PickupInteractable : InteractableObject
                 targetOffset = newTargetOffset;
             }
         }
-        
+
 
         var dampendOffset = Vector3.SmoothDamp(currentOffset, targetOffset, ref currentZoopVelocity, k_DesktopZoopSmoothing, k_DesktopZoopMaxVelocity);
         InputConstraint.sources[0].positionOffset = dampendOffset;
@@ -554,11 +495,8 @@ public class PickupInteractable : InteractableObject
                 }
         }
     }
-<<<<<<< HEAD
-=======
 
     bool _remotePrevKinematic = true; 
->>>>>>> 2a96163a (Pickups and Fly Camera (this should've been multiple commits))
     public override void StartRemoteControl()
     {
         IsPuppeted = true;
@@ -587,8 +525,6 @@ public class PickupInteractable : InteractableObject
         }
         base.OnDestroy();
     }
-<<<<<<< HEAD
-=======
 
     // override since we add extra reach on desktop
     public override bool IsWithinRange(Vector3 source, float _interactRange)
@@ -609,15 +545,14 @@ public class PickupInteractable : InteractableObject
         return Vector3.Distance(transform.position, source) <= _interactRange + extraReach;
     }
 
->>>>>>> 2a96163a (Pickups and Fly Camera (this should've been multiple commits))
 #if UNITY_EDITOR
     public void OnValidate()
     {
         string errPrefix = "Pickup Interactable needs component defined on self or given a reference for ";
-        if (RigidRef == null && !TryGetComponent(out Rigidbody _))
-        {
-            Debug.LogWarning(errPrefix + "Rigidbody, ignore if not using rigidbodies and expecing raw transforms", gameObject);
-        }
+        // if (RigidRef == null && !TryGetComponent(out Rigidbody _))
+        // {
+        //     Debug.LogWarning(errPrefix + "Rigidbody, ignore if not using rigidbodies and expecing raw transforms", gameObject);
+        // }
         if (ColliderRef == null && !TryGetComponent(out Collider _))
         {
             Debug.LogWarning(errPrefix + "Collider", gameObject);

@@ -32,13 +32,14 @@ public abstract class BasisHandHeldCameraInteractable : PickupInteractable
     public float autoLevelStrength = 2f;
     [Range(0.1f, 0.9f)]
     public float cinematicDamping = 0.8f;
-    public bool useAdaptiveSmoothing = true;
 
     [Header("Capture Camera Reference")]
     [SerializeField] internal Camera captureCamera;
 
     // internal values
-    private string pauseRequestName;
+    private readonly BasisLocks.LockContext LookLock = BasisLocks.GetContext(BasisLocks.LookRotation);
+    private readonly BasisLocks.LockContext MovementLock = BasisLocks.GetContext(BasisLocks.Movement);
+    private readonly BasisLocks.LockContext CrouchingLock = BasisLocks.GetContext(BasisLocks.Crouching);
     private Vector3 cameraStartingLocalPos; // local space
     private Quaternion cameraStartingLocalRot; // local space
 
@@ -46,6 +47,8 @@ public abstract class BasisHandHeldCameraInteractable : PickupInteractable
     private BasisParentConstraint cameraPinConstraint;
     [SerializeReference]
     private BasisFlyCamera flyCamera;
+
+    const float cameraDefaultScale = 0.0003f;
 
     /// <summary>
     /// Space the camera is pinned to
@@ -64,14 +67,12 @@ public abstract class BasisHandHeldCameraInteractable : PickupInteractable
         // force rigid ref null, pickup will use raw transform instead 
         RigidRef = null;
 
-        pauseRequestName = $"{nameof(BasisHandHeldCameraInteractable)}-{gameObject.GetInstanceID()}";
-
         // "disable" desktop zoop for this
         DesktopZoopSpeed = 0;
         DesktopRotateSpeed = 0;
 
         CanSelfSteal = false;
-        CanNetworkSteal = false; // not networked anyway
+        // CanNetworkSteal = false; // not networked anyway
 
         if (captureCamera == null)
         {
@@ -87,8 +88,12 @@ public abstract class BasisHandHeldCameraInteractable : PickupInteractable
             cameraStartingLocalRot = captureCamera.transform.localRotation;
         }
 
-        OnInteractStartEvent += OnInteractCameraTweak;
+        OnInteractStartEvent += OnInteractDesktopTweak;
         BasisDeviceManagement.OnBootModeChanged += OnBootModeChanged;
+
+        BasisLocalPlayer.Instance.OnPlayersHeightChanged += OnHeightChanged;
+        transform.localScale = new Vector3(cameraDefaultScale, cameraDefaultScale, cameraDefaultScale) * BasisLocalPlayer.Instance.CurrentHeight.SelectedAvatarToAvatarDefaultScale;
+
         BasisLocalPlayer.Instance.AfterFinalMove.AddAction(202, UpdateCamera);
 
         cameraPinConstraint = new BasisParentConstraint();
@@ -99,13 +104,18 @@ public abstract class BasisHandHeldCameraInteractable : PickupInteractable
     }
 
 
-    private void OnInteractCameraTweak(BasisInput _input)
+    private void OnInteractDesktopTweak(BasisInput _input)
     {
         if (BasisDeviceManagement.IsUserInDesktop())
         {
-            // poll manually only
+            // dont poll pickup input update
             RequiresUpdateLoop = false;
         }
+    }
+
+    private void OnHeightChanged()
+    {
+            transform.localScale = new Vector3(cameraDefaultScale, cameraDefaultScale, cameraDefaultScale) * BasisLocalPlayer.Instance.CurrentHeight.SelectedAvatarToAvatarDefaultScale;
     }
 
     private bool desktopSetup = false;
@@ -118,7 +128,7 @@ public abstract class BasisHandHeldCameraInteractable : PickupInteractable
         if (inDesktop)
         {
             if (Inputs.desktopCenterEye.Source == null) return;
-            
+
             Vector3 inPos;
             Quaternion inRot;
 
@@ -131,9 +141,10 @@ public abstract class BasisHandHeldCameraInteractable : PickupInteractable
 
                 if (!desktopSetup)
                 {
-                    // important!!!
-                    // not reset since we force destroy on boot mode change
-                    DisableInfluence = true;
+                    // do not remove, important!!!
+                    // on desktop the camera contrains itself to the initial spawn position until destroyed.
+                    // does not reset since we force destroy on boot mode change.
+                    InteractableEnabled = false;
 
                     // offset
                     transform.GetPositionAndRotation(out Vector3 startPos, out Quaternion startRot);
@@ -143,20 +154,21 @@ public abstract class BasisHandHeldCameraInteractable : PickupInteractable
                     InputConstraint.Enabled = true;
 
                     desktopSetup = true;
-                    HeadLock.Remove(headPauseRequestName);
-                    pauseHead = false;
                 }
             }
             else return;
-
+    
+            // always constrain to head movement
             InputConstraint.UpdateSourcePositionAndRotation(0, inPos, inRot);
-
-        InputConstraint.UpdateSourcePositionAndRotation(0, inPos, inRot);
-
-        if (InputConstraint.Evaluate(out Vector3 pos, out Quaternion rot))
-        {
-            transform.SetPositionAndRotation(pos, rot);
+            
+            if (InputConstraint.Evaluate(out Vector3 pos, out Quaternion rot))
+            {
+                transform.SetPositionAndRotation(pos, rot);
+            }
         }
+
+        // 
+        PollCameraPin(Inputs.desktopCenterEye.Source);
     }
 
     public override bool IsInteractingWith(BasisInput input)
@@ -177,17 +189,8 @@ public abstract class BasisHandHeldCameraInteractable : PickupInteractable
         return ColliderRef;
     }
 
-    private bool pauseHead = false;
-    private void PollDesktopManipulation(BasisInput DesktopEye)
+    private void PollCameraPin(BasisInput DesktopEye)
     {
-        if (pauseHead)
-        {
-            pauseHead = false;
-            if (!HeadLock.Remove(headPauseRequestName))
-            {
-                transform.SetPositionAndRotation(pos, rot);
-            }
-        }
 
         // --- camera pinning --- 
         if (captureCamera == null) return;
@@ -257,9 +260,12 @@ public abstract class BasisHandHeldCameraInteractable : PickupInteractable
 
     public void OnBootModeChanged(string mode)
     {
+
+        // TODO: this doesnt actually kill the camera somehow.
+
         // To not manage things across boot mode changes (inputs actions, ect) destroy self.
         // User can respawn camera if they want it
-        Destroy(this);
+        Destroy(gameObject);
     }
 
 
@@ -283,16 +289,17 @@ public abstract class BasisHandHeldCameraInteractable : PickupInteractable
     {
         if (DesktopEye == null) return;
 
-        if (DesktopEye.InputState.Secondary2DAxisClick)
+        if (DesktopEye.CurrentInputState.Secondary2DAxisClick)
         {
             // set pause requests
             if (!pauseMove)
             {
                 pauseMove = true;
-                BasisAvatarEyeInput.Instance.PauseHead(pauseRequestName);
-                BasisLocalInputActions.PauseCrouch(pauseRequestName);
-                BasisLocalInputActions.PauseMovement(pauseRequestName);
+                LookLock.Add(nameof(BasisHandHeldCameraInteractable));
+                MovementLock.Add(nameof(BasisHandHeldCameraInteractable));
+                CrouchingLock.Add(nameof(BasisHandHeldCameraInteractable));
 
+                // TODO: use user preference somehow
                 PinSpace = CameraPinSpace.WorldSpace;
                 flyCamera.Enable();
 
@@ -302,18 +309,19 @@ public abstract class BasisHandHeldCameraInteractable : PickupInteractable
         }
         else if (pauseMove) // clean up requests
         {
+            string className = nameof(BasisHandHeldCameraInteractable);
             pauseMove = false;
-            if (!BasisAvatarEyeInput.Instance.UnPauseHead(pauseRequestName))
+            if (!LookLock.Remove(className))
             {
-                BasisDebug.LogWarning(nameof(BasisHandHeldCamera) + " was unable to un-pause head movement, this is a bug!");
+                BasisDebug.LogWarning(className + " was unable to un-pause head movement, this is a bug!");
             }
-            if (!BasisLocalInputActions.UnPauseCrouch(pauseRequestName))
+            if (!MovementLock.Remove(className))
             {
-                BasisDebug.LogWarning(nameof(BasisHandHeldCamera) + " was unable to un-pause crouch, this is a bug!");
+                BasisDebug.LogWarning(className + " was unable to un-pause crouch, this is a bug!");
             }
-            if (!BasisLocalInputActions.UnPauseMovement(pauseRequestName))
+            if (!CrouchingLock.Remove(className))
             {
-                BasisDebug.LogWarning(nameof(BasisHandHeldCamera) + " was unable to un-pause movement, this is a bug!");
+                BasisDebug.LogWarning(className + " was unable to un-pause movement, this is a bug!");
             }
             flyCamera.Disable();
             velocityMomentum = Vector3.zero;
@@ -497,15 +505,17 @@ public abstract class BasisHandHeldCameraInteractable : PickupInteractable
     public override void OnDestroy()
     {
         BasisDeviceManagement.OnBootModeChanged -= OnBootModeChanged;
-        OnInteractStartEvent -= OnInteractCameraTweak;
+        OnInteractStartEvent -= OnInteractDesktopTweak;
+        BasisLocalPlayer.Instance.OnPlayersHeightChanged -= OnHeightChanged;
+
         BasisLocalPlayer.Instance.AfterFinalMove.RemoveAction(202, UpdateCamera);
 
 
         if (pauseMove)
         {
-            BasisAvatarEyeInput.Instance.UnPauseHead(pauseRequestName);
-            BasisLocalInputActions.UnPauseCrouch(pauseRequestName);
-            BasisLocalInputActions.UnPauseMovement(pauseRequestName);
+            LookLock.Remove(nameof(BasisHandHeldCameraInteractable));
+            MovementLock.Remove(nameof(BasisHandHeldCameraInteractable));
+            CrouchingLock.Remove(nameof(BasisHandHeldCameraInteractable));
         }
 
         Destroy(HighlightClone);

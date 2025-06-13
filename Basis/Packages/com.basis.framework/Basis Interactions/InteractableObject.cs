@@ -12,28 +12,29 @@ public abstract class InteractableObject : MonoBehaviour
     [Header("Interactable Settings")]
 
     [SerializeField]
-    private bool disableInfluence = false;
+    private bool interactableEnabled = true;
     // NOTE: unity editor will not use the set function so setting disabling Interact in play will not cleanup inputs
-    public bool pickupable
+    public bool InteractableEnabled
     {
-        get => disableInfluence;
+        get => interactableEnabled;
         set
         {
             // remove hover and interacting on disable
-            if (value)
+            if (!value)
             {
                 ClearAllInfluencing();
-                if (!disableInfluence)
+                if (interactableEnabled)
                     OnInfluenceDisable?.Invoke();
             }
             else
             {
-                if (disableInfluence)
+                if (!interactableEnabled)
                     OnInfluenceEnable?.Invoke();
             }
-            disableInfluence = value;
+            interactableEnabled = value;
         }
     }
+
     [Space(10)]
     public bool Equippable = false;
 
@@ -211,7 +212,7 @@ public abstract class InteractableObject : MonoBehaviour
     /// <returns></returns>
     public virtual bool IsInfluencable(BasisInput input)
     {
-        return !pickupable && (CanHover(input) || CanInteract(input));
+        return InteractableEnabled && (CanHover(input) || CanInteract(input));
     }
 
     public virtual void StartRemoteControl()

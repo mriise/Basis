@@ -262,7 +262,7 @@ namespace Basis.Scripts.BasisCharacterController
             CurrentSpeed = math.lerp(MinimumMovementSpeed, MaximumMovementSpeed, MovementSpeedScale) + MinimumMovementSpeed * MovementSpeedBoost;
 
             Vector3 totalMoveDirection = flattenedRotation * horizontalMoveDirection * CurrentSpeed * DeltaTime;
-            if (IsMovementPaused)
+            if (MovementLock)
                 totalMoveDirection = Vector3.zero;
 
             // Handle jumping and falling

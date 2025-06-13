@@ -116,8 +116,6 @@ namespace Basis.Scripts.UI
             var characterDriver = localPlayer == null ? null : localPlayer.LocalCharacterDriver;
             basisUIRaycastProcess.Simulate();
 
-            string pauseRequestName = nameof(BasisInputModuleHandler) + "-Keyboard";
-
             // Process your input events here
             if (EventSystem.currentSelectedGameObject != null)
             {

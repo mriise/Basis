@@ -2848,7 +2848,7 @@ GameObject:
   - component: {fileID: 5604518621205928902}
   - component: {fileID: 2665872672007249879}
   - component: {fileID: 7756662078333997321}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: BasisCameraImagePreview
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3070,7 +3070,7 @@ GameObject:
   - component: {fileID: 1402411493319413272}
   - component: {fileID: 8800136298036947618}
   - component: {fileID: 2502365102058778572}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: BasisCamera
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -6338,16 +6338,46 @@ MonoBehaviour:
       Source: {fileID: 0}
       State: 0
     extras: []
-  disableInfluence: 0
+  interactableEnabled: 1
   Equippable: 0
   IsPuppeted: 0
+  KinematicWhileInteracting: 1
+  CanSelfSteal: 1
+  DesktopRotateSpeed: 0.1
+  DesktopZoopSpeed: 0.2
+  DesktopZoopMinDistance: 0.2
+  DesktopZoopMaxDistance: 2
   GenerateColliderMesh: 0
+  minLinearVelocity: 0.5
+  interactEndLinearVelocityMultiplier: 1
+  minAngularVelocity: 0.5
+  interactEndAngularVelocityMultiplier: 1
   ColliderRef: {fileID: 7802551649234531970}
+  RigidRef: {fileID: 0}
   InputConstraint:
-    rid: -2
+    rid: 8977046508161728639
   InteractRange: 0.25
-  CameraData: {fileID: 5341505974008291344}
+  currentPlayer: {fileID: 0}
+  PinSpace: 0
+  flySpeed: 2
+  flyFastMultiplier: 3
+  flyAcceleration: 10
+  flyDeceleration: 25
+  flyMovementSmoothing: 12
+  mouseSensitivity: 0.35
+  rotationSmoothing: 15
+  useMomentum: 1
+  inertiaDamping: 5
+  useAutoLeveling: 0
+  autoLevelStrength: 2
+  cinematicDamping: 0.8
+  useAdaptiveSmoothing: 1
   captureCamera: {fileID: 3367479847239852769}
+  cameraPinConstraint:
+    rid: -2
+  flyCamera:
+    rid: -2
+  CameraData: {fileID: 5341505974008291344}
   renderTexture: {fileID: 0}
   countdownText: {fileID: 657784458706356757}
   captureWidth: 3840
@@ -6411,6 +6441,14 @@ MonoBehaviour:
     RefIds:
     - rid: -2
       type: {class: , ns: , asm: }
+    - rid: 8977046508161728639
+      type: {class: BasisParentConstraint, ns: , asm: Basis}
+      data:
+        Enabled: 1
+        GlobalWeight: 1
+        _restPosition: {x: 0, y: 0, z: 0}
+        _restRotation: {x: 0, y: 0, z: 0, w: 0}
+        sources: []
 --- !u!114 &7288916414168179110
 MonoBehaviour:
   m_ObjectHideFlags: 0
