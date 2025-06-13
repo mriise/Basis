@@ -88,8 +88,11 @@ public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
         UnsubscribeMeshRendererCheck();
         ReleaseRenderTexture();
         if (HandHeld != null)
+        {
             await HandHeld.SaveSettings();
+        }
         BasisDeviceManagement.OnBootModeChanged -= OnBootModeChanged;
+        OnPickupUse -= OnPickupUseCapture;
         base.OnDestroy();
     }
     private void OnEnable()
@@ -304,27 +307,6 @@ public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
     // {
     //     OverrideDesktopOutput();
     // }
-
-    public new async void OnDestroy()
-    {
-        StopPreviewLoop();
-        if (BasisMeshRendererCheck != null)
-        {
-            BasisMeshRendererCheck.Check -= VisibilityFlag;
-        }
-        if (renderTexture != null)
-        {
-            renderTexture.Release();
-        }
-        if (HandHeld != null)
-        {
-            await HandHeld.SaveSettings();
-        }
-        BasisDeviceManagement.OnBootModeChanged -= OnBootModeChanged;
-        OnPickupUse -= OnPickupUseCapture;
-
-        base.OnDestroy();
-    }
     public void Timer()
     {
         StartCoroutine(DelayedAction(5)); // Countdown from 5 seconds
