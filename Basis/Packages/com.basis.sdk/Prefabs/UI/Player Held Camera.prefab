@@ -3269,11 +3269,11 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 533420079048326999}
-  - component: {fileID: 4557478623451790894}
-  - component: {fileID: 7578028392987495449}
+  - component: {fileID: 1402411493319413272}
+  - component: {fileID: 8800136298036947618}
+  - component: {fileID: 2502365102058778572}
   m_Layer: 5
-  m_Name: Handle
+  m_Name: BasisCamera
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6223,9 +6223,135 @@ CanvasRenderer:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6223013133163371771}
-  m_CullTransparentMesh: 1
---- !u!114 &5592067357314009498
+  m_GameObject: {fileID: 6521594251836478669}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99141fe8e12cbb74594d89d9ebab533b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Inputs:
+    desktopCenterEye:
+      Source: {fileID: 0}
+      State: 0
+    leftHand:
+      Source: {fileID: 0}
+      State: 0
+    rightHand:
+      Source: {fileID: 0}
+      State: 0
+    extras: []
+  interactableEnabled: 1
+  Equippable: 0
+  IsPuppeted: 0
+  KinematicWhileInteracting: 1
+  CanSelfSteal: 1
+  DesktopRotateSpeed: 0.1
+  DesktopZoopSpeed: 0.2
+  DesktopZoopMinDistance: 0.2
+  DesktopZoopMaxDistance: 2
+  GenerateColliderMesh: 0
+  minLinearVelocity: 0.5
+  interactEndLinearVelocityMultiplier: 1
+  minAngularVelocity: 0.5
+  interactEndAngularVelocityMultiplier: 1
+  ColliderRef: {fileID: 7802551649234531970}
+  RigidRef: {fileID: 0}
+  InputConstraint:
+    rid: 8977046508161728639
+  InteractRange: 0.25
+  currentPlayer: {fileID: 0}
+  PinSpace: 0
+  flySpeed: 2
+  flyFastMultiplier: 3
+  flyAcceleration: 10
+  flyDeceleration: 25
+  flyMovementSmoothing: 12
+  mouseSensitivity: 0.35
+  rotationSmoothing: 15
+  useMomentum: 1
+  inertiaDamping: 5
+  useAutoLeveling: 0
+  autoLevelStrength: 2
+  cinematicDamping: 0.8
+  useAdaptiveSmoothing: 1
+  captureCamera: {fileID: 3367479847239852769}
+  cameraPinConstraint:
+    rid: -2
+  flyCamera:
+    rid: -2
+  CameraData: {fileID: 5341505974008291344}
+  renderTexture: {fileID: 0}
+  countdownText: {fileID: 657784458706356757}
+  captureWidth: 3840
+  captureHeight: 2160
+  PreviewCaptureWidth: 1920
+  PreviewCaptureHeight: 1080
+  BasisMeshRendererCheck: {fileID: 0}
+  Renderer: {fileID: 7756662078333997321}
+  Material: {fileID: 2100000, guid: 13bfd380801cfc1449238ef97ddc96df, type: 2}
+  actualMaterial: {fileID: 0}
+  captureFormat: EXR
+  picturesFolder: 
+  InstanceID: 0
+  depth: 24
+  enableRecordingView: 0
+  HandHeld:
+    TakePhotoButton: {fileID: 1758037217029611002}
+    ResetButton: {fileID: 979625714228536087}
+    CloseButton: {fileID: 7123304647714298323}
+    Timer: {fileID: 967174535831980513}
+    Nameplates: {fileID: 1201809144005333048}
+    OverrideDesktopOutput: {fileID: 2358645296963152206}
+    focusCursor: {fileID: 8975250095466467746}
+    DepthModeAutoButton: {fileID: 5357743681464807125}
+    DepthModeManualButton: {fileID: 921540203252175040}
+    Resolution: {fileID: 1388413722498152666}
+    ResolutionSprites:
+    - {fileID: 7131362076858715637}
+    - {fileID: 530021113894690486}
+    - {fileID: 604431560943467893}
+    - {fileID: 34511189875988882}
+    Format: {fileID: 271333931972961362}
+    PngSprite: {fileID: 3809515602247673852}
+    ExrSprite: {fileID: 684257679038783188}
+    ExposureSlider: {fileID: 8522938134908530789}
+    DOFFocusOutput: {fileID: 7959279761530265510}
+    DepthApertureOutput: {fileID: 6431544372200587107}
+    BloomIntensityOutput: {fileID: 5245012638087798964}
+    BloomThreshholdOutput: {fileID: 2141495755150283044}
+    ContrastOutput: {fileID: 8733066929474480180}
+    SaturationOutput: {fileID: 4658807069510222181}
+    FOVOutput: {fileID: 2035674129032744451}
+    FOVSlider: {fileID: 2389807755758452328}
+    DepthFocusDistanceSlider: {fileID: 1297119732566531709}
+    DepthApertureSlider: {fileID: 94562798706661762}
+    BloomIntensitySlider: {fileID: 8530939039299569230}
+    BloomThresholdSlider: {fileID: 8042153651047542462}
+    ContrastSlider: {fileID: 3353301043601893089}
+    SaturationSlider: {fileID: 899296754083693520}
+    depthIsActiveButton: {fileID: 4034625489184316538}
+    HHC: {fileID: 3518136417144443781}
+  MetaData:
+    Profile: {fileID: 11400000, guid: 49fa3e3e4ae0a5a43985fc094a849f4a, type: 2}
+    tonemapping: {fileID: 0}
+    depthOfField: {fileID: 0}
+    bloom: {fileID: 0}
+    colorAdjustments: {fileID: 0}
+  LastVisibilityState: 0
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 8977046508161728639
+      type: {class: BasisParentConstraint, ns: , asm: Basis}
+      data:
+        Enabled: 1
+        GlobalWeight: 1
+        _restPosition: {x: 0, y: 0, z: 0}
+        _restRotation: {x: 0, y: 0, z: 0, w: 0}
+        sources: []
+--- !u!114 &7288916414168179110
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

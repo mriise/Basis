@@ -170,6 +170,20 @@ public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
             }
         }
     }
+        public new void Start()
+    {
+        base.Start();
+
+        OnPickupUse += OnPickupUseCapture;
+    }
+
+    public void OnPickupUseCapture(PickUpUseMode mode)
+    {
+        if (mode == PickUpUseMode.OnPickUpUseDown)
+        {
+            CapturePhoto();
+        }
+    }
     /// <summary>
     /// Changes the render resolution and anti-aliasing settings.
     /// </summary>
@@ -285,6 +299,32 @@ public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
         }
     }
 
+    // TODO parent class destroys self on boot mode swap
+    // private void OnBootModeChanged(string obj)
+    // {
+    //     OverrideDesktopOutput();
+    // }
+
+    public new async void OnDestroy()
+    {
+        StopPreviewLoop();
+        if (BasisMeshRendererCheck != null)
+        {
+            BasisMeshRendererCheck.Check -= VisibilityFlag;
+        }
+        if (renderTexture != null)
+        {
+            renderTexture.Release();
+        }
+        if (HandHeld != null)
+        {
+            await HandHeld.SaveSettings();
+        }
+        BasisDeviceManagement.OnBootModeChanged -= OnBootModeChanged;
+        OnPickupUse -= OnPickupUseCapture;
+
+        base.OnDestroy();
+    }
     public void Timer()
     {
         StartCoroutine(DelayedAction(5)); // Countdown from 5 seconds
