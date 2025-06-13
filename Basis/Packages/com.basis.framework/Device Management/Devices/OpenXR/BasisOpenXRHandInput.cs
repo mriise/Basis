@@ -131,17 +131,7 @@ public class BasisOpenXRHandInput : BasisInput
                 Control.IncomingData.rotation = math.mul(TransformFinalRotation, Quaternion.Euler(AvatarRotationOffset));
             }
         }
-        CalculateFingerCurls();
         UpdatePlayerControl();
-    }
-
-    private void CalculateFingerCurls()
-    {
-        FingerCurls.ThumbPercentage = new Vector2(CurrentInputState.GripButton ? -1f : 0.7f, 0);
-        FingerCurls.IndexPercentage = new Vector2(BasisBaseMuscleDriver.MapValue(CurrentInputState.Trigger, 0, 1, -1f, 0.7f), 0);
-        FingerCurls.MiddlePercentage = new Vector2(CurrentInputState.PrimaryButtonGetState ? -1f : 0.7f, 0);
-        FingerCurls.RingPercentage = new Vector2(CurrentInputState.SecondaryButtonGetState ? -1f : 0.7f, 0);
-        FingerCurls.LittlePercentage = new Vector2(CurrentInputState.SystemOrMenuButton ? 1 - 1f : 0.7f, 0);
     }
     public override void ShowTrackedVisual()
     {
@@ -196,9 +186,8 @@ public class BasisOpenXRHandInput : BasisInput
 
                         var op = Addressables.LoadAssetAsync<GameObject>(LoadRequest);
                         GameObject go = op.WaitForCompletion();
-                        GameObject gameObject = Object.Instantiate(go);
+                        GameObject gameObject = Object.Instantiate(go, this.transform);
                         gameObject.name = CommonDeviceIdentifier;
-                        gameObject.transform.parent = this.transform;
                         if (gameObject.TryGetComponent(out BasisVisualTracker))
                         {
                             BasisVisualTracker.Initialization(this);
