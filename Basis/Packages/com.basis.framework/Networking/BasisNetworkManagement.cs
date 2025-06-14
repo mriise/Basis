@@ -954,5 +954,20 @@ namespace Basis.Scripts.Networking
             int SecondsAhead = BasisNetworkManagement.DateTimeToSeconds(ServerTime);
             return SecondsAhead;
         }
+        /// <summary>
+        /// this message goes to the server and no where else, requires logic on the server todo things with it.
+        /// </summary>
+        public static void SendServerSideMessage(byte[] netDataWriter, DeliveryMethod Mode)
+        {
+            if (LocalPlayerPeer != null)
+            {
+                LocalPlayerPeer.Send(netDataWriter, BasisNetworkCommons.ServerBoundMessage, Mode);
+                BasisNetworkProfiler.AddToCounter(BasisNetworkProfilerCounter.SceneData, netDataWriter.Length);
+            }
+            else
+            {
+                BasisDebug.LogError("Local NetPeer was null!", BasisDebug.LogTag.Networking);
+            }
+        }
     }
 }
