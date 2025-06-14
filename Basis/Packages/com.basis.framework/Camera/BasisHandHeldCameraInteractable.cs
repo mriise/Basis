@@ -8,6 +8,7 @@ using Basis.Scripts.BasisSdk.Players;
 
 public abstract class BasisHandHeldCameraInteractable : PickupInteractable
 {
+    public BasisHandHeldCamera HHC;
     [Header("Camera Settings")]
     public CameraPinSpace PinSpace = CameraPinSpace.HandHeld;
 
@@ -32,9 +33,6 @@ public abstract class BasisHandHeldCameraInteractable : PickupInteractable
     public float autoLevelStrength = 2f;
     [Range(0.1f, 0.9f)]
     public float cinematicDamping = 0.8f;
-
-    [Header("Capture Camera Reference")]
-    [SerializeField] internal Camera captureCamera;
 
     // internal values
     private readonly BasisLocks.LockContext LookLock = BasisLocks.GetContext(BasisLocks.LookRotation);
@@ -74,18 +72,18 @@ public abstract class BasisHandHeldCameraInteractable : PickupInteractable
         CanSelfSteal = false;
         // CanNetworkSteal = false; // not networked anyway
 
-        if (captureCamera == null)
+        if (HHC.captureCamera == null)
         {
-            captureCamera = gameObject.GetComponentInChildren<Camera>(true);
+            HHC.captureCamera = gameObject.GetComponentInChildren<Camera>(true);
         }
-        if (captureCamera == null)
+        if (HHC.captureCamera == null)
         {
             BasisDebug.LogError($"Camera not found in children of {nameof(BasisHandHeldCamera)}, camera pinning will be broken");
         }
         else
         {
-            cameraStartingLocalPos = captureCamera.transform.localPosition;
-            cameraStartingLocalRot = captureCamera.transform.localRotation;
+            cameraStartingLocalPos = HHC.captureCamera.transform.localPosition;
+            cameraStartingLocalRot = HHC.captureCamera.transform.localRotation;
         }
 
         OnInteractStartEvent += OnInteractDesktopTweak;
@@ -193,7 +191,7 @@ public abstract class BasisHandHeldCameraInteractable : PickupInteractable
     {
 
         // --- camera pinning --- 
-        if (captureCamera == null) return;
+        if (HHC.captureCamera == null) return;
         
 
         switch (PinSpace)
@@ -207,8 +205,8 @@ public abstract class BasisHandHeldCameraInteractable : PickupInteractable
                     cameraPinConstraint.UpdateSourcePositionAndRotation(0, Vector3.zero, Quaternion.identity);
                     cameraPinConstraint.SetOffsetPositionAndRotation(0, Vector3.zero, Quaternion.identity);
 
-                    captureCamera.transform.localPosition = cameraStartingLocalPos;
-                    captureCamera.transform.localRotation = cameraStartingLocalRot;
+                    HHC.captureCamera.transform.localPosition = cameraStartingLocalPos;
+                    HHC.captureCamera.transform.localRotation = cameraStartingLocalRot;
                 }
                 break;
             case CameraPinSpace.PlaySpace:
@@ -222,7 +220,7 @@ public abstract class BasisHandHeldCameraInteractable : PickupInteractable
                 {
                     cameraPinConstraint.Enabled = true;
 
-                    captureCamera.transform.GetPositionAndRotation(out Vector3 camPos, out Quaternion camRot);
+                    HHC.captureCamera.transform.GetPositionAndRotation(out Vector3 camPos, out Quaternion camRot);
 
                     var offsetPos = Quaternion.Inverse(pinParentRot) * (camPos - pinParentPos);
                     var offsetRot = Quaternion.Inverse(pinParentRot) * camRot;
@@ -240,7 +238,7 @@ public abstract class BasisHandHeldCameraInteractable : PickupInteractable
                 {
                     cameraPinConstraint.Enabled = true;
 
-                    captureCamera.transform.GetPositionAndRotation(out Vector3 camPos, out Quaternion camRot);
+                    HHC.captureCamera.transform.GetPositionAndRotation(out Vector3 camPos, out Quaternion camRot);
                     // use current world pos
                     cameraPinConstraint.SetOffsetPositionAndRotation(0, camPos, camRot);
                 }
@@ -252,7 +250,7 @@ public abstract class BasisHandHeldCameraInteractable : PickupInteractable
         // update pin constraint
         if (cameraPinConstraint.Evaluate(out Vector3 pinPos, out Quaternion pinRot))
         {
-            captureCamera.transform.SetPositionAndRotation(pinPos, pinRot);
+            HHC.captureCamera.transform.SetPositionAndRotation(pinPos, pinRot);
         }
 
         previousPinState = PinSpace;
@@ -300,8 +298,8 @@ public abstract class BasisHandHeldCameraInteractable : PickupInteractable
                 PinSpace = CameraPinSpace.WorldSpace;
                 flyCamera.Enable();
 
-                smoothedRotation = captureCamera.transform.rotation;
-                smoothedPosition = captureCamera.transform.position;
+                smoothedRotation = HHC.captureCamera.transform.rotation;
+                smoothedPosition = HHC.captureCamera.transform.position;
             }
         }
         else if (pauseMove) // clean up requests
@@ -383,7 +381,7 @@ public abstract class BasisHandHeldCameraInteractable : PickupInteractable
     private void UpdateMovement(Vector3 inputMovement, float speedMultiplier, float deltaTime)
     {
         // Transform movement to camera space
-        Vector3 worldMovement = captureCamera.transform.TransformDirection(inputMovement);
+        Vector3 worldMovement = HHC.captureCamera.transform.TransformDirection(inputMovement);
                 
         targetVelocity = worldMovement * flySpeed * speedMultiplier;
         
