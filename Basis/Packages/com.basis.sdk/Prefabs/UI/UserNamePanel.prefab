@@ -569,8 +569,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: '
 
-    <size=50%>These settings are very <color=#FFA7A7>experimental</color>
-    and may break things, please use with caution!'
+    <size=50%>please use with caution!'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 98857fb5827ece748ae5394a1ad8342d, type: 2}
   m_sharedMaterial: {fileID: 1150190466599654131, guid: 98857fb5827ece748ae5394a1ad8342d, type: 2}
@@ -4369,8 +4368,8 @@ MonoBehaviour:
   m_Transition: 1
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.44313726, g: 0.44313726, b: 0.44313726, a: 1}
+    m_HighlightedColor: {r: 0.8396226, g: 0.53466535, b: 0.55455387, a: 1}
+    m_PressedColor: {r: 0.44313726, g: 0.2627451, b: 0.27450982, a: 1}
     m_SelectedColor: {r: 0.44313726, g: 0.44313726, b: 0.44313726, a: 1}
     m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
     m_ColorMultiplier: 1
