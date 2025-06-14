@@ -67,6 +67,7 @@ public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
         InitializeMeshRendererCheck();
         await InitializeUI();
         InitializeTonemapping();
+        InitializeDepthOfField();
         InitializeFolders();
         await HandHeld.SaveSettings();
         SetupUILayerMask();
@@ -137,6 +138,17 @@ public class BasisHandHeldCamera : BasisHandHeldCameraInteractable
         if (MetaData.Profile.TryGet(out MetaData.tonemapping))
         {
             ToggleToneMapping(TonemappingMode.Neutral);
+        }
+    }
+    private void InitializeDepthOfField()
+    {
+        if (!MetaData.Profile.TryGet(out MetaData.depthOfField))
+        {
+            BasisDebug.LogError("DoF profile not found!");
+        }
+        else
+        {
+            BasisDebug.Log($"DoF is loaded. FocusDistance: {MetaData.depthOfField.focusDistance.value}");
         }
     }
 

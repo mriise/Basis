@@ -35,6 +35,8 @@ public class BasisDepthOfFieldInteractionHandler : MonoBehaviour
             if (cameraController.HandHeld.DOFFocusOutput == null)
                 BasisDebug.LogError("BasisDepthOfFieldInteractionHandler: cameraController.HandHeld.DOFFocusOutput must be assigned!");
         }
+        if (depthOfFieldToggle != null)
+            depthOfFieldToggle.onValueChanged.AddListener(SetCursorVisibility);
     }
     public void SetDoFState(bool enabled)
     {
