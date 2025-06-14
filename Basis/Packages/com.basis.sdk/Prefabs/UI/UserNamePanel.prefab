@@ -2187,7 +2187,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -3048,6 +3048,7 @@ MonoBehaviour:
   Password: {fileID: 7342387192712509897}
   UseLocalhost: {fileID: 303848508383678836}
   HostMode: {fileID: 5016190070041225366}
+  ConnectText: {fileID: 853691693064836016}
 --- !u!1 &5024693311933502499
 GameObject:
   m_ObjectHideFlags: 0
@@ -3376,7 +3377,7 @@ GameObject:
   - component: {fileID: 5697029871011890725}
   - component: {fileID: 2115803409761755332}
   m_Layer: 5
-  m_Name: Password Text (1)
+  m_Name: Host Mode Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3991,7 +3992,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &3407113472130332078
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4319,7 +4320,7 @@ GameObject:
   - component: {fileID: 7823736808169910644}
   - component: {fileID: 5016190070041225366}
   m_Layer: 5
-  m_Name: Toggle
+  m_Name: Host Mode
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
