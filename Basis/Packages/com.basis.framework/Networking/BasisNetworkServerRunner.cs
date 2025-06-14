@@ -11,8 +11,9 @@ public class BasisNetworkServerRunner
     [SerializeField]
     public Configuration Configuration;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    public void Initalize(Configuration Configuration, string LogPath)
+    public void Initalize(Configuration configuration, string LogPath,string UUIDTomarkAsAdmin)
     {
+        Configuration = configuration;
         BasisServerSideLogging.Initialize(Configuration, LogPath);
         cancellationTokenSource = new CancellationTokenSource();
         var cancellationToken = cancellationTokenSource.Token;
@@ -21,6 +22,7 @@ public class BasisNetworkServerRunner
             try
             {
                 NetworkServer.StartServer(Configuration);
+                NetworkServer.authIdentity.AddNetPeerAsAdmin(UUIDTomarkAsAdmin);
             }
             catch (Exception ex)
             {

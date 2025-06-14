@@ -235,19 +235,19 @@ namespace Basis.Scripts.Networking
             BNL.LogWarningOutput += LogWarningOutput;
             BNL.LogErrorOutput += LogErrorOutput;
 
+            string UUID = BasisDIDAuthIdentityClient.GetOrSaveDID();
             if (IsHostMode)
             {
                 IpString = "localhost";
                 BasisNetworkServerRunner = new BasisNetworkServerRunner();
                 Configuration ServerConfig = new Configuration() { IPv4Address = IpString, HasFileSupport = false, UseNativeSockets = false, UseAuthIdentity = true, UseAuth = true, Password = PrimitivePassword, EnableStatistics = false  };
-                BasisNetworkServerRunner.Initalize(ServerConfig, string.Empty);
+                BasisNetworkServerRunner.Initalize(ServerConfig, string.Empty, UUID);
             }
 
             BasisDebug.Log("Connecting with Port " + Port + " IpString " + IpString);
             //   string result = BasisNetworkIPResolve.ResolveHosttoIP(IpString);
             //   BasisDebug.Log($"DNS call: {IpString} resolves to {result}");
             BasisLocalPlayer BasisLocalPlayer = BasisLocalPlayer.Instance;
-            string UUID = BasisDIDAuthIdentityClient.GetOrSaveDID();
             BasisLocalPlayer.UUID = UUID;
             byte[] Information = BasisBundleConversionNetwork.ConvertBasisLoadableBundleToBytes(BasisLocalPlayer.AvatarMetaData);
             ReadyMessage readyMessage = new ReadyMessage
