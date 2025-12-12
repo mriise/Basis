@@ -98,10 +98,10 @@ public class BasisInteractableButton : BasisInteractableObject
             // leaving hover and wont interact this frame, 
             if (!willInteract)
             {
-                bool added = BasisInputWrapper.TryNewTracking(null, BasisInteractInputState.NotAdded, out BasisInputWrapper wrapper);
+                // bool added = BasisInputWrapper.TryNewTracking(null, BasisInteractInputState.NotAdded, out BasisInputWrapper wrapper);
                 // setting to null should not add the tracker
-                Debug.Assert(!added);
-                _InputSource = wrapper;
+                // Debug.Assert(!added);
+                // _InputSource = wrapper;
                 SetColor(Color);
             }
             // Oninteract will update color
@@ -135,10 +135,10 @@ public class BasisInteractableButton : BasisInteractableObject
         if (_InputSource.IsInput(input))
         {
             SetColor(Color);
-            bool added = BasisInputWrapper.TryNewTracking(null, BasisInteractInputState.NotAdded, out BasisInputWrapper wrapper);
+            // bool added = BasisInputWrapper.TryNewTracking(null, BasisInteractInputState.NotAdded, out BasisInputWrapper wrapper);
             // setting to null should not add the tracker
-            Debug.Assert(!added);
-            _InputSource = wrapper;
+            // Debug.Assert(!added);
+            // _InputSource = wrapper;
 
             ButtonUp?.Invoke();
             // call base method (invokes event)

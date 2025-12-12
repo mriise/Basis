@@ -145,7 +145,7 @@ namespace Basis.Scripts.BasisSdk.Interactions
                 BasisInteractInput interactInput = InteractInputs[index];
                 if (interactInput.input == null)
                 {
-                    BasisDebug.LogWarning("Pickup input device unexpectedly null, input devices likely changed");
+                    BasisDebug.LogWarning("Interact System: Pickup input device unexpectedly null, input devices likely changed", BasisDebug.LogTag.System);
                     continue;
                 }
 
@@ -177,7 +177,7 @@ namespace Basis.Scripts.BasisSdk.Interactions
                     }
                     else
                     {
-                        BasisDebug.LogWarning("Player Interact expected a registered hit but found null. This is a bug, please report.");
+                        BasisDebug.LogWarning("Interact System: Player Interact expected a registered hit but found null. This is a bug, please report.", BasisDebug.LogTag.System);
                     }
                 }
                 // Hover missed entirely. Test for drop & clear hover

@@ -1,0 +1,10 @@
+{
+    "name": "Basis.AvatarState.Editor",
+    "references": [
+      "Basis.AvatarState"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": []
+}

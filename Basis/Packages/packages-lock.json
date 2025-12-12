@@ -6,6 +6,14 @@
       "source": "embedded",
       "dependencies": {}
     },
+    "com.basis.avatar-state": {
+      "version": "file:com.basis.avatar-state",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "com.unity.test-framework": "1.6.0"
+      }
+    },
     "com.basis.bundlemanagement": {
       "version": "file:com.basis.bundlemanagement",
       "depth": 0,
